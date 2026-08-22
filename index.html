@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mytholis | Wear Your Legend</title>
+  <meta name="description" content="Mytholis: Six elements. Six legends. One house. Haute Parfumerie extraits hand-distilled in dark emerald crystal flasks.">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/glass.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+  <!-- Dynamic Liquid Canvas Background -->
+  <canvas id="bg-canvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -1;"></canvas>
+
+  <!-- Custom Ambient Cursor Glow -->
+  <div class="cursor-glow" id="cursor-glow"></div>
+
+  <!-- Header Navigation -->
+  <header class="header-nav glass-panel">
+    <div class="container nav-container">
+      <a class="brand-logo-wrap" onclick="app.navigateTo('home')">
+        <img src="assets/logo.png" alt="Mytholis Logo" class="brand-logo-img" />
+        <span class="brand-name gold-shimmer-text">MYTHOLIS</span>
+      </a>
+
+      <!-- Mobile Hamburger Button -->
+      <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="app.toggleMobileMenu()" aria-label="Toggle Navigation">
+        <svg class="hamburger-icon" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+
+      <nav class="main-nav-wrapper">
+        <ul class="nav-links" id="main-nav-links">
+          <li><a class="nav-link active" data-view="home" onclick="app.navigateTo('home')">Home</a></li>
+          <li><a class="nav-link" data-view="collections" onclick="app.navigateTo('collections')">Collections</a></li>
+          <li><a class="nav-link" data-view="know-us" onclick="app.navigateTo('know-us')">Know Us</a></li>
+          <li><a class="nav-link" data-view="find-scent" onclick="app.navigateTo('find-scent')">Find My Scent</a></li>
+          <li><a class="nav-link" data-view="faqs" onclick="app.navigateTo('faqs')">FAQs</a></li>
+          <li><a class="nav-link" data-view="contact" onclick="app.navigateTo('contact')">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <!-- Wishlist Modal Button -->
+        <button class="icon-btn" onclick="app.openWishlistModal()" title="Wishlist Vault">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+          <span class="icon-badge" id="wishlist-count-badge">0</span>
+        </button>
+
+        <!-- Cart Modal Button -->
+        <button class="icon-btn" onclick="app.openCartModal()" title="Shopping Cart">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+          <span class="icon-badge" id="cart-count-badge">0</span>
+        </button>
+
+        <!-- Profile / VIP Vault Modal Button -->
+        <button class="icon-btn profile-nav-btn" onclick="app.openProfileModal()" title="VIP Profile, Currency & Orders">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View Container -->
+  <main id="main-content-view" class="view-section active"></main>
+
+  <!-- UNIFORM MODAL OVERLAYS -->
+  
+  <!-- 1. Wishlist Modal Overlay -->
+  <div class="modal-overlay" id="wishlist-modal-overlay" onclick="if(event.target === this) app.closeWishlistModal()">
+    <div class="modal-card glass-panel" id="wishlist-modal-body"></div>
+  </div>
+
+  <!-- 2. Cart Modal Overlay -->
+  <div class="modal-overlay" id="cart-modal-overlay" onclick="if(event.target === this) app.closeCartModal()">
+    <div class="modal-card glass-panel" id="cart-modal-body"></div>
+  </div>
+
+  <!-- 3. VIP Profile & Vault Modal Overlay -->
+  <div class="modal-overlay" id="profile-modal-overlay" onclick="if(event.target === this) app.closeProfileModal()">
+    <div class="modal-card glass-panel" id="profile-modal-body"></div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Luxury Footer -->
+  <footer class="luxury-footer glass-panel">
+    <div class="container footer-grid">
+      <div class="footer-brand-col">
+        <a class="brand-logo-wrap" onclick="app.navigateTo('home')">
+          <img src="assets/logo.png" alt="Mytholis Logo" class="brand-logo-img" style="height: 38px;" />
+          <span class="brand-name gold-shimmer-text" style="font-size: 1.2rem;">MYTHOLIS</span>
+        </a>
+        <p class="footer-desc">
+          "Wear Your Legend." Six elements. Six legends. One house. Hand-crafted Extraits de Parfum encased in liquid crystal flasks.
+        </p>
+      </div>
+
+      <div class="footer-col">
+        <h5 class="footer-col-title">Navigation</h5>
+        <ul class="footer-links">
+          <li><a onclick="app.navigateTo('home')">Home</a></li>
+          <li><a onclick="app.navigateTo('collections')">Collections</a></li>
+          <li><a onclick="app.navigateTo('know-us')">Heritage & Craft</a></li>
+          <li><a onclick="app.navigateTo('find-scent')">Scent Finder</a></li>
+          <li><a onclick="app.openProfileModal()">Track Order</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h5 class="footer-col-title">Client Services</h5>
+        <ul class="footer-links">
+          <li><a onclick="app.openProfileModal()">Obsidian Circle VIP</a></li>
+          <li><a onclick="app.openWishlistModal()">Wishlist Vault</a></li>
+          <li><a onclick="app.openCartModal()">Shopping Cart</a></li>
+          <li><a onclick="app.navigateTo('faqs')">FAQs & Sourcing</a></li>
+          <li><a onclick="app.navigateTo('contact')">Contact Concierge</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h5 class="footer-col-title">Join the Mytholis Gazette</h5>
+        <p class="footer-subtext">Receive private invitations to confidential sample releases.</p>
+        <div class="footer-subscribe-form">
+          <input type="email" placeholder="Your email address..." class="engraving-input footer-input" />
+          <button class="btn btn-gold footer-btn">Join</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      © 2026 Mytholis Parfums Privé. All rights reserved. Liquid Glass Design System.
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/catalog.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/background.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
