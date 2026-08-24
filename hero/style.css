@@ -25,6 +25,7 @@ body {
     box-sizing: border-box;
 }
 
+.hero-card-row .card,
 .card {
     width: var(--card-width);
     height: var(--card-height);
@@ -35,20 +36,31 @@ body {
     padding: 0 36px;
     perspective: 2500px;
     margin: 0;
-    transform: scale(1.5);
-    transition: transform 0.3s ease;
+    transform: scale(1.5) translateZ(0);
+    transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    touch-action: pan-y;
 }
 
 .cover-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
+    pointer-events: none;
 }
 
 .wrapper {
-    transition: all 0.5s;
+    transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1), 
+                box-shadow 0.45s cubic-bezier(0.2, 0.9, 0.3, 1),
+                opacity 0.45s ease;
     position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
+    height: 100%;
     z-index: -1;
     border: 2px solid transparent;
     border-radius: 14px;
@@ -62,6 +74,10 @@ body {
         linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fcf6ba, #aa771c);
     background-origin: border-box;
     background-clip: padding-box, border-box;
+    will-change: transform, box-shadow;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
 .card:hover .wrapper,
@@ -78,9 +94,10 @@ body {
     opacity: 0;
     width: 100%;
     height: 80px;
-    transition: all 0.5s;
+    transition: opacity 0.45s ease, height 0.45s ease;
     position: absolute;
     left: 0;
+    will-change: opacity;
 }
 
 .wrapper::before {
@@ -115,7 +132,8 @@ body {
 
 .title {
     width: 100%;
-    transition: transform 0.5s;
+    transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1);
+    will-change: transform;
 }
 
 .card:hover .title,
@@ -126,9 +144,17 @@ body {
 .character {
     width: 100%;
     opacity: 0;
-    transition: all 0.5s;
+    transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1), 
+                opacity 0.45s cubic-bezier(0.2, 0.9, 0.3, 1);
     position: absolute;
+    top: 0;
+    left: 0;
     z-index: -1;
+    pointer-events: none;
+    transform: translate3d(0%, 0%, 0);
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 .card:hover .character,
@@ -148,9 +174,11 @@ body {
         grid-template-columns: 1fr;
         justify-items: center;
         align-content: center;
-        gap: 80px;
-        padding: 60px 20px;
+        gap: 70px;
+        padding: 50px 16px;
         overflow: visible;
+        perspective: 1200px;
+        -webkit-perspective: 1200px;
     }
 
     .hero-card-row a {
@@ -161,14 +189,29 @@ body {
     }
 
     .card {
-        width: min(82vw, 290px);
-        height: calc(min(82vw, 290px) * 1.5);
-        transform: scale(1);
+        width: min(82vw, 280px);
+        height: calc(min(82vw, 280px) * 1.5);
+        transform: translate3d(0, 0, 0) scale(1);
         padding: 0 28px;
         flex: 0 0 auto;
+        transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1);
+        will-change: transform;
+        perspective: 1200px;
+        -webkit-perspective: 1200px;
     }
 
     .card.is-active {
-        transform: scale(1.06);
+        transform: translate3d(0, 0, 0) scale(1.04);
+    }
+
+    .card.is-active .wrapper {
+        transform: perspective(900px) translateY(-4%) rotateX(18deg) translateZ(0);
+        box-shadow: 0 22px 35px -8px rgba(0, 0, 0, 0.75), 0 0 20px rgba(212, 175, 55, 0.2);
+        -webkit-box-shadow: 0 22px 35px -8px rgba(0, 0, 0, 0.75), 0 0 20px rgba(212, 175, 55, 0.2);
+    }
+
+    .card.is-active .character {
+        opacity: 1;
+        transform: translate3d(0%, -24%, 60px);
     }
 }

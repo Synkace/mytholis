@@ -617,43 +617,76 @@ class MytholisApp {
     });
   }
 
-  /* 3D Hero Cards Mobile Scroll Observer */
+  /* 3D Hero Cards Mobile Scroll & Touch Observer */
   initHeroCardsScroll() {
+    let ticking = false;
+    let activeCard = null;
+
     const activateCenterCard = () => {
       const isMobile = window.innerWidth <= 768;
       const cards = document.querySelectorAll('.hero-card-row .card');
       if (!cards.length) return;
 
       if (!isMobile) {
-        cards.forEach((card) => card.classList.remove('is-active'));
+        if (activeCard) {
+          cards.forEach((card) => card.classList.remove('is-active'));
+          activeCard = null;
+        }
         return;
       }
 
-      const viewportCenter = window.innerHeight / 2;
+      const viewportCenter = window.innerHeight * 0.52;
       let closestCard = null;
       let smallestDistance = Number.POSITIVE_INFINITY;
 
-      cards.forEach((card) => {
-        card.classList.remove('is-active');
-
+      for (let i = 0; i < cards.length; i++) {
+        const card = cards[i];
         const rect = card.getBoundingClientRect();
-        const cardCenter = rect.top + (rect.height / 2);
+        const cardCenter = rect.top + (rect.height * 0.5);
         const distance = Math.abs(cardCenter - viewportCenter);
 
         if (distance < smallestDistance) {
           smallestDistance = distance;
           closestCard = card;
         }
-      });
+      }
 
-      if (closestCard) {
+      // Avoid DOM thrashing: Only update class if the focused card has changed
+      if (closestCard && closestCard !== activeCard) {
+        for (let i = 0; i < cards.length; i++) {
+          cards[i].classList.remove('is-active');
+        }
         closestCard.classList.add('is-active');
+        activeCard = closestCard;
       }
     };
 
-    window.addEventListener('scroll', activateCenterCard, { passive: true });
-    window.addEventListener('resize', activateCenterCard);
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          activateCenterCard();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
     this.activateCenterCard = activateCenterCard;
+
+    // Instant touch response on mobile
+    document.addEventListener('touchstart', (e) => {
+      const card = e.target.closest('.hero-card-row .card');
+      if (card && window.innerWidth <= 768 && card !== activeCard) {
+        const cards = document.querySelectorAll('.hero-card-row .card');
+        for (let i = 0; i < cards.length; i++) {
+          cards[i].classList.remove('is-active');
+        }
+        card.classList.add('is-active');
+        activeCard = card;
+      }
+    }, { passive: true });
   }
 
   /* Currency Controller Methods */
