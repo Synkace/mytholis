@@ -1,6 +1,7 @@
 /* ==========================================================================
    MYTHOLIS LUXURY PERFUME - COMPONENTS RENDERERS
-   Generates dynamic HTML markup for views, modals, product cards, quiz, track order, faqs, and contact.
+   Generates dynamic HTML markup for views, modals, product cards, quiz, track order, faqs, contact,
+   legal policies, and Razorpay/WhatsApp checkout integrations.
    ========================================================================== */
 
 const Components = {
@@ -28,7 +29,10 @@ const Components = {
           <h3 class="product-card-title">${product.name}</h3>
           <p class="product-card-accord">${product.accords.slice(0, 3).join(' • ')}</p>
           <div class="product-card-footer">
-            <span class="product-price">${store.formatPrice(product.price)}</span>
+            <div>
+              <span class="product-price">${store.formatPrice(product.price)}</span>
+              <span class="product-tax-note">MRP (Incl. taxes)</span>
+            </div>
             <button class="btn btn-glass product-explore-btn" onclick="event.stopPropagation(); app.openProductView('${product.id}')">
               Explore ✦
             </button>
@@ -94,7 +98,7 @@ const Components = {
 
           <!-- Hero Numbered Pagination Selector -->
           <div class="hero-pagination-bar" id="hero-pagination-dots">
-            ${MYTHOLIS_CATALOG.map((p, i) => `
+            ${MYTHOLIS_CATALOG.slice(0, 6).map((p, i) => `
               <button class="hero-page-pill ${i === heroIdx ? 'active' : ''}" 
                       onclick="event.stopPropagation(); app.setHeroProduct(${i})" 
                       title="${p.name}">
@@ -110,18 +114,54 @@ const Components = {
       </section>
 
       <!-- Brand Essence Spotlight -->
-      <section class="container" style="margin: 6rem auto;">
+      <section class="container" style="margin: 6rem auto 4rem;">
         <div class="liquid-glass-card brand-essence-card">
-          <span class="tagline" style="color: var(--gold-primary); font-size: 0.8rem; letter-spacing: 0.3em; text-transform: uppercase;">Six elements. Six legends. One house.</span>
+          <span class="tagline" style="color: var(--gold-primary); font-size: 0.8rem; letter-spacing: 0.3em; text-transform: uppercase;">Based in UK · Handcrafted in India</span>
           <h2 class="brand-essence-title">
             "Wear Your Legend."
           </h2>
           <p class="font-garamond brand-essence-desc">
-            Alchemic fragrances hand-distilled from nocturnal botanicals, wild harvested agarwood, and liquid amber. Encased in liquid glass crystal bottles.
+            Alchemic extraits hand-formulated in Mayfair, London and artisanally distilled in Ahmedabad, India. Crafted with 28%–30% pure fragrance oil concentration and encased in flacons of liquid crystal.
           </p>
-          <button class="btn btn-glass" onclick="app.navigateTo('know-us')">
-            Read Our Heritage
-          </button>
+          <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-gold" onclick="app.openProductView('mytholis-discovery-set')">
+              Order Discovery Set (6 × 10ml) • ₹1,999 ✦
+            </button>
+            <button class="btn btn-glass" onclick="app.navigateTo('know-us')">
+              Read Our Heritage
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Discovery Coffret Spotlight Banner -->
+      <section class="container" style="margin-bottom: 6rem;">
+        <div class="discovery-vault-banner liquid-glass-card">
+          <div class="discovery-banner-content">
+            <span class="glass-pill" style="margin-bottom: 0.8rem;">✦ Master Discovery Edition</span>
+            <h2 class="font-title gold-shimmer-text" style="font-size: clamp(1.6rem, 3vw, 2.3rem); margin-bottom: 0.8rem;">
+              The Mytholis Vault Discovery Coffret
+            </h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">
+              Cannot decide on your signature extract? Experience all 6 master creations in deluxe 10ml travel flacons. Includes a <strong>₹1,000 voucher</strong> redeemable against your first full 100ml flacon.
+            </p>
+            <div class="discovery-banner-perks">
+              <span>✦ 6 × 10ml Deluxe Atomizers</span>
+              <span>✦ All 6 Extraits de Parfum</span>
+              <span>✦ Free Pan-India Armored Delivery</span>
+            </div>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
+              <button class="btn btn-gold" onclick="app.openProductView('mytholis-discovery-set')">
+                Explore Discovery Coffret (₹1,999) ✦
+              </button>
+              <button class="btn btn-glass" onclick="app.buyNowWhatsApp('mytholis-discovery-set')">
+                💬 Order via WhatsApp
+              </button>
+            </div>
+          </div>
+          <div class="discovery-banner-visual bottle-pedestal-glow">
+            <img src="assets/product/1.png" alt="Mytholis Discovery Set" style="max-height: 260px; object-fit: contain;" />
+          </div>
         </div>
       </section>
 
@@ -164,7 +204,7 @@ const Components = {
 
         <div style="text-align: center; margin-top: 5rem;">
           <button class="btn btn-gold" onclick="app.navigateTo('collections')">
-            Explore All 6 Extraits in Catalog ✦
+            Explore All Extraits in Catalog ✦
           </button>
         </div>
       </section>
@@ -182,7 +222,7 @@ const Components = {
             <div style="font-size: 2rem; margin-bottom: 1rem; color: var(--gold-primary);">✦</div>
             <h3 class="font-title" style="margin-bottom: 0.8rem; color: var(--gold-light);">Top Notes: Ether</h3>
             <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
-              Solar saffron, bergamot rind, and crushed pink peppercorn. The immediate spark of luminous energy that awakens the spirit.
+              Solar Kashmiri saffron, Italian bergamot rind, and crushed pink peppercorn. The immediate spark of luminous energy that awakens the spirit.
             </p>
           </div>
 
@@ -190,7 +230,7 @@ const Components = {
             <div style="font-size: 2rem; margin-bottom: 1rem; color: var(--gold-primary);">✦✦</div>
             <h3 class="font-title" style="margin-bottom: 0.8rem; color: var(--gold-light);">Heart Notes: Core</h3>
             <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
-              Damascus night-blooming rose, smoked frankincense, and Florentine orris root. The lingering, evocative emotional signature.
+              Taif and Damascus rose, smoked frankincense, and Florentine orris root. The lingering, evocative emotional signature.
             </p>
           </div>
 
@@ -198,7 +238,7 @@ const Components = {
             <div style="font-size: 2rem; margin-bottom: 1rem; color: var(--gold-primary);">✦✦✦</div>
             <h3 class="font-title" style="margin-bottom: 0.8rem; color: var(--gold-light);">Base Notes: Anchor</h3>
             <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
-              Wild harvested Cambodian agarwood, raw ambergris, and Haitian vetiver. The enduring phantom trail lasting up to 18 hours.
+              Sustainably cultivated Assam agarwood accord, golden amber resin, and Haitian vetiver. An enduring presence lasting 8–10+ hours.
             </p>
           </div>
         </div>
@@ -208,7 +248,7 @@ const Components = {
 
   /* Render Collections View */
   renderCollections() {
-    const categories = ['All', 'Woody · Mineral', 'Smoky · Sensual', 'Amber · Opulent', 'Fresh · Electric', 'Oud · Royal', 'Woody · Evening'];
+    const categories = ['All', 'Woody · Mineral', 'Smoky · Sensual', 'Amber · Opulent', 'Fresh · Electric', 'Oud · Royal', 'Woody · Evening', 'Discovery Edition'];
     const active = store.activeCategory;
     const filteredProducts = active === 'All' 
       ? MYTHOLIS_CATALOG 
@@ -217,7 +257,7 @@ const Components = {
     return `
       <div class="container">
         <div class="section-header">
-          <span class="tagline">Six Elements. Six Legends. One House.</span>
+          <span class="tagline">Based in UK · Handcrafted in India</span>
           <h2>Haute Parfumerie Catalog</h2>
           <div class="divider"></div>
         </div>
@@ -253,25 +293,25 @@ const Components = {
         <div class="liquid-glass-card craft-story-card">
           <h3 class="craft-story-title">"Wear Your Legend."</h3>
           <p class="craft-story-text">
-            Founded on the principle of uncompromised olfactory artistry, House Mytholis resurrects ancient extraction formulas through cutting-edge cold-extraction chemistry and rare sustainable nocturnal harvest botanicals.
+            Founded on the principle of uncompromised olfactory artistry, House Mytholis unites British formulation heritage with the richness of Indian distillation mastery. Designed in Mayfair, London and handcrafted in Ahmedabad, India.
           </p>
           <p class="craft-story-text">
-            Each formula undergoes 180 days of cold barrel maceration inside dark emerald crystal carboys before receiving hand-blown crystal encapsulation.
+            Each composition is blended with 28%–30% IFRA-certified fine perfume oils and undergoes 120 days of cold maceration inside dark emerald glass carboys before receiving hand-blown crystal encapsulation.
           </p>
         </div>
 
         <div class="scent-pyramid-container" style="margin-top: 2rem;">
           <div class="pyramid-node liquid-glass-card">
-            <h4 class="gold-text" style="font-size: 2.2rem; margin-bottom: 0.5rem;">180</h4>
+            <h4 class="gold-text" style="font-size: 2.2rem; margin-bottom: 0.5rem;">120</h4>
             <p>Days Cold Barrel Maceration</p>
           </div>
           <div class="pyramid-node liquid-glass-card">
-            <h4 class="gold-text" style="font-size: 2.2rem; margin-bottom: 0.5rem;">35%</h4>
-            <p>Pure Extrait Oil Concentration</p>
+            <h4 class="gold-text" style="font-size: 2.2rem; margin-bottom: 0.5rem;">28–30%</h4>
+            <p>Extrait de Parfum Concentration</p>
           </div>
           <div class="pyramid-node liquid-glass-card">
             <h4 class="gold-text" style="font-size: 2.2rem; margin-bottom: 0.5rem;">100%</h4>
-            <p>Zero Synthetic Stabilizers</p>
+            <p>IFRA Compliant & Cruelty-Free</p>
           </div>
         </div>
 
@@ -342,7 +382,7 @@ const Components = {
           <div class="quiz-progress-track">
             <div class="quiz-progress-fill" style="width: ${progressPct}%;"></div>
           </div>
-          <span class="tagline" style="color: var(--gold-primary); font-size: 0.8rem; letter-spacing: 0.2em;">Step ${step} of 3</span>
+          <span class="tagline" style="color: var(--gold-primary); font-size: 0.8rem; letter-spacing: 0.2em;">Step ${step} of 2</span>
           <h2 class="quiz-title">${currentQ.title}</h2>
 
           <div class="quiz-options-grid">
@@ -381,11 +421,11 @@ const Components = {
             <div class="track-order-header">
               <div>
                 <span class="glass-pill">Order #MYTH-89021</span>
-                <h3 class="track-order-product-name">Petralux Elixir Privé (100ml)</h3>
+                <h3 class="track-order-product-name">Petralux Extrait de Parfum (100ml)</h3>
               </div>
               <div class="track-delivery-est">
                 <span style="font-size: 0.8rem; color: var(--text-muted);">Estimated Delivery:</span>
-                <p style="font-weight: 600; color: var(--gold-primary);">August 15, 2026</p>
+                <p style="font-weight: 600; color: var(--gold-primary);">August 26, 2026</p>
               </div>
             </div>
 
@@ -394,30 +434,30 @@ const Components = {
               <div class="tracker-step-item">
                 <div class="tracker-icon-circle completed">✓</div>
                 <h5>Order Placed</h5>
-                <span>July 28</span>
+                <span>Aug 24</span>
               </div>
 
               <div class="tracker-step-item">
                 <div class="tracker-icon-circle completed">✓</div>
-                <h5>Cold Maceration</h5>
-                <span>August 02</span>
+                <h5>Vault Packed</h5>
+                <span>Aug 24</span>
               </div>
 
               <div class="tracker-step-item">
                 <div class="tracker-icon-circle completed">✓</div>
-                <h5>Gold Engraved</h5>
-                <span>August 10</span>
+                <h5>Dispatched</h5>
+                <span>Aug 25</span>
               </div>
 
               <div class="tracker-step-item">
-                <div class="tracker-icon-circle active liquid-pulse">✈</div>
-                <h5>In Transit</h5>
-                <span style="color: var(--gold-primary);">On Schedule</span>
+                <div class="tracker-icon-circle active liquid-pulse">🚚</div>
+                <h5>Out for Delivery</h5>
+                <span style="color: var(--gold-primary);">BlueDart Express</span>
               </div>
             </div>
 
             <p class="track-location-status">
-              📍 Current Location: FedEx International Luxury Priority Hub (Paris Charles de Gaulle). Sealed in climate-controlled vault packaging.
+              📍 Current Location: BlueDart Armored Express Hub (Ahmedabad Air Cargo Terminal). Dispatched for destination delivery.
             </p>
           </div>
         </div>
@@ -429,24 +469,24 @@ const Components = {
   renderFaqs() {
     const faqList = [
       {
-        q: "What makes Mytholis Extrait de Parfum different from mass perfume?",
-        a: "Unlike commercial perfumes that dilute fragrance oil to 10-15%, Mytholis hand-crafts Grand Extraits at a lavish 30-36% pure essential oil concentration. Each batch undergoes 180 days of cold barrel maceration inside dark emerald glass carboys."
+        q: "What makes Mytholis Extrait de Parfum different from mass market perfumes?",
+        a: "While typical commercial perfumes contain only 10–15% fragrance oil (Eau de Toilette), Mytholis handcrafts Extraits de Parfum at a high 28%–30% concentration using IFRA-compliant fine fragrance oils. This yields extraordinary depth, rich sillage, and a lingering presence that lasts 8–10+ hours."
       },
       {
-        q: "Are the gold bottle engravings permanent?",
-        a: "Yes. Our master artisans hand-chase your personalized initials or date into the crystal glass and inlay 24-karat gold leaf gilding, creating a heirloom piece that lasts forever."
+        q: "Are the gold bottle engravings personalized and permanent?",
+        a: "Yes. Our master artisans precision-inlay your requested initials or name directly onto the crystal flacon with golden foil gilding, creating an enduring heirloom piece."
       },
       {
-        q: "Where do you source your rare botanical ingredients?",
-        a: "Our Damascus roses are harvested strictly at 4:00 AM in Grasse, France. Our wild agarwood is ethically harvested from 40-year-old sustainable reserves in Assam, and our orris butter is aged 3 years in Florence."
+        q: "Where are Mytholis fragrances formulated and manufactured?",
+        a: "Mytholis formulas are designed in our Mayfair London Studio in the UK, and artisanally compounded, macerated for 120 days, and bottled at our state-of-the-art licensed laboratory in Ahmedabad, Gujarat, India."
       },
       {
-        q: "How does complimentary sample discovery work?",
-        a: "Every full bottle order includes a 2ml matching discovery sample vial. You may test the 2ml sample vial first before unsealing the cellophaned main crystal flask. If it does not harmonize with your aura, returns are complimentary."
+        q: "What is your shipping and delivery timeline across India?",
+        a: "All orders receive complimentary express armored delivery via BlueDart and Delhivery Express. Metro deliveries arrive within 2–3 business days; all other pin codes in India arrive within 3–5 business days."
       },
       {
-        q: "What is your worldwide delivery & shipping protocol?",
-        a: "We ship globally via FedEx Express Luxury Priority in temperature-shielded velvet vault boxes. Delivery takes 2-4 business days worldwide."
+        q: "What is your return & damaged product replacement policy?",
+        a: "Due to the intimate, hygienic nature of luxury extraits, opened items cannot be returned. However, if your crystal flacon arrives damaged or compromised during transit, we provide an immediate 100% free replacement under our Transit Guarantee."
       }
     ];
 
@@ -488,30 +528,30 @@ const Components = {
         <div class="product-detail-layout contact-layout">
           <!-- Left: Contact Form -->
           <div class="liquid-glass-card contact-form-card">
-            <h3 style="color: var(--gold-light); margin-bottom: 0.5rem; font-size: 1.6rem;">Inquire with our Olfactory Master</h3>
+            <h3 style="color: var(--gold-light); margin-bottom: 0.5rem; font-size: 1.6rem;">Connect with our Concierge</h3>
             <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
-              Whether seeking a bespoke bridal formula or private collection consultation, our concierge responds within 2 hours.
+              Whether seeking a bespoke gift formulation or order inquiry, our concierge responds promptly within 2 hours.
             </p>
 
             <form onsubmit="event.preventDefault(); app.submitContactForm();">
               <div class="contact-form-row">
                 <div>
                   <label style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em;">Your Name</label>
-                  <input type="text" class="engraving-input" required placeholder="Lord / Lady..." />
+                  <input type="text" class="engraving-input" required placeholder="Full Name..." />
                 </div>
                 <div>
                   <label style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em;">Email Address</label>
-                  <input type="email" class="engraving-input" required placeholder="concierge@..." />
+                  <input type="email" class="engraving-input" required placeholder="name@domain.com..." />
                 </div>
               </div>
 
               <div style="margin-bottom: 1.2rem;">
                 <label style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em;">Inquiry Subject</label>
                 <select class="engraving-input" style="cursor: pointer; background: #041812;">
-                  <option>Bespoke Custom Fragrance Formula</option>
-                  <option>Gold Engraving & Corporate Gifting</option>
-                  <option>Order Status & Private Delivery</option>
-                  <option>Boutique Press & Wholesale</option>
+                  <option>Order Status & Dispatch Inquiries</option>
+                  <option>Custom Bottle Engraving & Corporate Gifting</option>
+                  <option>Fragrance Selection Consultation</option>
+                  <option>Wholesale & Retail Inquiries</option>
                 </select>
               </div>
 
@@ -526,33 +566,38 @@ const Components = {
             </form>
           </div>
 
-          <!-- Right: Flagship Boutiques & Info -->
+          <!-- Right: Registered Office & Atelier -->
           <div class="contact-info-col">
             <div class="liquid-glass-card" style="padding: 2rem;">
-              <span class="glass-pill" style="margin-bottom: 0.8rem;">Flagship Sanctuary</span>
-              <h4 style="font-size: 1.3rem; color: var(--gold-light); margin-bottom: 0.5rem;">Grasse Parfumerie Atelier</h4>
-              <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
-                14 Route des Lavandes, 06130 Grasse, France<br/>
-                ☎ +33 4 93 36 00 12 • ✉ grasse@mytholis.com
+              <span class="glass-pill" style="margin-bottom: 0.8rem;">🇮🇳 Registered Office (India)</span>
+              <h4 style="font-size: 1.2rem; color: var(--gold-light); margin-bottom: 0.5rem;">Mytholis Luxury Fragrances Pvt. Ltd.</h4>
+              <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6;">
+                4th Floor, Mondeal Heights, S.G. Highway,<br/>
+                Ahmedabad, Gujarat 380015, India<br/>
+                <strong>GSTIN:</strong> 24AAECM4821P1ZT<br/>
+                ☎ +91 98765 43210 • ✉ concierge@mytholis.com
               </p>
             </div>
 
             <div class="liquid-glass-card" style="padding: 2rem;">
-              <span class="glass-pill" style="margin-bottom: 0.8rem;">Asian Reserve Atelier</span>
-              <h4 style="font-size: 1.3rem; color: var(--gold-light); margin-bottom: 0.5rem;">Kyoto Gion Sanctuary</h4>
-              <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
-                588 Gionmachi Minamigawa, Higashiyama Ward, Kyoto, Japan<br/>
-                ☎ +81 75 561 0088 • ✉ kyoto@mytholis.com
+              <span class="glass-pill" style="margin-bottom: 0.8rem;">🇬🇧 Formulation Design Studio</span>
+              <h4 style="font-size: 1.2rem; color: var(--gold-light); margin-bottom: 0.5rem;">Mytholis London Studio</h4>
+              <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6;">
+                18 Hanover Square, Mayfair,<br/>
+                London W1S 1HN, United Kingdom<br/>
+                ✉ london@mytholis.com
               </p>
             </div>
 
             <div class="liquid-glass-card" style="padding: 2rem;">
-              <span class="glass-pill" style="margin-bottom: 0.8rem;">Global VIP Desk</span>
-              <h4 style="font-size: 1.3rem; color: var(--gold-light); margin-bottom: 0.5rem;">Direct Concierge Email</h4>
-              <p style="color: var(--text-muted); font-size: 0.9rem;">
-                ✉ concierge@mytholis.com<br/>
-                ☎ +1 (800) 948-6447 (24/7 VIP Line)
+              <span class="glass-pill" style="margin-bottom: 0.8rem;">⚡ Instant WhatsApp Concierge</span>
+              <h4 style="font-size: 1.2rem; color: var(--gold-light); margin-bottom: 0.5rem;">Live Chat & Quick Buy</h4>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+                Connect directly with our fragrance concierge on WhatsApp for instant orders.
               </p>
+              <button class="btn btn-gold btn-compact" onclick="window.open('https://wa.me/919876543210?text=' + encodeURIComponent('Hello Mytholis Concierge, I would like to inquire about your Extrait collection.'), '_blank')">
+                💬 Chat on WhatsApp
+              </button>
             </div>
           </div>
         </div>
@@ -564,6 +609,10 @@ const Components = {
   renderProductDetail(productId) {
     const product = MYTHOLIS_CATALOG.find(p => p.id === productId) || MYTHOLIS_CATALOG[0];
     const isWishlisted = store.isInWishlist(product.id);
+    const initialSize = product.sizes[product.sizes.length - 1] || product.sizes[0];
+    const currentPrice = app.selectedPrice || initialSize.price;
+    const currentMl = app.selectedSize || initialSize.ml;
+    const unitPricePerMl = (currentPrice / currentMl).toFixed(2);
 
     return `
       <div class="container">
@@ -579,34 +628,44 @@ const Components = {
               <img src="${product.image}" alt="${product.name}" class="main-bottle-view-img tilt-element" id="transparent-bottle-img" />
             </div>
             <div class="subtitle" style="margin-top: 2rem; font-size: 1rem;">
-              ✦ Translucent Crystal Flask
+              ✦ Handcrafted Crystal Flacon
+            </div>
+            <div style="margin-top: 0.5rem;">
+              <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-primary);">${product.concentration}</span>
             </div>
           </div>
 
           <!-- Right: Product Specifications -->
           <div class="product-spec-col">
-            <span class="tagline" style="color: var(--gold-primary); font-size: 0.8rem; letter-spacing: 0.2em;">${product.collection}</span>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.4rem;">
+              <span class="tagline" style="color: var(--gold-primary); font-size: 0.8rem; letter-spacing: 0.2em;">${product.collection}</span>
+              <span class="glass-pill" style="font-size: 0.65rem;">Based in UK · Made in India</span>
+            </div>
+            
             <h1 class="product-detail-title">${product.name}</h1>
             <p class="subtitle" style="margin-bottom: 0.4rem;">${product.subtitle}</p>
             <p style="font-style: italic; color: var(--gold-light); font-size: 0.95rem; margin-bottom: 1.2rem; font-family: var(--font-serif-title);">"${product.tagline}"</p>
 
             <div class="product-detail-price-row">
-              <span class="product-price" style="font-size: 2rem;">${store.formatPrice(product.price)}</span>
-              <span style="color: var(--gold-primary); font-size: 0.9rem;">★ ${product.rating} (${product.reviewsCount} reviews)</span>
+              <div>
+                <span class="product-price" id="detail-product-price" style="font-size: 2.2rem;">${store.formatPrice(currentPrice)}</span>
+                <span class="mrp-tax-tag" id="detail-mrp-tag">MRP (Incl. of all taxes) • ₹${unitPricePerMl}/ml</span>
+              </div>
+              <span style="color: var(--gold-primary); font-size: 0.9rem;">★ ${product.rating} (${product.reviewsCount} verified reviews)</span>
             </div>
 
             <p class="product-detail-desc">
               ${product.description}
             </p>
 
-            <!-- Size Selector -->
+            <!-- Size Selector (50ml and 100ml only, no 200ml) -->
             <div style="margin-bottom: 1.5rem;">
               <label style="font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-light); display: block; margin-bottom: 0.6rem;">
                 Select Volume:
               </label>
               <div class="product-size-buttons" id="size-selector-group">
                 ${product.sizes.map(s => `
-                  <button class="btn ${s.ml === 100 ? 'btn-gold' : 'btn-glass'} size-btn" 
+                  <button class="btn ${s.ml === currentMl ? 'btn-gold' : 'btn-glass'} size-btn" 
                           data-ml="${s.ml}" data-price="${s.price}"
                           onclick="app.selectProductSize(${s.ml}, ${s.price})">
                     ${s.ml} ml — ${store.formatPrice(s.price)}
@@ -618,7 +677,7 @@ const Components = {
             <!-- Engraving Option -->
             <div class="engraving-box">
               <label style="font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-primary);">
-                ✦ Complimentary Gold Engraving (Initials / Name):
+                ✦ Complimentary Gold Initials Engraving:
               </label>
               <input type="text" id="engraving-text" class="engraving-input" placeholder="e.g. A.V. 2026" maxlength="12" />
             </div>
@@ -628,7 +687,7 @@ const Components = {
               <div class="meter-card">
                 <div class="meter-title">Longevity (${product.longevityHours}h)</div>
                 <div class="meter-bar-track">
-                  <div class="meter-bar-fill" style="width: ${(product.longevityHours / 18) * 100}%;"></div>
+                  <div class="meter-bar-fill" style="width: ${(product.longevityHours / 12) * 100}%;"></div>
                 </div>
               </div>
               <div class="meter-card">
@@ -639,14 +698,71 @@ const Components = {
               </div>
             </div>
 
-            <!-- Actions -->
-            <div class="product-detail-actions">
-              <button class="btn btn-gold" style="flex-grow: 1;" onclick="app.addProductToCart('${product.id}')">
-                Add to Cart ✦
-              </button>
-              <button class="btn btn-glass ${isWishlisted ? 'active' : ''}" onclick="store.toggleWishlist('${product.id}'); app.renderCurrentView();">
-                ♥ ${isWishlisted ? 'Saved' : 'Wishlist'}
-              </button>
+            <!-- Action Buttons: WhatsApp Buy, Razorpay Pay, Add to Cart -->
+            <div class="product-detail-actions-stacked">
+              <div class="action-btn-row">
+                <button class="btn btn-gold btn-whatsapp-buy" onclick="app.buyNowWhatsApp('${product.id}')">
+                  <span>💬</span> Order via WhatsApp Concierge ✦
+                </button>
+                <button class="btn btn-gold btn-razorpay-buy" onclick="app.buyNowRazorpay('${product.id}')">
+                  <span>⚡</span> Pay via UPI / Razorpay
+                </button>
+              </div>
+
+              <div class="action-btn-row secondary-actions">
+                <button class="btn btn-glass" style="flex: 2;" onclick="app.addProductToCart('${product.id}')">
+                  Add to Cart ✦
+                </button>
+                <button class="btn btn-glass ${isWishlisted ? 'active' : ''}" style="flex: 1;" onclick="store.toggleWishlist('${product.id}'); app.renderCurrentView();">
+                  ♥ ${isWishlisted ? 'Saved' : 'Wishlist'}
+                </button>
+              </div>
+            </div>
+
+            <!-- Mandatory Legal Metrology Dossier Card -->
+            <div class="legal-metrology-card liquid-glass-card" style="margin-top: 2rem;">
+              <div class="legal-metrology-header">
+                <span class="legal-metrology-badge">⚖️ Mandatory Legal Metrology Dossier</span>
+                <span class="legal-metrology-country">Country of Origin: India 🇮🇳</span>
+              </div>
+              <div class="legal-metrology-grid">
+                <div class="legal-metrology-item">
+                  <span class="metrology-label">Generic Name:</span>
+                  <span class="metrology-val">Extrait de Parfum (Fine Fragrance)</span>
+                </div>
+                <div class="legal-metrology-item">
+                  <span class="metrology-label">Net Content:</span>
+                  <span class="metrology-val" id="metrology-net-qty">${currentMl} ml / ${ (currentMl * 0.0338).toFixed(1) } fl. oz.</span>
+                </div>
+                <div class="legal-metrology-item">
+                  <span class="metrology-label">MRP (Incl. all taxes):</span>
+                  <span class="metrology-val" id="metrology-mrp">${store.formatPrice(currentPrice)} (₹${unitPricePerMl}/ml)</span>
+                </div>
+                <div class="legal-metrology-item">
+                  <span class="metrology-label">Formulated By:</span>
+                  <span class="metrology-val">Mytholis London Studio, 18 Hanover Square, Mayfair, London W1S 1HN, UK</span>
+                </div>
+                <div class="legal-metrology-item">
+                  <span class="metrology-label">Manufactured & Packed:</span>
+                  <span class="metrology-val">Mytholis Artisanal Fragrance Labs, Changodar Industrial Estate, Ahmedabad, Gujarat 382213, India (Mfg Lic: GC/1428-A)</span>
+                </div>
+                <div class="legal-metrology-item">
+                  <span class="metrology-label">Marketed By:</span>
+                  <span class="metrology-val">Mytholis Luxury Fragrances Pvt. Ltd., S.G. Highway, Ahmedabad, Gujarat 380015, India (GSTIN: 24AAECM4821P1ZT)</span>
+                </div>
+                <div class="legal-metrology-item">
+                  <span class="metrology-label">Month & Year of Mfg:</span>
+                  <span class="metrology-val">06 / 2026</span>
+                </div>
+                <div class="legal-metrology-item">
+                  <span class="metrology-label">Best Before:</span>
+                  <span class="metrology-val">36 Months from Date of Mfg</span>
+                </div>
+                <div class="legal-metrology-item full-width">
+                  <span class="metrology-label">Consumer Care Concierge:</span>
+                  <span class="metrology-val">Email: concierge@mytholis.com | WhatsApp/Tel: +91 98765 43210</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -689,7 +805,7 @@ const Components = {
           <div class="modal-crest-icon">🛍️</div>
           <div>
             <h3 class="modal-title font-title">Your Cart (${count})</h3>
-            <p class="modal-subtitle">Complimentary express armored courier</p>
+            <p class="modal-subtitle">Complimentary express armored delivery across India</p>
           </div>
         </div>
         <button class="icon-btn modal-close-btn" onclick="app.closeCartModal()" title="Close Cart">✕</button>
@@ -700,10 +816,15 @@ const Components = {
           <div class="modal-empty-state liquid-glass-card">
             <div class="modal-empty-icon">✦</div>
             <h4 class="modal-empty-title">Your Scent Vault is Empty</h4>
-            <p class="modal-empty-desc font-garamond">Explore our six signature extraits and discover your legend.</p>
-            <button class="btn btn-gold" onclick="app.closeCartModal(); app.navigateTo('collections');">
-              Explore Catalog ✦
-            </button>
+            <p class="modal-empty-desc font-garamond">Explore our signature extraits or order the Vault Discovery Set (6 × 10ml).</p>
+            <div style="display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem;">
+              <button class="btn btn-gold" onclick="app.closeCartModal(); app.openProductView('mytholis-discovery-set');">
+                Discovery Set (₹1,999) ✦
+              </button>
+              <button class="btn btn-glass" onclick="app.closeCartModal(); app.navigateTo('collections');">
+                Explore Catalog
+              </button>
+            </div>
           </div>
         ` : `
           <div class="modal-items-list">
@@ -730,15 +851,15 @@ const Components = {
       ${store.cart.length > 0 ? `
         <div class="modal-footer modal-cart-footer">
           <div class="modal-subtotal-row">
-            <span>Subtotal</span>
+            <span>Total (Incl. all taxes)</span>
             <span class="gold-text modal-total-amount">${store.formatPrice(total)}</span>
           </div>
           <div class="modal-cart-actions-row">
-            <button class="btn btn-gold" style="flex-grow: 1;" onclick="app.simulateCheckout()">
-              Proceed to Checkout ✦
+            <button class="btn btn-gold" style="flex: 1;" onclick="app.openRazorpayModal()">
+              <span>⚡</span> Pay via UPI / Razorpay ✦
             </button>
-            <button class="btn btn-glass" onclick="app.closeCartModal(); app.navigateTo('collections');">
-              Add More ✦
+            <button class="btn btn-glass" style="flex: 1;" onclick="app.checkoutCartWhatsApp()">
+              <span>💬</span> Order via WhatsApp
             </button>
           </div>
         </div>
@@ -806,7 +927,7 @@ const Components = {
 
       <div class="modal-footer">
         <button class="btn btn-glass" style="width: 100%; font-size: 0.8rem; padding: 0.6rem 1rem;" onclick="app.closeWishlistModal(); app.navigateTo('collections');">
-          Browse All 6 Extraits ✦
+          Browse All Extraits ✦
         </button>
       </div>
     `;
@@ -850,7 +971,7 @@ const Components = {
                     <td style="font-family: var(--font-serif-title);">${o.id}</td>
                     <td>${o.date}</td>
                     <td>${o.items}</td>
-                    <td class="gold-text">${o.total}</td>
+                    <td class="gold-text">${store.formatPrice(o.total)}</td>
                     <td><span class="glass-pill">${o.status}</span></td>
                   </tr>
                 `).join('')}
@@ -867,11 +988,11 @@ const Components = {
     const u = store.user;
     const currencies = [
       { code: 'INR', flag: '🇮🇳', sym: '₹' },
+      { code: 'USD', flag: '🇺🇸', sym: '$' },
       { code: 'GBP', flag: '🇬🇧', sym: '£' },
       { code: 'AED', flag: '🇦🇪', sym: 'AED' },
       { code: 'CNY', flag: '🇨🇳', sym: '¥' },
-      { code: 'RUB', flag: '🇷🇺', sym: '₽' },
-      { code: 'USD', flag: '🇺🇸', sym: '$' }
+      { code: 'RUB', flag: '🇷🇺', sym: '₽' }
     ];
 
     return `
@@ -880,7 +1001,7 @@ const Components = {
           <div class="modal-crest-icon">👑</div>
           <div>
             <h3 class="modal-title font-title">Obsidian Vault</h3>
-            <p class="modal-subtitle">VIP Client Dossier & Controls</p>
+            <p class="modal-subtitle">VIP Client Dossier & Currency Controls</p>
           </div>
         </div>
         <button class="icon-btn modal-close-btn" onclick="app.closeProfileModal()" title="Close Vault">✕</button>
@@ -907,7 +1028,7 @@ const Components = {
         <!-- 1. Currency Selector -->
         <div class="modal-section-box liquid-glass-card">
           <div class="modal-section-header">
-            <h4 class="modal-section-title">✦ Store Currency</h4>
+            <h4 class="modal-section-title">✦ Store Currency (Base: INR ₹)</h4>
             <span class="modal-section-hint">Auto-converts all prices</span>
           </div>
           <div class="currency-modal-grid">
@@ -926,7 +1047,7 @@ const Components = {
         <div class="modal-section-box liquid-glass-card">
           <div class="modal-section-header">
             <h4 class="modal-section-title">✦ Track Consignment</h4>
-            <span class="modal-section-hint">Armored courier telemetry</span>
+            <span class="modal-section-hint">Armored express telemetry</span>
           </div>
           
           <div class="modal-track-input-row">
@@ -940,7 +1061,7 @@ const Components = {
             <div class="track-order-header" style="padding-bottom: 0.6rem; margin-bottom: 0.6rem;">
               <div>
                 <span class="glass-pill" style="font-size: 0.65rem;">Order #MYTH-89021 • In Flight</span>
-                <h5 style="font-size: 0.95rem; color: var(--text-main); margin-top: 0.3rem;">Petralux (100ml Extrait)</h5>
+                <h5 style="font-size: 0.95rem; color: var(--text-main); margin-top: 0.3rem;">Petralux Extrait de Parfum (100ml)</h5>
               </div>
               <div style="text-align: right;">
                 <span style="font-size: 0.7rem; color: var(--text-muted);">Est. Delivery:</span>
@@ -956,23 +1077,23 @@ const Components = {
               </div>
               <div class="tracker-step-item">
                 <div class="tracker-icon-circle completed" style="width: 28px; height: 28px; font-size: 0.75rem;">✓</div>
-                <h6 style="font-size: 0.7rem; margin-top: 0.3rem;">24K Inlaid</h6>
-                <span style="font-size: 0.62rem;">Customs OK</span>
+                <h6 style="font-size: 0.7rem; margin-top: 0.3rem;">Gold Inlaid</h6>
+                <span style="font-size: 0.62rem;">QC Passed</span>
               </div>
               <div class="tracker-step-item">
-                <div class="tracker-icon-circle active liquid-pulse" style="width: 28px; height: 28px; font-size: 0.75rem;">✈</div>
-                <h6 style="font-size: 0.7rem; margin-top: 0.3rem; color: var(--gold-light);">In Flight</h6>
-                <span style="font-size: 0.62rem; color: var(--gold-primary);">Jet MY-702</span>
+                <div class="tracker-icon-circle active liquid-pulse" style="width: 28px; height: 28px; font-size: 0.75rem;">🚚</div>
+                <h6 style="font-size: 0.7rem; margin-top: 0.3rem; color: var(--gold-light);">In Transit</h6>
+                <span style="font-size: 0.62rem; color: var(--gold-primary);">BlueDart</span>
               </div>
               <div class="tracker-step-item">
                 <div class="tracker-icon-circle" style="width: 28px; height: 28px; font-size: 0.75rem; background: rgba(14, 66, 51, 0.4); color: var(--text-muted);">✦</div>
-                <h6 style="font-size: 0.7rem; margin-top: 0.3rem;">VIP Delivery</h6>
-                <span style="font-size: 0.62rem;">White Glove</span>
+                <h6 style="font-size: 0.7rem; margin-top: 0.3rem;">Delivery</h6>
+                <span style="font-size: 0.62rem;">Armored</span>
               </div>
             </div>
 
             <p class="track-location-status" style="font-size: 0.75rem; margin: 0; padding: 0.5rem 0.8rem;">
-              📍 <strong>Telemetry:</strong> Dispatched from Paris Charles de Gaulle Vault Hub to regional private terminal.
+              📍 <strong>Telemetry:</strong> Dispatched from Ahmedabad Fragrance Vault Hub to regional delivery hub.
             </p>
           </div>
         </div>
@@ -992,7 +1113,7 @@ const Components = {
                   <p style="font-size: 0.8rem; color: var(--text-main); margin-top: 0.15rem;">${o.items}</p>
                 </div>
                 <div style="text-align: right;">
-                  <span class="gold-text" style="font-weight: 700; font-size: 0.85rem;">${store.formatPrice(340)}</span>
+                  <span class="gold-text" style="font-weight: 700; font-size: 0.85rem;">${store.formatPrice(o.total)}</span>
                   <span class="glass-pill" style="font-size: 0.62rem; display: inline-block; margin-top: 0.2rem; padding: 0.15rem 0.5rem;">${o.status}</span>
                 </div>
               </div>
@@ -1007,9 +1128,191 @@ const Components = {
         </button>
       </div>
     `;
+  },
+
+  /* Render Legal & Compliance Policy Modals */
+  renderPolicyModal(policyType) {
+    let title = "Legal Policy";
+    let content = "";
+
+    if (policyType === 'terms') {
+      title = "Terms of Service";
+      content = `
+        <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">1. Entity & Jurisdiction</h4>
+        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.2rem;">
+          This website is operated by <strong>Mytholis Luxury Fragrances Pvt. Ltd.</strong>, a private limited entity incorporated under the laws of India, having its registered office at 4th Floor, Mondeal Heights, S.G. Highway, Ahmedabad, Gujarat 380015, India (GSTIN: 24AAECM4821P1ZT). Formulations are originated in the United Kingdom and manufactured in India.
+        </p>
+        <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">2. Pricing & Payments</h4>
+        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.2rem;">
+          All prices displayed are Maximum Retail Prices (MRP) inclusive of Goods and Services Tax (GST) and all applicable taxes in India. Payments are processed securely through RBI-compliant payment gateways including Razorpay, UPI, credit/debit cards, and NetBanking.
+        </p>
+        <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">3. Intellectual Property</h4>
+        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">
+          All trademarks, bottle designs, visual renders, formulation naming, and Liquid Glass UI components are protected intellectual property of Mytholis Luxury Fragrances Pvt. Ltd. and Mytholis Parfums UK.
+        </p>
+      `;
+    } else if (policyType === 'privacy') {
+      title = "Privacy Policy";
+      content = `
+        <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">1. Information Collected</h4>
+        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.2rem;">
+          We collect your name, shipping address, contact phone/WhatsApp number, and email address solely to process your orders, provide dispatch tracking telemetry, and fulfill bespoke laser bottle engravings.
+        </p>
+        <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">2. Payment Security</h4>
+        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.2rem;">
+          We do not store complete credit card or debit card numbers on our servers. All financial transactions are securely handled by 256-bit SSL encrypted PCI-DSS Level 1 compliant gateway partners (Razorpay / UPI).
+        </p>
+        <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">3. Data Protection & Grievance</h4>
+        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">
+          In accordance with the Information Technology Act 2000 and Digital Personal Data Protection Act, our Grievance Officer can be reached at <strong>privacy@mytholis.com</strong>.
+        </p>
+      `;
+    } else if (policyType === 'shipping') {
+      title = "Shipping & Armored Delivery";
+      content = `
+        <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">1. Pan-India Express Delivery</h4>
+        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.2rem;">
+          We provide 100% complimentary express armored shipping across all serviceable postal codes in India via BlueDart, Delhivery Express, and FedEx. All shipments are packed in tamper-evident velvet vault cases.
+        </p>
+        <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">2. Dispatch & Transit Timelines</h4>
+        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.2rem;">
+          Orders placed before 2:00 PM IST are dispatched the same day from our Ahmedabad Fragrance Vault. Metro destinations are delivered in 2–3 business days; rest of India in 3–5 business days.
+        </p>
+        <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">3. Transit Insurance</h4>
+        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">
+          Every Mytholis shipment is fully insured during transit against theft, loss, or bottle breakage.
+        </p>
+      `;
+    } else if (policyType === 'refund') {
+      title = "Refund, Replacement & Cancellation";
+      content = `
+        <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">1. Hygienic Sealed Protection</h4>
+        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.2rem;">
+          Due to the nature of personal luxury fragrances and strict health regulations, products once unsealed or used cannot be returned for a cash refund.
+        </p>
+        <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">2. 100% Transit Damage Replacement Guarantee</h4>
+        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.2rem;">
+          If your crystal flacon arrives damaged, leaking, or with broken seals, please send photos/unboxing video to <strong>concierge@mytholis.com</strong> or WhatsApp <strong>+91 98765 43210</strong> within 48 hours of delivery for an immediate free replacement.
+        </p>
+        <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">3. Order Cancellations</h4>
+        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">
+          Orders may be cancelled free of charge prior to laser engraving and dispatch by contacting our concierge.
+        </p>
+      `;
+    }
+
+    return `
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="modal-crest-icon">⚖️</div>
+          <div>
+            <h3 class="modal-title font-title">${title}</h3>
+            <p class="modal-subtitle">Mytholis Luxury Fragrances Pvt. Ltd. (Ahmedabad, India)</p>
+          </div>
+        </div>
+        <button class="icon-btn modal-close-btn" onclick="app.closePolicyModal()" title="Close Policy">✕</button>
+      </div>
+
+      <div class="modal-scroll-body" style="padding: 1.5rem;">
+        <div class="liquid-glass-card" style="padding: 1.8rem;">
+          ${content}
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-gold" style="width: 100%; font-size: 0.8rem; padding: 0.6rem 1rem;" onclick="app.closePolicyModal()">
+          I Understand & Agree ✦
+        </button>
+      </div>
+    `;
+  },
+
+  /* Render Razorpay / UPI Instant Checkout Modal */
+  renderRazorpayModal(productOrCart) {
+    const isSingleProduct = !!productOrCart.id;
+    const amount = isSingleProduct ? (app.selectedPrice || productOrCart.price) : store.getCartTotal();
+    const title = isSingleProduct ? productOrCart.name : `Vault Cart (${store.getCartCount()} items)`;
+
+    return `
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="modal-crest-icon" style="color: #3399CC;">⚡</div>
+          <div>
+            <h3 class="modal-title font-title">Razorpay Express Checkout</h3>
+            <p class="modal-subtitle">256-Bit SSL Encrypted Instant Payment</p>
+          </div>
+        </div>
+        <button class="icon-btn modal-close-btn" onclick="app.closeRazorpayModal()" title="Close Checkout">✕</button>
+      </div>
+
+      <div class="modal-scroll-body" style="padding: 1.2rem;">
+        <!-- Order Summary Pill -->
+        <div class="liquid-glass-card" style="padding: 1.2rem; margin-bottom: 1.2rem; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h5 style="font-size: 0.95rem; color: var(--gold-light); margin-bottom: 0.2rem;">${title}</h5>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Inclusive of 18% GST & Free Express Delivery</span>
+          </div>
+          <div style="text-align: right;">
+            <span class="gold-text" style="font-size: 1.4rem; font-weight: 700;">${store.formatPrice(amount)}</span>
+          </div>
+        </div>
+
+        <!-- Payment Method Tabs -->
+        <div class="liquid-glass-card" style="padding: 1.2rem;">
+          <h5 style="font-size: 0.85rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem;">
+            ✦ Select Payment Mode
+          </h5>
+
+          <!-- UPI Apps Grid -->
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-bottom: 1.2rem;">
+            <div class="razorpay-method-pill active" onclick="app.selectPaymentMethod(this, 'upi_gpay')">
+              <span style="font-size: 1.1rem;">📱</span>
+              <span>Google Pay</span>
+            </div>
+            <div class="razorpay-method-pill" onclick="app.selectPaymentMethod(this, 'upi_phonepe')">
+              <span style="font-size: 1.1rem;">🟣</span>
+              <span>PhonePe</span>
+            </div>
+            <div class="razorpay-method-pill" onclick="app.selectPaymentMethod(this, 'upi_paytm')">
+              <span style="font-size: 1.1rem;">🔵</span>
+              <span>Paytm / UPI</span>
+            </div>
+          </div>
+
+          <!-- Cards & NetBanking Options -->
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; margin-bottom: 1.2rem;">
+            <div class="razorpay-method-pill" onclick="app.selectPaymentMethod(this, 'cards')">
+              <span style="font-size: 1.1rem;">💳</span>
+              <span>Credit / Debit Card</span>
+            </div>
+            <div class="razorpay-method-pill" onclick="app.selectPaymentMethod(this, 'cod')">
+              <span style="font-size: 1.1rem;">📦</span>
+              <span>Cash on Delivery (COD)</span>
+            </div>
+          </div>
+
+          <!-- Shipping Details Form -->
+          <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
+            <input type="text" class="engraving-input" placeholder="Full Delivery Name" value="${store.user.name}" />
+            <div style="display: flex; gap: 0.6rem;">
+              <input type="tel" class="engraving-input" placeholder="Mobile / WhatsApp (+91)" value="+91 98765 43210" style="flex: 1;" />
+              <input type="text" class="engraving-input" placeholder="PIN Code" value="380015" style="flex: 1;" />
+            </div>
+            <input type="text" class="engraving-input" placeholder="Flat, Street, Area Address" value="4th Floor, Mondeal Heights, S.G. Highway, Ahmedabad" />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; gap: 0.8rem;">
+        <button class="btn btn-gold" style="flex: 1;" onclick="app.completeRazorpayPayment(${amount})">
+          Authorize & Pay ${store.formatPrice(amount)} ✦
+        </button>
+      </div>
+    `;
   }
 };
 
 window.Components = Components;
 window.components = Components;
+
 

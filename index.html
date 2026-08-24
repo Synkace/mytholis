@@ -98,64 +98,101 @@
     <div class="modal-card glass-panel" id="profile-modal-body"></div>
   </div>
 
+  <!-- 4. Legal & Policy Modal Overlay -->
+  <div class="modal-overlay" id="policy-modal-overlay" onclick="if(event.target === this) app.closePolicyModal()">
+    <div class="modal-card glass-panel" id="policy-modal-body"></div>
+  </div>
+
+  <!-- 5. Razorpay / UPI Instant Checkout Modal Overlay -->
+  <div class="modal-overlay" id="razorpay-modal-overlay" onclick="if(event.target === this) app.closeRazorpayModal()">
+    <div class="modal-card glass-panel" id="razorpay-modal-body"></div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toast-container"></div>
 
-  <!-- Luxury Footer -->
+  <!-- Luxury & Compliant Legal Footer -->
   <footer class="luxury-footer glass-panel">
     <div class="container footer-grid">
+      <!-- Brand & Entity Column -->
       <div class="footer-brand-col">
         <a class="brand-logo-wrap" onclick="app.navigateTo('home')">
           <img src="assets/logo.png" alt="Mytholis Logo" class="brand-logo-img" style="height: 38px;" />
           <span class="brand-name gold-shimmer-text" style="font-size: 1.2rem;">MYTHOLIS</span>
         </a>
         <p class="footer-desc">
-          "Wear Your Legend." Six elements. Six legends. One house. Hand-crafted Extraits de Parfum encased in liquid crystal flasks.
+          "Wear Your Legend." Formulated in Mayfair, London UK · Handcrafted & Bottled in Ahmedabad, India. High-concentration Extraits de Parfum (28%–30%) in crystal flasks.
         </p>
+        <div class="footer-legal-badge">
+          <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">Based in UK — Made in India 🇬🇧 🇮🇳</span>
+        </div>
       </div>
 
+      <!-- Navigation Links -->
       <div class="footer-col">
         <h5 class="footer-col-title">Navigation</h5>
         <ul class="footer-links">
           <li><a onclick="app.navigateTo('home')">Home</a></li>
           <li><a onclick="app.navigateTo('collections')">Collections</a></li>
+          <li><a onclick="app.openProductView('mytholis-discovery-set')">Discovery Coffret (₹1,999)</a></li>
           <li><a onclick="app.navigateTo('know-us')">Heritage & Craft</a></li>
-          <li><a onclick="app.navigateTo('find-scent')">Scent Finder</a></li>
-          <li><a onclick="app.openProfileModal()">Track Order</a></li>
+          <li><a onclick="app.navigateTo('find-scent')">Scent Finder Quiz</a></li>
+          <li><a onclick="app.openProfileModal()">Track Consignment</a></li>
         </ul>
       </div>
 
+      <!-- Legal Policies & Compliance -->
       <div class="footer-col">
-        <h5 class="footer-col-title">Client Services</h5>
+        <h5 class="footer-col-title">Legal & Policies</h5>
         <ul class="footer-links">
-          <li><a onclick="app.openProfileModal()">Obsidian Circle VIP</a></li>
-          <li><a onclick="app.openWishlistModal()">Wishlist Vault</a></li>
-          <li><a onclick="app.openCartModal()">Shopping Cart</a></li>
-          <li><a onclick="app.navigateTo('faqs')">FAQs & Sourcing</a></li>
-          <li><a onclick="app.navigateTo('contact')">Contact Concierge</a></li>
+          <li><a onclick="app.openPolicyModal('terms')">Terms of Service</a></li>
+          <li><a onclick="app.openPolicyModal('privacy')">Privacy Policy</a></li>
+          <li><a onclick="app.openPolicyModal('shipping')">Shipping & Armored Delivery</a></li>
+          <li><a onclick="app.openPolicyModal('refund')">Refund & Replacement Guarantee</a></li>
+          <li><a onclick="app.navigateTo('faqs')">Legal Metrology & FAQs</a></li>
+          <li><a onclick="app.navigateTo('contact')">Grievance & Concierge</a></li>
         </ul>
       </div>
 
+      <!-- Client Services & Gazette -->
       <div class="footer-col">
-        <h5 class="footer-col-title">Join the Mytholis Gazette</h5>
-        <p class="footer-subtext">Receive private invitations to confidential sample releases.</p>
+        <h5 class="footer-col-title">Concierge & Gazette</h5>
+        <p class="footer-subtext">Receive private invitations to confidential reserve releases.</p>
         <div class="footer-subscribe-form">
           <input type="email" placeholder="Your email address..." class="engraving-input footer-input" />
           <button class="btn btn-gold footer-btn">Join</button>
         </div>
+        <div style="margin-top: 1.2rem;">
+          <button class="btn btn-glass btn-compact" style="width: 100%; font-size: 0.75rem;" onclick="window.open('https://wa.me/919876543210', '_blank')">
+            💬 WhatsApp Concierge: +91 98765 43210
+          </button>
+        </div>
       </div>
     </div>
 
-    <div class="container footer-bottom">
-      © 2026 Mytholis Parfums Privé. All rights reserved. Liquid Glass Design System.
+    <!-- Legal Entity & Metrology Bottom Bar -->
+    <div class="container footer-bottom-compliance">
+      <div class="footer-compliance-row">
+        <span><strong>Marketed By:</strong> Mytholis Luxury Fragrances Pvt. Ltd., 4th Floor, Mondeal Heights, S.G. Highway, Ahmedabad, Gujarat 380015, India</span>
+        <span><strong>GSTIN:</strong> 24AAECM4821P1ZT</span>
+        <span><strong>Mfg Lic No:</strong> GC/1428-A (Changodar, Ahmedabad)</span>
+      </div>
+      <div class="footer-bottom-trust">
+        <span class="trust-pill">⚡ 256-Bit SSL Razorpay Secured</span>
+        <span class="trust-pill">🇮🇳 UPI • Cards • NetBanking • COD</span>
+        <span class="trust-pill">🚚 Complimentary Express BlueDart Delivery</span>
+      </div>
+      <div class="footer-copyright-text">
+        © 2026 Mytholis Luxury Fragrances Pvt. Ltd. All rights reserved. Liquid Glass UI Architecture.
+      </div>
     </div>
   </footer>
 
   <!-- Scripts -->
-  <script src="js/catalog.js?v=20260824_100"></script>
-  <script src="js/store.js?v=20260824_100"></script>
-  <script src="js/background.js?v=20260824_100"></script>
-  <script src="js/components.js?v=20260824_100"></script>
-  <script src="js/app.js?v=20260824_100"></script>
+  <script src="js/catalog.js?v=20260824_101"></script>
+  <script src="js/store.js?v=20260824_101"></script>
+  <script src="js/background.js?v=20260824_101"></script>
+  <script src="js/components.js?v=20260824_101"></script>
+  <script src="js/app.js?v=20260824_101"></script>
 </body>
 </html>

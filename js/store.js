@@ -4,17 +4,17 @@
    ========================================================================== */
 
 const CURRENCY_CONFIG = {
-  USD: { symbol: '$', rate: 1.0, name: 'USD ($)', flag: '🇺🇸' },
-  INR: { symbol: '₹', rate: 86.5, name: 'INR (₹)', flag: '🇮🇳' },
-  GBP: { symbol: '£', rate: 0.79, name: 'GBP (£)', flag: '🇬🇧' },
-  AED: { symbol: 'AED ', rate: 3.67, name: 'AED (د.إ)', flag: '🇦🇪' },
-  CNY: { symbol: '¥', rate: 7.25, name: 'CNY (¥)', flag: '🇨🇳' },
-  RUB: { symbol: '₽', rate: 92.0, name: 'RUB (₽)', flag: '🇷🇺' }
+  INR: { symbol: '₹', rate: 1.0, name: 'INR (₹)', flag: '🇮🇳' },
+  USD: { symbol: '$', rate: 0.0116, name: 'USD ($)', flag: '🇺🇸' },
+  GBP: { symbol: '£', rate: 0.0092, name: 'GBP (£)', flag: '🇬🇧' },
+  AED: { symbol: 'AED ', rate: 0.0425, name: 'AED (د.إ)', flag: '🇦🇪' },
+  CNY: { symbol: '¥', rate: 0.084, name: 'CNY (¥)', flag: '🇨🇳' },
+  RUB: { symbol: '₽', rate: 1.06, name: 'RUB (₽)', flag: '🇷🇺' }
 };
 
 class MytholisStore {
   constructor() {
-    this.currency = this.loadLocalStorage('mytholis_currency', 'USD');
+    this.currency = this.loadLocalStorage('mytholis_currency', 'INR');
     this.cart = this.loadLocalStorage('mytholis_cart', []);
     this.wishlist = this.loadLocalStorage('mytholis_wishlist', []);
     this.user = this.loadLocalStorage('mytholis_user', {
@@ -27,16 +27,16 @@ class MytholisStore {
         {
           id: "MYTH-89021",
           date: "2026-07-28",
-          items: "Petralux Elixir Privé (100ml)",
-          total: "$340.00",
+          items: "Petralux Extrait de Parfum (100ml)",
+          total: 3699,
           status: "Delivered",
           tracking: "MYTH-VIP-99420"
         },
         {
           id: "MYTH-78412",
           date: "2026-05-14",
-          items: "Oudrion Royal Extrait (100ml)",
-          total: "$420.00",
+          items: "Oud Rion Extrait de Parfum (100ml)",
+          total: 3999,
           status: "Delivered",
           tracking: "MYTH-VIP-88124"
         }
@@ -84,9 +84,13 @@ class MytholisStore {
     }
   }
 
-  formatPrice(usdAmount) {
-    const conf = CURRENCY_CONFIG[this.currency] || CURRENCY_CONFIG['USD'];
-    const converted = Math.round(usdAmount * conf.rate);
+  formatPrice(inrAmount) {
+    const amount = Number(inrAmount) || 0;
+    const conf = CURRENCY_CONFIG[this.currency] || CURRENCY_CONFIG['INR'];
+    if (this.currency === 'INR') {
+      return `₹${Math.round(amount).toLocaleString('en-IN')}`;
+    }
+    const converted = Math.max(1, Math.round(amount * conf.rate));
     const formattedNum = converted.toLocaleString('en-US');
     if (this.currency === 'AED') {
       return `AED ${formattedNum}`;
@@ -95,7 +99,7 @@ class MytholisStore {
   }
 
   getCurrencyConfig() {
-    return CURRENCY_CONFIG[this.currency] || CURRENCY_CONFIG['USD'];
+    return CURRENCY_CONFIG[this.currency] || CURRENCY_CONFIG['INR'];
   }
 
   /* Cart Methods */

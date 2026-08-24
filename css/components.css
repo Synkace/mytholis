@@ -2549,6 +2549,23 @@
     padding-left: 1.1rem;
     padding-right: 1.1rem;
   }
+
+  .discovery-vault-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .discovery-banner-perks {
+    justify-content: center;
+  }
+
+  .action-btn-row {
+    flex-direction: column;
+  }
+
+  .legal-metrology-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Ultra-compact Phones (max-width: 380px) */
@@ -2560,4 +2577,255 @@
   .container {
     padding: 0 0.85rem;
   }
+}
+
+/* --------------------------------------------------------------------------
+   LEGAL METROLOGY, COMPLIANCE, DISCOVERY SET & CHECKOUT EXTENSIONS
+   -------------------------------------------------------------------------- */
+
+.product-tax-note {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.15rem;
+}
+
+.mrp-tax-tag {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--gold-light);
+  font-family: var(--font-sans);
+  letter-spacing: 0.05em;
+  margin-top: 0.2rem;
+}
+
+/* Product Detail Action Stack */
+.product-detail-actions-stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 1.8rem;
+}
+
+.action-btn-row {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.action-btn-row.secondary-actions {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.btn-whatsapp-buy {
+  background: linear-gradient(135deg, #25D366, #128C7E) !important;
+  color: #FFFFFF !important;
+  font-weight: 600;
+  border-color: rgba(37, 211, 102, 0.4) !important;
+  flex: 1;
+}
+
+.btn-whatsapp-buy:hover {
+  box-shadow: 0 0 20px rgba(37, 211, 102, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-razorpay-buy {
+  background: linear-gradient(135deg, #D4AF37, #AA771C) !important;
+  color: #03120C !important;
+  font-weight: 700;
+  flex: 1;
+}
+
+.btn-razorpay-buy:hover {
+  box-shadow: 0 0 22px rgba(212, 175, 55, 0.45);
+  transform: translateY(-2px);
+}
+
+/* Legal Metrology Dossier Card */
+.legal-metrology-card {
+  padding: 1.4rem;
+  border-radius: 14px;
+  background: rgba(3, 18, 14, 0.65);
+  border: 1px solid rgba(212, 175, 55, 0.22);
+}
+
+.legal-metrology-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+  margin-bottom: 1rem;
+}
+
+.legal-metrology-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+}
+
+.legal-metrology-country {
+  font-size: 0.72rem;
+  color: var(--gold-primary);
+  background: rgba(212, 175, 55, 0.1);
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.legal-metrology-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem 1.2rem;
+}
+
+.legal-metrology-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.legal-metrology-item.full-width {
+  grid-column: 1 / -1;
+  border-top: 1px dashed rgba(212, 175, 55, 0.15);
+  padding-top: 0.6rem;
+  margin-top: 0.2rem;
+}
+
+.metrology-label {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.metrology-val {
+  font-size: 0.8rem;
+  color: var(--text-main);
+  line-height: 1.4;
+}
+
+/* Discovery Vault Spotlight Banner */
+.discovery-vault-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(2rem, 4vw, 3.5rem);
+  gap: 2rem;
+  border-radius: 20px;
+  background: radial-gradient(circle at 100% 50%, rgba(212, 175, 55, 0.12), transparent 50%),
+              rgba(4, 24, 18, 0.6);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.discovery-banner-content {
+  flex: 1;
+  max-width: 600px;
+}
+
+.discovery-banner-perks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  font-size: 0.8rem;
+  color: var(--gold-light);
+}
+
+.discovery-banner-perks span {
+  background: rgba(212, 175, 55, 0.08);
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.discovery-banner-visual {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Razorpay Modal Payment Pills */
+.razorpay-method-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.9rem 0.6rem;
+  border-radius: 12px;
+  background: rgba(4, 28, 21, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--text-main);
+  text-align: center;
+  gap: 0.35rem;
+  transition: all 0.3s ease;
+}
+
+.razorpay-method-pill:hover,
+.razorpay-method-pill.active {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: var(--gold-primary);
+  color: var(--gold-light);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);
+}
+
+/* Legal Footer Compliance Bar */
+.footer-legal-badge {
+  margin-top: 1rem;
+}
+
+.footer-bottom-compliance {
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(212, 175, 55, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  text-align: center;
+}
+
+.footer-compliance-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem 2rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.footer-compliance-row strong {
+  color: var(--gold-light);
+}
+
+.footer-bottom-trust {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 0.3rem;
+}
+
+.trust-pill {
+  font-size: 0.7rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 20px;
+  background: rgba(14, 66, 51, 0.35);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  color: var(--gold-light);
+}
+
+.footer-copyright-text {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.4rem;
 }

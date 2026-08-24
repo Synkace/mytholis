@@ -435,7 +435,7 @@ class MytholisApp {
     this.navigateTo('home');
   }
 
-  /* Size Selector on Product Page */
+  /* Size Selector on Product Page with Dynamic Metrology Update */
   selectProductSize(ml, price) {
     this.selectedSize = ml;
     this.selectedPrice = price;
@@ -447,6 +447,27 @@ class MytholisApp {
         btn.className = 'btn btn-glass';
       }
     });
+
+    const priceEl = document.getElementById('detail-product-price');
+    if (priceEl) {
+      priceEl.innerText = store.formatPrice(price);
+    }
+
+    const unitPrice = (price / ml).toFixed(2);
+    const mrpTag = document.getElementById('detail-mrp-tag');
+    if (mrpTag) {
+      mrpTag.innerText = `MRP (Incl. of all taxes) • ₹${unitPrice}/ml`;
+    }
+
+    const netQtyEl = document.getElementById('metrology-net-qty');
+    if (netQtyEl) {
+      netQtyEl.innerText = `${ml} ml / ${(ml * 0.0338).toFixed(1)} fl. oz.`;
+    }
+
+    const metrologyMrpEl = document.getElementById('metrology-mrp');
+    if (metrologyMrpEl) {
+      metrologyMrpEl.innerText = `${store.formatPrice(price)} (₹${unitPrice}/ml)`;
+    }
   }
 
   /* Cart & Toast */
@@ -454,9 +475,103 @@ class MytholisApp {
     const engravingEl = document.getElementById('engraving-text');
     const engraving = engravingEl ? engravingEl.value.trim() : '';
 
-    store.addToCart(productId, this.selectedSize, engraving, 1);
+    store.addToCart(productId, this.selectedSize || 100, engraving, 1);
     this.showToast("Fragrance added to your scent vault ✦");
     this.openCartModal();
+  }
+
+  /* --------------------------------------------------------------------------
+     BUY BUTTONS: WHATSAPP CONCIERGE & RAZORPAY / UPI
+     -------------------------------------------------------------------------- */
+
+  buyNowWhatsApp(productId) {
+    const product = MYTHOLIS_CATALOG.find(p => p.id === productId) || MYTHOLIS_CATALOG[0];
+    const size = this.selectedSize || (product.sizes[product.sizes.length - 1] ? product.sizes[product.sizes.length - 1].ml : 100);
+    const price = this.selectedPrice || (product.sizes.find(s => s.ml === size) ? product.sizes.find(s => s.ml === size).price : product.price);
+    const engravingEl = document.getElementById('engraving-text');
+    const engraving = engravingEl ? engravingEl.value.trim() : '';
+
+    const text = `Hello Mytholis Fragrance Concierge,\n\nI would like to order:\n✦ *${product.name}*\n✦ Volume: ${size}ml\n✦ Total Price: ${store.formatPrice(price)} (Incl. all taxes)\n${engraving ? `✦ Complimentary Engraving: "${engraving}"\n` : ''}✦ Shipping: Pan-India Express Armored Delivery\n\nPlease share payment details (UPI / Bank Transfer) to confirm my order.`;
+
+    window.open(`https://wa.me/919876543210?text=${encodeURIComponent(text)}`, '_blank');
+  }
+
+  checkoutCartWhatsApp() {
+    if (store.cart.length === 0) return;
+    const total = store.getCartTotal();
+    const itemsList = store.cart.map(i => `• ${i.name} (${i.size}ml × ${i.quantity}) ${i.engraving ? `[Engraved: "${i.engraving}"]` : ''} - ${store.formatPrice(i.price * i.quantity)}`).join('\n');
+
+    const text = `Hello Mytholis Fragrance Concierge,\n\nI would like to checkout my Mytholis Vault Cart:\n\n${itemsList}\n\n*Total Amount:* ${store.formatPrice(total)} (Incl. 18% GST)\n*Delivery:* Free Express Armored Shipping across India\n\nPlease assist with UPI / Razorpay payment instructions.`;
+
+    window.open(`https://wa.me/919876543210?text=${encodeURIComponent(text)}`, '_blank');
+  }
+
+  buyNowRazorpay(productId) {
+    const product = MYTHOLIS_CATALOG.find(p => p.id === productId) || MYTHOLIS_CATALOG[0];
+    this.openRazorpayModal(product);
+  }
+
+  openRazorpayModal(productOrCart = null) {
+    this.closeAllModals(false);
+    const target = productOrCart || (store.cart.length ? { id: null } : MYTHOLIS_CATALOG[0]);
+    const modalBody = document.getElementById('razorpay-modal-body');
+    if (modalBody) {
+      modalBody.innerHTML = Components.renderRazorpayModal(target);
+    }
+    const overlay = document.getElementById('razorpay-modal-overlay');
+    if (overlay) {
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  closeRazorpayModal() {
+    const overlay = document.getElementById('razorpay-modal-overlay');
+    if (overlay) {
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  }
+
+  selectPaymentMethod(el, method) {
+    document.querySelectorAll('.razorpay-method-pill').forEach(p => p.classList.remove('active'));
+    if (el) el.classList.add('active');
+  }
+
+  completeRazorpayPayment(amount) {
+    this.closeRazorpayModal();
+    this.showToast(`✦ Payment of ${store.formatPrice(amount)} Authorized via Razorpay Secure! Order Confirmed.`);
+    if (store.cart.length > 0) {
+      store.cart = [];
+      store.saveLocalStorage('mytholis_cart', []);
+      store.notify();
+    }
+    this.navigateTo('track-order');
+  }
+
+  /* --------------------------------------------------------------------------
+     LEGAL & POLICY MODAL CONTROLLER
+     -------------------------------------------------------------------------- */
+
+  openPolicyModal(policyType) {
+    this.closeAllModals(false);
+    const modalBody = document.getElementById('policy-modal-body');
+    if (modalBody) {
+      modalBody.innerHTML = Components.renderPolicyModal(policyType);
+    }
+    const overlay = document.getElementById('policy-modal-overlay');
+    if (overlay) {
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  closePolicyModal() {
+    const overlay = document.getElementById('policy-modal-overlay');
+    if (overlay) {
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    }
   }
 
   /* --------------------------------------------------------------------------
