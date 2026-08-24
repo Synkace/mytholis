@@ -1,6 +1,6 @@
 /* ==========================================================================
    MYTHOLIS LUXURY PERFUME - CATALOG DATA
-   Sequence: 1. Terra Petra, 2. Smoky Musk, 3. Petralux, 4. White Spark, 5. Oud Rion, 6. Wood Sera, 7. Discovery Coffret
+   Sequence: 1. Terra Petra, 2. Oud Rion, 3. Petralux, 4. White Spark, 5. Smoky Musk, 6. Wood Sera, 7. Discovery Coffret
    Brand tagline: "Wear Your Legend."
    Collection line: "Six elements. Six legends. One house."
    Formulated in Mayfair, London UK · Handcrafted & Bottled in Ahmedabad, India
@@ -36,31 +36,31 @@ const MYTHOLIS_CATALOG = [
     ]
   },
   {
-    id: "smoky-musk",
-    name: "Smoky Musk Extrait de Parfum",
-    subtitle: "Smoky · Sensual",
-    collection: "Smoky · Sensual",
-    tagline: "Embers and skin. A fire that never dies.",
-    price: 3499,
-    rating: 4.9,
-    reviewsCount: 138,
-    image: "assets/product/2.png",
-    tag: "Nocturnal Luxe",
-    gender: "Unisex",
-    scentFamily: "Smoky Amber Leather",
+    id: "oud-rion",
+    name: "Oud Rion Extrait de Parfum",
+    subtitle: "Oud · Royal",
+    collection: "Oud · Royal",
+    tagline: "The king of woods, crowned in gold.",
+    price: 3999,
+    rating: 5.0,
+    reviewsCount: 165,
+    image: "assets/product/5.png",
+    tag: "Royal Extrait",
+    gender: "Masculine / Unisex",
+    scentFamily: "Resinous Royal Oud",
     concentration: "Extrait de Parfum (30% Concentration)",
-    longevityHours: 10,
-    sillageRating: 95,
-    accords: ["Smoky", "Sensual", "Black Pepper", "Leather", "Oud Accord"],
-    description: "Dark and magnetic, Smoky Musk wraps crushed black pepper and frankincense around a smouldering heart of artisanal leather and charred woods. Velveteen musk, Madagascar vanilla and cultivated Assam oud accord keep it close, warm and unforgettable.",
+    longevityHours: 12,
+    sillageRating: 98,
+    accords: ["Oud", "Royal", "Saffron", "Patchouli", "Leather"],
+    description: "Rich, resinous and commanding. Oud Rion layers sustainably cultivated Assam agarwood and saffron over a heart of dark Bulgarian rose and Indonesian patchouli, anchored by golden amber accord and polished leather.",
     notes: {
-      top: ["Black Pepper", "Frankincense"],
-      heart: ["Artisanal Leather", "Smoked Guaiac"],
-      base: ["Velvet Musk", "Madagascar Vanilla", "Assam Oud Accord"]
+      top: ["Assam Agarwood Accord", "Golden Saffron"],
+      heart: ["Bulgarian Rose", "Indonesian Patchouli"],
+      base: ["Amber Resin Accord", "Russian Leather", "Sandalwood"]
     },
     sizes: [
-      { ml: 50, price: 2299 },
-      { ml: 100, price: 3499 }
+      { ml: 50, price: 2599 },
+      { ml: 100, price: 3999 }
     ]
   },
   {
@@ -120,31 +120,31 @@ const MYTHOLIS_CATALOG = [
     ]
   },
   {
-    id: "oud-rion",
-    name: "Oud Rion Extrait de Parfum",
-    subtitle: "Oud · Royal",
-    collection: "Oud · Royal",
-    tagline: "The king of woods, crowned in gold.",
-    price: 3999,
-    rating: 5.0,
-    reviewsCount: 165,
-    image: "assets/product/5.png",
-    tag: "Royal Extrait",
-    gender: "Masculine / Unisex",
-    scentFamily: "Resinous Royal Oud",
+    id: "smoky-musk",
+    name: "Smoky Musk Extrait de Parfum",
+    subtitle: "Smoky · Sensual",
+    collection: "Smoky · Sensual",
+    tagline: "Embers and skin. A fire that never dies.",
+    price: 3499,
+    rating: 4.9,
+    reviewsCount: 138,
+    image: "assets/product/2.png",
+    tag: "Nocturnal Luxe",
+    gender: "Unisex",
+    scentFamily: "Smoky Amber Leather",
     concentration: "Extrait de Parfum (30% Concentration)",
-    longevityHours: 12,
-    sillageRating: 98,
-    accords: ["Oud", "Royal", "Saffron", "Patchouli", "Leather"],
-    description: "Rich, resinous and commanding. Oud Rion layers sustainably cultivated Assam agarwood and saffron over a heart of dark Bulgarian rose and Indonesian patchouli, anchored by golden amber accord and polished leather.",
+    longevityHours: 10,
+    sillageRating: 95,
+    accords: ["Smoky", "Sensual", "Black Pepper", "Leather", "Oud Accord"],
+    description: "Dark and magnetic, Smoky Musk wraps crushed black pepper and frankincense around a smouldering heart of artisanal leather and charred woods. Velveteen musk, Madagascar vanilla and cultivated Assam oud accord keep it close, warm and unforgettable.",
     notes: {
-      top: ["Assam Agarwood Accord", "Golden Saffron"],
-      heart: ["Bulgarian Rose", "Indonesian Patchouli"],
-      base: ["Amber Resin Accord", "Russian Leather", "Sandalwood"]
+      top: ["Black Pepper", "Frankincense"],
+      heart: ["Artisanal Leather", "Smoked Guaiac"],
+      base: ["Velvet Musk", "Madagascar Vanilla", "Assam Oud Accord"]
     },
     sizes: [
-      { ml: 50, price: 2599 },
-      { ml: 100, price: 3999 }
+      { ml: 50, price: 2299 },
+      { ml: 100, price: 3499 }
     ]
   },
   {
