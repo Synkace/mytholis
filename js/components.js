@@ -44,9 +44,9 @@ const Components = {
 
   /* Render Home View */
   renderHome() {
-    const featuredProducts = MYTHOLIS_CATALOG.slice(0, 6);
-    const heroIdx = typeof app !== 'undefined' && app.heroIndex !== undefined ? app.heroIndex : 0;
-    const heroProduct = MYTHOLIS_CATALOG[heroIdx] || MYTHOLIS_CATALOG[0];
+    const heroProducts = MYTHOLIS_CATALOG.slice(0, 6);
+    const heroIdx = typeof app !== 'undefined' && app.heroIndex !== undefined ? (app.heroIndex % 6) : 0;
+    const heroProduct = heroProducts[heroIdx] || heroProducts[0];
 
     return `
       <!-- Hero Section with Interactive Bottle Swiper -->
@@ -85,9 +85,9 @@ const Components = {
             </svg>
           </button>
 
-          <div class="hero-bottle-stage" onclick="app.nextHeroProduct()">
+          <div class="hero-bottle-stage" id="hero-bottle-stage">
             <div class="hero-liquid-halo"></div>
-            <img src="${heroProduct.image}" alt="${heroProduct.name}" class="hero-bottle-img tilt-element" id="hero-bottle-img" />
+            <img src="${heroProduct.image}" alt="${heroProduct.name}" class="hero-bottle-img" id="hero-bottle-img" />
           </div>
 
           <button class="hero-arrow-btn hero-arrow-next" onclick="event.stopPropagation(); app.nextHeroProduct()" aria-label="Next Fragrance">
@@ -98,7 +98,7 @@ const Components = {
 
           <!-- Hero Numbered Pagination Selector -->
           <div class="hero-pagination-bar" id="hero-pagination-dots">
-            ${MYTHOLIS_CATALOG.slice(0, 6).map((p, i) => `
+            ${heroProducts.map((p, i) => `
               <button class="hero-page-pill ${i === heroIdx ? 'active' : ''}" 
                       onclick="event.stopPropagation(); app.setHeroProduct(${i})" 
                       title="${p.name}">
@@ -609,9 +609,16 @@ const Components = {
   renderProductDetail(productId) {
     const product = MYTHOLIS_CATALOG.find(p => p.id === productId) || MYTHOLIS_CATALOG[0];
     const isWishlisted = store.isInWishlist(product.id);
-    const initialSize = product.sizes[product.sizes.length - 1] || product.sizes[0];
-    const currentPrice = app.selectedPrice || initialSize.price;
-    const currentMl = app.selectedSize || initialSize.ml;
+    
+    // Determine active size and price for this product
+    let activeSizeObj = product.sizes.find(s => s.ml === app.selectedSize);
+    if (!activeSizeObj) {
+      activeSizeObj = product.sizes[product.sizes.length - 1] || product.sizes[0];
+    }
+    const currentMl = activeSizeObj.ml;
+    const currentPrice = activeSizeObj.price;
+    app.selectedSize = currentMl;
+    app.selectedPrice = currentPrice;
     const unitPricePerMl = (currentPrice / currentMl).toFixed(2);
 
     return `

@@ -5,8 +5,8 @@
 
 class MytholisApp {
   constructor() {
-    this.selectedSize = 100;
-    this.selectedPrice = 340;
+    this.selectedSize = null;
+    this.selectedPrice = null;
     this.heroIndex = 0;
     this.isSwiping = false;
   }
@@ -219,9 +219,10 @@ class MytholisApp {
   }
 
   setHeroProduct(index, direction = 'right') {
-    const total = MYTHOLIS_CATALOG.length;
-    this.heroIndex = (index + total) % total;
-    const product = MYTHOLIS_CATALOG[this.heroIndex];
+    const heroCatalog = MYTHOLIS_CATALOG.slice(0, 6);
+    const total = heroCatalog.length;
+    this.heroIndex = ((index % total) + total) % total;
+    const product = heroCatalog[this.heroIndex];
 
     const bottleImg = document.getElementById('hero-bottle-img');
     const badgeEl = document.getElementById('hero-badge');
@@ -236,6 +237,7 @@ class MytholisApp {
     if (bottleImg) {
       bottleImg.classList.remove('slide-in-right', 'slide-in-left', 'dragging');
       bottleImg.style.transform = '';
+      bottleImg.style.transition = '';
       // Force DOM reflow
       void bottleImg.offsetWidth;
       bottleImg.src = product.image;
@@ -250,10 +252,10 @@ class MytholisApp {
       textContent.classList.add('hero-text-anim');
     }
 
-    if (badgeEl) badgeEl.innerHTML = `✦ ${product.tag} • ${product.collection}`;
+    if (badgeEl) badgeEl.innerHTML = `✦ ${product.subtitle}`;
     if (editionEl) editionEl.innerHTML = `No. 0${this.heroIndex + 1} of 06`;
     if (fragNameEl) fragNameEl.innerText = product.name;
-    if (descEl) descEl.innerText = product.description;
+    if (descEl) descEl.innerText = `"${product.tagline}" ${product.description}`;
 
     if (accordsEl) {
       accordsEl.innerHTML = product.accords.map(a => `<span class="hero-accord-tag">✦ ${a}</span>`).join('');
@@ -279,7 +281,6 @@ class MytholisApp {
     });
 
     this.resetHeroAutoPlay();
-    this.initTiltEffects();
   }
 
   /* Real-Time Touch & Mouse Drag Physics */
@@ -292,27 +293,37 @@ class MytholisApp {
     let startX = 0;
     let startY = 0;
     let currentX = 0;
+    let currentY = 0;
     let isDragging = false;
+    let hasMoved = false;
 
     const onStart = (clientX, clientY) => {
       isDragging = true;
+      hasMoved = false;
       startX = clientX;
       startY = clientY;
       currentX = clientX;
+      currentY = clientY;
       bottleImg.classList.add('dragging');
+      bottleImg.style.transition = 'none';
       this.pauseHeroAutoPlay();
     };
 
     const onMove = (clientX, clientY) => {
       if (!isDragging) return;
       currentX = clientX;
+      currentY = clientY;
       const deltaX = currentX - startX;
-      const deltaY = clientY - startY;
+      const deltaY = currentY - startY;
 
-      // Only horizontal drag
+      if (Math.abs(deltaX) > 8) {
+        hasMoved = true;
+      }
+
+      // Horizontal swipe responsiveness
       if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        const rotation = deltaX * 0.08;
-        const scale = Math.max(0.92, 1 - Math.abs(deltaX) * 0.0008);
+        const rotation = deltaX * 0.07;
+        const scale = Math.max(0.9, 1 - Math.abs(deltaX) * 0.0006);
         bottleImg.style.transform = `translateX(${deltaX}px) rotate(${rotation}deg) scale(${scale})`;
       }
     };
@@ -323,58 +334,66 @@ class MytholisApp {
       bottleImg.classList.remove('dragging');
       const deltaX = currentX - startX;
 
-      if (deltaX < -45) {
+      if (deltaX < -40) {
         this.nextHeroProduct();
-      } else if (deltaX > 45) {
+      } else if (deltaX > 40) {
         this.prevHeroProduct();
       } else {
-        // Spring smoothly back to center
-        bottleImg.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-        bottleImg.style.transform = 'translateX(0px) rotate(0deg) scale(1)';
-        setTimeout(() => {
-          bottleImg.style.transition = '';
-        }, 400);
+        if (hasMoved) {
+          // Snap back smoothly
+          bottleImg.style.transition = 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)';
+          bottleImg.style.transform = 'translateX(0px) rotate(0deg) scale(1)';
+          setTimeout(() => {
+            const currentImg = document.getElementById('hero-bottle-img');
+            if (currentImg) currentImg.style.transition = '';
+          }, 350);
+        } else {
+          // Simple tap/click on the flacon advances to next
+          this.nextHeroProduct();
+        }
       }
       this.resetHeroAutoPlay();
     };
 
-    // Touch events
-    viewport.addEventListener('touchstart', (e) => {
+    // Cleanly bind touch events on viewport
+    viewport.ontouchstart = (e) => {
       if (e.touches.length === 1) {
         onStart(e.touches[0].clientX, e.touches[0].clientY);
       }
-    }, { passive: true });
+    };
 
-    viewport.addEventListener('touchmove', (e) => {
+    viewport.ontouchmove = (e) => {
       if (isDragging && e.touches.length === 1) {
         onMove(e.touches[0].clientX, e.touches[0].clientY);
       }
-    }, { passive: true });
+    };
 
-    viewport.addEventListener('touchend', onEnd);
-    viewport.addEventListener('touchcancel', onEnd);
+    viewport.ontouchend = () => onEnd();
+    viewport.ontouchcancel = () => onEnd();
 
     // Mouse drag events
-    viewport.addEventListener('mousedown', (e) => {
+    viewport.onmousedown = (e) => {
+      if (e.target.closest('.hero-arrow-btn, .hero-page-pill')) return;
+      e.preventDefault();
       onStart(e.clientX, e.clientY);
-    });
+    };
 
-    window.addEventListener('mousemove', (e) => {
+    window.onmousemove = (e) => {
       if (isDragging) {
         onMove(e.clientX, e.clientY);
       }
-    });
+    };
 
-    window.addEventListener('mouseup', () => {
+    window.onmouseup = () => {
       if (isDragging) {
         onEnd();
       }
-    });
+    };
 
     // Auto-play management
     if (heroSection) {
-      heroSection.addEventListener('mouseenter', () => this.pauseHeroAutoPlay());
-      heroSection.addEventListener('mouseleave', () => this.resetHeroAutoPlay());
+      heroSection.onmouseenter = () => this.pauseHeroAutoPlay();
+      heroSection.onmouseleave = () => this.resetHeroAutoPlay();
     }
 
     this.resetHeroAutoPlay();
@@ -397,6 +416,10 @@ class MytholisApp {
   }
 
   openProductView(productId) {
+    const product = MYTHOLIS_CATALOG.find(p => p.id === productId) || MYTHOLIS_CATALOG[0];
+    const defaultSize = product.sizes[product.sizes.length - 1] || product.sizes[0];
+    this.selectedSize = defaultSize.ml;
+    this.selectedPrice = defaultSize.price;
     this.navigateTo('product', productId);
   }
 
@@ -472,10 +495,12 @@ class MytholisApp {
 
   /* Cart & Toast */
   addProductToCart(productId) {
+    const product = MYTHOLIS_CATALOG.find(p => p.id === productId) || MYTHOLIS_CATALOG[0];
+    const activeSizeObj = product.sizes.find(s => s.ml === this.selectedSize) || product.sizes[product.sizes.length - 1] || product.sizes[0];
     const engravingEl = document.getElementById('engraving-text');
     const engraving = engravingEl ? engravingEl.value.trim() : '';
 
-    store.addToCart(productId, this.selectedSize || 100, engraving, 1);
+    store.addToCart(productId, activeSizeObj.ml, engraving, 1);
     this.showToast("Fragrance added to your scent vault ✦");
     this.openCartModal();
   }
@@ -486,8 +511,9 @@ class MytholisApp {
 
   buyNowWhatsApp(productId) {
     const product = MYTHOLIS_CATALOG.find(p => p.id === productId) || MYTHOLIS_CATALOG[0];
-    const size = this.selectedSize || (product.sizes[product.sizes.length - 1] ? product.sizes[product.sizes.length - 1].ml : 100);
-    const price = this.selectedPrice || (product.sizes.find(s => s.ml === size) ? product.sizes.find(s => s.ml === size).price : product.price);
+    const activeSizeObj = product.sizes.find(s => s.ml === this.selectedSize) || product.sizes[product.sizes.length - 1] || product.sizes[0];
+    const size = activeSizeObj.ml;
+    const price = activeSizeObj.price;
     const engravingEl = document.getElementById('engraving-text');
     const engraving = engravingEl ? engravingEl.value.trim() : '';
 

@@ -14,7 +14,11 @@ const CURRENCY_CONFIG = {
 
 class MytholisStore {
   constructor() {
-    this.currency = this.loadLocalStorage('mytholis_currency', 'INR');
+    let savedCurrency = this.loadLocalStorage('mytholis_currency', 'INR');
+    if (!CURRENCY_CONFIG[savedCurrency]) {
+      savedCurrency = 'INR';
+    }
+    this.currency = savedCurrency;
     this.cart = this.loadLocalStorage('mytholis_cart', []);
     this.wishlist = this.loadLocalStorage('mytholis_wishlist', []);
     this.user = this.loadLocalStorage('mytholis_user', {
