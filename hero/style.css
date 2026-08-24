@@ -5,6 +5,9 @@
 
 * {
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-focus-ring-color: transparent !important;
+    outline: none;
 }
 
 body {
@@ -12,17 +15,21 @@ body {
     min-height: 100vh;
     margin: 0;
     background: #191c29;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .hero-card-row {
     width: 100%;
-    min-height: 100vh;
+    max-width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: clamp(150px, 14vw, 200px);
-    padding: 80px 24px;
+    padding: 60px 24px;
     box-sizing: border-box;
+    overflow: visible;
 }
 
 .hero-card-row .card,
@@ -42,6 +49,8 @@ body {
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     touch-action: pan-y;
+    -webkit-tap-highlight-color: transparent !important;
+    user-select: none;
 }
 
 .cover-image {

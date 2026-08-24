@@ -160,7 +160,7 @@ const Components = {
             </div>
           </div>
           <div class="discovery-banner-visual bottle-pedestal-glow">
-            <img src="assets/product/1.png" alt="Mytholis Discovery Set" style="max-height: 260px; object-fit: contain;" />
+            <img src="assets/coffret_banner.jpg" alt="Mytholis Vault Discovery Coffret" style="max-height: 280px; width: 100%; max-width: 380px; object-fit: cover; border-radius: 18px; border: 1px solid rgba(212, 175, 55, 0.35); box-shadow: 0 15px 35px rgba(0,0,0,0.8);" />
           </div>
         </div>
       </section>
@@ -248,11 +248,12 @@ const Components = {
 
   /* Render Collections View */
   renderCollections() {
-    const categories = ['All', 'Woody · Mineral', 'Smoky · Sensual', 'Amber · Opulent', 'Fresh · Electric', 'Oud · Royal', 'Woody · Evening', 'Discovery Edition'];
+    const categories = ['All', 'Woody · Mineral', 'Oud · Royal', 'Amber · Opulent', 'Fresh · Electric', 'Smoky · Sensual', 'Woody · Evening'];
     const active = store.activeCategory;
+    const baseList = MYTHOLIS_CATALOG.filter(p => p.id !== 'mytholis-discovery-set');
     const filteredProducts = active === 'All' 
-      ? MYTHOLIS_CATALOG 
-      : MYTHOLIS_CATALOG.filter(p => p.collection.toLowerCase() === active.toLowerCase());
+      ? baseList 
+      : baseList.filter(p => p.collection.toLowerCase() === active.toLowerCase());
 
     return `
       <div class="container">
@@ -272,7 +273,7 @@ const Components = {
           `).join('')}
         </div>
 
-        <!-- Products Grid -->
+        <!-- Products Grid (3x2 Signature Extraits) -->
         <div class="products-grid">
           ${filteredProducts.map(p => this.renderProductCard(p)).join('')}
         </div>
@@ -572,10 +573,10 @@ const Components = {
               <span class="glass-pill" style="margin-bottom: 0.8rem;">🇮🇳 Registered Office (India)</span>
               <h4 style="font-size: 1.2rem; color: var(--gold-light); margin-bottom: 0.5rem;">Mytholis Luxury Fragrances Pvt. Ltd.</h4>
               <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6;">
-                4th Floor, Mondeal Heights, S.G. Highway,<br/>
-                Ahmedabad, Gujarat 380015, India<br/>
+                Vasant Vihar 2, Nava Naroda,<br/>
+                Ahmedabad, Gujarat 382330, India<br/>
                 <strong>GSTIN:</strong> 24AAECM4821P1ZT<br/>
-                ☎ +91 98765 43210 • ✉ concierge@mytholis.com
+                ☎ +91 777000 9170 • ✉ concierge@mytholis.com
               </p>
             </div>
 
@@ -595,8 +596,8 @@ const Components = {
               <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
                 Connect directly with our fragrance concierge on WhatsApp for instant orders.
               </p>
-              <button class="btn btn-gold btn-compact" onclick="window.open('https://wa.me/919876543210?text=' + encodeURIComponent('Hello Mytholis Concierge, I would like to inquire about your Extrait collection.'), '_blank')">
-                💬 Chat on WhatsApp
+              <button class="btn btn-gold btn-compact" onclick="window.open('https://wa.me/917770009170?text=' + encodeURIComponent('Hello Mytholis Concierge, I would like to inquire about your Extrait collection.'), '_blank')">
+                💬 Chat on WhatsApp (+91 777000 9170)
               </button>
             </div>
           </div>
@@ -751,11 +752,11 @@ const Components = {
                 </div>
                 <div class="legal-metrology-item">
                   <span class="metrology-label">Manufactured & Packed:</span>
-                  <span class="metrology-val">Mytholis Artisanal Fragrance Labs, Changodar Industrial Estate, Ahmedabad, Gujarat 382213, India (Mfg Lic: GC/1428-A)</span>
+                  <span class="metrology-val">Mytholis Luxury Fragrances Pvt. Ltd., Vasant Vihar 2, Nava Naroda, Ahmedabad, Gujarat 382330, India (Mfg Lic: GC/1428-A)</span>
                 </div>
                 <div class="legal-metrology-item">
                   <span class="metrology-label">Marketed By:</span>
-                  <span class="metrology-val">Mytholis Luxury Fragrances Pvt. Ltd., S.G. Highway, Ahmedabad, Gujarat 380015, India (GSTIN: 24AAECM4821P1ZT)</span>
+                  <span class="metrology-val">Mytholis Luxury Fragrances Pvt. Ltd., Vasant Vihar 2, Nava Naroda, Ahmedabad, Gujarat 382330, India (GSTIN: 24AAECM4821P1ZT)</span>
                 </div>
                 <div class="legal-metrology-item">
                   <span class="metrology-label">Month & Year of Mfg:</span>
@@ -767,7 +768,7 @@ const Components = {
                 </div>
                 <div class="legal-metrology-item full-width">
                   <span class="metrology-label">Consumer Care Concierge:</span>
-                  <span class="metrology-val">Email: concierge@mytholis.com | WhatsApp/Tel: +91 98765 43210</span>
+                  <span class="metrology-val">Email: concierge@mytholis.com | WhatsApp/Tel: +91 777000 9170</span>
                 </div>
               </div>
             </div>
@@ -1147,7 +1148,7 @@ const Components = {
       content = `
         <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">1. Entity & Jurisdiction</h4>
         <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.2rem;">
-          This website is operated by <strong>Mytholis Luxury Fragrances Pvt. Ltd.</strong>, a private limited entity incorporated under the laws of India, having its registered office at 4th Floor, Mondeal Heights, S.G. Highway, Ahmedabad, Gujarat 380015, India (GSTIN: 24AAECM4821P1ZT). Formulations are originated in the United Kingdom and manufactured in India.
+          This website is operated by <strong>Mytholis Luxury Fragrances Pvt. Ltd.</strong>, a private limited entity incorporated under the laws of India, having its registered office at Vasant Vihar 2, Nava Naroda, Ahmedabad, Gujarat 382330, India (GSTIN: 24AAECM4821P1ZT). Formulations are originated in the United Kingdom and manufactured in India.
         </p>
         <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">2. Pricing & Payments</h4>
         <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.2rem;">
@@ -1199,7 +1200,7 @@ const Components = {
         </p>
         <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">2. 100% Transit Damage Replacement Guarantee</h4>
         <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.2rem;">
-          If your crystal flacon arrives damaged, leaking, or with broken seals, please send photos/unboxing video to <strong>concierge@mytholis.com</strong> or WhatsApp <strong>+91 98765 43210</strong> within 48 hours of delivery for an immediate free replacement.
+          If your crystal flacon arrives damaged, leaking, or with broken seals, please send photos/unboxing video to <strong>concierge@mytholis.com</strong> or WhatsApp <strong>+91 777000 9170</strong> within 48 hours of delivery for an immediate free replacement.
         </p>
         <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">3. Order Cancellations</h4>
         <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">
@@ -1302,10 +1303,10 @@ const Components = {
           <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
             <input type="text" class="engraving-input" placeholder="Full Delivery Name" value="${store.user.name}" />
             <div style="display: flex; gap: 0.6rem;">
-              <input type="tel" class="engraving-input" placeholder="Mobile / WhatsApp (+91)" value="+91 98765 43210" style="flex: 1;" />
-              <input type="text" class="engraving-input" placeholder="PIN Code" value="380015" style="flex: 1;" />
+              <input type="tel" class="engraving-input" placeholder="Mobile / WhatsApp (+91 777000 9170)" style="flex: 1;" />
+              <input type="text" class="engraving-input" placeholder="PIN Code" style="flex: 1;" />
             </div>
-            <input type="text" class="engraving-input" placeholder="Flat, Street, Area Address" value="4th Floor, Mondeal Heights, S.G. Highway, Ahmedabad" />
+            <input type="text" class="engraving-input" placeholder="Flat, Street, Area, Landmark Address" />
           </div>
         </div>
       </div>

@@ -184,7 +184,7 @@ const MYTHOLIS_CATALOG = [
     price: 1999,
     rating: 5.0,
     reviewsCount: 240,
-    image: "assets/product/1.png",
+    image: "assets/coffret_banner.jpg",
     tag: "Discovery Set",
     gender: "Unisex",
     scentFamily: "Complete Olfactory Wardrobe",

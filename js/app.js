@@ -98,6 +98,23 @@ class MytholisApp {
       }
     });
 
+    // Prevent accidental multi-touch pinch zooming & gesture zooming on mobile
+    document.addEventListener('gesturestart', (e) => e.preventDefault(), { passive: false });
+    document.addEventListener('gesturechange', (e) => e.preventDefault(), { passive: false });
+    document.addEventListener('gestureend', (e) => e.preventDefault(), { passive: false });
+
+    // Prevent double tap to zoom on touch devices
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) {
+        if (!e.target.closest('input, textarea')) {
+          e.preventDefault();
+        }
+      }
+      lastTouchEnd = now;
+    }, { passive: false });
+
     // Mouse tilt & 3D Hero Cards setup
     this.initTiltEffects();
     this.initHeroCardsScroll();
@@ -519,7 +536,7 @@ class MytholisApp {
 
     const text = `Hello Mytholis Fragrance Concierge,\n\nI would like to order:\n✦ *${product.name}*\n✦ Volume: ${size}ml\n✦ Total Price: ${store.formatPrice(price)} (Incl. all taxes)\n${engraving ? `✦ Complimentary Engraving: "${engraving}"\n` : ''}✦ Shipping: Pan-India Express Armored Delivery\n\nPlease share payment details (UPI / Bank Transfer) to confirm my order.`;
 
-    window.open(`https://wa.me/919876543210?text=${encodeURIComponent(text)}`, '_blank');
+    window.open(`https://wa.me/917770009170?text=${encodeURIComponent(text)}`, '_blank');
   }
 
   checkoutCartWhatsApp() {
@@ -529,7 +546,7 @@ class MytholisApp {
 
     const text = `Hello Mytholis Fragrance Concierge,\n\nI would like to checkout my Mytholis Vault Cart:\n\n${itemsList}\n\n*Total Amount:* ${store.formatPrice(total)} (Incl. 18% GST)\n*Delivery:* Free Express Armored Shipping across India\n\nPlease assist with UPI / Razorpay payment instructions.`;
 
-    window.open(`https://wa.me/919876543210?text=${encodeURIComponent(text)}`, '_blank');
+    window.open(`https://wa.me/917770009170?text=${encodeURIComponent(text)}`, '_blank');
   }
 
   buyNowRazorpay(productId) {
