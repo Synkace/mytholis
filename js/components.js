@@ -67,7 +67,7 @@ const Components = {
           </div>
           <div class="hero-actions" id="hero-actions-row">
             <button class="btn btn-gold" id="hero-cta-btn" onclick="app.openProductView('${heroProduct.id}')">
-              Discover ${heroProduct.name} ✦
+              Discover ${heroProduct.name.replace(' Extrait de Parfum', '')} ✦
             </button>
             <button class="btn btn-glass" id="hero-quickadd-btn" onclick="app.addProductToCart('${heroProduct.id}')">
               Quick Add • ${store.formatPrice(heroProduct.price)}
@@ -79,22 +79,22 @@ const Components = {
         </div>
 
         <div class="hero-product-viewport" id="hero-bottle-viewport" title="Swipe or Click to switch fragrance">
-          <button class="hero-arrow-btn hero-arrow-prev" onclick="event.stopPropagation(); app.prevHeroProduct()" aria-label="Previous Fragrance">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-          </button>
-
           <div class="hero-bottle-stage" id="hero-bottle-stage">
+            <button class="hero-arrow-btn hero-arrow-prev" onclick="event.stopPropagation(); app.prevHeroProduct()" aria-label="Previous Fragrance">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+
             <div class="hero-liquid-halo"></div>
             <img src="${heroProduct.image}" alt="${heroProduct.name}" class="hero-bottle-img" id="hero-bottle-img" />
-          </div>
 
-          <button class="hero-arrow-btn hero-arrow-next" onclick="event.stopPropagation(); app.nextHeroProduct()" aria-label="Next Fragrance">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          </button>
+            <button class="hero-arrow-btn hero-arrow-next" onclick="event.stopPropagation(); app.nextHeroProduct()" aria-label="Next Fragrance">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
 
           <!-- Hero Numbered Pagination Selector -->
           <div class="hero-pagination-bar" id="hero-pagination-dots">

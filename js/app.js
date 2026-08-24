@@ -279,7 +279,7 @@ class MytholisApp {
     }
 
     if (ctaBtn) {
-      ctaBtn.innerText = `Discover ${product.name} ✦`;
+      ctaBtn.innerText = `Discover ${product.name.replace(' Extrait de Parfum', '')} ✦`;
       ctaBtn.onclick = () => this.openProductView(product.id);
     }
 
