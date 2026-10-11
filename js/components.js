@@ -193,27 +193,27 @@ const Components = {
           <a href="javascript:void(0)" onclick="app.openProductView('smoky-musk')" alt="Smoky Musk">
             <div class="card">
               <div class="wrapper 2bg">
-                <img src="hero/assets/2bg.png" class="cover-image" />
+                <img src="assets/hero/2bg.png" class="cover-image" />
               </div>
-              <img src="hero/assets/2.png" class="character" />
+              <img src="assets/hero/2.png" class="character" />
             </div>
           </a>
 
           <a href="javascript:void(0)" onclick="app.openProductView('white-spark')" alt="White Spark">
             <div class="card">
               <div class="wrapper 4bg">
-                <img src="hero/assets/4bg.png" class="cover-image" />
+                <img src="assets/hero/4bg.png" class="cover-image" />
               </div>
-              <img src="hero/assets/4.png" class="character" />
+              <img src="assets/hero/4.png" class="character" />
             </div>
           </a>
 
           <a href="javascript:void(0)" onclick="app.openProductView('wood-sera')" alt="Wood Sera">
             <div class="card">
               <div class="wrapper 6bg">
-                <img src="hero/assets/6bg.png" class="cover-image" />
+                <img src="assets/hero/6bg.png" class="cover-image" />
               </div>
-              <img src="hero/assets/6.png" class="character" />
+              <img src="assets/hero/6.png" class="character" />
             </div>
           </a>
         </div>
