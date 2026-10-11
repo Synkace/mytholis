@@ -49,66 +49,82 @@ const Components = {
     const heroProduct = heroProducts[heroIdx] || heroProducts[0];
 
     return `
-      <!-- Hero Section with Interactive Bottle Swiper -->
-      <section class="container hero-wrapper" id="hero-section">
-        <div class="hero-content" id="hero-text-content">
-          <div class="hero-badge-wrap">
-            <span class="glass-pill" id="hero-badge">✦ ${heroProduct.subtitle}</span>
-            <span class="glass-pill" id="hero-edition" style="color: var(--gold-light);">No. 0${heroIdx + 1} of 06</span>
+      <!-- ============ 3D FAN ARRAY FLACON HERO SECTION ============ -->
+      <section class="hero hero-section" id="hero-section">
+        <div class="hero-header-wrap">
+          <div class="hero-kicker">
+            <span class="kicker-line"></span>
+            <span class="kicker-text">HAUTE PARFUMERIE · 30% EXTRAIT CONCENTRATION</span>
+            <span class="kicker-line"></span>
           </div>
-          <h1 class="hero-title" id="hero-heading">
-            Wear Your <span class="gold-shimmer-text" id="hero-fragrance-name">${heroProduct.name}</span>
+
+          <h1 class="small-team" id="smallTeam">
+            <span class="word"><span>Six</span></span>&nbsp;<span class="word"><span>elements,</span></span>
           </h1>
-          <p class="hero-subtitle" id="hero-desc">
-            "${heroProduct.tagline}" ${heroProduct.description}
-          </p>
-          <div class="hero-accords-bar" id="hero-accords-list">
-            ${heroProduct.accords.map(a => `<span class="hero-accord-tag">✦ ${a}</span>`).join('')}
-          </div>
-          <div class="hero-actions" id="hero-actions-row">
-            <button class="btn btn-gold" id="hero-cta-btn" onclick="app.openProductView('${heroProduct.id}')">
-              Discover ${heroProduct.name.replace(' Extrait de Parfum', '')} ✦
-            </button>
-            <button class="btn btn-glass" id="hero-quickadd-btn" onclick="app.addProductToCart('${heroProduct.id}')">
-              Quick Add • ${store.formatPrice(heroProduct.price)}
-            </button>
-            <button class="btn btn-glass" onclick="app.navigateTo('find-scent')">
-              Find My Scent Quiz ✦
-            </button>
+        </div>
+
+        <!-- Giant Faded Background Wordmark -->
+        <div class="big-results-wrap">
+          <div class="big-results" id="bigResults">
+            <span class="letter">O</span><span class="letter">N</span><span class="letter">E</span><span class="letter">&nbsp;</span><span class="letter">H</span><span class="letter">O</span><span class="letter">U</span><span class="letter">S</span><span class="letter">E</span>
           </div>
         </div>
 
-        <div class="hero-product-viewport" id="hero-bottle-viewport" title="Swipe or Click to switch fragrance">
-          <div class="hero-bottle-stage" id="hero-bottle-stage">
-            <button class="hero-arrow-btn hero-arrow-prev" onclick="event.stopPropagation(); app.prevHeroProduct()" aria-label="Previous Fragrance">
-              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <polyline points="15 18 9 12 15 6"></polyline>
-              </svg>
-            </button>
-
-            <div class="hero-liquid-halo"></div>
-            <img src="${heroProduct.image}" alt="${heroProduct.name}" class="hero-bottle-img" id="hero-bottle-img" />
-
-            <button class="hero-arrow-btn hero-arrow-next" onclick="event.stopPropagation(); app.nextHeroProduct()" aria-label="Next Fragrance">
-              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
-            </button>
+        <!-- 3D Fan Array of Flacon Products -->
+        <div class="cards-row" id="cardsRow">
+          <!-- Bottle 1: Terra Petra -->
+          <div class="card flacon-card card-1" data-rot="-10" data-depth="14" data-name="Terra Petra" data-note="Woody · Mineral" data-rest-rot="-10" onclick="app.handleFlaconCardClick(0, 'terra-petra')" title="Terra Petra Extrait · Woody · Mineral">
+            <img src="assets/product/1.png" alt="Terra Petra Extrait" class="bottle-png" loading="eager" />
           </div>
 
-          <!-- Hero Numbered Pagination Selector -->
-          <div class="hero-pagination-bar" id="hero-pagination-dots">
-            ${heroProducts.map((p, i) => `
-              <button class="hero-page-pill ${i === heroIdx ? 'active' : ''}" 
-                      onclick="event.stopPropagation(); app.setHeroProduct(${i})" 
-                      title="${p.name}">
-                0${i + 1} <span>${p.name.split(' ')[0]}</span>
-              </button>
-            `).join('')}
+          <!-- Bottle 2: Smoky Musk -->
+          <div class="card flacon-card card-2" data-rot="-6" data-depth="10" data-name="Smoky Musk" data-note="Smoky · Sensual" data-rest-rot="-6" onclick="app.handleFlaconCardClick(1, 'smoky-musk')" title="Smoky Musk Extrait · Smoky · Sensual">
+            <img src="assets/product/2.png" alt="Smoky Musk Extrait" class="bottle-png" loading="eager" />
           </div>
 
-          <div class="hero-swipe-hint">
-            <span>✦</span> Click or Swipe to explore all 6 extracts <span>✦</span>
+          <!-- Bottle 3: Petralux -->
+          <div class="card flacon-card card-3" data-rot="-2" data-depth="8" data-name="Petralux" data-note="Amber · Opulent" data-rest-rot="-2" onclick="app.handleFlaconCardClick(2, 'petralux')" title="Petralux Extrait · Amber · Opulent">
+            <img src="assets/product/3.png" alt="Petralux Extrait" class="bottle-png" loading="eager" />
+          </div>
+
+          <!-- Bottle 4: White Spark -->
+          <div class="card flacon-card card-4" data-rot="2" data-depth="8" data-name="White Spark" data-note="Fresh · Electric" data-rest-rot="2" onclick="app.handleFlaconCardClick(3, 'white-spark')" title="White Spark Extrait · Fresh · Electric">
+            <img src="assets/product/4.png" alt="White Spark Extrait" class="bottle-png" loading="eager" />
+          </div>
+
+          <!-- Bottle 5: Oud Rion -->
+          <div class="card flacon-card card-5" data-rot="6" data-depth="10" data-name="Oud Rion" data-note="Oud · Royal" data-rest-rot="6" onclick="app.handleFlaconCardClick(4, 'oud-rion')" title="Oud Rion Extrait · Oud · Royal">
+            <img src="assets/product/5.png" alt="Oud Rion Extrait" class="bottle-png" loading="eager" />
+          </div>
+
+          <!-- Bottle 6: Wood Sera -->
+          <div class="card flacon-card card-6" data-rot="10" data-depth="14" data-name="Wood Sera" data-note="Woody · Evening" data-rest-rot="10" onclick="app.handleFlaconCardClick(5, 'wood-sera')" title="Wood Sera Extrait · Woody · Evening">
+            <img src="assets/product/6.png" alt="Wood Sera Extrait" class="bottle-png" loading="eager" />
+          </div>
+        </div>
+
+        <!-- Subline & Action Pill -->
+        <div class="subline" id="subline">
+          <div class="mobile-flacon-dots" id="mobileFlaconDots">
+            <span class="m-dot" onclick="app.setMobileFlaconIndex(0)" title="Terra Petra"></span>
+            <span class="m-dot" onclick="app.setMobileFlaconIndex(1)" title="Smoky Musk"></span>
+            <span class="m-dot active" onclick="app.setMobileFlaconIndex(2)" title="Petralux"></span>
+            <span class="m-dot" onclick="app.setMobileFlaconIndex(3)" title="White Spark"></span>
+            <span class="m-dot" onclick="app.setMobileFlaconIndex(4)" title="Oud Rion"></span>
+            <span class="m-dot" onclick="app.setMobileFlaconIndex(5)" title="Wood Sera"></span>
+          </div>
+
+          <button class="arrow-pill" onclick="const el = document.getElementById('featured-vault') || document.querySelector('.hero-cards-section'); if(el) el.scrollIntoView({behavior: 'smooth'}); else app.navigateTo('collections');">
+            <span>Enter The Vault</span>
+            <span class="ar">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <line x1="7" y1="17" x2="17" y2="7"></line>
+                <polyline points="7 7 17 7 17 17"></polyline>
+              </svg>
+            </span>
+          </button>
+          <div class="subline-text" id="heroSublineText">
+            <span id="heroSublineName">Petralux Extrait</span> · <span>30% Pure Concentration</span> · <span>Hand-Distilled in Mayfair &amp; Ahmedabad</span>
           </div>
         </div>
       </section>

@@ -9,6 +9,7 @@ class MytholisApp {
     this.selectedPrice = null;
     this.heroIndex = 0;
     this.isSwiping = false;
+    this.mobileHeroIndex = 2; // Petralux as initial center hero
   }
 
   init() {
@@ -59,6 +60,11 @@ class MytholisApp {
         const links = document.getElementById('main-nav-links');
         if (links) links.classList.remove('mobile-open');
       }
+      if (window.innerWidth <= 768) {
+        this.renderMobileFlaconCarousel(false);
+      } else {
+        this.resetDesktopFlaconCards();
+      }
     });
 
     // Keyboard navigation & ESC key handler
@@ -67,8 +73,13 @@ class MytholisApp {
         this.closeAllModals();
       }
       if (store.currentView === 'home') {
-        if (e.key === 'ArrowRight') this.nextHeroProduct();
-        if (e.key === 'ArrowLeft') this.prevHeroProduct();
+        if (window.innerWidth <= 768) {
+          if (e.key === 'ArrowRight') this.stepMobileHeroCarousel(1);
+          if (e.key === 'ArrowLeft') this.stepMobileHeroCarousel(-1);
+        } else {
+          if (e.key === 'ArrowRight') this.nextHeroProduct();
+          if (e.key === 'ArrowLeft') this.prevHeroProduct();
+        }
       }
     });
 
@@ -217,11 +228,452 @@ class MytholisApp {
     this.initTiltEffects();
 
     if (store.currentView === 'home') {
+      mainContainer.classList.add('home-view');
+      this.initFanHero();
       this.initHeroSwipeGestures();
       if (this.activateCenterCard) {
         setTimeout(() => this.activateCenterCard(), 50);
       }
+    } else {
+      mainContainer.classList.remove('home-view');
     }
+  }
+
+  /* ------------------------------------------------------------------------
+     3D FAN ARRAY FLACON HERO SECTION (DESKTOP FAN / MOBILE INFINITE CAROUSEL)
+     ------------------------------------------------------------------------ */
+  initFanHero() {
+    const heroEl = document.querySelector('.hero, #hero-section');
+    if (!heroEl) return;
+
+    const cards = heroEl.querySelectorAll('#cardsRow .flacon-card, #cardsRow .card');
+    if (!cards || cards.length === 0) return;
+
+    // Ensure all flacon cards are immediately visible with their rest rotation
+    cards.forEach((card) => {
+      const rot = parseFloat(card.dataset.rot) || 0;
+      card.dataset.restRot = rot;
+      card.style.opacity = '1';
+      card.style.visibility = 'visible';
+    });
+
+    const isMobile = window.innerWidth <= 768;
+
+    // Check if GSAP is loaded
+    if (typeof gsap !== 'undefined') {
+      // 1. Initial states: flacon bottles start off-screen above
+      cards.forEach((card) => {
+        const rot = parseFloat(card.dataset.rot) || 0;
+        card.dataset.restRot = rot;
+        gsap.set(card, { y: -850, rotation: rot + 18, opacity: 0, scale: 0.8 });
+      });
+
+      const kicker = heroEl.querySelector('.hero-kicker');
+      const words = heroEl.querySelectorAll('.small-team .word > span');
+      const letters = heroEl.querySelectorAll('.big-results .letter');
+      const subline = heroEl.querySelector('#subline');
+
+      if (kicker) gsap.set(kicker, { opacity: 0, y: -15 });
+      if (words.length) gsap.set(words, { y: '105%' });
+      if (letters.length) gsap.set(letters, { y: 60, opacity: 0 });
+      if (subline) gsap.set(subline, { opacity: 0, y: 25 });
+
+      // 2. Intro timeline: Kicker -> Title -> ONE HOUSE -> BOTTLES DROP FALL -> Subline
+      const intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+      if (kicker) intro.to(kicker, { opacity: 1, y: 0, duration: 0.7 }, 0.2);
+      if (words.length) intro.to(words, { y: '0%', duration: 0.95, stagger: 0.08, ease: 'power3.out' }, 0.35);
+      if (letters.length) intro.to(letters, { y: 0, opacity: 1, duration: 0.95, stagger: 0.04, ease: 'back.out(1.5)' }, 0.55);
+
+      if (isMobile) {
+        // Mobile: scaled-up flacons drop into their overlapping carousel slots
+        cards.forEach((card, i) => {
+          const slot = this.getMobileSlotParams(i, this.mobileHeroIndex);
+          intro.to(card, {
+            x: slot.x,
+            y: slot.y,
+            scale: slot.scale,
+            rotation: slot.rotation,
+            opacity: slot.opacity,
+            zIndex: slot.zIndex,
+            duration: 1.15,
+            ease: 'back.out(1.35)'
+          }, 0.75 + i * 0.05);
+        });
+      } else {
+        // Desktop: signature fan array drop
+        intro.to(cards, {
+          x: 0,
+          y: 0,
+          opacity: 1,
+          scale: 1,
+          rotation: (i, el) => parseFloat(el.dataset.restRot) || 0,
+          duration: 1.15,
+          stagger: { each: 0.07, from: 'center' },
+          ease: 'back.out(1.35)'
+        }, 0.75);
+      }
+
+      if (subline) intro.to(subline, { opacity: 1, y: 0, duration: 0.85 }, 1.55);
+
+      // 3. Continuous floating animation
+      cards.forEach((card, i) => {
+        const rot = parseFloat(card.dataset.restRot) || 0;
+        gsap.to(card, {
+          y: `+=${6 + (i % 3) * 4}`,
+          rotation: rot + (i % 2 === 0 ? 1.2 : -1.2),
+          duration: 3.2 + (i % 4) * 0.5,
+          delay: 1.8 + i * 0.12,
+          ease: 'sine.inOut',
+          yoyo: true,
+          repeat: -1
+        });
+      });
+
+      // 4. Hover 3D tilt on individual cards (desktop only)
+      cards.forEach((card) => {
+        card.addEventListener('mousemove', (e) => {
+          if (window.innerWidth <= 768) return;
+          const r = card.getBoundingClientRect();
+          const px = (e.clientX - r.left) / r.width - 0.5;
+          const py = (e.clientY - r.top) / r.height - 0.5;
+
+          gsap.to(card, {
+            rotateX: -py * 16,
+            rotateY: px * 16,
+            scale: 1.1,
+            zIndex: 25,
+            duration: 0.35,
+            ease: 'power2.out',
+            transformPerspective: 800,
+            overwrite: 'auto'
+          });
+        });
+
+        card.addEventListener('mouseleave', () => {
+          if (window.innerWidth <= 768) return;
+          const rot = parseFloat(card.dataset.restRot) || 0;
+          gsap.to(card, {
+            rotateX: 0,
+            rotateY: 0,
+            rotation: rot,
+            scale: 1,
+            zIndex: card.style.zIndex || '',
+            duration: 0.75,
+            ease: 'elastic.out(1, 0.6)',
+            overwrite: 'auto'
+          });
+        });
+      });
+    } else {
+      // Fallback without GSAP
+      if (isMobile) {
+        this.renderMobileFlaconCarousel(false);
+      } else {
+        cards.forEach((card) => {
+          const rot = parseFloat(card.dataset.rot) || 0;
+          card.style.opacity = '1';
+          card.style.transform = `rotate(${rot}deg)`;
+        });
+      }
+      const spans = heroEl.querySelectorAll('.small-team .word > span');
+      spans.forEach(s => s.style.transform = 'translateY(0)');
+    }
+
+    if (isMobile) {
+      this.renderMobileFlaconCarousel(false);
+    }
+
+    // 5. Mouse parallax across cards (desktop only)
+    let mx = 0, my = 0, tx = 0, ty = 0;
+    const onMouseMove = (e) => {
+      const r = heroEl.getBoundingClientRect();
+      mx = ((e.clientX - r.left) / r.width - 0.5) * 2;
+      my = ((e.clientY - r.top) / r.height - 0.5) * 2;
+    };
+    const onMouseLeave = () => {
+      mx = 0;
+      my = 0;
+    };
+
+    if (heroEl._onParallaxMove) {
+      heroEl.removeEventListener('mousemove', heroEl._onParallaxMove);
+      heroEl.removeEventListener('mouseleave', heroEl._onParallaxLeave);
+    }
+    heroEl._onParallaxMove = onMouseMove;
+    heroEl._onParallaxLeave = onMouseLeave;
+    heroEl.addEventListener('mousemove', onMouseMove);
+    heroEl.addEventListener('mouseleave', onMouseLeave);
+
+    if (!window._fanHeroParallaxActive) {
+      window._fanHeroParallaxActive = true;
+      const loop = () => {
+        tx += (mx - tx) * 0.05;
+        ty += (my - ty) * 0.05;
+        if (window.innerWidth > 768) {
+          document.querySelectorAll('#cardsRow .flacon-card, #cardsRow .card').forEach((card) => {
+            const d = parseFloat(card.dataset.depth) || 8;
+            card.style.translate = `${tx * d}px ${ty * d * 0.5}px`;
+          });
+        } else {
+          document.querySelectorAll('#cardsRow .flacon-card, #cardsRow .card').forEach((card) => {
+            if (card.style.translate && card.style.translate !== '0px 0px') {
+              card.style.translate = '0px 0px';
+            }
+          });
+        }
+        requestAnimationFrame(loop);
+      };
+      requestAnimationFrame(loop);
+    }
+
+    // 6. Mobile Touch & Drag Gestures (Infinite Swipable Carousel)
+    const cardsRow = heroEl.querySelector('#cardsRow');
+    if (cardsRow && !cardsRow._mobileSwipeBound) {
+      cardsRow._mobileSwipeBound = true;
+      let startX = 0, startY = 0, startTime = 0;
+      let isTouching = false;
+      let isDragging = false;
+
+      // Real Touch gestures on mobile
+      cardsRow.addEventListener('touchstart', (e) => {
+        if (window.innerWidth > 768) return;
+        if (!e.touches || e.touches.length === 0) return;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        startTime = Date.now();
+        isTouching = true;
+      }, { passive: true });
+
+      cardsRow.addEventListener('touchmove', (e) => {
+        if (!isTouching || window.innerWidth > 768) return;
+        if (!e.touches || e.touches.length === 0) return;
+        const dx = e.touches[0].clientX - startX;
+        const dy = e.touches[0].clientY - startY;
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+          if (e.cancelable) e.preventDefault();
+        }
+      }, { passive: false });
+
+      cardsRow.addEventListener('touchend', (e) => {
+        if (!isTouching || window.innerWidth > 768) return;
+        isTouching = false;
+        if (!e.changedTouches || e.changedTouches.length === 0) return;
+        const dx = e.changedTouches[0].clientX - startX;
+        const dy = e.changedTouches[0].clientY - startY;
+
+        if (Math.abs(dx) > 28 && Math.abs(dx) > Math.abs(dy) * 1.1) {
+          if (dx < 0) {
+            this.stepMobileHeroCarousel(1);
+          } else {
+            this.stepMobileHeroCarousel(-1);
+          }
+        }
+      }, { passive: true });
+
+      // Mouse drag simulation for desktop testing
+      cardsRow.addEventListener('mousedown', (e) => {
+        if (window.innerWidth > 768) return;
+        startX = e.clientX;
+        startY = e.clientY;
+        startTime = Date.now();
+        isDragging = true;
+      });
+
+      window.addEventListener('mouseup', (e) => {
+        if (!isDragging || window.innerWidth > 768) return;
+        isDragging = false;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        if (Math.abs(dx) > 28 && Math.abs(dx) > Math.abs(dy)) {
+          if (dx < 0) {
+            this.stepMobileHeroCarousel(1);
+          } else {
+            this.stepMobileHeroCarousel(-1);
+          }
+        }
+      });
+    }
+  }
+
+  /* ------------------------------------------------------------------------
+     MOBILE FLACON OVERLAPPING 3D CAROUSEL CONTROLLER
+     ------------------------------------------------------------------------ */
+  getMobileSlotParams(cardIndex, activeIndex) {
+    let diff = cardIndex - activeIndex;
+    while (diff > 3) diff -= 6;
+    while (diff < -2) diff += 6;
+
+    const isNarrow = window.innerWidth <= 480;
+    // Elegant proportional spacing for scaled-up bottles with 3D overlap
+    const spacing = isNarrow ? Math.min(window.innerWidth * 0.19, 74) : Math.min(window.innerWidth * 0.23, 92);
+
+    if (diff === 0) {
+      // Center active bottle (front, prominently scaled up, glowing)
+      return {
+        x: 0,
+        y: 0,
+        scale: isNarrow ? 1.22 : 1.28,
+        rotation: 0,
+        zIndex: 20,
+        opacity: 1
+      };
+    } else if (diff === -1) {
+      // Immediate left overlapping behind center
+      return {
+        x: -spacing,
+        y: 16,
+        scale: 0.98,
+        rotation: -7,
+        zIndex: 14,
+        opacity: 0.92
+      };
+    } else if (diff === 1) {
+      // Immediate right overlapping behind center
+      return {
+        x: spacing,
+        y: 16,
+        scale: 0.98,
+        rotation: 7,
+        zIndex: 14,
+        opacity: 0.92
+      };
+    } else if (diff === -2) {
+      // Outer left
+      return {
+        x: -spacing * 1.84,
+        y: 32,
+        scale: 0.82,
+        rotation: -14,
+        zIndex: 8,
+        opacity: 0.55
+      };
+    } else if (diff === 2) {
+      // Outer right
+      return {
+        x: spacing * 1.84,
+        y: 32,
+        scale: 0.82,
+        rotation: 14,
+        zIndex: 8,
+        opacity: 0.55
+      };
+    } else {
+      // Hidden behind in the circle (diff === 3 or -3)
+      return {
+        x: 0,
+        y: 45,
+        scale: 0.5,
+        rotation: 0,
+        zIndex: 1,
+        opacity: 0
+      };
+    }
+  }
+
+  renderMobileFlaconCarousel(animate = true) {
+    if (window.innerWidth > 768) return;
+    const heroEl = document.querySelector('.hero, #hero-section');
+    if (!heroEl) return;
+    const cards = heroEl.querySelectorAll('#cardsRow .flacon-card, #cardsRow .card');
+    if (!cards || cards.length === 0) return;
+
+    cards.forEach((card, i) => {
+      const slot = this.getMobileSlotParams(i, this.mobileHeroIndex);
+
+      let diff = i - this.mobileHeroIndex;
+      while (diff > 3) diff -= 6;
+      while (diff < -2) diff += 6;
+
+      if (diff === 0) {
+        card.classList.add('is-mobile-center');
+      } else {
+        card.classList.remove('is-mobile-center');
+      }
+
+      if (animate && typeof gsap !== 'undefined') {
+        gsap.to(card, {
+          x: slot.x,
+          y: slot.y,
+          scale: slot.scale,
+          rotation: slot.rotation,
+          opacity: slot.opacity,
+          zIndex: slot.zIndex,
+          duration: 0.45,
+          ease: 'power2.out',
+          overwrite: 'auto'
+        });
+      } else {
+        card.style.transform = `translate3d(${slot.x}px, ${slot.y}px, 0) scale(${slot.scale}) rotate(${slot.rotation}deg)`;
+        card.style.opacity = slot.opacity;
+        card.style.zIndex = slot.zIndex;
+      }
+    });
+
+    // Update dots indicator
+    document.querySelectorAll('#mobileFlaconDots .m-dot').forEach((dot, idx) => {
+      if (idx === this.mobileHeroIndex) {
+        dot.classList.add('active');
+      } else {
+        dot.classList.remove('active');
+      }
+    });
+
+    // Update subline text with active fragrance name & notes
+    const activeCard = cards[this.mobileHeroIndex];
+    if (activeCard) {
+      const name = activeCard.dataset.name || 'Master Extrait';
+      const note = activeCard.dataset.note || '30% Pure Concentration';
+      const nameEl = document.getElementById('heroSublineName');
+      if (nameEl) {
+        nameEl.innerHTML = `<strong>${name}</strong> · ${note}`;
+      }
+    }
+  }
+
+  stepMobileHeroCarousel(dir) {
+    window._justSwipedHero = true;
+    setTimeout(() => { window._justSwipedHero = false; }, 320);
+    this.mobileHeroIndex = ((this.mobileHeroIndex + dir) % 6 + 6) % 6;
+    this.renderMobileFlaconCarousel(true);
+  }
+
+  setMobileFlaconIndex(index) {
+    this.mobileHeroIndex = ((index % 6) + 6) % 6;
+    this.renderMobileFlaconCarousel(true);
+  }
+
+  handleFlaconCardClick(index, productId) {
+    if (window._justSwipedHero) return;
+    if (window.innerWidth <= 768) {
+      if (this.mobileHeroIndex !== index) {
+        this.setMobileFlaconIndex(index);
+        return;
+      }
+    }
+    this.openProductView(productId);
+  }
+
+  resetDesktopFlaconCards() {
+    const cards = document.querySelectorAll('#cardsRow .flacon-card, #cardsRow .card');
+    cards.forEach((card) => {
+      const rot = parseFloat(card.dataset.restRot) || 0;
+      card.classList.remove('is-mobile-center');
+      if (typeof gsap !== 'undefined') {
+        gsap.set(card, {
+          x: 0,
+          y: 0,
+          scale: 1,
+          rotation: rot,
+          opacity: 1,
+          clearProps: 'zIndex,transform'
+        });
+      } else {
+        card.style.transform = `rotate(${rot}deg)`;
+        card.style.opacity = '1';
+        card.style.zIndex = '';
+      }
+    });
   }
 
   /* ------------------------------------------------------------------------
