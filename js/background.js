@@ -1,17 +1,19 @@
 /* ==========================================================================
    MYTHOLIS LUXURY PERFUME - CANVAS BACKGROUND ANIMATION
-   Interactive Liquid Emerald Fluid Mesh, Ripple Pulses & Floating Golden Stardust
+   High-Performance Liquid Emerald Fluid Mesh, Ripple Pulses & Floating Golden Stardust
+   Optimized with Offscreen Pre-Rendered Sprites, Adaptive Density & RAF Throttling
    ========================================================================== */
 
 class MytholisBackground {
   constructor(canvasId) {
     this.canvas = document.getElementById(canvasId);
     if (!this.canvas) return;
-    this.ctx = this.canvas.getContext('2d');
+    this.ctx = this.canvas.getContext('2d', { alpha: false }); // Disable alpha for main canvas context to optimize blitting
     
     this.particles = [];
     this.ripples = [];
-    this.numParticles = 65;
+    this.isMobile = window.innerWidth <= 768;
+    this.numParticles = this.isMobile ? 32 : 65;
     this.mouse = { 
       x: window.innerWidth / 2, 
       y: window.innerHeight / 2, 
@@ -23,6 +25,12 @@ class MytholisBackground {
       lastY: window.innerHeight / 2
     };
     this.time = 0;
+    this.isRunning = true;
+    this.rafId = null;
+
+    // Pre-render glowing particle sprites to avoid expensive shadowBlur in animation loop
+    this.spriteGold = this.createParticleSprite('#D4AF37');
+    this.spriteChampagne = this.createParticleSprite('#F6E6B4');
 
     this.resize();
     this.initParticles();
@@ -30,22 +38,48 @@ class MytholisBackground {
     this.animate();
   }
 
+  createParticleSprite(color) {
+    const size = 48;
+    const offCanvas = document.createElement('canvas');
+    offCanvas.width = size;
+    offCanvas.height = size;
+    const offCtx = offCanvas.getContext('2d');
+    const center = size / 2;
+
+    const grad = offCtx.createRadialGradient(center, center, 1, center, center, center);
+    grad.addColorStop(0, color);
+    grad.addColorStop(0.35, color);
+    grad.addColorStop(0.7, 'rgba(212, 175, 55, 0.25)');
+    grad.addColorStop(1, 'rgba(212, 175, 55, 0)');
+
+    offCtx.fillStyle = grad;
+    offCtx.beginPath();
+    offCtx.arc(center, center, center, 0, Math.PI * 2);
+    offCtx.fill();
+    return offCanvas;
+  }
+
   resize() {
     this.width = this.canvas.width = window.innerWidth;
     this.height = this.canvas.height = window.innerHeight;
+    this.isMobile = this.width <= 768;
   }
 
   bindEvents() {
-    window.addEventListener('resize', () => this.resize());
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => this.resize(), 150);
+    }, { passive: true });
     
     window.addEventListener('mousemove', (e) => {
       this.mouse.targetX = e.clientX;
       this.mouse.targetY = e.clientY;
-    });
+    }, { passive: true });
 
     window.addEventListener('pointerdown', (e) => {
       this.addRipple(e.clientX, e.clientY);
-    });
+    }, { passive: true });
 
     window.addEventListener('touchmove', (e) => {
       if (e.touches.length > 0) {
@@ -53,6 +87,19 @@ class MytholisBackground {
         this.mouse.targetY = e.touches[0].clientY;
       }
     }, { passive: true });
+
+    // Pause loop when tab is hidden to conserve battery/GPU
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        this.isRunning = false;
+        if (this.rafId) cancelAnimationFrame(this.rafId);
+      } else {
+        if (!this.isRunning) {
+          this.isRunning = true;
+          this.animate();
+        }
+      }
+    });
   }
 
   addRipple(x, y) {
@@ -78,7 +125,7 @@ class MytholisBackground {
         vy: (Math.random() - 0.5) * 0.45 - 0.15,
         alpha: Math.random() * 0.7 + 0.2,
         pulseSpeed: Math.random() * 0.03 + 0.015,
-        color: Math.random() > 0.3 ? '#D4AF37' : '#F6E6B4'
+        isGold: Math.random() > 0.3
       });
     }
   }
@@ -110,26 +157,30 @@ class MytholisBackground {
     this.ctx.fillRect(0, 0, this.width, this.height);
 
     // Draw interaction ripples
-    for (let i = this.ripples.length - 1; i >= 0; i--) {
-      const r = this.ripples[i];
-      r.radius += r.speed;
-      r.alpha *= 0.96;
+    if (this.ripples.length > 0) {
+      for (let i = this.ripples.length - 1; i >= 0; i--) {
+        const r = this.ripples[i];
+        r.radius += r.speed;
+        r.alpha *= 0.96;
 
-      this.ctx.save();
-      this.ctx.strokeStyle = `rgba(212, 175, 55, ${r.alpha})`;
-      this.ctx.lineWidth = 2;
-      this.ctx.beginPath();
-      this.ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
-      this.ctx.stroke();
-      this.ctx.restore();
+        this.ctx.save();
+        this.ctx.strokeStyle = `rgba(212, 175, 55, ${r.alpha})`;
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+        this.ctx.stroke();
+        this.ctx.restore();
 
-      if (r.alpha < 0.02 || r.radius > r.maxRadius) {
-        this.ripples.splice(i, 1);
+        if (r.alpha < 0.02 || r.radius > r.maxRadius) {
+          this.ripples.splice(i, 1);
+        }
       }
     }
   }
 
   animate() {
+    if (!this.isRunning) return;
+
     // Smooth velocity lerp for cursor
     this.mouse.vx = this.mouse.targetX - this.mouse.lastX;
     this.mouse.vy = this.mouse.targetY - this.mouse.lastY;
@@ -139,11 +190,11 @@ class MytholisBackground {
     this.mouse.x += (this.mouse.targetX - this.mouse.x) * 0.08;
     this.mouse.y += (this.mouse.targetY - this.mouse.y) * 0.08;
 
-    this.ctx.clearRect(0, 0, this.width, this.height);
     this.drawFluidMesh();
 
-    // Render golden stardust particles with fluid interactive physics
-    for (let p of this.particles) {
+    // Render golden stardust particles via blitting pre-rendered sprites
+    for (let i = 0; i < this.particles.length; i++) {
+      const p = this.particles[i];
       p.x += p.vx;
       p.y += p.vy;
       p.alpha += Math.sin(this.time * 8 * p.pulseSpeed) * 0.006;
@@ -158,23 +209,24 @@ class MytholisBackground {
       const dx = this.mouse.x - p.x;
       const dy = this.mouse.y - p.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 220 && dist > 1) {
-        const force = (220 - dist) / 220;
+      if (dist < 200 && dist > 1) {
+        const force = (200 - dist) / 200;
         p.x += (dx / dist) * force * 1.2;
         p.y += (dy / dist) * force * 1.2;
       }
 
-      this.ctx.save();
+      // Fast GPU texture blit instead of expensive shadowBlur path
+      const sprite = p.isGold ? this.spriteGold : this.spriteChampagne;
+      const drawSize = p.radius * 7;
       this.ctx.globalAlpha = Math.max(0.12, Math.min(0.95, p.alpha));
-      this.ctx.fillStyle = p.color;
-      this.ctx.shadowBlur = 10;
-      this.ctx.shadowColor = '#D4AF37';
-      this.ctx.beginPath();
-      this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-      this.ctx.fill();
-      this.ctx.restore();
+      this.ctx.drawImage(sprite, p.x - drawSize * 0.5, p.y - drawSize * 0.5, drawSize, drawSize);
     }
+    this.ctx.globalAlpha = 1.0;
 
-    requestAnimationFrame(() => this.animate());
+    this.rafId = requestAnimationFrame(() => this.animate());
   }
+}
+
+if (typeof window !== 'undefined') {
+  window.MytholisBackground = MytholisBackground;
 }

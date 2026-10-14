@@ -196,3 +196,9 @@ class MytholisStore {
 }
 
 const store = new MytholisStore();
+
+if (typeof window !== 'undefined') {
+  window.CURRENCY_CONFIG = CURRENCY_CONFIG;
+  window.MytholisStore = MytholisStore;
+  window.store = store;
+}

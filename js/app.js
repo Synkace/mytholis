@@ -27,17 +27,24 @@ class MytholisApp {
     // Hash router listener
     window.addEventListener('hashchange', () => this.handleHashRoute());
 
-    // Scroll Header effect
+    // Scroll Header effect (cached & RAF throttled)
+    const header = document.querySelector('.header-nav');
+    let scrollTicking = false;
     window.addEventListener('scroll', () => {
-      const header = document.querySelector('.header-nav');
-      if (header) {
-        if (window.scrollY > 40) {
-          header.classList.add('scrolled');
-        } else {
-          header.classList.remove('scrolled');
-        }
+      if (!scrollTicking) {
+        requestAnimationFrame(() => {
+          if (header) {
+            if (window.scrollY > 40) {
+              header.classList.add('scrolled');
+            } else {
+              header.classList.remove('scrolled');
+            }
+          }
+          scrollTicking = false;
+        });
+        scrollTicking = true;
       }
-    });
+    }, { passive: true });
 
     // Close mobile nav & currency dropdown when clicking outside
     document.addEventListener('click', (e) => {
@@ -83,13 +90,22 @@ class MytholisApp {
       }
     });
 
-    // Cursor Glow tracking for mouse devices
+    // Cursor Glow tracking for mouse devices (GPU accelerated via RAF translate3d)
     const cursorGlow = document.getElementById('cursor-glow');
     if (cursorGlow && window.matchMedia('(pointer: fine)').matches) {
+      let mouseX = -500, mouseY = -500;
+      let glowTicking = false;
       window.addEventListener('mousemove', (e) => {
-        cursorGlow.style.left = `${e.clientX}px`;
-        cursorGlow.style.top = `${e.clientY}px`;
-      });
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        if (!glowTicking) {
+          requestAnimationFrame(() => {
+            cursorGlow.style.transform = `translate3d(${mouseX - 175}px, ${mouseY - 175}px, 0)`;
+            glowTicking = false;
+          });
+          glowTicking = true;
+        }
+      }, { passive: true });
     }
 
     // Global interactive ripple wave effect on clicks
@@ -1311,4 +1327,14 @@ class MytholisApp {
 }
 
 const app = new MytholisApp();
-window.addEventListener('DOMContentLoaded', () => app.init());
+
+if (typeof window !== 'undefined') {
+  window.MytholisApp = MytholisApp;
+  window.app = app;
+}
+
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', () => app.init());
+} else {
+  app.init();
+}

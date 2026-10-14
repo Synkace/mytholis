@@ -3,8 +3,6 @@
    Dark Emerald Green & Liquid Gold Aesthetics
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=Montserrat:wght@200;300;400;500;600;700&display=swap');
-
 :root {
   /* Color Palette - Dark Emerald & Liquid Gold */
   --bg-deep: #020C09;
@@ -121,13 +119,16 @@ img, svg {
 /* Custom Cursor Glow */
 .cursor-glow {
   position: fixed;
+  top: 0;
+  left: 0;
   width: 350px;
   height: 350px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(212, 175, 55, 0.12) 0%, rgba(14, 66, 51, 0.08) 50%, transparent 70%);
   pointer-events: none;
-  transform: translate(-50%, -50%);
   z-index: 9999;
+  will-change: transform;
+  transform: translate3d(-500px, -500px, 0);
   transition: width 0.3s, height 0.3s, background 0.3s;
 }
 

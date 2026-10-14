@@ -22,7 +22,7 @@ const Components = {
           </svg>
         </button>
         <div class="product-card-img-wrap bottle-pedestal-glow">
-          <img src="${product.image}" alt="${product.name}" class="product-card-img" />
+          <img src="${product.image}" alt="${product.name}" class="product-card-img" loading="lazy" decoding="async" />
         </div>
         <div class="product-card-info">
           <span class="product-card-collection">${product.collection}</span>
@@ -74,32 +74,32 @@ const Components = {
         <div class="cards-row" id="cardsRow">
           <!-- Bottle 1: Terra Petra -->
           <div class="card flacon-card card-1" data-rot="-10" data-depth="14" data-name="Terra Petra" data-note="Woody · Mineral" data-rest-rot="-10" onclick="app.handleFlaconCardClick(0, 'terra-petra')" title="Terra Petra Extrait · Woody · Mineral">
-            <img src="assets/product/1.png" alt="Terra Petra Extrait" class="bottle-png" loading="eager" />
+            <img src="assets/product/1.webp" alt="Terra Petra Extrait" class="bottle-png" loading="eager" />
           </div>
 
           <!-- Bottle 2: Smoky Musk -->
           <div class="card flacon-card card-2" data-rot="-6" data-depth="10" data-name="Smoky Musk" data-note="Smoky · Sensual" data-rest-rot="-6" onclick="app.handleFlaconCardClick(1, 'smoky-musk')" title="Smoky Musk Extrait · Smoky · Sensual">
-            <img src="assets/product/2.png" alt="Smoky Musk Extrait" class="bottle-png" loading="eager" />
+            <img src="assets/product/2.webp" alt="Smoky Musk Extrait" class="bottle-png" loading="eager" />
           </div>
 
           <!-- Bottle 3: Petralux -->
           <div class="card flacon-card card-3" data-rot="-2" data-depth="8" data-name="Petralux" data-note="Amber · Opulent" data-rest-rot="-2" onclick="app.handleFlaconCardClick(2, 'petralux')" title="Petralux Extrait · Amber · Opulent">
-            <img src="assets/product/3.png" alt="Petralux Extrait" class="bottle-png" loading="eager" />
+            <img src="assets/product/3.webp" alt="Petralux Extrait" class="bottle-png" loading="eager" />
           </div>
 
           <!-- Bottle 4: White Spark -->
           <div class="card flacon-card card-4" data-rot="2" data-depth="8" data-name="White Spark" data-note="Fresh · Electric" data-rest-rot="2" onclick="app.handleFlaconCardClick(3, 'white-spark')" title="White Spark Extrait · Fresh · Electric">
-            <img src="assets/product/4.png" alt="White Spark Extrait" class="bottle-png" loading="eager" />
+            <img src="assets/product/4.webp" alt="White Spark Extrait" class="bottle-png" loading="eager" />
           </div>
 
           <!-- Bottle 5: Oud Rion -->
           <div class="card flacon-card card-5" data-rot="6" data-depth="10" data-name="Oud Rion" data-note="Oud · Royal" data-rest-rot="6" onclick="app.handleFlaconCardClick(4, 'oud-rion')" title="Oud Rion Extrait · Oud · Royal">
-            <img src="assets/product/5.png" alt="Oud Rion Extrait" class="bottle-png" loading="eager" />
+            <img src="assets/product/5.webp" alt="Oud Rion Extrait" class="bottle-png" loading="eager" />
           </div>
 
           <!-- Bottle 6: Wood Sera -->
           <div class="card flacon-card card-6" data-rot="10" data-depth="14" data-name="Wood Sera" data-note="Woody · Evening" data-rest-rot="10" onclick="app.handleFlaconCardClick(5, 'wood-sera')" title="Wood Sera Extrait · Woody · Evening">
-            <img src="assets/product/6.png" alt="Wood Sera Extrait" class="bottle-png" loading="eager" />
+            <img src="assets/product/6.webp" alt="Wood Sera Extrait" class="bottle-png" loading="eager" />
           </div>
         </div>
 
@@ -176,7 +176,7 @@ const Components = {
             </div>
           </div>
           <div class="discovery-banner-visual bottle-pedestal-glow">
-            <img src="assets/coffret_banner.jpg" alt="Mytholis Vault Discovery Coffret" style="max-height: 280px; width: 100%; max-width: 380px; object-fit: cover; border-radius: 18px; border: 1px solid rgba(212, 175, 55, 0.35); box-shadow: 0 15px 35px rgba(0,0,0,0.8);" />
+            <img src="assets/coffret_banner.webp" alt="Mytholis Vault Discovery Coffret" loading="lazy" decoding="async" style="max-height: 280px; width: 100%; max-width: 380px; object-fit: cover; border-radius: 18px; border: 1px solid rgba(212, 175, 55, 0.35); box-shadow: 0 15px 35px rgba(0,0,0,0.8);" />
           </div>
         </div>
       </section>
@@ -193,27 +193,27 @@ const Components = {
           <a href="javascript:void(0)" onclick="app.openProductView('smoky-musk')" alt="Smoky Musk">
             <div class="card">
               <div class="wrapper 2bg">
-                <img src="assets/hero/2bg.png" class="cover-image" />
+                <img src="assets/hero/2bg.webp" class="cover-image" loading="lazy" decoding="async" />
               </div>
-              <img src="assets/hero/2.png" class="character" />
+              <img src="assets/hero/2.webp" class="character" loading="lazy" decoding="async" />
             </div>
           </a>
 
           <a href="javascript:void(0)" onclick="app.openProductView('white-spark')" alt="White Spark">
             <div class="card">
               <div class="wrapper 4bg">
-                <img src="assets/hero/4bg.png" class="cover-image" />
+                <img src="assets/hero/4bg.webp" class="cover-image" loading="lazy" decoding="async" />
               </div>
-              <img src="assets/hero/4.png" class="character" />
+              <img src="assets/hero/4.webp" class="character" loading="lazy" decoding="async" />
             </div>
           </a>
 
           <a href="javascript:void(0)" onclick="app.openProductView('wood-sera')" alt="Wood Sera">
             <div class="card">
               <div class="wrapper 6bg">
-                <img src="assets/hero/6bg.png" class="cover-image" />
+                <img src="assets/hero/6bg.webp" class="cover-image" loading="lazy" decoding="async" />
               </div>
-              <img src="assets/hero/6.png" class="character" />
+              <img src="assets/hero/6.webp" class="character" loading="lazy" decoding="async" />
             </div>
           </a>
         </div>

@@ -16,7 +16,7 @@ const MYTHOLIS_CATALOG = [
     price: 3299,
     rating: 5.0,
     reviewsCount: 154,
-    image: "assets/product/1.png",
+    image: "assets/product/1.webp",
     tag: "Mineral Reserve",
     gender: "Unisex",
     scentFamily: "Woody Mineral",
@@ -44,7 +44,7 @@ const MYTHOLIS_CATALOG = [
     price: 3999,
     rating: 5.0,
     reviewsCount: 165,
-    image: "assets/product/5.png",
+    image: "assets/product/5.webp",
     tag: "Royal Extrait",
     gender: "Masculine / Unisex",
     scentFamily: "Resinous Royal Oud",
@@ -72,7 +72,7 @@ const MYTHOLIS_CATALOG = [
     price: 3699,
     rating: 5.0,
     reviewsCount: 186,
-    image: "assets/product/3.png",
+    image: "assets/product/3.webp",
     tag: "Opulent Amber",
     gender: "Unisex",
     scentFamily: "Solar Amber Rose",
@@ -100,7 +100,7 @@ const MYTHOLIS_CATALOG = [
     price: 2999,
     rating: 4.8,
     reviewsCount: 92,
-    image: "assets/product/4.png",
+    image: "assets/product/4.webp",
     tag: "Electric Fresh",
     gender: "Unisex",
     scentFamily: "Aquatic Citrus Neroli",
@@ -128,7 +128,7 @@ const MYTHOLIS_CATALOG = [
     price: 3499,
     rating: 4.9,
     reviewsCount: 138,
-    image: "assets/product/2.png",
+    image: "assets/product/2.webp",
     tag: "Nocturnal Luxe",
     gender: "Unisex",
     scentFamily: "Smoky Amber Leather",
@@ -156,7 +156,7 @@ const MYTHOLIS_CATALOG = [
     price: 3499,
     rating: 4.9,
     reviewsCount: 114,
-    image: "assets/product/6.png",
+    image: "assets/product/6.webp",
     tag: "Evening Woods",
     gender: "Unisex",
     scentFamily: "Warm Woody Amber",
@@ -184,7 +184,7 @@ const MYTHOLIS_CATALOG = [
     price: 1999,
     rating: 5.0,
     reviewsCount: 240,
-    image: "assets/coffret_banner.jpg",
+    image: "assets/coffret_banner.webp",
     tag: "Discovery Set",
     gender: "Unisex",
     scentFamily: "Complete Olfactory Wardrobe",
@@ -203,3 +203,7 @@ const MYTHOLIS_CATALOG = [
     ]
   }
 ];
+
+if (typeof window !== 'undefined') {
+  window.MYTHOLIS_CATALOG = MYTHOLIS_CATALOG;
+}
