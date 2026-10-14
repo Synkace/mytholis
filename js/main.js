@@ -3,6 +3,12 @@
    Imports modules and coordinates state, background, components & app engine
    ========================================================================== */
 
+import gsap from 'gsap';
+
+if (typeof window !== 'undefined') {
+  window.gsap = gsap;
+}
+
 import './catalog.js';
 import './store.js';
 import './background.js';

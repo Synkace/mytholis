@@ -3,6 +3,12 @@
    Handles routing, event listeners, 3D tilt effects, ambiance, and toasts.
    ========================================================================== */
 
+import gsap from 'gsap';
+
+if (typeof window !== 'undefined') {
+  window.gsap = gsap;
+}
+
 class MytholisApp {
   constructor() {
     this.selectedSize = null;
@@ -10,6 +16,7 @@ class MytholisApp {
     this.heroIndex = 0;
     this.isSwiping = false;
     this.mobileHeroIndex = 2; // Petralux as initial center hero
+    this.isIntroAnimating = false;
   }
 
   init() {
@@ -61,16 +68,23 @@ class MytholisApp {
       }
     });
 
-    // Handle window resize
+    // Handle window resize (only switch layout on actual mobile/desktop breakpoint change)
+    let lastWidth = window.innerWidth;
     window.addEventListener('resize', () => {
-      if (window.innerWidth > 992) {
+      const currentWidth = window.innerWidth;
+      const crossedBreakpoint = (lastWidth <= 768 && currentWidth > 768) || (lastWidth > 768 && currentWidth <= 768);
+      lastWidth = currentWidth;
+
+      if (currentWidth > 992) {
         const links = document.getElementById('main-nav-links');
         if (links) links.classList.remove('mobile-open');
       }
-      if (window.innerWidth <= 768) {
-        this.renderMobileFlaconCarousel(false);
-      } else {
-        this.resetDesktopFlaconCards();
+      if (crossedBreakpoint && !this.isIntroAnimating) {
+        if (currentWidth <= 768) {
+          this.renderMobileFlaconCarousel(false);
+        } else {
+          this.resetDesktopFlaconCards();
+        }
       }
     });
 
@@ -265,23 +279,22 @@ class MytholisApp {
     const cards = heroEl.querySelectorAll('#cardsRow .flacon-card, #cardsRow .card');
     if (!cards || cards.length === 0) return;
 
-    // Ensure all flacon cards are immediately visible with their rest rotation
+    // Ensure rest rotation dataset is populated
     cards.forEach((card) => {
       const rot = parseFloat(card.dataset.rot) || 0;
       card.dataset.restRot = rot;
-      card.style.opacity = '1';
-      card.style.visibility = 'visible';
     });
 
     const isMobile = window.innerWidth <= 768;
 
     // Check if GSAP is loaded
     if (typeof gsap !== 'undefined') {
+      this.isIntroAnimating = true;
+
       // 1. Initial states: flacon bottles start off-screen above
       cards.forEach((card) => {
-        const rot = parseFloat(card.dataset.rot) || 0;
-        card.dataset.restRot = rot;
-        gsap.set(card, { y: -850, rotation: rot + 18, opacity: 0, scale: 0.8 });
+        const rot = parseFloat(card.dataset.restRot) || 0;
+        gsap.set(card, { y: -850, rotation: rot + 18, opacity: 0, scale: 0.8, visibility: 'visible' });
       });
 
       const kicker = heroEl.querySelector('.hero-kicker');
@@ -295,7 +308,12 @@ class MytholisApp {
       if (subline) gsap.set(subline, { opacity: 0, y: 25 });
 
       // 2. Intro timeline: Kicker -> Title -> ONE HOUSE -> BOTTLES DROP FALL -> Subline
-      const intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      const intro = gsap.timeline({
+        defaults: { ease: 'power3.out' },
+        onComplete: () => {
+          this.isIntroAnimating = false;
+        }
+      });
 
       if (kicker) intro.to(kicker, { opacity: 1, y: 0, duration: 0.7 }, 0.2);
       if (words.length) intro.to(words, { y: '0%', duration: 0.95, stagger: 0.08, ease: 'power3.out' }, 0.35);
@@ -671,6 +689,7 @@ class MytholisApp {
   }
 
   resetDesktopFlaconCards() {
+    if (this.isIntroAnimating) return;
     const cards = document.querySelectorAll('#cardsRow .flacon-card, #cardsRow .card');
     cards.forEach((card) => {
       const rot = parseFloat(card.dataset.restRot) || 0;
