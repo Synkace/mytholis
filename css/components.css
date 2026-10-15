@@ -3397,3 +3397,356 @@ div#cardsRow {
   color: var(--text-muted);
   margin-top: 0.4rem;
 }
+
+/* ==========================================================================
+   THE CIRCLE OF LEGENDS (MYTHOS SOCIETY) - PHASE 1 COMPONENT STYLING
+   ========================================================================== */
+
+/* Loyalty Hero Stats Grid */
+.loyalty-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin: 1.2rem 0;
+}
+
+.loyalty-stat-box {
+  padding: 1.2rem 1rem;
+  text-align: center;
+  border-radius: 14px;
+  background: rgba(4, 24, 18, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.loyalty-stat-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+
+.loyalty-stat-val {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--gold-light);
+  font-family: var(--font-serif-title);
+}
+
+.loyalty-stat-hint {
+  font-size: 0.7rem;
+  color: var(--gold-primary);
+  margin-top: 0.2rem;
+}
+
+/* Dual-Key Next Tier Progress */
+.loyalty-tier-card {
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.dual-key-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 640px) {
+  .dual-key-grid {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+}
+
+.dual-key-item {
+  background: rgba(4, 24, 18, 0.4);
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.dual-key-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-muted);
+}
+
+.dual-key-label-row strong {
+  color: var(--gold-light);
+}
+
+.loyalty-progress-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(4, 24, 18, 0.8);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  overflow: hidden;
+}
+
+.loyalty-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--gold-gradient);
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+}
+
+/* The Pantheon Codex (6-Flacon Grid) */
+.pantheon-codex-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  margin: 1.2rem 0;
+}
+
+@media (max-width: 768px) {
+  .pantheon-codex-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pantheon-codex-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.codex-card {
+  padding: 1.2rem;
+  border-radius: 16px;
+  text-align: center;
+  position: relative;
+  transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.codex-card.illuminated {
+  border: 1.5px solid var(--gold-primary);
+  background: radial-gradient(circle at 50% 30%, rgba(212, 175, 55, 0.18) 0%, rgba(4, 24, 18, 0.65) 75%);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.25);
+}
+
+.codex-card.locked {
+  border: 1px solid rgba(212, 175, 55, 0.12);
+  background: rgba(3, 18, 13, 0.7);
+  opacity: 0.8;
+}
+
+.codex-card.locked .codex-bottle-img {
+  filter: grayscale(85%) opacity(0.5);
+}
+
+.codex-bottle-wrap {
+  position: relative;
+  max-width: 130px;
+  margin: 0 auto 0.8rem;
+}
+
+.codex-bottle-img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  transition: transform 0.35s ease, filter 0.35s ease;
+}
+
+.codex-card:hover .codex-bottle-img {
+  transform: translateY(-5px) scale(1.04);
+}
+
+.codex-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  margin-top: 0.5rem;
+}
+
+.codex-badge.illuminated {
+  background: var(--gold-gradient);
+  color: #041812;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.5);
+}
+
+.codex-badge.locked {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Milestone Indicators */
+.codex-milestones-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+@media (max-width: 600px) {
+  .codex-milestones-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.codex-milestone-box {
+  padding: 1rem 1.2rem;
+  border-radius: 12px;
+  background: rgba(4, 24, 18, 0.45);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.codex-milestone-box.claimed {
+  border-color: var(--gold-primary);
+  background: rgba(212, 175, 55, 0.12);
+}
+
+/* Redemption Vault Grid (8 Rewards) */
+.loyalty-vault-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin: 1.2rem 0;
+}
+
+.loyalty-reward-card {
+  padding: 1.2rem;
+  border-radius: 14px;
+  background: rgba(4, 24, 18, 0.55);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.loyalty-reward-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(212, 175, 55, 0.5);
+}
+
+.loyalty-reward-card.locked {
+  opacity: 0.65;
+  background: rgba(2, 14, 10, 0.6);
+}
+
+.reward-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.6rem;
+}
+
+.reward-icon-wrap {
+  font-size: 1.6rem;
+}
+
+.reward-cost-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid var(--gold-primary);
+  color: var(--gold-light);
+}
+
+.reward-title {
+  font-size: 0.95rem;
+  font-family: var(--font-serif-title);
+  color: var(--gold-light);
+  margin-bottom: 0.3rem;
+}
+
+.reward-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 1rem;
+  flex-grow: 1;
+}
+
+/* Active Vault Codes */
+.active-codes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.8rem;
+  margin: 1rem 0;
+}
+
+.active-code-card {
+  padding: 1rem;
+  border-radius: 12px;
+  background: rgba(4, 24, 18, 0.6);
+  border: 1px dashed var(--gold-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.active-code-tag {
+  font-family: monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--gold-light);
+  background: rgba(212, 175, 55, 0.12);
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  text-align: center;
+}
+
+/* Tier Perks Table */
+.tier-perks-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1.2rem 0;
+  border-radius: 14px;
+}
+
+.tier-perks-table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.tier-perks-table th {
+  padding: 0.8rem 1rem;
+  background: rgba(4, 24, 18, 0.8);
+  color: var(--gold-light);
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.tier-perks-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+  color: var(--text-main);
+}
+
+.tier-perks-table tr.current-tier-row {
+  background: rgba(212, 175, 55, 0.16) !important;
+  border-left: 3px solid var(--gold-primary);
+}
+
+.tier-perks-table tr.current-tier-row td {
+  color: var(--gold-light);
+  font-weight: 600;
+}

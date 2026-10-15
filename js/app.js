@@ -249,6 +249,8 @@ class MytholisApp {
         contentHtml = Components.renderWishlist();
         break;
       case 'profile':
+      case 'loyalty':
+      case 'circle-of-legends':
         contentHtml = Components.renderProfile();
         break;
       default:
@@ -930,6 +932,9 @@ class MytholisApp {
   }
 
   renderQuizStep(step) {
+    if (step > 2 && !store.loyalty.initiation_completed) {
+      store.completeInitiation('quiz');
+    }
     const mainContainer = document.getElementById('main-content-view');
     if (mainContainer) {
       mainContainer.innerHTML = Components.renderFindScent(step);
@@ -1030,10 +1035,23 @@ class MytholisApp {
 
   checkoutCartWhatsApp() {
     if (store.cart.length === 0) return;
-    const total = store.getCartTotal();
+    const baseSubtotal = store.getCartTotal();
+    const discount = store.getDiscountAmount(baseSubtotal);
+    const finalAmount = Math.max(0, baseSubtotal - discount);
+    const appliedReward = store.getAppliedReward();
+
     const itemsList = store.cart.map(i => `• ${i.name} (${i.size}ml × ${i.quantity}) ${i.engraving ? `[Engraved: "${i.engraving}"]` : ''} - ${store.formatPrice(i.price * i.quantity)}`).join('\n');
 
-    const text = `Hello Mytholis Fragrance Concierge,\n\nI would like to checkout my Mytholis Vault Cart:\n\n${itemsList}\n\n*Total Amount:* ${store.formatPrice(total)} (Incl. 18% GST)\n*Delivery:* Free Express Armored Shipping across India\n\nPlease assist with UPI / Razorpay payment instructions.`;
+    let rewardLine = '';
+    if (appliedReward) {
+      if (appliedReward.type === 'discount') {
+        rewardLine = `\n*Mythos Concession (${appliedReward.code}):* -${store.formatPrice(discount)}\n`;
+      } else if (appliedReward.type === 'gift') {
+        rewardLine = `\n*Complimentary Vault Gift:* ${appliedReward.giftItem} (₹0)\n`;
+      }
+    }
+
+    const text = `Hello Mytholis Fragrance Concierge,\n\nI would like to checkout my Mytholis Vault Cart:\n\n${itemsList}${rewardLine}\n*Total Amount:* ${store.formatPrice(finalAmount)} (Incl. 18% GST)\n*Delivery:* Free Express Armored Shipping across India\n\nPlease assist with UPI / Razorpay payment instructions.`;
 
     window.open(`https://wa.me/917770009170?text=${encodeURIComponent(text)}`, '_blank');
   }
@@ -1072,13 +1090,84 @@ class MytholisApp {
 
   completeRazorpayPayment(amount) {
     this.closeRazorpayModal();
-    this.showToast(`✦ Payment of ${store.formatPrice(amount)} Authorized via Razorpay Secure! Order Confirmed.`);
+    const purchasedItems = [...store.cart];
+    const loyaltyResult = store.recordLoyaltyPurchase(purchasedItems, amount);
+
+    let toastMsg = `✦ Payment of ${store.formatPrice(amount)} Authorized! Earned +${loyaltyResult.spendEarned} Spendable & +${loyaltyResult.totalLegacyEarned} Legacy Mythos!`;
+    if (loyaltyResult.milestoneMsg) {
+      toastMsg += loyaltyResult.milestoneMsg;
+    }
+    this.showToast(toastMsg);
+
     if (store.cart.length > 0) {
       store.cart = [];
       store.saveLocalStorage('mytholis_cart', []);
       store.notify();
     }
     this.navigateTo('track-order');
+  }
+
+  /* --------------------------------------------------------------------------
+     THE CIRCLE OF LEGENDS - LOYALTY ACTION DISPATCHERS
+     -------------------------------------------------------------------------- */
+
+  redeemReward(rewardId) {
+    const res = store.redeemMythosReward(rewardId);
+    if (res.success) {
+      this.showToast(`✦ Concession ${res.code} added to your Active Vault Codes!`);
+      this.renderProfileModalContent();
+      this.renderCartModalContent();
+    } else {
+      this.showToast(`⚠️ ${res.error}`);
+    }
+  }
+
+  applyCartRewardCode(code) {
+    const res = store.applyRewardCode(code);
+    if (res.success) {
+      this.showToast(`✦ Code ${code} applied to checkout!`);
+      this.renderCartModalContent();
+      this.renderProfileModalContent();
+      const razorpayBody = document.getElementById('razorpay-modal-body');
+      if (razorpayBody) {
+        razorpayBody.innerHTML = Components.renderRazorpayModal(store.cart.length ? { id: null } : MYTHOLIS_CATALOG[0]);
+      }
+    } else {
+      this.showToast(`⚠️ ${res.error}`);
+    }
+  }
+
+  removeCartRewardCode() {
+    store.removeAppliedRewardCode();
+    this.showToast("Reward code removed from checkout.");
+    this.renderCartModalContent();
+    this.renderProfileModalContent();
+    const razorpayBody = document.getElementById('razorpay-modal-body');
+    if (razorpayBody) {
+      razorpayBody.innerHTML = Components.renderRazorpayModal(store.cart.length ? { id: null } : MYTHOLIS_CATALOG[0]);
+    }
+  }
+
+  copyRewardCode(code) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(code).then(() => {
+        this.showToast(`✦ Code ${code} copied to clipboard!`);
+      }).catch(() => {
+        this.showToast(`✦ Code: ${code}`);
+      });
+    } else {
+      this.showToast(`✦ Code: ${code}`);
+    }
+  }
+
+  completeUserInitiation() {
+    const res = store.completeInitiation('dossier');
+    if (res.success) {
+      this.showToast(`✦ Scent Initiate Honorific Awarded: +150 Spendable & +100 Legacy Mythos!`);
+      this.renderProfileModalContent();
+    } else {
+      this.showToast("✦ You are already an initiated member of The Circle of Legends.");
+    }
   }
 
   /* --------------------------------------------------------------------------
@@ -1226,7 +1315,10 @@ class MytholisApp {
   }
 
   simulateCheckout() {
-    this.showToast("Order placed! Generating Mytholis VIP Certificate...");
+    const purchased = [...store.cart];
+    const total = store.getCartTotal();
+    const result = store.recordLoyaltyPurchase(purchased, total);
+    this.showToast(`Order placed! Earned +${result.spendEarned} Spendable & +${result.totalLegacyEarned} Legacy Mythos ✦`);
     store.cart = [];
     store.saveLocalStorage('mytholis_cart', []);
     store.notify();

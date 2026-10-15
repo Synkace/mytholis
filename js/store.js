@@ -12,6 +12,182 @@ const CURRENCY_CONFIG = {
   RUB: { symbol: '₽', rate: 1.06, name: 'RUB (₽)', flag: '🇷🇺' }
 };
 
+/* ==========================================================================
+   THE CIRCLE OF LEGENDS - PHASE 1 ARCHITECTURE DEFINITIONS
+   ========================================================================== */
+
+const LOYALTY_TIERS = [
+  {
+    level: 1,
+    name: "The Observer",
+    tagline: "Initiate of the Outer Court",
+    minLegacy: 0,
+    minBottles: 0,
+    multiplier: 1, // 1x = 3% return
+    returnPct: "3%",
+    cashbackPct: 3,
+    shipping: "Free ship ₹3,000+",
+    freeShippingMin: 3000,
+    birthday: "30% Off 1 Item with purchase",
+    birthdayPerk: "30% Off 1 Item with purchase",
+    earlyAccess: "Standard Release",
+    icon: "👁️"
+  },
+  {
+    level: 2,
+    name: "The Curator",
+    tagline: "Keeper of the First Seal",
+    minLegacy: 500,
+    minBottles: 1,
+    multiplier: 2, // 2x = 6% return
+    returnPct: "6%",
+    cashbackPct: 6,
+    shipping: "Free ship ₹999+",
+    freeShippingMin: 999,
+    birthday: "50% Off 1 Item max ₹4,000",
+    birthdayPerk: "50% Off 1 Item max ₹4,000",
+    earlyAccess: "1-Day Early Access",
+    icon: "🗝️"
+  },
+  {
+    level: 3,
+    name: "The Collector",
+    tagline: "Guardian of the Resonant Vault",
+    minLegacy: 2500,
+    minBottles: 3,
+    multiplier: 3, // 3x = 9% return
+    returnPct: "9%",
+    cashbackPct: 9,
+    shipping: "Free ship ₹999+",
+    freeShippingMin: 999,
+    birthday: "Free 15ml Bottle + 400M with order",
+    birthdayPerk: "Free 15ml Bottle + 400M with order",
+    earlyAccess: "3-Day Early Access",
+    icon: "⚔️"
+  },
+  {
+    level: 4,
+    name: "The Archivist",
+    tagline: "Master of the Scent Codex",
+    minLegacy: 8000,
+    minBottles: 6,
+    multiplier: 4, // 4x = 12% return
+    returnPct: "12%",
+    cashbackPct: 12,
+    shipping: "Free Express Shipping",
+    freeShippingMin: 0,
+    birthday: "Free 50ml Bottle + 500M with order",
+    birthdayPerk: "Free 50ml Bottle + 500M with order",
+    earlyAccess: "1-Week Early Access",
+    icon: "📜"
+  },
+  {
+    level: 5,
+    name: "The Patron",
+    tagline: "High Sovereign of Mythos",
+    minLegacy: 20000,
+    minBottles: 12,
+    multiplier: 5, // 5x = 15% return
+    returnPct: "15%",
+    cashbackPct: 15,
+    shipping: "Free Priority Armored Shipping",
+    freeShippingMin: 0,
+    birthday: "Free 100ml Bottle + 750M with order",
+    birthdayPerk: "Free 100ml Bottle + 750M with order",
+    earlyAccess: "1-Month Private Reserve Access",
+    icon: "👑"
+  }
+];
+
+const LOYALTY_REWARDS = [
+  {
+    id: "DISC_200",
+    title: "₹200 Off Voucher",
+    desc: "Redeemable on orders of ₹1,500 or more.",
+    minLevel: 1,
+    cost: 200,
+    type: "discount",
+    amount: 200,
+    minOrder: 1500,
+    icon: "🎟️"
+  },
+  {
+    id: "DISC_400",
+    title: "₹400 Off Voucher",
+    desc: "Redeemable on orders of ₹1,500 or more.",
+    minLevel: 1,
+    cost: 400,
+    type: "discount",
+    amount: 400,
+    minOrder: 1500,
+    icon: "🎟️"
+  },
+  {
+    id: "FREE_8ML",
+    title: "Free 8ml Deluxe Travel Spray",
+    desc: "Ships complimentary with your next flacon acquisition.",
+    minLevel: 2,
+    cost: 500,
+    type: "gift",
+    giftItem: "8ml Deluxe Travel Atomizer",
+    icon: "✨"
+  },
+  {
+    id: "DISC_800",
+    title: "₹800 Off Voucher",
+    desc: "Elite concession credit across the full house catalog.",
+    minLevel: 3,
+    cost: 800,
+    type: "discount",
+    amount: 800,
+    minOrder: 0,
+    icon: "⚜️"
+  },
+  {
+    id: "FREE_15ML",
+    title: "Exclusive 15ml Vault Flacon",
+    desc: "Handcrafted miniature flacon with gold seal wax cap.",
+    minLevel: 3,
+    cost: 1100,
+    type: "gift",
+    giftItem: "15ml Vault Flacon Miniature",
+    icon: "🧪"
+  },
+  {
+    id: "DISC_2500",
+    title: "₹2,500 Off Voucher",
+    desc: "Archivist reserve concession on major acquisitions.",
+    minLevel: 4,
+    cost: 2500,
+    type: "discount",
+    amount: 2500,
+    minOrder: 0,
+    icon: "🏛️"
+  },
+  {
+    id: "FREE_50ML",
+    title: "Free 50ml Extrait Bottle",
+    desc: "Sovereign tribute: Any full 50ml flacon of your choice.",
+    minLevel: 5,
+    cost: 3500,
+    type: "gift",
+    giftItem: "Full 50ml Signature Extrait",
+    icon: "👑"
+  },
+  {
+    id: "FREE_100ML",
+    title: "Free 100ml Extrait Bottle",
+    desc: "High Sovereign tribute: Any full 100ml Masterpiece flacon.",
+    minLevel: 5,
+    cost: 5000,
+    type: "gift",
+    giftItem: "Full 100ml Masterpiece Extrait",
+    icon: "🏆"
+  }
+];
+
+const CORE_SCENT_IDS = ['king-scar', 'petralux', 'oud-rion', 'spark', 'wood-sera', 'ash'];
+
 class MytholisStore {
   constructor() {
     let savedCurrency = this.loadLocalStorage('mytholis_currency', 'INR');
@@ -21,18 +197,53 @@ class MytholisStore {
     this.currency = savedCurrency;
     this.cart = this.loadLocalStorage('mytholis_cart', []);
     this.wishlist = this.loadLocalStorage('mytholis_wishlist', []);
+    
+    // Core Loyalty State: The Circle of Legends
+    const defaultLoyalty = {
+      spendable_mythos: 1450,
+      legacy_mythos: 1600,
+      full_bottles_purchased: 2,
+      initiation_completed: true,
+      codex_unlocked: ['petralux', 'oud-rion'],
+      trinity_claimed: false,
+      pantheon_claimed: false,
+      reviewed_scents: [],
+      active_reward_codes: [
+        {
+          code: "MYTH-DISC_400-8821",
+          id: "DISC_400",
+          title: "₹400 Off Voucher",
+          type: "discount",
+          amount: 400,
+          minOrder: 1500,
+          used: false,
+          createdAt: "2026-08-01T10:00:00.000Z"
+        }
+      ],
+      applied_reward_code: null
+    };
+
+    const loadedLoyalty = this.loadLocalStorage('mytholis_loyalty', defaultLoyalty);
+    this.loyalty = Object.assign({}, defaultLoyalty, loadedLoyalty);
+    if (!Array.isArray(this.loyalty.codex_unlocked)) this.loyalty.codex_unlocked = ['petralux', 'oud-rion'];
+    if (!Array.isArray(this.loyalty.active_reward_codes)) this.loyalty.active_reward_codes = defaultLoyalty.active_reward_codes;
+    if (!Array.isArray(this.loyalty.reviewed_scents)) this.loyalty.reviewed_scents = [];
+    if (typeof this.loyalty.spendable_mythos !== 'number') this.loyalty.spendable_mythos = 1450;
+    if (typeof this.loyalty.legacy_mythos !== 'number') this.loyalty.legacy_mythos = 1600;
+    if (typeof this.loyalty.full_bottles_purchased !== 'number') this.loyalty.full_bottles_purchased = 2;
+
     this.user = this.loadLocalStorage('mytholis_user', {
       isLoggedIn: true,
       name: "Lord Alexander",
       email: "alexander@mytholis.com",
-      tier: "Obsidian Circle VIP",
-      points: 1450,
+      tier: "Level 2: The Curator",
+      points: this.loyalty.spendable_mythos,
       orders: [
         {
           id: "MYTH-89021",
           date: "2026-07-28",
           items: "Petralux Extrait de Parfum (100ml)",
-          total: 3699,
+          total: 4999,
           status: "Delivered",
           tracking: "MYTH-VIP-99420"
         },
@@ -40,12 +251,15 @@ class MytholisStore {
           id: "MYTH-78412",
           date: "2026-05-14",
           items: "Oud Rion Extrait de Parfum (100ml)",
-          total: 3999,
+          total: 6999,
           status: "Delivered",
           tracking: "MYTH-VIP-88124"
         }
       ]
     });
+
+    // Ensure user tier & points mirror loyalty state
+    this.syncUserWithLoyalty();
 
     this.currentView = 'home';
     this.selectedProductId = 'king-scar';
@@ -193,12 +407,342 @@ class MytholisStore {
     this.saveLocalStorage('mytholis_user', this.user);
     this.notify();
   }
+
+  /* --------------------------------------------------------------------------
+     THE CIRCLE OF LEGENDS - LOYALTY & REWARDS CORE CONTROLLER
+     -------------------------------------------------------------------------- */
+
+  syncUserWithLoyalty() {
+    if (!this.loyalty) return;
+    const tier = this.getCurrentTier();
+    this.user.tier = `Level ${tier.level}: ${tier.name}`;
+    this.user.points = this.loyalty.spendable_mythos;
+    this.saveLocalStorage('mytholis_loyalty', this.loyalty);
+    this.saveLocalStorage('mytholis_user', this.user);
+  }
+
+  getCurrentTier() {
+    const legacy = this.loyalty ? this.loyalty.legacy_mythos : 0;
+    const bottles = this.loyalty ? this.loyalty.full_bottles_purchased : 0;
+
+    for (let i = LOYALTY_TIERS.length - 1; i >= 0; i--) {
+      const tier = LOYALTY_TIERS[i];
+      if (legacy >= tier.minLegacy && bottles >= tier.minBottles) {
+        return tier;
+      }
+    }
+    return LOYALTY_TIERS[0];
+  }
+
+  getNextTier() {
+    const current = this.getCurrentTier();
+    if (current.level >= LOYALTY_TIERS.length) return null;
+    return LOYALTY_TIERS[current.level];
+  }
+
+  getTierProgress() {
+    const currentTier = this.getCurrentTier();
+    const nextTier = this.getNextTier();
+
+    const currentLegacy = (this.loyalty && typeof this.loyalty.legacy_mythos === 'number') ? this.loyalty.legacy_mythos : 0;
+    const currentBottles = (this.loyalty && typeof this.loyalty.full_bottles_purchased === 'number') ? this.loyalty.full_bottles_purchased : 0;
+
+    if (!nextTier) {
+      return {
+        currentTier,
+        nextTier: null,
+        legacyCurrent: currentLegacy,
+        legacyRequired: currentTier.minLegacy || 0,
+        legacyProgressPct: 100,
+        legacyPct: 100,
+        bottlesCurrent: currentBottles,
+        bottlesRequired: currentTier.minBottles || 0,
+        bottleProgressPct: 100,
+        bottlesPct: 100,
+        legacyNeeded: 0,
+        bottlesNeeded: 0
+      };
+    }
+
+    const legacyRange = nextTier.minLegacy - currentTier.minLegacy;
+    const legacyGained = Math.max(0, currentLegacy - currentTier.minLegacy);
+    const legacyProgressPct = legacyRange > 0 ? Math.min(100, Math.round((legacyGained / legacyRange) * 100)) : 100;
+
+    const bottleRange = nextTier.minBottles - currentTier.minBottles;
+    const bottlesGained = Math.max(0, currentBottles - currentTier.minBottles);
+    const bottleProgressPct = bottleRange > 0 ? Math.min(100, Math.round((bottlesGained / bottleRange) * 100)) : 100;
+
+    return {
+      currentTier,
+      nextTier,
+      legacyCurrent: currentLegacy,
+      legacyRequired: nextTier.minLegacy,
+      legacyProgressPct,
+      legacyPct: legacyProgressPct,
+      bottlesCurrent: currentBottles,
+      bottlesRequired: nextTier.minBottles,
+      bottleProgressPct,
+      bottlesPct: bottleProgressPct,
+      legacyNeeded: Math.max(0, nextTier.minLegacy - currentLegacy),
+      bottlesNeeded: Math.max(0, nextTier.minBottles - currentBottles)
+    };
+  }
+
+  completeInitiation(source = 'general') {
+    if (this.loyalty.initiation_completed) {
+      return { alreadyCompleted: true };
+    }
+    this.loyalty.spendable_mythos += 150;
+    this.loyalty.legacy_mythos += 100;
+    this.loyalty.initiation_completed = true;
+    this.syncUserWithLoyalty();
+    this.notify();
+    return { success: true, earnedSpendable: 150, earnedLegacy: 100 };
+  }
+
+  recordLoyaltyPurchase(items = [], subtotalBaseINR = 0) {
+    const currentTier = this.getCurrentTier();
+    const spendEarned = Math.floor(subtotalBaseINR / 100) * 3 * currentTier.multiplier;
+
+    let bottleMilestoneBonus = 0;
+    let newFullBottles = 0;
+    const newlyUnlockedCodex = [];
+
+    items.forEach(item => {
+      const qty = item.quantity || 1;
+      const size = Number(item.size);
+
+      if (size === 50) {
+        bottleMilestoneBonus += 300 * qty;
+        newFullBottles += qty;
+      } else if (size === 100) {
+        bottleMilestoneBonus += 500 * qty;
+        newFullBottles += qty;
+      }
+
+      if ((size === 50 || size === 100) && CORE_SCENT_IDS.includes(item.id)) {
+        if (!this.loyalty.codex_unlocked.includes(item.id)) {
+          this.loyalty.codex_unlocked.push(item.id);
+          newlyUnlockedCodex.push(item.id);
+        }
+      }
+    });
+
+    this.loyalty.full_bottles_purchased += newFullBottles;
+    this.loyalty.spendable_mythos += spendEarned;
+    this.loyalty.legacy_mythos += (spendEarned + bottleMilestoneBonus);
+
+    let milestoneBonus = 0;
+    let milestoneMsg = '';
+
+    if (this.loyalty.codex_unlocked.length >= 3 && !this.loyalty.trinity_claimed) {
+      this.loyalty.spendable_mythos += 300;
+      this.loyalty.legacy_mythos += 300;
+      this.loyalty.trinity_claimed = true;
+      milestoneBonus += 300;
+      milestoneMsg += ' • Trinity Accord Claimed (+300M)';
+    }
+
+    if (this.loyalty.codex_unlocked.length >= 6 && !this.loyalty.pantheon_claimed) {
+      this.loyalty.spendable_mythos += 1000;
+      this.loyalty.legacy_mythos += 1000;
+      this.loyalty.pantheon_claimed = true;
+      milestoneBonus += 1000;
+      milestoneMsg += ' • Pantheon Sovereign Claimed (+1,000M)';
+    }
+
+    if (this.loyalty.applied_reward_code) {
+      const activeCode = this.loyalty.active_reward_codes.find(
+        c => c.code === this.loyalty.applied_reward_code
+      );
+      if (activeCode) {
+        activeCode.used = true;
+      }
+      this.loyalty.applied_reward_code = null;
+    }
+
+    this.syncUserWithLoyalty();
+    this.notify();
+
+    return {
+      spendEarned,
+      bottleMilestoneBonus,
+      totalLegacyEarned: spendEarned + bottleMilestoneBonus + milestoneBonus,
+      newFullBottles,
+      newlyUnlockedCodex,
+      milestoneMsg
+    };
+  }
+
+  redeemMythosReward(rewardId) {
+    const reward = LOYALTY_REWARDS.find(r => r.id === rewardId);
+    if (!reward) {
+      return { success: false, error: "Concession voucher not found in Vault." };
+    }
+
+    const currentTier = this.getCurrentTier();
+    if (currentTier.level < reward.minLevel) {
+      return { 
+        success: false, 
+        error: `Requires Level ${reward.minLevel}: ${LOYALTY_TIERS[reward.minLevel - 1].name}.` 
+      };
+    }
+
+    if (this.loyalty.spendable_mythos < reward.cost) {
+      const deficit = reward.cost - this.loyalty.spendable_mythos;
+      return { 
+        success: false, 
+        error: `Insufficient Spendable Mythos. Need ${deficit.toLocaleString()} more M.` 
+      };
+    }
+
+    this.loyalty.spendable_mythos -= reward.cost;
+
+    const uniqueCode = `MYTH-${reward.id}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const newRewardCode = {
+      code: uniqueCode,
+      id: reward.id,
+      title: reward.title,
+      type: reward.type,
+      amount: reward.amount || 0,
+      giftItem: reward.giftItem || '',
+      minOrder: reward.minOrder || 0,
+      used: false,
+      createdAt: new Date().toISOString()
+    };
+
+    this.loyalty.active_reward_codes.unshift(newRewardCode);
+    this.syncUserWithLoyalty();
+    this.notify();
+
+    return { success: true, code: uniqueCode, reward: newRewardCode };
+  }
+
+  applyRewardCode(rawCode) {
+    if (!rawCode) return { success: false, error: "Please enter a voucher code." };
+    const codeStr = rawCode.trim().toUpperCase();
+
+    const existing = this.loyalty.active_reward_codes.find(
+      c => c.code.toUpperCase() === codeStr
+    );
+
+    if (!existing) {
+      return { success: false, error: "Unrecognized Mythos code." };
+    }
+    if (existing.used) {
+      return { success: false, error: "This Mythos code has already been redeemed." };
+    }
+
+    const cartSubtotalINR = this.getCartTotal();
+    if (existing.minOrder > 0 && cartSubtotalINR < existing.minOrder) {
+      return { 
+        success: false, 
+        error: `Requires minimum order of ${this.formatPrice(existing.minOrder)}.` 
+      };
+    }
+
+    this.loyalty.applied_reward_code = existing.code;
+    this.syncUserWithLoyalty();
+    this.notify();
+
+    return { success: true, reward: existing };
+  }
+
+  removeAppliedRewardCode() {
+    this.loyalty.applied_reward_code = null;
+    this.syncUserWithLoyalty();
+    this.notify();
+  }
+
+  getAppliedReward() {
+    if (!this.loyalty || !this.loyalty.applied_reward_code) return null;
+    return this.loyalty.active_reward_codes.find(
+      c => c.code === this.loyalty.applied_reward_code && !c.used
+    ) || null;
+  }
+
+  getDiscountAmount(subtotalINR = null) {
+    const subtotal = subtotalINR !== null ? subtotalINR : this.getCartTotal();
+    const reward = this.getAppliedReward();
+    if (!reward || reward.type !== 'discount') return 0;
+
+    // Guardrail: Max 30% of cart subtotal (in base INR) or ₹2,500, whichever is lower
+    const maxAllowed = Math.min(Math.floor(subtotal * 0.30), 2500);
+    return Math.min(reward.amount, maxAllowed);
+  }
+
+  getAppliedGift() {
+    const reward = this.getAppliedReward();
+    if (!reward || reward.type !== 'gift') return null;
+    return {
+      name: reward.giftItem || reward.title,
+      value: reward.cost || 500
+    };
+  }
+
+  getEstimatedOrderLoyalty(subtotalBaseINR = 0, items = []) {
+    const currentTier = this.getCurrentTier();
+    const subtotal = subtotalBaseINR || this.getCartTotal();
+    const cartItems = items && items.length ? items : (this.cart || []);
+    const spendEarned = Math.floor(subtotal / 100) * 3 * (currentTier.multiplier || 1);
+
+    let bottleMilestoneBonus = 0;
+    cartItems.forEach(item => {
+      const qty = item.quantity || 1;
+      const size = Number(item.size);
+      if (size === 50) {
+        bottleMilestoneBonus += (300 * qty);
+      } else if (size === 100) {
+        bottleMilestoneBonus += (500 * qty);
+      }
+    });
+
+    return {
+      spendEarned,
+      legacyEarned: spendEarned + bottleMilestoneBonus
+    };
+  }
+
+  recordScentReview(scentId, hasMedia = false) {
+    const currentTier = this.getCurrentTier();
+    if (currentTier.level < 2) {
+      return { success: false, error: "Dossier reviews unlock at Level 2: The Curator." };
+    }
+    if (this.loyalty.reviewed_scents.includes(scentId)) {
+      return { success: false, error: "You have already inscribed your review for this extrait." };
+    }
+
+    const pts = hasMedia ? 100 : 50;
+    this.loyalty.spendable_mythos += pts;
+    this.loyalty.reviewed_scents.push(scentId);
+    this.syncUserWithLoyalty();
+    this.notify();
+
+    return { success: true, points: pts };
+  }
 }
 
 const store = new MytholisStore();
+store.LOYALTY_TIERS = LOYALTY_TIERS;
+store.LOYALTY_REWARDS = LOYALTY_REWARDS;
+store.CORE_SCENT_IDS = CORE_SCENT_IDS;
 
 if (typeof window !== 'undefined') {
   window.CURRENCY_CONFIG = CURRENCY_CONFIG;
+  window.LOYALTY_TIERS = LOYALTY_TIERS;
+  window.LOYALTY_REWARDS = LOYALTY_REWARDS;
+  window.CORE_SCENT_IDS = CORE_SCENT_IDS;
   window.MytholisStore = MytholisStore;
   window.store = store;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    store,
+    MytholisStore,
+    CURRENCY_CONFIG,
+    LOYALTY_TIERS,
+    LOYALTY_REWARDS,
+    CORE_SCENT_IDS
+  };
 }

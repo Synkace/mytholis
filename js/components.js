@@ -374,6 +374,16 @@ const Components = {
       return `
         <div class="container">
           <div class="quiz-wrapper quiz-result-card liquid-glass-card">
+            <!-- Scent Initiation Milestone Banner -->
+            <div class="initiation-reward-banner liquid-glass-card" style="margin-bottom: 1.5rem; border: 1px solid var(--gold-primary); padding: 1.2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; text-align: left;">
+              <div>
+                <span class="glass-pill" style="font-size: 0.68rem; color: var(--gold-light);">✦ The Circle of Legends</span>
+                <h4 style="font-size: 1.05rem; color: var(--gold-light); margin: 0.4rem 0 0.2rem;">Initiation Honorific Awarded</h4>
+                <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">+150 Spendable Mythos & +100 Legacy Mythos credited to your Obsidian Vault.</p>
+              </div>
+              <button class="btn btn-gold" style="font-size: 0.78rem; padding: 0.5rem 1.1rem;" onclick="app.openProfileModal()">View Obsidian Dossier 👑</button>
+            </div>
+
             <span class="glass-pill" style="margin-bottom: 1rem;">✦ 98.6% Olfactory Match</span>
             <h2 class="gold-shimmer-text quiz-match-title">Your Signature Extract Is: ${matchedProduct.name}</h2>
             <div style="max-width: 320px; margin: 0 auto 2rem;" class="bottle-pedestal-glow">
@@ -823,8 +833,16 @@ const Components = {
 
   /* Render Cart Modal Contents */
   renderCartModal() {
-    const total = store.getCartTotal();
-    const count = store.getCartCount();
+    const rawSubtotal = store.getCartTotal ? store.getCartTotal() : 0;
+    const count = store.getCartCount ? store.getCartCount() : 0;
+    const appliedReward = store.getAppliedReward ? store.getAppliedReward() : null;
+    const discountAmount = store.getDiscountAmount ? store.getDiscountAmount(rawSubtotal) : 0;
+    const appliedGift = store.getAppliedGift ? store.getAppliedGift() : null;
+    const finalTotal = Math.max(0, rawSubtotal - discountAmount);
+    const estLoyalty = store.getEstimatedOrderLoyalty ? store.getEstimatedOrderLoyalty(rawSubtotal, store.cart) : { spendEarned: 0, legacyEarned: 0 };
+    const unusedCodes = (store.loyalty && Array.isArray(store.loyalty.active_reward_codes))
+      ? store.loyalty.active_reward_codes.filter(c => !c.used)
+      : [];
 
     return `
       <div class="modal-header">
@@ -872,14 +890,85 @@ const Components = {
               </div>
             `).join('')}
           </div>
+
+          <!-- Vault Concessions & Voucher Input -->
+          <div class="modal-section-box liquid-glass-card" style="margin-top: 1rem; padding: 1rem;">
+            <div class="modal-section-header" style="margin-bottom: 0.6rem;">
+              <h5 class="modal-section-title" style="font-size: 0.82rem;">✦ Mythos Society Concession / Voucher</h5>
+              <span class="modal-section-hint">Margin guardrails applied</span>
+            </div>
+
+            ${appliedReward ? `
+              <div class="applied-voucher-banner" style="background: rgba(212, 175, 55, 0.12); border: 1px solid var(--gold-primary); padding: 0.8rem; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; margin-bottom: 0.6rem;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">${appliedReward.code}</span>
+                    <strong style="color: var(--gold-light); font-size: 0.85rem;">${appliedReward.title}</strong>
+                  </div>
+                  <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 0.2rem;">
+                    ${appliedReward.type === 'discount' 
+                      ? `Concession applied: -${store.formatPrice(discountAmount)} (Capped at 30% of cart / ₹2,500 max)` 
+                      : `Complimentary Vault Gift: ${appliedGift ? appliedGift.name : 'Exclusive Flacon'} attached`
+                    }
+                  </div>
+                </div>
+                <button class="icon-btn" onclick="app.removeCartRewardCode()" title="Remove Voucher" style="color: #ff6b6b; font-size: 0.9rem;">✕</button>
+              </div>
+            ` : `
+              <div style="display: flex; gap: 0.5rem; margin-bottom: 0.6rem;">
+                <input type="text" id="cart-voucher-input" class="engraving-input" placeholder="Enter MYTH-... Code" style="margin: 0; text-transform: uppercase; font-size: 0.82rem; padding: 0.5rem 0.8rem;" />
+                <button class="btn btn-gold" style="font-size: 0.75rem; padding: 0.5rem 1rem; white-space: nowrap;"
+                        onclick="const el = document.getElementById('cart-voucher-input'); if(el && el.value.trim()){ app.applyCartRewardCode(el.value.trim()); }">
+                  Apply ✦
+                </button>
+              </div>
+            `}
+
+            ${!appliedReward && unusedCodes.length > 0 ? `
+              <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; margin-top: 0.5rem;">
+                <span style="font-size: 0.7rem; color: var(--text-muted);">Quick apply:</span>
+                ${unusedCodes.slice(0, 3).map(c => `
+                  <button class="glass-pill" style="font-size: 0.65rem; cursor: pointer; padding: 0.2rem 0.6rem;" onclick="app.applyCartRewardCode('${c.code}')">
+                    ${c.code} (${c.type === 'discount' ? `₹${c.amount}` : 'Gift'})
+                  </button>
+                `).join('')}
+              </div>
+            ` : ''}
+
+            <!-- Estimated Mythos Earnings -->
+            <div style="margin-top: 0.8rem; padding: 0.6rem 0.8rem; border-radius: 8px; background: rgba(4, 24, 18, 0.4); border: 1px solid rgba(212, 175, 55, 0.15); font-size: 0.74rem; color: var(--gold-light); display: flex; align-items: center; gap: 0.5rem;">
+              <span>✦</span>
+              <div>
+                Acquisition Earnings: <strong>+${estLoyalty.spendEarned} Spendable M</strong> & <strong>+${estLoyalty.legacyEarned} Legacy M</strong>
+              </div>
+            </div>
+          </div>
         `}
       </div>
 
       ${store.cart.length > 0 ? `
         <div class="modal-footer modal-cart-footer">
-          <div class="modal-subtotal-row">
-            <span>Total (Incl. all taxes)</span>
-            <span class="gold-text modal-total-amount">${store.formatPrice(total)}</span>
+          <div class="modal-subtotal-row" style="flex-direction: column; gap: 0.3rem;">
+            ${discountAmount > 0 ? `
+              <div style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-muted); width: 100%;">
+                <span>Subtotal</span>
+                <span>${store.formatPrice(rawSubtotal)}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--gold-light); width: 100%;">
+                <span>Concession (${appliedReward ? appliedReward.code : 'Reward'})</span>
+                <span>-${store.formatPrice(discountAmount)}</span>
+              </div>
+            ` : ''}
+            ${appliedGift ? `
+              <div style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--gold-light); width: 100%;">
+                <span>Vault Flacon Gift (${appliedGift.name})</span>
+                <span class="glass-pill" style="font-size: 0.65rem; padding: 0.1rem 0.4rem;">FREE</span>
+              </div>
+            ` : ''}
+            <div style="display: flex; justify-content: space-between; font-size: 1rem; width: 100%; margin-top: 0.2rem; border-top: 1px solid rgba(212, 175, 55, 0.2); padding-top: 0.4rem;">
+              <span>Total (Incl. all taxes)</span>
+              <span class="gold-text modal-total-amount">${store.formatPrice(finalTotal)}</span>
+            </div>
           </div>
           <div class="modal-cart-actions-row">
             <button class="btn btn-gold" style="flex: 1;" onclick="app.openRazorpayModal()">
@@ -965,22 +1054,311 @@ const Components = {
     return this.renderWishlistModal();
   },
 
-  /* Render User Profile View */
-  renderProfile() {
-    const u = store.user;
+  /* --------------------------------------------------------------------------
+     THE CIRCLE OF LEGENDS - VIP DOSSIER & LOYALTY PROGRAM CONTENT
+     -------------------------------------------------------------------------- */
+  renderLoyaltyDossierContent(isModal = false) {
+    const currentTier = store.getCurrentTier();
+    const nextTier = store.getNextTier();
+    const prog = store.getTierProgress();
+    const loyalty = store.loyalty;
+    const unlockedCount = (loyalty.codex_unlocked || []).length;
+    const unusedCodes = (loyalty.active_reward_codes || []).filter(c => !c.used);
+
     return `
-      <div class="container">
-        <div class="profile-header-card liquid-glass-card">
-          <div class="vip-badge-icon">👑</div>
+      <!-- 1. The Circle of Legends Hero Stats -->
+      <div class="loyalty-stats-grid">
+        <div class="loyalty-stat-box liquid-glass-card">
+          <div class="loyalty-stat-label">Spendable Mythos</div>
+          <div class="loyalty-stat-val gold-shimmer-text">${(loyalty.spendable_mythos || 0).toLocaleString()} M</div>
+          <div class="loyalty-stat-hint">₹${(loyalty.spendable_mythos || 0).toLocaleString()} Concession Value</div>
+        </div>
+        <div class="loyalty-stat-box liquid-glass-card">
+          <div class="loyalty-stat-label">Legacy Mythos</div>
+          <div class="loyalty-stat-val">${(loyalty.legacy_mythos || 0).toLocaleString()} M</div>
+          <div class="loyalty-stat-hint">Lifetime Status Points</div>
+        </div>
+        <div class="loyalty-stat-box liquid-glass-card">
+          <div class="loyalty-stat-label">Full Bottles Owned</div>
+          <div class="loyalty-stat-val">${loyalty.full_bottles_purchased || 0}</div>
+          <div class="loyalty-stat-hint">50ml & 100ml Extraits</div>
+        </div>
+        <div class="loyalty-stat-box liquid-glass-card">
+          <div class="loyalty-stat-label">Current Privilege</div>
+          <div class="loyalty-stat-val" style="font-size: 1.25rem;">${currentTier.multiplier || 1}x Back</div>
+          <div class="loyalty-stat-hint">${currentTier.cashbackPct || ((currentTier.multiplier || 1) * 3)}% Extrait Return</div>
+        </div>
+      </div>
+
+      <!-- Dual-Key Next Tier Elevation Card -->
+      <div class="loyalty-tier-card liquid-glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
           <div>
-            <span class="glass-pill" style="margin-bottom: 0.5rem;">${u.tier}</span>
-            <h2 class="profile-welcome-title">Welcome, ${u.name}</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem;">${u.email} • ${u.points} Vault Rewards Points</p>
+            <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">Tier ${currentTier.level} of 5</span>
+            <h4 style="font-size: 1.2rem; color: var(--gold-light); margin: 0.4rem 0 0.2rem;">${currentTier.name}</h4>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">
+              ${nextTier ? `Path to elevation: Level ${nextTier.level} — ${nextTier.name}` : 'Pinnacle Status Achieved — Patron of the Extrait Pantheon'}
+            </p>
+          </div>
+          <div style="text-align: right;">
+            <span class="glass-pill" style="border-color: var(--gold-primary); color: var(--gold-primary);">
+              ✦ ${currentTier.multiplier || 1}x Earning Multiplier
+            </span>
           </div>
         </div>
 
-        <div class="liquid-glass-card profile-orders-card">
-          <h3 class="font-title" style="margin-bottom: 1.5rem;">Recent Order History</h3>
+        ${nextTier ? `
+          <div class="dual-key-grid">
+            <div class="dual-key-item">
+              <div class="dual-key-label-row">
+                <span>Key 1: Legacy Mythos</span>
+                <strong>${(prog.legacyCurrent || 0).toLocaleString()} / ${(prog.legacyRequired || 0).toLocaleString()} M</strong>
+              </div>
+              <div class="loyalty-progress-track">
+                <div class="loyalty-progress-fill" style="width: ${prog.legacyPct || prog.legacyProgressPct || 0}%;"></div>
+              </div>
+            </div>
+            <div class="dual-key-item">
+              <div class="dual-key-label-row">
+                <span>Key 2: Full Bottles (50ml / 100ml)</span>
+                <strong>${prog.bottlesCurrent || 0} / ${prog.bottlesRequired || 0} Bottles</strong>
+              </div>
+              <div class="loyalty-progress-track">
+                <div class="loyalty-progress-fill" style="width: ${prog.bottlesPct || prog.bottleProgressPct || 0}%;"></div>
+              </div>
+            </div>
+          </div>
+        ` : `
+          <div style="margin-top: 1rem; padding: 0.8rem 1rem; border-radius: 10px; background: rgba(212, 175, 55, 0.1); border: 1px solid var(--gold-primary); font-size: 0.82rem; color: var(--gold-light);">
+            👑 <strong>Pinnacle Status:</strong> You hold the highest honor in the Mythos Society. Enjoy 5x Mythos on all acquisitions, 1-month early access to maceration vintages, and bespoke private flacon conciergerie.
+          </div>
+        `}
+      </div>
+
+      <!-- Initiation Hook Banner if not completed -->
+      ${!loyalty.initiation_completed ? `
+        <div class="modal-section-box liquid-glass-card" style="border: 1px solid var(--gold-primary); background: radial-gradient(circle at 10% 50%, rgba(212, 175, 55, 0.15) 0%, rgba(4, 24, 18, 0.6) 100%);">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+            <div>
+              <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">✦ Scent Initiate Privilege</span>
+              <h5 style="font-size: 0.95rem; color: var(--gold-light); margin: 0.3rem 0 0.2rem;">Claim Your 150 Mythos Initiation Bounty</h5>
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0;">Register your olfactory signature in the VIP Dossier to unlock +150 Spendable & +100 Legacy Mythos.</p>
+            </div>
+            <button class="btn btn-gold" style="font-size: 0.78rem; padding: 0.45rem 1rem;" onclick="app.completeUserInitiation()">
+              Claim Honorific ✦
+            </button>
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- 2. The Pantheon Codex (6-Flacon Grid) -->
+      <div class="modal-section-box liquid-glass-card">
+        <div class="modal-section-header">
+          <div>
+            <h4 class="modal-section-title">✦ The Pantheon Codex</h4>
+            <span class="modal-section-hint">Acquire 50ml or 100ml flacons to illuminate and unlock legend milestones</span>
+          </div>
+          <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-light);">${unlockedCount} / 6 Illuminated</span>
+        </div>
+
+        <!-- Milestones Row -->
+        <div class="codex-milestones-row">
+          <div class="codex-milestone-box ${loyalty.trinity_claimed || unlockedCount >= 3 ? 'claimed' : ''}">
+            <div>
+              <strong style="color: var(--gold-light); font-size: 0.82rem;">✦ The Trinity (3 Core Scents)</strong>
+              <span style="display: block; font-size: 0.72rem; color: var(--text-muted);">+300 Spendable & +300 Legacy Mythos</span>
+            </div>
+            <span class="glass-pill" style="font-size: 0.65rem;">
+              ${loyalty.trinity_claimed || unlockedCount >= 3 ? 'Unlocked ✓' : `${unlockedCount}/3 Flacons`}
+            </span>
+          </div>
+
+          <div class="codex-milestone-box ${loyalty.pantheon_claimed || unlockedCount >= 6 ? 'claimed' : ''}">
+            <div>
+              <strong style="color: var(--gold-light); font-size: 0.82rem;">👑 The Full Pantheon (All 6 Scents)</strong>
+              <span style="display: block; font-size: 0.72rem; color: var(--text-muted);">+1,000 Spendable & +1,000 Legacy Mythos</span>
+            </div>
+            <span class="glass-pill" style="font-size: 0.65rem;">
+              ${loyalty.pantheon_claimed || unlockedCount >= 6 ? 'Unlocked ✓' : `${unlockedCount}/6 Flacons`}
+            </span>
+          </div>
+        </div>
+
+        <!-- 6-Flacon Visual Grid -->
+        <div class="pantheon-codex-grid">
+          ${(store.CORE_SCENT_IDS || (typeof CORE_SCENT_IDS !== 'undefined' ? CORE_SCENT_IDS : ['king-scar', 'petralux', 'oud-rion', 'spark', 'wood-sera', 'ash'])).map(id => {
+            const product = (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG.find(p => p.id === id) : null) || { name: id, subtitle: 'Signature Extrait', image: 'assets/products/1kingscar.webp' };
+            const isUnlocked = Array.isArray(loyalty.codex_unlocked) && loyalty.codex_unlocked.includes(id);
+
+            return `
+              <div class="codex-card ${isUnlocked ? 'illuminated' : 'locked'} liquid-glass-card">
+                <div class="codex-bottle-wrap">
+                  <img src="${product.image}" alt="${product.name}" class="codex-bottle-img" loading="lazy" decoding="async" />
+                </div>
+                <div>
+                  <h5 style="font-family: var(--font-serif-title); font-size: 0.95rem; margin-bottom: 0.2rem; color: var(--gold-light);">${product.name}</h5>
+                  <p style="font-size: 0.72rem; color: var(--text-muted); margin: 0;">${product.subtitle}</p>
+                </div>
+                <div>
+                  ${isUnlocked 
+                    ? `<span class="codex-badge illuminated">✦ ILLUMINATED</span>` 
+                    : `<span class="codex-badge locked">🔒 50ml / 100ml Needed</span>`
+                  }
+                  ${!isUnlocked ? `
+                    <button class="btn btn-glass" style="width: 100%; font-size: 0.68rem; padding: 0.35rem 0.5rem; margin-top: 0.6rem;"
+                            onclick="${isModal ? 'app.closeProfileModal();' : ''} app.openProductView('${id}')">
+                      Acquire Flacon ✦
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- 3. Redemption Vault & Active Codes -->
+      <div class="modal-section-box liquid-glass-card">
+        <div class="modal-section-header">
+          <div>
+            <h4 class="modal-section-title">✦ The Vault Redemption</h4>
+            <span class="modal-section-hint">Convert spendable Mythos into concessions or complimentary flacons</span>
+          </div>
+          <span class="gold-text" style="font-size: 0.85rem; font-weight: 700;">Balance: ${(loyalty.spendable_mythos || 0).toLocaleString()} M</span>
+        </div>
+
+        ${unusedCodes.length > 0 ? `
+          <div style="margin-bottom: 1.2rem;">
+            <div style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.6rem;">
+              ✦ Ready to Apply Vouchers (${unusedCodes.length})
+            </div>
+            <div class="active-codes-grid">
+              ${unusedCodes.map(c => `
+                <div class="active-code-card">
+                  <div class="active-code-tag">${c.code}</div>
+                  <div style="font-size: 0.85rem; color: var(--gold-light); font-weight: 600;">${c.title}</div>
+                  <div style="font-size: 0.74rem; color: var(--text-muted);">
+                    ${c.type === 'discount' ? `₹${c.amount} Concession (Min order ₹${(c.minOrder || 0).toLocaleString()})` : 'Complimentary Vault Gift'}
+                  </div>
+                  <div style="display: flex; gap: 0.4rem; margin-top: 0.2rem;">
+                    <button class="btn btn-gold" style="flex: 1; font-size: 0.72rem; padding: 0.4rem;"
+                            onclick="${isModal ? 'app.closeProfileModal();' : ''} app.openCartModal(); app.applyCartRewardCode('${c.code}');">
+                      Apply to Cart ✦
+                    </button>
+                    <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.4rem 0.6rem;" onclick="app.copyRewardCode('${c.code}')">
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        <div class="loyalty-vault-grid">
+          ${(store.LOYALTY_REWARDS || (typeof LOYALTY_REWARDS !== 'undefined' ? LOYALTY_REWARDS : [])).map(r => {
+            const isLevelLocked = currentTier.level < r.minLevel;
+            const isAffordable = (loyalty.spendable_mythos || 0) >= r.cost;
+            const tiers = store.LOYALTY_TIERS || (typeof LOYALTY_TIERS !== 'undefined' ? LOYALTY_TIERS : []);
+            const minTierObj = tiers.find(t => t.level === r.minLevel);
+
+            return `
+              <div class="loyalty-reward-card ${isLevelLocked ? 'locked' : ''}">
+                <div class="reward-top-row">
+                  <div class="reward-icon-wrap">${r.type === 'gift' ? '🎁' : '🏷️'}</div>
+                  <span class="reward-cost-pill">${r.cost} M</span>
+                </div>
+                <h5 class="reward-title">${r.title}</h5>
+                <p class="reward-desc">${r.desc}</p>
+                <div>
+                  ${isLevelLocked ? `
+                    <button class="btn btn-glass" style="width: 100%; font-size: 0.7rem; padding: 0.45rem; opacity: 0.6; cursor: not-allowed;" disabled>
+                      🔒 Unlocks at ${minTierObj ? minTierObj.name : `Level ${r.minLevel}`}
+                    </button>
+                  ` : !isAffordable ? `
+                    <button class="btn btn-glass" style="width: 100%; font-size: 0.7rem; padding: 0.45rem; opacity: 0.6; cursor: not-allowed;" disabled>
+                      Need ${(r.cost - loyalty.spendable_mythos).toLocaleString()} more M
+                    </button>
+                  ` : `
+                    <button class="btn btn-gold" style="width: 100%; font-size: 0.72rem; padding: 0.45rem;" onclick="app.redeemReward('${r.id}')">
+                      Redeem for ${r.cost} M ✦
+                    </button>
+                  `}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- 4. Tier Perks Comparative Table -->
+      <div class="modal-section-box liquid-glass-card">
+        <div class="modal-section-header">
+          <h4 class="modal-section-title">✦ The Circle of Legends Hierarchy</h4>
+          <span class="modal-section-hint">Dual-Key Tier Structure & Privileges</span>
+        </div>
+
+        <div class="tier-perks-table-wrap">
+          <table class="tier-perks-table">
+            <thead>
+              <tr>
+                <th>Tier</th>
+                <th>Dual Keys (Legacy / Bottles)</th>
+                <th>Earning Multiplier</th>
+                <th>Early Access</th>
+                <th>Shipping</th>
+                <th>Annual Birthday Gift</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(store.LOYALTY_TIERS || LOYALTY_TIERS).map(t => {
+                const isCurrent = t.level === currentTier.level;
+                const shippingText = (typeof t.freeShippingMin === 'number' && t.freeShippingMin > 0)
+                  ? `Free over ₹${t.freeShippingMin.toLocaleString()}`
+                  : (t.shipping || 'Complimentary Armored');
+                const bdayText = t.birthdayPerk || t.birthday || 'Bespoke Scent Privilege';
+                const cashback = t.cashbackPct !== undefined ? t.cashbackPct : ((t.multiplier || 1) * 3);
+                return `
+                  <tr class="${isCurrent ? 'current-tier-row' : ''}">
+                    <td>
+                      <strong>Level ${t.level}: ${t.name}</strong>
+                      ${isCurrent ? '<span class="glass-pill" style="font-size: 0.6rem; margin-left: 0.3rem;">CURRENT</span>' : ''}
+                    </td>
+                    <td>${(t.minLegacy || 0).toLocaleString()} M & ${t.minBottles || 0} ${t.minBottles === 1 ? 'Bottle' : 'Bottles'}</td>
+                    <td><strong class="gold-text">${t.multiplier || 1}x</strong> (${cashback}% back)</td>
+                    <td>${t.earlyAccess || 'Standard Release'}</td>
+                    <td>${shippingText}</td>
+                    <td>${bdayText}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  },
+
+  /* Render User Profile View */
+  renderProfile() {
+    const u = store.user;
+    const currentTier = store.getCurrentTier();
+
+    return `
+      <div class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
+        <div class="profile-header-card liquid-glass-card" style="margin-bottom: 2rem;">
+          <div class="vip-badge-icon">👑</div>
+          <div>
+            <span class="glass-pill" style="margin-bottom: 0.5rem;">${currentTier.name}</span>
+            <h2 class="profile-welcome-title">Welcome, ${u.name}</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">${u.email} • ${(store.loyalty ? store.loyalty.spendable_mythos : 0).toLocaleString()} Spendable Mythos (${(store.loyalty ? store.loyalty.legacy_mythos : 0).toLocaleString()} Legacy M)</p>
+          </div>
+        </div>
+
+        ${this.renderLoyaltyDossierContent(false)}
+
+        <div class="liquid-glass-card profile-orders-card" style="margin-top: 2rem;">
+          <h3 class="font-title" style="margin-bottom: 1.5rem;">Recent Vault Acquisitions</h3>
           <div class="table-responsive">
             <table class="order-history-table">
               <thead>
@@ -1013,6 +1391,7 @@ const Components = {
   /* Render VIP Profile & Vault Modal (Popup) with Currency and Track Order */
   renderProfileModal() {
     const u = store.user;
+    const currentTier = store.getCurrentTier();
     const currencies = [
       { code: 'INR', flag: '🇮🇳', sym: '₹' },
       { code: 'USD', flag: '🇺🇸', sym: '$' },
@@ -1027,8 +1406,8 @@ const Components = {
         <div style="display: flex; align-items: center; gap: 0.75rem;">
           <div class="modal-crest-icon">👑</div>
           <div>
-            <h3 class="modal-title font-title">Obsidian Vault</h3>
-            <p class="modal-subtitle">VIP Client Dossier & Currency Controls</p>
+            <h3 class="modal-title font-title">The Obsidian Dossier</h3>
+            <p class="modal-subtitle">The Circle of Legends • VIP Client Vault</p>
           </div>
         </div>
         <button class="icon-btn modal-close-btn" onclick="app.closeProfileModal()" title="Close Vault">✕</button>
@@ -1043,16 +1422,19 @@ const Components = {
           <div class="profile-modal-user-info">
             <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
               <h4 class="profile-user-name">${u.name}</h4>
-              <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">${u.tier}</span>
+              <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">${currentTier.name}</span>
             </div>
             <p class="profile-user-email">${u.email}</p>
             <div class="profile-points-pill">
-              ✦ <strong>${u.points.toLocaleString()}</strong> Vault Loyalty Points
+              ✦ <strong>${(store.loyalty ? store.loyalty.spendable_mythos : 0).toLocaleString()}</strong> Spendable Mythos &nbsp;|&nbsp; <strong>${(store.loyalty ? store.loyalty.legacy_mythos : 0).toLocaleString()}</strong> Legacy M
             </div>
           </div>
         </div>
 
-        <!-- 1. Currency Selector -->
+        <!-- Full Circle of Legends Loyalty Program -->
+        ${this.renderLoyaltyDossierContent(true)}
+
+        <!-- 5. Currency Selector -->
         <div class="modal-section-box liquid-glass-card">
           <div class="modal-section-header">
             <h4 class="modal-section-title">✦ Store Currency (Base: INR ₹)</h4>
@@ -1070,7 +1452,7 @@ const Components = {
           </div>
         </div>
 
-        <!-- 2. Live Consignment & Order Tracker -->
+        <!-- 6. Live Consignment & Order Tracker -->
         <div class="modal-section-box liquid-glass-card">
           <div class="modal-section-header">
             <h4 class="modal-section-title">✦ Track Consignment</h4>
@@ -1125,7 +1507,7 @@ const Components = {
           </div>
         </div>
 
-        <!-- 3. Recent Vault Acquisitions -->
+        <!-- 7. Recent Vault Acquisitions -->
         <div class="modal-section-box liquid-glass-card">
           <div class="modal-section-header">
             <h4 class="modal-section-title">✦ Recent Vault Orders</h4>
@@ -1257,7 +1639,11 @@ const Components = {
   /* Render Razorpay / UPI Instant Checkout Modal */
   renderRazorpayModal(productOrCart) {
     const isSingleProduct = !!productOrCart.id;
-    const amount = isSingleProduct ? (app.selectedPrice || productOrCart.price) : store.getCartTotal();
+    const baseSubtotal = isSingleProduct ? (app.selectedPrice || productOrCart.price) : store.getCartTotal();
+    const appliedReward = isSingleProduct ? null : store.getAppliedReward();
+    const appliedGift = isSingleProduct ? null : store.getAppliedGift();
+    const discount = isSingleProduct ? 0 : store.getDiscountAmount(baseSubtotal);
+    const finalAmount = Math.max(0, baseSubtotal - discount);
     const title = isSingleProduct ? productOrCart.name : `Vault Cart (${store.getCartCount()} items)`;
 
     return `
@@ -1274,14 +1660,33 @@ const Components = {
 
       <div class="modal-scroll-body" style="padding: 1.2rem;">
         <!-- Order Summary Pill -->
-        <div class="liquid-glass-card" style="padding: 1.2rem; margin-bottom: 1.2rem; display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <h5 style="font-size: 0.95rem; color: var(--gold-light); margin-bottom: 0.2rem;">${title}</h5>
-            <span style="font-size: 0.75rem; color: var(--text-muted);">Inclusive of 18% GST & Free Express Delivery</span>
+        <div class="liquid-glass-card" style="padding: 1.2rem; margin-bottom: 1.2rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h5 style="font-size: 0.95rem; color: var(--gold-light); margin-bottom: 0.2rem;">${title}</h5>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Inclusive of 18% GST & Free Express Delivery</span>
+            </div>
+            <div style="text-align: right;">
+              <span class="gold-text" style="font-size: 1.4rem; font-weight: 700;">${store.formatPrice(finalAmount)}</span>
+            </div>
           </div>
-          <div style="text-align: right;">
-            <span class="gold-text" style="font-size: 1.4rem; font-weight: 700;">${store.formatPrice(amount)}</span>
-          </div>
+
+          ${discount > 0 || appliedGift ? `
+            <div style="margin-top: 0.8rem; padding-top: 0.6rem; border-top: 1px solid rgba(212, 175, 55, 0.2); font-size: 0.75rem;">
+              ${discount > 0 ? `
+                <div style="display: flex; justify-content: space-between; color: var(--gold-light);">
+                  <span>Mythos Concession (${appliedReward ? appliedReward.code : ''}):</span>
+                  <span>-${store.formatPrice(discount)}</span>
+                </div>
+              ` : ''}
+              ${appliedGift ? `
+                <div style="display: flex; justify-content: space-between; color: var(--gold-light); margin-top: 0.2rem;">
+                  <span>Complimentary Gift Flacon:</span>
+                  <span>${appliedGift.name} (Free)</span>
+                </div>
+              ` : ''}
+            </div>
+          ` : ''}
         </div>
 
         <!-- Payment Method Tabs -->
@@ -1331,8 +1736,8 @@ const Components = {
       </div>
 
       <div class="modal-footer" style="display: flex; gap: 0.8rem;">
-        <button class="btn btn-gold" style="flex: 1;" onclick="app.completeRazorpayPayment(${amount})">
-          Authorize & Pay ${store.formatPrice(amount)} ✦
+        <button class="btn btn-gold" style="flex: 1;" onclick="app.completeRazorpayPayment(${finalAmount})">
+          Authorize & Pay ${store.formatPrice(finalAmount)} ✦
         </button>
       </div>
     `;
