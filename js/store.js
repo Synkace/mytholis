@@ -48,7 +48,7 @@ class MytholisStore {
     });
 
     this.currentView = 'home';
-    this.selectedProductId = 'terra-petra';
+    this.selectedProductId = 'king-scar';
     this.activeCategory = 'All';
     this.searchQuery = '';
     this.listeners = [];

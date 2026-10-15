@@ -877,8 +877,8 @@ div#cardsRow {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: clamp(150px, 14vw, 200px);
-  padding: 90px 24px;
+  gap: clamp(40px, 5vw, 70px);
+  padding: 60px 24px;
   box-sizing: border-box;
   overflow: visible;
 }
@@ -889,16 +889,16 @@ div#cardsRow {
 }
 
 .hero-card-row .card {
-  width: 200px;
-  height: 300px;
+  width: 280px;
+  height: 420px;
   position: relative;
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  padding: 0 36px;
+  padding: 0 28px;
   perspective: 2500px;
   margin: 0;
-  transform: scale(1.5) translateZ(0);
+  transform: translate3d(0, 0, 0);
   transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1);
   cursor: pointer;
   will-change: transform;
@@ -908,35 +908,55 @@ div#cardsRow {
 }
 
 .hero-card-row .cover-image {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
   pointer-events: none;
+  image-rendering: auto;
+  transform: translateZ(0);
+  transition: opacity 0.45s cubic-bezier(0.2, 0.9, 0.3, 1);
+  will-change: opacity;
+}
+
+.hero-card-row .cover-image.base-card-img {
+  opacity: 1;
+  z-index: 1;
+}
+
+.hero-card-row .cover-image.hover-bg-img {
+  opacity: 0;
+  z-index: 2;
+}
+
+.hero-card-row .card:hover .cover-image.hover-bg-img,
+.hero-card-row .card.is-active .cover-image.hover-bg-img {
+  opacity: 1;
+}
+
+.hero-card-row .card:hover .cover-image.base-card-img,
+.hero-card-row .card.is-active .cover-image.base-card-img {
+  opacity: 0;
 }
 
 .hero-card-row .wrapper {
   transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1), 
               box-shadow 0.45s cubic-bezier(0.2, 0.9, 0.3, 1),
-              opacity 0.45s ease;
+              border-color 0.45s ease;
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   z-index: -1;
-  border: 2px solid transparent;
+  border: 1.5px solid rgba(212, 175, 55, 0.45);
   border-radius: 14px;
   overflow: hidden;
-  background-color: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.12);
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.12)),
-    linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fcf6ba, #aa771c);
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
+  background-color: #03140e;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 1px rgba(212, 175, 55, 0.3);
   will-change: transform, box-shadow;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -946,9 +966,10 @@ div#cardsRow {
 .hero-card-row .card:hover .wrapper,
 .hero-card-row .card.is-active .wrapper {
   transform: perspective(900px) translateY(-5%) rotateX(25deg) translateZ(0);
-  box-shadow: 2px 35px 32px -8px rgba(0, 0, 0, 0.75);
-  -webkit-box-shadow: 2px 35px 32px -8px rgba(0, 0, 0, 0.75);
-  -moz-box-shadow: 2px 35px 32px -8px rgba(0, 0, 0, 0.75);
+  border-color: rgba(252, 246, 186, 0.85);
+  box-shadow: 2px 35px 32px -8px rgba(0, 0, 0, 0.85), 0 0 25px rgba(212, 175, 55, 0.35);
+  -webkit-box-shadow: 2px 35px 32px -8px rgba(0, 0, 0, 0.85), 0 0 25px rgba(212, 175, 55, 0.35);
+  -moz-box-shadow: 2px 35px 32px -8px rgba(0, 0, 0, 0.85), 0 0 25px rgba(212, 175, 55, 0.35);
 }
 
 .hero-card-row .wrapper::before,
@@ -956,32 +977,31 @@ div#cardsRow {
   content: "";
   opacity: 0;
   width: 100%;
-  height: 80px;
+  height: 60px;
   transition: opacity 0.45s ease, height 0.45s ease;
   position: absolute;
   left: 0;
+  z-index: 3;
+  pointer-events: none;
   will-change: opacity;
 }
 
 .hero-card-row .wrapper::before {
   top: 0;
-  height: 100%;
   background-image: linear-gradient(
-    to top,
-    transparent 46%,
-    rgba(12, 13, 19, 0.5) 68%,
-    rgba(12, 13, 19) 97%
+    to bottom,
+    rgba(3, 20, 14, 0.5) 0%,
+    transparent 100%
   );
 }
 
 .hero-card-row .wrapper::after {
   bottom: 0;
-  opacity: 1;
+  opacity: 0.7;
   background-image: linear-gradient(
-    to bottom,
-    transparent 46%,
-    rgba(12, 13, 19, 0.5) 68%,
-    rgba(12, 13, 19) 97%
+    to top,
+    rgba(3, 20, 14, 0.6) 0%,
+    transparent 100%
   );
 }
 
@@ -989,7 +1009,7 @@ div#cardsRow {
 .hero-card-row .card.is-active .wrapper::before,
 .hero-card-row .card:hover .wrapper::after,
 .hero-card-row .card.is-active .wrapper::after {
-  opacity: 1;
+  opacity: 0.85;
 }
 
 .hero-card-row .card:hover .wrapper::after,
@@ -2638,12 +2658,14 @@ div#cardsRow {
   }
 
   .hero-card-row {
-    gap: 65px;
+    gap: 40px;
     padding: 50px 16px;
   }
 
   .hero-card-row .card {
-    transform: scale(1.15);
+    width: 240px;
+    height: 360px;
+    transform: translate3d(0, 0, 0);
   }
 }
 
@@ -3167,6 +3189,7 @@ div#cardsRow {
 }
 
 .btn-whatsapp-buy {
+  background: linear-gradient(135deg, #25D366, #128C7E) !important;
   color: #FFFFFF !important;
   font-weight: 600;
   border-color: rgba(37, 211, 102, 0.4) !important;
@@ -3179,9 +3202,9 @@ div#cardsRow {
 }
 
 .btn-razorpay-buy {
-  color: #FFFFFF !important;
+  background: linear-gradient(135deg, #D4AF37, #AA771C) !important;
+  color: #03120C !important;
   font-weight: 700;
-  border-color: rgba(212, 175, 55, 0.5) !important;
   flex: 1;
 }
 

@@ -1,6 +1,6 @@
 /* ==========================================================================
    MYTHOLIS LUXURY PERFUME - CATALOG DATA
-   Sequence: 1. Terra Petra, 2. Oud Rion, 3. Petralux, 4. White Spark, 5. Smoky Musk, 6. Wood Sera, 7. Discovery Coffret
+   Sequence: 1. King Scar, 2. Petralux, 3. Oud Rion, 4. Spark, 5. Wood Sera, 6. Ash, 7. Discovery Coffret
    Brand tagline: "Wear Your Legend."
    Collection line: "Six elements. Six legends. One house."
    Formulated in Mayfair, London UK · Handcrafted & Bottled in Ahmedabad, India
@@ -8,171 +8,171 @@
 
 const MYTHOLIS_CATALOG = [
   {
-    id: "terra-petra",
-    name: "Terra Petra Extrait de Parfum",
-    subtitle: "Woody · Mineral",
-    collection: "Woody · Mineral",
-    tagline: "The scent of ancient stone after rain.",
-    price: 3299,
+    id: "king-scar",
+    name: "King Scar Extrait de Parfum",
+    subtitle: "Aromatic · Men",
+    collection: "Aromatic · Men",
+    tagline: "A commanding presence forged in spices and absinthe.",
+    price: 5999,
     rating: 5.0,
-    reviewsCount: 154,
-    image: "assets/product/1.webp",
-    tag: "Mineral Reserve",
-    gender: "Unisex",
-    scentFamily: "Woody Mineral",
-    concentration: "Extrait de Parfum (28% Concentration)",
-    longevityHours: 10,
-    sillageRating: 92,
-    accords: ["Woody", "Mineral", "Cardamom", "Vetiver", "Wet Stone"],
-    description: "Grounded and elemental, Terra Petra opens with cool Italian bergamot and green cardamom before settling into a heart of Haitian vetiver and Virginia cedar. A base of oakmoss, golden amber accord and soft musk leaves the quiet strength of rain-soaked petrichor on your skin.",
-    notes: {
-      top: ["Italian Bergamot", "Green Cardamom"],
-      heart: ["Haitian Vetiver", "Virginia Cedarwood"],
-      base: ["Golden Amber Accord", "Oakmoss", "White Musk"]
-    },
-    sizes: [
-      { ml: 50, price: 2199 },
-      { ml: 100, price: 3299 }
-    ]
-  },
-  {
-    id: "oud-rion",
-    name: "Oud Rion Extrait de Parfum",
-    subtitle: "Oud · Royal",
-    collection: "Oud · Royal",
-    tagline: "The king of woods, crowned in gold.",
-    price: 3999,
-    rating: 5.0,
-    reviewsCount: 165,
-    image: "assets/product/5.webp",
-    tag: "Royal Extrait",
-    gender: "Masculine / Unisex",
-    scentFamily: "Resinous Royal Oud",
+    reviewsCount: 178,
+    image: "assets/product/1kingscar.webp",
+    tag: "Aromatic Luxe",
+    gender: "Masculine",
+    scentFamily: "Aromatic Spicy",
     concentration: "Extrait de Parfum (30% Concentration)",
     longevityHours: 12,
-    sillageRating: 98,
-    accords: ["Oud", "Royal", "Saffron", "Patchouli", "Leather"],
-    description: "Rich, resinous and commanding. Oud Rion layers sustainably cultivated Assam agarwood and saffron over a heart of dark Bulgarian rose and Indonesian patchouli, anchored by golden amber accord and polished leather.",
+    sillageRating: 97,
+    accords: ["Aromatic", "Spicy", "Lavender", "Absinthe", "Vetiver"],
+    description: "Commanding, sharp and regal. King Scar opens with an intoxicating rush of pink pepper, peppermint, crisp bergamot and absinthe before descending into a royal heart of lavender, Bulgarian rose, allspice and orris root. A lasting base of Haitian vetiver, cedar, white musk and tonka bean seals your legend.",
     notes: {
-      top: ["Assam Agarwood Accord", "Golden Saffron"],
-      heart: ["Bulgarian Rose", "Indonesian Patchouli"],
-      base: ["Amber Resin Accord", "Russian Leather", "Sandalwood"]
+      top: ["Pink Pepper", "Peppermint", "Bergamot", "Lemon", "Absinthe", "Orange"],
+      heart: ["Lavender", "Bulgarian Rose", "Clove", "Allspice", "Orris Root", "Jasmine"],
+      base: ["Vetiver", "Cedar", "White Musk", "Tonka Bean"]
     },
     sizes: [
-      { ml: 50, price: 2599 },
-      { ml: 100, price: 3999 }
+      { ml: 50, price: 3999 },
+      { ml: 100, price: 5999 }
     ]
   },
   {
     id: "petralux",
     name: "Petralux Extrait de Parfum",
-    subtitle: "Amber · Opulent",
-    collection: "Amber · Opulent",
-    tagline: "Light trapped in stone.",
-    price: 3699,
+    subtitle: "Fruity · Unisex",
+    collection: "Fruity · Unisex",
+    tagline: "Luminous luxury and royal fruit trapped in stone.",
+    price: 4999,
     rating: 5.0,
-    reviewsCount: 186,
-    image: "assets/product/3.webp",
-    tag: "Opulent Amber",
+    reviewsCount: 194,
+    image: "assets/product/2petralux.webp",
+    tag: "Opulent Fruity",
     gender: "Unisex",
-    scentFamily: "Solar Amber Rose",
+    scentFamily: "Fruity Chypre Amber",
     concentration: "Extrait de Parfum (30% Concentration)",
     longevityHours: 11,
     sillageRating: 96,
-    accords: ["Amber", "Opulent", "Saffron", "Rose", "Sandalwood"],
-    description: "Our most radiant composition. Kashmiri saffron and pink pepper ignite a luminous heart of Taif rose and warm amber resin accord, resting on Mysore sandalwood and bourbon vanilla. Petralux is luxury you can wear — radiant, rich, regal.",
+    accords: ["Fruity", "Amber", "Pineapple", "Black Currant", "Birch"],
+    description: "Our most radiant composition. Crisp Italian bergamot, black currant, juicy apple and pink pepper ignite a luminous heart of golden pineapple, Indonesian patchouli and Moroccan rose. Resting upon smoked birch, crystalline musk, oakmoss and golden amber accord.",
     notes: {
-      top: ["Kashmiri Saffron", "Pink Pepper"],
-      heart: ["Taif Rose", "Amber Resin Accord"],
-      base: ["Mysore Sandalwood", "Bourbon Vanilla", "Crystal Musk"]
+      top: ["Bergamot", "Black Currant", "Apple", "Lemon", "Pink Pepper"],
+      heart: ["Pineapple", "Patchouli", "Moroccan Rose", "Jasmine"],
+      base: ["Birch", "Musk", "Oakmoss", "Cedarwood", "Amber"]
     },
     sizes: [
-      { ml: 50, price: 2399 },
-      { ml: 100, price: 3699 }
+      { ml: 50, price: 3299 },
+      { ml: 100, price: 4999 }
     ]
   },
   {
-    id: "white-spark",
-    name: "White Spark Extrait de Parfum",
-    subtitle: "Fresh · Electric",
-    collection: "Fresh · Electric",
-    tagline: "The first flash of light.",
-    price: 2999,
-    rating: 4.8,
-    reviewsCount: 92,
-    image: "assets/product/4.webp",
-    tag: "Electric Fresh",
-    gender: "Unisex",
-    scentFamily: "Aquatic Citrus Neroli",
-    concentration: "Extrait de Parfum (26% Concentration)",
-    longevityHours: 9,
-    sillageRating: 88,
-    accords: ["Fresh", "Electric", "Lemon", "Sea Notes", "Neroli"],
-    description: "Clean, luminous and vibrant. White Spark crackles with sparkling Amalfi lemon and marine ozone accords, softens into silver needle white tea and Moroccan neroli, and settles into crisp white musk and cedarwood. The scent of absolute clarity.",
-    notes: {
-      top: ["Amalfi Lemon", "Marine Ozone Accord"],
-      heart: ["Silver Needle White Tea", "Moroccan Neroli"],
-      base: ["Crisp White Musk", "Atlas Cedar"]
-    },
-    sizes: [
-      { ml: 50, price: 1999 },
-      { ml: 100, price: 2999 }
-    ]
-  },
-  {
-    id: "smoky-musk",
-    name: "Smoky Musk Extrait de Parfum",
-    subtitle: "Smoky · Sensual",
-    collection: "Smoky · Sensual",
-    tagline: "Embers and skin. A fire that never dies.",
-    price: 3499,
-    rating: 4.9,
-    reviewsCount: 138,
-    image: "assets/product/2.webp",
-    tag: "Nocturnal Luxe",
-    gender: "Unisex",
-    scentFamily: "Smoky Amber Leather",
+    id: "oud-rion",
+    name: "Oud Rion Extrait de Parfum",
+    subtitle: "Woody · Men",
+    collection: "Woody · Men",
+    tagline: "The king of woods, crowned in gold and smoke.",
+    price: 6999,
+    rating: 5.0,
+    reviewsCount: 215,
+    image: "assets/product/3oudrion.webp",
+    tag: "Crown Reserve",
+    gender: "Masculine",
+    scentFamily: "Resinous Royal Oud",
     concentration: "Extrait de Parfum (30% Concentration)",
-    longevityHours: 10,
-    sillageRating: 95,
-    accords: ["Smoky", "Sensual", "Black Pepper", "Leather", "Oud Accord"],
-    description: "Dark and magnetic, Smoky Musk wraps crushed black pepper and frankincense around a smouldering heart of artisanal leather and charred woods. Velveteen musk, Madagascar vanilla and cultivated Assam oud accord keep it close, warm and unforgettable.",
+    longevityHours: 14,
+    sillageRating: 99,
+    accords: ["Woody", "Resinous", "Agarwood Oud", "Smoky Incense", "Amberwood"],
+    description: "Rich, resinous and supreme. Oud Rion opens with opulent Bulgarian rose and saffron, yielding to a smouldering heart of vintage Assam agarwood oud, smoky incense and benzoin balm. The drydown reveals wild raspberry, silver birch, geranium and deep amberwood.",
     notes: {
-      top: ["Black Pepper", "Frankincense"],
-      heart: ["Artisanal Leather", "Smoked Guaiac"],
-      base: ["Velvet Musk", "Madagascar Vanilla", "Assam Oud Accord"]
+      top: ["Rose", "Saffron"],
+      heart: ["Agarwood Oud", "Smoky Incense", "Benzoin Balm"],
+      base: ["Raspberry", "Birch & Geranium", "Amberwood"]
     },
     sizes: [
-      { ml: 50, price: 2299 },
-      { ml: 100, price: 3499 }
+      { ml: 50, price: 4599 },
+      { ml: 100, price: 6999 }
+    ]
+  },
+  {
+    id: "spark",
+    name: "Spark Extrait de Parfum",
+    subtitle: "Aromatic · Unisex",
+    collection: "Aromatic · Unisex",
+    tagline: "The electrifying flash of clarity and fire.",
+    price: 5499,
+    rating: 4.9,
+    reviewsCount: 128,
+    image: "assets/product/4spark.webp",
+    tag: "Electric Aromatic",
+    gender: "Unisex",
+    scentFamily: "Aromatic Fresh Leather",
+    concentration: "Extrait de Parfum (28% Concentration)",
+    longevityHours: 10,
+    sillageRating: 92,
+    accords: ["Aromatic", "Fresh", "Neroli", "Black Pepper", "Juniper"],
+    description: "Clean, magnetic and vibrant. Spark crackles with sparkling neroli, Calabrian bergamot, crushed black pepper and petitgrain, leading into lavender, green cardamom, juniper berries and wild clary sage. Settles into noble Florentine iris, oakmoss, supple leather and smoky agarwood.",
+    notes: {
+      top: ["Neroli", "Bergamot", "Black Pepper", "Petitgrain"],
+      heart: ["Black Pepper", "Lavender", "Cardamom", "Juniper Berries", "Sage"],
+      base: ["Vetiver", "Oakmoss", "Iris", "Leather", "Agarwood (Oud)"]
+    },
+    sizes: [
+      { ml: 50, price: 3699 },
+      { ml: 100, price: 5499 }
     ]
   },
   {
     id: "wood-sera",
     name: "Wood Sera Extrait de Parfum",
-    subtitle: "Woody · Evening",
-    collection: "Woody · Evening",
-    tagline: "The forest at dusk.",
-    price: 3499,
+    subtitle: "Woody · Unisex",
+    collection: "Woody · Unisex",
+    tagline: "The forest at golden hour, draped in velvet and oud.",
+    price: 4999,
     rating: 4.9,
-    reviewsCount: 114,
-    image: "assets/product/6.webp",
+    reviewsCount: 142,
+    image: "assets/product/5woodsera.webp",
     tag: "Evening Woods",
     gender: "Unisex",
-    scentFamily: "Warm Woody Amber",
+    scentFamily: "Warm Woody Amber Rose",
     concentration: "Extrait de Parfum (28% Concentration)",
-    longevityHours: 10,
-    sillageRating: 92,
-    accords: ["Woody", "Evening", "Nutmeg", "Guaiac Wood", "Tonka"],
-    description: "Warm, quiet and contemplative. Wood Sera blends Calabrian bergamot and Ceylon nutmeg with a rich heart of Australian sandalwood and guaiac wood, finishing in roasted tonka bean and warm vegetal amber. The scent of golden hour, bottled.",
+    longevityHours: 11,
+    sillageRating: 94,
+    accords: ["Woody", "Velvet Rose", "Oud", "Praline Accord", "Guaiac Wood"],
+    description: "Warm, opulent and deeply seductive. Wood Sera pairs velvety Bulgarian rose and royal saffron with a dark heart of agarwood oud, Indonesian patchouli and geranium. The lingering drydown enchants with sweet praline accord, Madagascar vanilla, smoked guaiac wood, and resinous copaiba balm.",
     notes: {
-      top: ["Calabrian Bergamot", "Ceylon Nutmeg"],
-      heart: ["Australian Sandalwood", "Guaiac Wood"],
-      base: ["Roasted Tonka", "Amber Accord", "Clean Musk"]
+      top: ["Velvet Rose", "Saffron"],
+      heart: ["Oud", "Patchouli", "Geranium"],
+      base: ["Praline Accord", "Vanilla", "Guaiac Wood", "Copahu Balm (Copaiba)"]
     },
     sizes: [
-      { ml: 50, price: 2299 },
-      { ml: 100, price: 3499 }
+      { ml: 50, price: 3299 },
+      { ml: 100, price: 4999 }
+    ]
+  },
+  {
+    id: "ash",
+    name: "Ash Extrait de Parfum",
+    subtitle: "Woody · Unisex",
+    collection: "Woody · Unisex",
+    tagline: "Smouldering embers and sacred woods born from the fire.",
+    price: 5999,
+    rating: 5.0,
+    reviewsCount: 168,
+    image: "assets/product/6ash.webp",
+    tag: "Obsidian Reserve",
+    gender: "Unisex",
+    scentFamily: "Smoky Woody Mineral",
+    concentration: "Extrait de Parfum (30% Concentration)",
+    longevityHours: 12,
+    sillageRating: 96,
+    accords: ["Woody", "Mineral", "Sandalwood", "Patchouli", "Amber"],
+    description: "Grounded, mystical and intense. Ash opens with creamy Australian sandalwood, Virginia cedarwood and cool Haitian vetiver. Its smouldering heart unfolds with dark Indonesian patchouli, damask rose and warm piquant spices, before resting on a sacred bed of golden amber accord, bourbon vanilla and velvet crystalline musk.",
+    notes: {
+      top: ["Sandalwood", "Cedar", "Vetiver"],
+      heart: ["Patchouli", "Rose", "Spices"],
+      base: ["Amber", "Vanilla", "Musk"]
+    },
+    sizes: [
+      { ml: 50, price: 3999 },
+      { ml: 100, price: 5999 }
     ]
   },
   {
@@ -192,11 +192,11 @@ const MYTHOLIS_CATALOG = [
     longevityHours: 10,
     sillageRating: 95,
     accords: ["All 6 Signature Extraits", "10ml Deluxe Sprays", "Vault Coffret Box", "Complimentary Voucher"],
-    description: "The complete Mytholis master collection in one curated luxury vault coffret. Contains deluxe 10ml travel atomizers of Terra Petra, Smoky Musk, Petralux, White Spark, Oud Rion, and Wood Sera, plus a ₹1,000 voucher redeemable toward your first full 100ml flacon.",
+    description: "The complete Mytholis master collection in one curated luxury vault coffret. Contains deluxe 10ml travel atomizers of King Scar, Petralux, Oud Rion, Spark, Wood Sera, and Ash, plus a ₹1,000 voucher redeemable toward your first full 100ml flacon.",
     notes: {
-      top: ["Terra Petra (10ml)", "White Spark (10ml)"],
-      heart: ["Smoky Musk (10ml)", "Petralux (10ml)"],
-      base: ["Oud Rion (10ml)", "Wood Sera (10ml)"]
+      top: ["King Scar (10ml)", "Petralux (10ml)"],
+      heart: ["Oud Rion (10ml)", "Spark (10ml)"],
+      base: ["Wood Sera (10ml)", "Ash (10ml)"]
     },
     sizes: [
       { ml: 60, price: 1999 }

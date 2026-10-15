@@ -72,46 +72,46 @@ const Components = {
 
         <!-- 3D Fan Array of Flacon Products -->
         <div class="cards-row" id="cardsRow">
-          <!-- Bottle 1: Terra Petra -->
-          <div class="card flacon-card card-1" data-rot="-10" data-depth="14" data-name="Terra Petra" data-note="Woody · Mineral" data-rest-rot="-10" onclick="app.handleFlaconCardClick(0, 'terra-petra')" title="Terra Petra Extrait · Woody · Mineral">
-            <img src="assets/product/1.webp" alt="Terra Petra Extrait" class="bottle-png" loading="eager" />
+          <!-- Bottle 1: King Scar -->
+          <div class="card flacon-card card-1" data-rot="-10" data-depth="14" data-name="King Scar" data-note="Aromatic · Men" data-rest-rot="-10" onclick="app.handleFlaconCardClick(0, 'king-scar')" title="King Scar Extrait · Aromatic · Men">
+            <img src="assets/product/1kingscar.webp" alt="King Scar Extrait" class="bottle-png" loading="eager" />
           </div>
 
-          <!-- Bottle 2: Smoky Musk -->
-          <div class="card flacon-card card-2" data-rot="-6" data-depth="10" data-name="Smoky Musk" data-note="Smoky · Sensual" data-rest-rot="-6" onclick="app.handleFlaconCardClick(1, 'smoky-musk')" title="Smoky Musk Extrait · Smoky · Sensual">
-            <img src="assets/product/2.webp" alt="Smoky Musk Extrait" class="bottle-png" loading="eager" />
+          <!-- Bottle 2: Petralux -->
+          <div class="card flacon-card card-2" data-rot="-6" data-depth="10" data-name="Petralux" data-note="Fruity · Unisex" data-rest-rot="-6" onclick="app.handleFlaconCardClick(1, 'petralux')" title="Petralux Extrait · Fruity · Unisex">
+            <img src="assets/product/2petralux.webp" alt="Petralux Extrait" class="bottle-png" loading="eager" />
           </div>
 
-          <!-- Bottle 3: Petralux -->
-          <div class="card flacon-card card-3" data-rot="-2" data-depth="8" data-name="Petralux" data-note="Amber · Opulent" data-rest-rot="-2" onclick="app.handleFlaconCardClick(2, 'petralux')" title="Petralux Extrait · Amber · Opulent">
-            <img src="assets/product/3.webp" alt="Petralux Extrait" class="bottle-png" loading="eager" />
+          <!-- Bottle 3: Oud Rion -->
+          <div class="card flacon-card card-3" data-rot="-2" data-depth="8" data-name="Oud Rion" data-note="Woody · Men" data-rest-rot="-2" onclick="app.handleFlaconCardClick(2, 'oud-rion')" title="Oud Rion Extrait · Woody · Men">
+            <img src="assets/product/3oudrion.webp" alt="Oud Rion Extrait" class="bottle-png" loading="eager" />
           </div>
 
-          <!-- Bottle 4: White Spark -->
-          <div class="card flacon-card card-4" data-rot="2" data-depth="8" data-name="White Spark" data-note="Fresh · Electric" data-rest-rot="2" onclick="app.handleFlaconCardClick(3, 'white-spark')" title="White Spark Extrait · Fresh · Electric">
-            <img src="assets/product/4.webp" alt="White Spark Extrait" class="bottle-png" loading="eager" />
+          <!-- Bottle 4: Spark -->
+          <div class="card flacon-card card-4" data-rot="2" data-depth="8" data-name="Spark" data-note="Aromatic · Unisex" data-rest-rot="2" onclick="app.handleFlaconCardClick(3, 'spark')" title="Spark Extrait · Aromatic · Unisex">
+            <img src="assets/product/4spark.webp" alt="Spark Extrait" class="bottle-png" loading="eager" />
           </div>
 
-          <!-- Bottle 5: Oud Rion -->
-          <div class="card flacon-card card-5" data-rot="6" data-depth="10" data-name="Oud Rion" data-note="Oud · Royal" data-rest-rot="6" onclick="app.handleFlaconCardClick(4, 'oud-rion')" title="Oud Rion Extrait · Oud · Royal">
-            <img src="assets/product/5.webp" alt="Oud Rion Extrait" class="bottle-png" loading="eager" />
+          <!-- Bottle 5: Wood Sera -->
+          <div class="card flacon-card card-5" data-rot="6" data-depth="10" data-name="Wood Sera" data-note="Woody · Unisex" data-rest-rot="6" onclick="app.handleFlaconCardClick(4, 'wood-sera')" title="Wood Sera Extrait · Woody · Unisex">
+            <img src="assets/product/5woodsera.webp" alt="Wood Sera Extrait" class="bottle-png" loading="eager" />
           </div>
 
-          <!-- Bottle 6: Wood Sera -->
-          <div class="card flacon-card card-6" data-rot="10" data-depth="14" data-name="Wood Sera" data-note="Woody · Evening" data-rest-rot="10" onclick="app.handleFlaconCardClick(5, 'wood-sera')" title="Wood Sera Extrait · Woody · Evening">
-            <img src="assets/product/6.webp" alt="Wood Sera Extrait" class="bottle-png" loading="eager" />
+          <!-- Bottle 6: Ash -->
+          <div class="card flacon-card card-6" data-rot="10" data-depth="14" data-name="Ash" data-note="Woody · Unisex" data-rest-rot="10" onclick="app.handleFlaconCardClick(5, 'ash')" title="Ash Extrait · Woody · Unisex">
+            <img src="assets/product/6ash.webp" alt="Ash Extrait" class="bottle-png" loading="eager" />
           </div>
         </div>
 
         <!-- Subline & Action Pill -->
         <div class="subline" id="subline">
           <div class="mobile-flacon-dots" id="mobileFlaconDots">
-            <span class="m-dot" onclick="app.setMobileFlaconIndex(0)" title="Terra Petra"></span>
-            <span class="m-dot" onclick="app.setMobileFlaconIndex(1)" title="Smoky Musk"></span>
-            <span class="m-dot active" onclick="app.setMobileFlaconIndex(2)" title="Petralux"></span>
-            <span class="m-dot" onclick="app.setMobileFlaconIndex(3)" title="White Spark"></span>
-            <span class="m-dot" onclick="app.setMobileFlaconIndex(4)" title="Oud Rion"></span>
-            <span class="m-dot" onclick="app.setMobileFlaconIndex(5)" title="Wood Sera"></span>
+            <span class="m-dot" onclick="app.setMobileFlaconIndex(0)" title="King Scar"></span>
+            <span class="m-dot" onclick="app.setMobileFlaconIndex(1)" title="Petralux"></span>
+            <span class="m-dot active" onclick="app.setMobileFlaconIndex(2)" title="Oud Rion"></span>
+            <span class="m-dot" onclick="app.setMobileFlaconIndex(3)" title="Spark"></span>
+            <span class="m-dot" onclick="app.setMobileFlaconIndex(4)" title="Wood Sera"></span>
+            <span class="m-dot" onclick="app.setMobileFlaconIndex(5)" title="Ash"></span>
           </div>
 
           <button class="arrow-pill" onclick="const el = document.getElementById('featured-vault') || document.querySelector('.hero-cards-section'); if(el) el.scrollIntoView({behavior: 'smooth'}); else app.navigateTo('collections');">
@@ -124,7 +124,7 @@ const Components = {
             </span>
           </button>
           <div class="subline-text" id="heroSublineText">
-            <span id="heroSublineName">Petralux Extrait</span> · <span>30% Pure Concentration</span> · <span>Hand-Distilled in Mayfair &amp; Ahmedabad</span>
+            <span id="heroSublineName">Oud Rion Extrait</span> · <span>30% Pure Concentration</span> · <span>Hand-Distilled in Mayfair &amp; Ahmedabad</span>
           </div>
         </div>
       </section>
@@ -190,30 +190,33 @@ const Components = {
         </div>
 
         <div class="hero-card-row">
-          <a href="javascript:void(0)" onclick="app.openProductView('smoky-musk')" alt="Smoky Musk">
+          <a href="javascript:void(0)" onclick="app.openProductView('king-scar')" alt="King Scar">
             <div class="card">
-              <div class="wrapper 2bg">
-                <img src="assets/hero/2bg.webp" class="cover-image" loading="lazy" decoding="async" />
+              <div class="wrapper kingscar">
+                <img src="assets/hero/kingscarcard.webp" class="cover-image base-card-img" alt="King Scar Cover" loading="eager" decoding="async" />
+                <img src="assets/hero/kingscarbg.webp" class="cover-image hover-bg-img" alt="King Scar Atmosphere" loading="eager" decoding="async" />
               </div>
-              <img src="assets/hero/2.webp" class="character" loading="lazy" decoding="async" />
+              <img src="assets/product/1kingscar.webp" class="character" alt="King Scar Bottle" loading="eager" decoding="async" />
             </div>
           </a>
 
-          <a href="javascript:void(0)" onclick="app.openProductView('white-spark')" alt="White Spark">
+          <a href="javascript:void(0)" onclick="app.openProductView('oud-rion')" alt="Oud Rion">
             <div class="card">
-              <div class="wrapper 4bg">
-                <img src="assets/hero/4bg.webp" class="cover-image" loading="lazy" decoding="async" />
+              <div class="wrapper oudrion">
+                <img src="assets/hero/oudrioncard.webp" class="cover-image base-card-img" alt="Oud Rion Cover" loading="eager" decoding="async" />
+                <img src="assets/hero/oudrionbg.webp" class="cover-image hover-bg-img" alt="Oud Rion Atmosphere" loading="eager" decoding="async" />
               </div>
-              <img src="assets/hero/4.webp" class="character" loading="lazy" decoding="async" />
+              <img src="assets/product/3oudrion.webp" class="character" alt="Oud Rion Bottle" loading="eager" decoding="async" />
             </div>
           </a>
 
-          <a href="javascript:void(0)" onclick="app.openProductView('wood-sera')" alt="Wood Sera">
+          <a href="javascript:void(0)" onclick="app.openProductView('spark')" alt="Spark">
             <div class="card">
-              <div class="wrapper 6bg">
-                <img src="assets/hero/6bg.webp" class="cover-image" loading="lazy" decoding="async" />
+              <div class="wrapper spark">
+                <img src="assets/hero/sparkcard.webp" class="cover-image base-card-img" alt="Spark Cover" loading="eager" decoding="async" />
+                <img src="assets/hero/sparkbg.webp" class="cover-image hover-bg-img" alt="Spark Atmosphere" loading="eager" decoding="async" />
               </div>
-              <img src="assets/hero/6.webp" class="character" loading="lazy" decoding="async" />
+              <img src="assets/product/4spark.webp" class="character" alt="Spark Bottle" loading="eager" decoding="async" />
             </div>
           </a>
         </div>
@@ -348,10 +351,10 @@ const Components = {
         step: 1,
         title: "What atmosphere stirs your spirit most?",
         options: [
-          { icon: "🪨", text: "Cool ancient stone after rain (Woody · Mineral)", product: "terra-petra" },
-          { icon: "🔥", text: "Embers & leather smoke (Smoky · Sensual)", product: "smoky-musk" },
-          { icon: "💎", text: "Radiant golden luxury (Amber · Opulent)", product: "petralux" },
-          { icon: "⚡", text: "Electric citrus & white tea (Fresh · Electric)", product: "white-spark" }
+          { icon: "👑", text: "Regal presence & absinthe spice (Aromatic · Men)", product: "king-scar" },
+          { icon: "🔥", text: "Smouldering embers & sacred woods (Woody · Unisex)", product: "ash" },
+          { icon: "💎", text: "Radiant golden pineapple & chypre (Fruity · Unisex)", product: "petralux" },
+          { icon: "⚡", text: "Electric neroli, citrus & leather (Aromatic · Unisex)", product: "spark" }
         ]
       },
       {
@@ -359,9 +362,9 @@ const Components = {
         title: "Which presence do you wish to command?",
         options: [
           { icon: "👑", text: "The King of Woods: Royal Oud & Saffron", product: "oud-rion" },
-          { icon: "🌲", text: "The Forest at Dusk: Sandalwood & Guaiac", product: "wood-sera" },
-          { icon: "✨", text: "Light Trapped in Stone: Saffron & Rose", product: "petralux" },
-          { icon: "🕯️", text: "Smouldering Fire: Incense & Leather", product: "smoky-musk" }
+          { icon: "🌲", text: "The Forest at Golden Hour: Velvet Rose & Oud", product: "wood-sera" },
+          { icon: "✨", text: "Light Trapped in Stone: Golden Fruit & Birch", product: "petralux" },
+          { icon: "🕯️", text: "Sacred Embers: Sandalwood & Amber", product: "ash" }
         ]
       }
     ];

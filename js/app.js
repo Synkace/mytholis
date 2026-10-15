@@ -159,46 +159,11 @@ class MytholisApp {
     // Mouse tilt & 3D Hero Cards setup
     this.initTiltEffects();
     this.initHeroCardsScroll();
+    this.initHeroCardBackgroundSwitch();
 
     // Initial Route & Badges Setup
     this.handleHashRoute();
     this.updateBadges();
-    this.initLiquidButtons();
-
-    // Auto-decorate any dynamically rendered buttons across all views & modals
-    if (typeof MutationObserver !== 'undefined') {
-      let observerTimeout = null;
-      const buttonObserver = new MutationObserver(() => {
-        if (!observerTimeout) {
-          observerTimeout = setTimeout(() => {
-            this.initLiquidButtons();
-            observerTimeout = null;
-          }, 30);
-        }
-      });
-      buttonObserver.observe(document.body, { childList: true, subtree: true });
-    }
-  }
-
-  /* Liquid Wave Button Enhancer */
-  initLiquidButtons(root = document) {
-    if (!root || !root.querySelectorAll) return;
-    const buttons = root.querySelectorAll('.btn:not(.icon-btn):not(.mobile-menu-btn)');
-    buttons.forEach((btn) => {
-      if (!btn.querySelector('.liquid')) {
-        const textSpan = document.createElement('span');
-        textSpan.className = 'btn-text';
-        while (btn.firstChild) {
-          textSpan.appendChild(btn.firstChild);
-        }
-        btn.appendChild(textSpan);
-
-        const liquid = document.createElement('span');
-        liquid.className = 'liquid';
-        liquid.setAttribute('aria-hidden', 'true');
-        btn.appendChild(liquid);
-      }
-    });
   }
 
   /* Routing Handler */
@@ -210,7 +175,7 @@ class MytholisApp {
     if (hash.startsWith('product')) {
       view = 'product';
       const urlParams = new URLSearchParams(hash.split('?')[1]);
-      paramId = urlParams.get('id') || 'terra-petra';
+      paramId = urlParams.get('id') || 'king-scar';
     }
 
     this.navigateTo(view, paramId, false);
@@ -292,12 +257,12 @@ class MytholisApp {
 
     mainContainer.innerHTML = contentHtml;
     this.initTiltEffects();
-    this.initLiquidButtons(mainContainer);
 
     if (store.currentView === 'home') {
       mainContainer.classList.add('home-view');
       this.initFanHero();
       this.initHeroSwipeGestures();
+      this.initHeroCardBackgroundSwitch();
       if (this.activateCenterCard) {
         setTimeout(() => this.activateCenterCard(), 50);
       }
@@ -1369,6 +1334,22 @@ class MytholisApp {
         activeCard = card;
       }
     }, { passive: true });
+  }
+
+  /* Preload Hero Card Backgrounds for Instant Display */
+  initHeroCardBackgroundSwitch() {
+    const bgFiles = [
+      'assets/hero/kingscarbg.webp',
+      'assets/hero/kingscarcard.webp',
+      'assets/hero/oudrionbg.webp',
+      'assets/hero/oudrioncard.webp',
+      'assets/hero/sparkbg.webp',
+      'assets/hero/sparkcard.webp'
+    ];
+    bgFiles.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
   }
 
   /* Currency Controller Methods */
