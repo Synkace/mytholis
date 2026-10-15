@@ -179,82 +179,171 @@ h1, h2, h3, h4, .font-title {
   letter-spacing: 0.05em;
 }
 
-/* Buttons */
+/* ==========================================================================
+   MYTHOLIS LUXURY LIQUID WAVE BUTTON SYSTEM
+   Swirling gold fluid dynamics with dual rotating organic cutouts & smooth hover rise
+   ========================================================================== */
 .btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
-  padding: 0.7rem 1.6rem;
-  font-family: var(--font-sans);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  padding: 0.85rem 1.8rem;
   text-decoration: none;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-  position: relative;
+  text-transform: uppercase;
   overflow: hidden;
-  border: 1px solid transparent;
+  border-radius: 40px;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: rgba(4, 24, 18, 0.7);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
   line-height: 1.2;
   white-space: nowrap;
   max-width: 100%;
   box-sizing: border-box;
 }
 
+.btn:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 241, 197, 0.75);
+  box-shadow: 0 8px 30px rgba(154, 123, 44, 0.4), 0 0 20px rgba(212, 175, 55, 0.25);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+/* Button Text Layer (Crisp Typography Above Liquid Wave) */
+.btn span,
+.btn .btn-text,
+.btn svg,
+.btn i {
+  position: relative;
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  z-index: 2;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+  pointer-events: none;
+  transition: color 0.3s ease;
+}
+
+/* Liquid Golden Reservoir */
+.btn .liquid {
+  position: absolute;
+  top: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max(260px, 150%);
+  height: max(260px, 150%);
+  min-width: 200px;
+  min-height: 200px;
+  background: #9A7B2C;
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);
+  transition: top 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.btn:hover .liquid {
+  top: -125px;
+}
+
+/* Dual Rotating Liquid Wave Surface */
+.btn .liquid::after,
+.btn .liquid::before {
+  content: '';
+  width: 200%;
+  height: 200%;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -75%);
+  pointer-events: none;
+}
+
+.btn .liquid::before {
+  border-radius: 45%;
+  background: rgba(4, 24, 18, 1);
+  animation: animate 5s linear infinite;
+}
+
+.btn .liquid::after {
+  border-radius: 40%;
+  background: rgba(4, 24, 18, 0.55);
+  animation: animate 10s linear infinite;
+}
+
+@keyframes animate {
+  0% {
+    transform: translate(-50%, -75%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -75%) rotate(360deg);
+  }
+}
+
+/* Sizing Modifiers */
 .btn-sm, .btn-compact {
-  padding: 0.45rem 1rem;
+  padding: 0.45rem 1.1rem;
+  border-radius: 30px;
+}
+.btn-sm span, .btn-compact span,
+.btn-sm .btn-text, .btn-compact .btn-text {
   font-size: 0.72rem;
   letter-spacing: 0.08em;
-  border-radius: 20px;
+}
+.btn-sm .liquid, .btn-compact .liquid {
+  top: -70px;
+}
+.btn-sm:hover .liquid, .btn-compact:hover .liquid {
+  top: -110px;
 }
 
 .btn-lg {
-  padding: 0.85rem 2rem;
-  font-size: 0.82rem;
+  padding: 1rem 2.2rem;
+  border-radius: 45px;
+}
+.btn-lg span, .btn-lg .btn-text {
+  font-size: 0.85rem;
   letter-spacing: 0.14em;
 }
+.btn-lg .liquid {
+  top: -95px;
+}
+.btn-lg:hover .liquid {
+  top: -145px;
+}
 
+/* Gold Variant */
 .btn-gold {
-  background: var(--gold-gradient);
-  color: #04140F;
-  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.25);
-  border: 1px solid rgba(255, 241, 197, 0.4);
+  border-color: rgba(212, 175, 55, 0.45);
+}
+.btn-gold .liquid {
+  background: #9A7B2C;
 }
 
-.btn-gold::before {
-  content: '';
-  position: absolute;
-  top: 0; left: -100%;
-  width: 100%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  transition: 0.6s;
-}
-
-.btn-gold:hover::before {
-  left: 100%;
-}
-
-.btn-gold:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 30px rgba(212, 175, 55, 0.45);
-}
-
+/* Glass Variant */
 .btn-glass {
-  background: rgba(14, 66, 51, 0.35);
-  color: var(--text-main);
-  border: 1px solid rgba(212, 175, 55, 0.35);
-  backdrop-filter: blur(15px);
+  background: rgba(4, 24, 18, 0.55);
+  border-color: rgba(212, 175, 55, 0.28);
+}
+.btn-glass .liquid {
+  background: #7A6224;
 }
 
-.btn-glass:hover {
-  background: rgba(212, 175, 55, 0.15);
-  border-color: var(--gold-primary);
-  color: var(--gold-light);
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-gold-soft);
+/* WhatsApp Buy Variant */
+.btn-whatsapp-buy .liquid {
+  background: #128C7E !important;
+}
+
+/* Razorpay Buy Variant */
+.btn-razorpay-buy .liquid {
+  background: #9A7B2C !important;
 }
 
 /* Container */

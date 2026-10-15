@@ -3167,7 +3167,6 @@ div#cardsRow {
 }
 
 .btn-whatsapp-buy {
-  background: linear-gradient(135deg, #25D366, #128C7E) !important;
   color: #FFFFFF !important;
   font-weight: 600;
   border-color: rgba(37, 211, 102, 0.4) !important;
@@ -3180,9 +3179,9 @@ div#cardsRow {
 }
 
 .btn-razorpay-buy {
-  background: linear-gradient(135deg, #D4AF37, #AA771C) !important;
-  color: #03120C !important;
+  color: #FFFFFF !important;
   font-weight: 700;
+  border-color: rgba(212, 175, 55, 0.5) !important;
   flex: 1;
 }
 

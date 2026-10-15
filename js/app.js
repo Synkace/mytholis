@@ -163,6 +163,42 @@ class MytholisApp {
     // Initial Route & Badges Setup
     this.handleHashRoute();
     this.updateBadges();
+    this.initLiquidButtons();
+
+    // Auto-decorate any dynamically rendered buttons across all views & modals
+    if (typeof MutationObserver !== 'undefined') {
+      let observerTimeout = null;
+      const buttonObserver = new MutationObserver(() => {
+        if (!observerTimeout) {
+          observerTimeout = setTimeout(() => {
+            this.initLiquidButtons();
+            observerTimeout = null;
+          }, 30);
+        }
+      });
+      buttonObserver.observe(document.body, { childList: true, subtree: true });
+    }
+  }
+
+  /* Liquid Wave Button Enhancer */
+  initLiquidButtons(root = document) {
+    if (!root || !root.querySelectorAll) return;
+    const buttons = root.querySelectorAll('.btn:not(.icon-btn):not(.mobile-menu-btn)');
+    buttons.forEach((btn) => {
+      if (!btn.querySelector('.liquid')) {
+        const textSpan = document.createElement('span');
+        textSpan.className = 'btn-text';
+        while (btn.firstChild) {
+          textSpan.appendChild(btn.firstChild);
+        }
+        btn.appendChild(textSpan);
+
+        const liquid = document.createElement('span');
+        liquid.className = 'liquid';
+        liquid.setAttribute('aria-hidden', 'true');
+        btn.appendChild(liquid);
+      }
+    });
   }
 
   /* Routing Handler */
@@ -256,6 +292,7 @@ class MytholisApp {
 
     mainContainer.innerHTML = contentHtml;
     this.initTiltEffects();
+    this.initLiquidButtons(mainContainer);
 
     if (store.currentView === 'home') {
       mainContainer.classList.add('home-view');
