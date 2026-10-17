@@ -13,4 +13,5 @@ import './catalog.js';
 import './store.js';
 import './background.js';
 import './components.js';
+import './firebase.js';
 import './app.js';

@@ -20,7 +20,7 @@ const MYTHOLIS_CATALOG = [
     tag: "Aromatic Luxe",
     gender: "Masculine",
     scentFamily: "Aromatic Spicy",
-    concentration: "Extrait de Parfum (30% Concentration)",
+    concentration: "Extrait de Parfum (40% Concentration)",
     longevityHours: 12,
     sillageRating: 97,
     accords: ["Aromatic", "Spicy", "Lavender", "Absinthe", "Vetiver"],
@@ -31,6 +31,7 @@ const MYTHOLIS_CATALOG = [
       base: ["Vetiver", "Cedar", "White Musk", "Tonka Bean"]
     },
     sizes: [
+      { ml: 8, price: 899 },
       { ml: 50, price: 3999 },
       { ml: 100, price: 5999 }
     ]
@@ -48,7 +49,7 @@ const MYTHOLIS_CATALOG = [
     tag: "Opulent Fruity",
     gender: "Unisex",
     scentFamily: "Fruity Chypre Amber",
-    concentration: "Extrait de Parfum (30% Concentration)",
+    concentration: "Extrait de Parfum (40% Concentration)",
     longevityHours: 11,
     sillageRating: 96,
     accords: ["Fruity", "Amber", "Pineapple", "Black Currant", "Birch"],
@@ -59,6 +60,7 @@ const MYTHOLIS_CATALOG = [
       base: ["Birch", "Musk", "Oakmoss", "Cedarwood", "Amber"]
     },
     sizes: [
+      { ml: 8, price: 799 },
       { ml: 50, price: 3299 },
       { ml: 100, price: 4999 }
     ]
@@ -76,7 +78,7 @@ const MYTHOLIS_CATALOG = [
     tag: "Crown Reserve",
     gender: "Masculine",
     scentFamily: "Resinous Royal Oud",
-    concentration: "Extrait de Parfum (30% Concentration)",
+    concentration: "Extrait de Parfum (40% Concentration)",
     longevityHours: 14,
     sillageRating: 99,
     accords: ["Woody", "Resinous", "Agarwood Oud", "Smoky Incense", "Amberwood"],
@@ -87,6 +89,7 @@ const MYTHOLIS_CATALOG = [
       base: ["Raspberry", "Birch & Geranium", "Amberwood"]
     },
     sizes: [
+      { ml: 8, price: 999 },
       { ml: 50, price: 4599 },
       { ml: 100, price: 6999 }
     ]
@@ -104,7 +107,7 @@ const MYTHOLIS_CATALOG = [
     tag: "Electric Aromatic",
     gender: "Unisex",
     scentFamily: "Aromatic Fresh Leather",
-    concentration: "Extrait de Parfum (28% Concentration)",
+    concentration: "Extrait de Parfum (40% Concentration)",
     longevityHours: 10,
     sillageRating: 92,
     accords: ["Aromatic", "Fresh", "Neroli", "Black Pepper", "Juniper"],
@@ -115,6 +118,7 @@ const MYTHOLIS_CATALOG = [
       base: ["Vetiver", "Oakmoss", "Iris", "Leather", "Agarwood (Oud)"]
     },
     sizes: [
+      { ml: 8, price: 849 },
       { ml: 50, price: 3699 },
       { ml: 100, price: 5499 }
     ]
@@ -132,7 +136,7 @@ const MYTHOLIS_CATALOG = [
     tag: "Evening Woods",
     gender: "Unisex",
     scentFamily: "Warm Woody Amber Rose",
-    concentration: "Extrait de Parfum (28% Concentration)",
+    concentration: "Extrait de Parfum (40% Concentration)",
     longevityHours: 11,
     sillageRating: 94,
     accords: ["Woody", "Velvet Rose", "Oud", "Praline Accord", "Guaiac Wood"],
@@ -143,6 +147,7 @@ const MYTHOLIS_CATALOG = [
       base: ["Praline Accord", "Vanilla", "Guaiac Wood", "Copahu Balm (Copaiba)"]
     },
     sizes: [
+      { ml: 8, price: 799 },
       { ml: 50, price: 3299 },
       { ml: 100, price: 4999 }
     ]
@@ -160,7 +165,7 @@ const MYTHOLIS_CATALOG = [
     tag: "Obsidian Reserve",
     gender: "Unisex",
     scentFamily: "Smoky Woody Mineral",
-    concentration: "Extrait de Parfum (30% Concentration)",
+    concentration: "Extrait de Parfum (40% Concentration)",
     longevityHours: 12,
     sillageRating: 96,
     accords: ["Woody", "Mineral", "Sandalwood", "Patchouli", "Amber"],
@@ -171,6 +176,7 @@ const MYTHOLIS_CATALOG = [
       base: ["Amber", "Vanilla", "Musk"]
     },
     sizes: [
+      { ml: 8, price: 899 },
       { ml: 50, price: 3999 },
       { ml: 100, price: 5999 }
     ]
@@ -181,7 +187,7 @@ const MYTHOLIS_CATALOG = [
     subtitle: "Complete Collection Reserve",
     collection: "Discovery Edition",
     tagline: "Experience all six legends before choosing your signature.",
-    price: 1999,
+    price: 3999,
     rating: 5.0,
     reviewsCount: 240,
     image: "assets/coffret_banner.webp",
@@ -199,7 +205,7 @@ const MYTHOLIS_CATALOG = [
       base: ["Wood Sera (10ml)", "Ash (10ml)"]
     },
     sizes: [
-      { ml: 60, price: 1999 }
+      { ml: 60, price: 3999 }
     ]
   }
 ];

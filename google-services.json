@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "227633160778",
+    "project_id": "mytholis-1",
+    "storage_bucket": "mytholis-1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:227633160778:android:4d1dc070f9b7ecdaadfcb3",
+        "android_client_info": {
+          "package_name": "com.samar.mytholis"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAkJlNOSDFLN1tMvrlBd-0mRAaYfqThB3c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

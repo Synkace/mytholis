@@ -3750,3 +3750,790 @@ div#cardsRow {
   color: var(--gold-light);
   font-weight: 600;
 }
+
+/* ==========================================================================
+   THE CIRCLE OF LEGENDS - DEDICATED RULES & REGULATIONS PAGE
+   ========================================================================== */
+
+.loyalty-rules-wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 5rem;
+}
+
+.loyalty-rules-hero {
+  text-align: center;
+  padding: 3rem 2rem;
+  margin-bottom: 2.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.loyalty-rules-hero::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.loyalty-nav-anchor-bar {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 2rem 0 3rem;
+  position: sticky;
+  top: 75px;
+  z-index: 50;
+  padding: 0.8rem 1rem;
+  border-radius: 50px;
+  background: rgba(2, 14, 10, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.loyalty-anchor-pill {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  transition: all 0.25s ease;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.loyalty-anchor-pill:hover,
+.loyalty-anchor-pill.active {
+  color: var(--gold-light);
+  background: rgba(212, 175, 55, 0.18);
+  border-color: var(--gold-primary);
+}
+
+.loyalty-article-card {
+  padding: 2.5rem 2rem;
+  margin-bottom: 2.5rem;
+  border-radius: 20px;
+  position: relative;
+}
+
+.loyalty-article-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.loyalty-article-num {
+  font-family: var(--font-serif-title);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--gold-primary);
+  background: rgba(212, 175, 55, 0.12);
+  padding: 0.35rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  letter-spacing: 0.08em;
+}
+
+.loyalty-article-title {
+  font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+  color: var(--gold-light);
+  margin: 0;
+  font-family: var(--font-serif-title);
+}
+
+.loyalty-rule-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.2rem;
+  margin: 1.5rem 0;
+}
+
+.loyalty-rule-subcard {
+  padding: 1.4rem;
+  border-radius: 14px;
+  background: rgba(4, 24, 18, 0.45);
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  display: flex;
+  flex-direction: column;
+}
+
+.loyalty-rule-subcard-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--gold-light);
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.loyalty-rule-subcard-desc {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.loyalty-guardrail-alert {
+  padding: 1.5rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(4, 24, 18, 0.6) 100%);
+  border: 1px solid var(--gold-primary);
+  margin: 1.5rem 0;
+}
+
+.loyalty-guardrail-alert-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--gold-light);
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.loyalty-formula-box {
+  background: rgba(2, 14, 10, 0.7);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin: 1rem 0;
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: var(--gold-light);
+  text-align: center;
+  letter-spacing: 0.05em;
+}
+
+/* ==========================================================================
+   CONVERSION RATE OPTIMIZATION & ENHANCED STOREFRONT UI EXTENSIONS
+   ========================================================================== */
+
+/* 1. Header Highlight Pill & Nav Mobile Utility */
+.nav-link.nav-highlight-pill {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(16, 185, 129, 0.2) 100%);
+  border: 1px solid var(--gold-primary);
+  border-radius: 20px;
+  padding: 0.35rem 0.85rem !important;
+  color: var(--gold-light) !important;
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+  transition: all 0.3s ease;
+}
+
+.nav-link.nav-highlight-pill:hover {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.4) 0%, rgba(16, 185, 129, 0.35) 100%);
+  box-shadow: 0 0 22px rgba(212, 175, 55, 0.45);
+  transform: translateY(-1px);
+}
+
+.nav-link.nav-highlight-pill::after {
+  display: none !important;
+}
+
+.mobile-only-nav-item {
+  display: none;
+}
+
+@media (max-width: 992px) {
+  .mobile-only-nav-item {
+    display: block;
+    width: 100%;
+  }
+}
+
+/* 2. Product Card Wear Metrics & Size Selection */
+.product-card-wear-metrics {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin: 0.45rem 0 0.65rem;
+}
+
+.wear-metric-pill {
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  padding: 0.18rem 0.48rem;
+  border-radius: 6px;
+  background: rgba(4, 24, 18, 0.65);
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  color: var(--gold-light);
+  white-space: nowrap;
+}
+
+.card-size-selector {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin: 0.5rem 0;
+}
+
+.card-size-pill {
+  background: rgba(4, 24, 18, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 12px;
+  color: rgba(234, 244, 240, 0.75);
+  font-size: 0.65rem;
+  padding: 0.25rem 0.55rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.card-size-pill:hover,
+.card-size-pill.active {
+  background: rgba(212, 175, 55, 0.25);
+  border-color: var(--gold-primary);
+  color: var(--gold-light);
+  font-weight: 600;
+}
+
+.product-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.quick-add-btn {
+  padding: 0.4rem 0.85rem !important;
+  font-size: 0.72rem !important;
+  white-space: nowrap;
+}
+
+/* 3. Product Detail Wear Summary Strip */
+.product-wear-summary-strip {
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.wear-indicator-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.wear-ind-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.wear-ind-val {
+  font-size: 0.88rem;
+}
+
+.wear-ind-divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(212, 175, 55, 0.2);
+}
+
+@media (max-width: 600px) {
+  .wear-ind-divider {
+    display: none;
+  }
+}
+
+/* 4. Floating WhatsApp Concierge Button */
+.floating-whatsapp-btn {
+  position: fixed;
+  bottom: 26px;
+  right: 24px;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem 1.15rem 0.65rem 0.95rem;
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  color: #FFFFFF !important;
+  border-radius: 50px;
+  box-shadow: 0 10px 25px rgba(18, 140, 126, 0.45), 0 0 15px rgba(37, 211, 102, 0.3);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+}
+
+.floating-whatsapp-btn:hover {
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 14px 30px rgba(18, 140, 126, 0.6), 0 0 22px rgba(37, 211, 102, 0.5);
+  color: #FFFFFF !important;
+}
+
+.whatsapp-label {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.whatsapp-pulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50px;
+  background: inherit;
+  opacity: 0.4;
+  z-index: -1;
+  animation: pulseGreen 2.2s infinite ease-out;
+}
+
+@keyframes pulseGreen {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.35, 1.55);
+    opacity: 0;
+  }
+}
+
+/* 5. Mobile Sticky Bottom Buy Bar */
+.mobile-sticky-buy-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 998;
+  background: rgba(2, 14, 10, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(212, 175, 55, 0.3);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.7);
+  padding: 0.65rem 1rem calc(0.65rem + env(safe-area-inset-bottom, 0px));
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mobile-sticky-buy-bar.visible {
+  transform: translateY(0);
+}
+
+.sticky-buy-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.sticky-buy-thumb {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: rgba(4, 24, 18, 0.8);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  flex-shrink: 0;
+}
+
+.sticky-buy-details {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.sticky-buy-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sticky-buy-price {
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.sticky-buy-action {
+  flex-shrink: 0;
+}
+
+.sticky-buy-btn {
+  padding: 0.55rem 1.1rem !important;
+  font-size: 0.76rem !important;
+  white-space: nowrap;
+}
+
+/* Adjust floating WhatsApp position on mobile when sticky bar is present */
+@media (max-width: 768px) {
+  .mobile-sticky-buy-bar {
+    display: block;
+  }
+  .floating-whatsapp-btn {
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    right: 16px;
+    padding: 0.55rem 0.85rem;
+  }
+  .floating-whatsapp-btn .whatsapp-label {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   SANCTUM COMMAND - FOUNDER ADMIN CONSOLE
+   Dark Emerald & Liquid Gold Glass Aesthetic
+   ========================================================================== */
+.admin-panel-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 6rem;
+}
+
+.admin-auth-card {
+  max-width: 520px;
+  margin: 4rem auto;
+  padding: 3rem 2.5rem;
+  text-align: center;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  background: radial-gradient(circle at top, rgba(4, 30, 22, 0.95) 0%, rgba(2, 12, 8, 0.98) 100%);
+  border-radius: 18px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 30px rgba(212, 175, 55, 0.12);
+}
+
+.admin-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  flex-wrap: wrap;
+}
+
+.admin-brand-block .admin-badge {
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  color: var(--gold-primary);
+  margin-bottom: 0.4rem;
+  display: inline-block;
+}
+
+.admin-title {
+  font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+  margin: 0.2rem 0;
+  letter-spacing: 0.05em;
+}
+
+.admin-subtext {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.admin-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.admin-tab-nav {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.admin-tab-btn {
+  padding: 0.75rem 1.4rem;
+  border-radius: 8px;
+  background: rgba(4, 24, 18, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.25s ease;
+}
+
+.admin-tab-btn:hover {
+  border-color: var(--gold-primary);
+  color: var(--gold-light);
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.admin-tab-btn.active {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(4, 30, 22, 0.9) 100%);
+  border-color: var(--gold-primary);
+  color: var(--gold-light);
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.15);
+}
+
+/* Tables & Wrappers */
+.admin-table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: rgba(2, 14, 10, 0.7);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.admin-table th {
+  padding: 1rem 1.2rem;
+  background: rgba(4, 30, 22, 0.95);
+  color: var(--gold-light);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 1.1rem 1.2rem;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+  color: var(--text-main);
+  vertical-align: middle;
+}
+
+.admin-table tr:hover td {
+  background: rgba(212, 175, 55, 0.04);
+}
+
+.admin-gift-badge {
+  display: inline-block;
+  margin-top: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(212, 175, 55, 0.05) 100%);
+  border: 1px solid var(--gold-primary);
+  color: var(--gold-light);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
+}
+
+.admin-status-pill {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-status-pill.status-placed {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid #3B82F6;
+  color: #93C5FD;
+}
+
+.admin-status-pill.status-packed {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid #F59E0B;
+  color: #FCD34D;
+}
+
+.admin-status-pill.status-dispatched {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid #10B981;
+  color: #6EE7B7;
+}
+
+.admin-status-pill.status-delivered {
+  background: rgba(212, 175, 55, 0.2);
+  border: 1px solid var(--gold-primary);
+  color: var(--gold-light);
+}
+
+.admin-input-compact {
+  padding: 0.45rem 0.75rem;
+  background: rgba(2, 14, 10, 0.8);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 6px;
+  color: var(--text-main);
+  font-size: 0.78rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.admin-input-compact:focus {
+  border-color: var(--gold-primary);
+}
+
+/* User & Inventory Grids */
+.admin-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.5rem;
+}
+
+.admin-user-card {
+  padding: 1.4rem;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 14px;
+  background: rgba(4, 24, 18, 0.65);
+}
+
+.admin-codex-pill {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  margin: 0.15rem;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-family: monospace;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  color: var(--gold-light);
+}
+
+.admin-inventory-card {
+  padding: 1.3rem;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 12px;
+  background: rgba(4, 24, 18, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.admin-toggle-group {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+
+.admin-toggle-btn {
+  flex: 1;
+  padding: 0.45rem 0.3rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.admin-toggle-btn.active-stock {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: #10B981;
+  color: #6EE7B7;
+}
+
+.admin-toggle-btn.active-sold {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: #EF4444;
+  color: #FCA5A5;
+}
+
+.admin-toggle-btn.active-early {
+  background: rgba(245, 158, 11, 0.25);
+  border-color: #F59E0B;
+  color: #FCD34D;
+}
+
+/* Backend Diagnostics Bar */
+.admin-diagnostics-card {
+  margin-bottom: 2rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 14px;
+  background: radial-gradient(circle at top left, rgba(4, 30, 22, 0.9) 0%, rgba(2, 14, 10, 0.95) 100%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.admin-diag-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.admin-diag-pillar {
+  background: rgba(2, 14, 10, 0.7);
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.admin-diag-title {
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.admin-diag-badge {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.admin-diag-badge.status-ok {
+  background: rgba(16, 185, 129, 0.18);
+  border: 1px solid #10B981;
+  color: #6EE7B7;
+}
+
+.admin-diag-badge.status-warn {
+  background: rgba(245, 158, 11, 0.18);
+  border: 1px solid #F59E0B;
+  color: #FCD34D;
+}
+
+.admin-diag-badge.status-error {
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid #EF4444;
+  color: #FCA5A5;
+}
+
+.admin-diag-badge.status-testing {
+  background: rgba(59, 130, 246, 0.18);
+  border: 1px solid #3B82F6;
+  color: #93C5FD;
+}
+
+.admin-diag-badge.status-untested {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-muted);
+}
+
+
+

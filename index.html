@@ -5,6 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Mytholis | Wear Your Legend</title>
   <meta name="description" content="Mytholis: Six elements. Six legends. One house. Haute Parfumerie extraits hand-distilled in dark emerald crystal flasks.">
+  <meta name="theme-color" content="#041812">
+
+  <!-- Favicon & PWA Icons -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/favicon.png">
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- Open Graph & Social Cards (WhatsApp, iMessage, Instagram, Facebook) -->
+  <meta property="og:site_name" content="Mytholis">
+  <meta property="og:title" content="Mytholis | Wear Your Legend">
+  <meta property="og:description" content="Artisanal extraits de parfum formulated in Mayfair, London and distilled in India. 40% pure oil concentration.">
+  <meta property="og:image" content="https://mytholis.com/assets/coffret_banner.webp">
+  <meta property="og:url" content="https://mytholis.com">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Mytholis | Wear Your Legend">
+  <meta name="twitter:description" content="Artisanal extraits de parfum formulated in Mayfair, London and distilled in India. 40% pure oil concentration.">
+  <meta name="twitter:image" content="https://mytholis.com/assets/coffret_banner.webp">
+
+  <!-- Razorpay Official Checkout Gateway SDK -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
   
   <!-- Performance Resource Hints -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,25 +64,31 @@
   <!-- Header Navigation -->
   <header class="header-nav glass-panel">
     <div class="container nav-container">
-      <a class="brand-logo-wrap" onclick="app.navigateTo('home')">
+      <a class="brand-logo-wrap" onclick="app.clickBrandLogo()" href="#home" title="Mytholis Haute Parfumerie">
         <img src="assets/logo.webp" alt="Mytholis Logo" class="brand-logo-img" width="48" height="48" />
         <span class="brand-name gold-shimmer-text">MYTHOLIS</span>
       </a>
 
       <nav class="main-nav-wrapper">
         <ul class="nav-links" id="main-nav-links">
-          <li><a class="nav-link active" data-view="home" onclick="app.navigateTo('home')">Home</a></li>
-          <li><a class="nav-link" data-view="collections" onclick="app.navigateTo('collections')">Collections</a></li>
-          <li><a class="nav-link" data-view="know-us" onclick="app.navigateTo('know-us')">Know Us</a></li>
-          <li><a class="nav-link" data-view="find-scent" onclick="app.navigateTo('find-scent')">Find My Scent</a></li>
-          <li><a class="nav-link" data-view="faqs" onclick="app.navigateTo('faqs')">FAQs</a></li>
-          <li><a class="nav-link" data-view="contact" onclick="app.navigateTo('contact')">Contact</a></li>
+          <li><a class="nav-link active" data-view="home" href="#home" onclick="app.navigateTo('home')">Home</a></li>
+          <li><a class="nav-link" data-view="collections" href="#collections" onclick="app.navigateTo('collections')">Shop Extraits</a></li>
+          <li><a class="nav-link nav-highlight-pill" href="#coffret" onclick="app.openProductView('mytholis-discovery-set')">Discovery Coffret • ₹3,999</a></li>
+          <li><a class="nav-link" data-view="circle-of-legends" href="#circle-of-legends" onclick="app.navigateTo('circle-of-legends')">Circle of Legends</a></li>
+          <li><a class="nav-link" data-view="find-scent" href="#quiz" onclick="app.navigateTo('find-scent')">Scent Quiz</a></li>
+          <!-- Mobile Menu Expanded Links -->
+          <li class="mobile-only-nav-item"><a class="nav-link" data-view="profile" onclick="app.navigateTo('profile')">Client Account & Orders</a></li>
+          <li class="mobile-only-nav-item"><a class="nav-link" data-view="circle-of-legends-rules" onclick="app.navigateTo('circle-of-legends-rules')">Loyalty Program Rules</a></li>
+          <li class="mobile-only-nav-item"><a class="nav-link" data-view="know-us" onclick="app.navigateTo('know-us')">Know Us & Heritage</a></li>
+          <li class="mobile-only-nav-item"><a class="nav-link" data-view="track-order" onclick="app.navigateTo('track-order')">Track Consignment</a></li>
+          <li class="mobile-only-nav-item"><a class="nav-link" data-view="faqs" onclick="app.navigateTo('faqs')">FAQs & Legal</a></li>
+          <li class="mobile-only-nav-item"><a class="nav-link" data-view="contact" onclick="app.navigateTo('contact')">Concierge & Contact</a></li>
         </ul>
       </nav>
 
       <div class="nav-actions">
         <!-- Wishlist Modal Button -->
-        <button class="icon-btn" onclick="app.openWishlistModal()" title="Wishlist Vault">
+        <button class="icon-btn" onclick="app.openWishlistModal()" title="Wishlist">
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
           </svg>
@@ -75,7 +106,7 @@
         </button>
 
         <!-- VIP Profile Modal Button -->
-        <button class="icon-btn vip-profile-btn" onclick="app.openProfileModal()" title="VIP Client Dossier">
+        <button class="icon-btn vip-profile-btn" onclick="app.openProfileModal()" title="Client Profile">
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
             <circle cx="12" cy="7" r="4"/>
@@ -133,15 +164,15 @@
     <div class="container footer-grid">
       <!-- Brand & Entity Column -->
       <div class="footer-brand-col">
-        <a class="brand-logo-wrap" onclick="app.navigateTo('home')">
+        <a class="brand-logo-wrap" onclick="app.clickBrandLogo()" href="#home" title="Mytholis Haute Parfumerie">
           <img src="assets/logo.webp" alt="Mytholis Logo" class="brand-logo-img" style="height: 38px;" width="38" height="38" />
           <span class="brand-name gold-shimmer-text" style="font-size: 1.2rem;">MYTHOLIS</span>
         </a>
         <p class="footer-desc">
-          "Wear Your Legend." Formulated in Mayfair, London UK · Handcrafted & Bottled in Ahmedabad, India. High-concentration Extraits de Parfum (28%–30%) in crystal flasks.
+          "Wear Your Legend." Formulated in Mayfair, London UK · Handcrafted & Bottled in Ahmedabad, India. High-concentration Extraits de Parfum (40%) in crystal flasks.
         </p>
         <div class="footer-legal-badge">
-          <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">Based in UK — Made in India 🇬🇧 🇮🇳</span>
+          <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">Based in London — Handcrafted in India</span>
         </div>
       </div>
 
@@ -149,14 +180,16 @@
       <div class="footer-col">
         <h5 class="footer-col-title">Navigation</h5>
         <ul class="footer-links">
-          <li><a onclick="app.navigateTo('home')">Home</a></li>
-          <li><a onclick="app.navigateTo('collections')">Collections</a></li>
-          <li><a onclick="app.openProductView('mytholis-discovery-set')">Discovery Coffret (₹1,999)</a></li>
-          <li><a onclick="app.navigateTo('know-us')">Heritage & Craft</a></li>
-          <li><a onclick="app.navigateTo('find-scent')">Scent Finder Quiz</a></li>
-          <li><a onclick="app.navigateTo('circle-of-legends')">✦ The Circle of Legends</a></li>
-          <li><a onclick="app.openProfileModal()">👑 Obsidian VIP Dossier</a></li>
-          <li><a onclick="app.openProfileModal()">Track Consignment</a></li>
+          <li><a href="#home" onclick="app.navigateTo('home')">Home</a></li>
+          <li><a href="#collections" onclick="app.navigateTo('collections')">Collections</a></li>
+          <li><a href="#coffret" onclick="app.openProductView('mytholis-discovery-set')">Discovery Coffret (₹3,999)</a></li>
+          <li><a href="#know-us" onclick="app.navigateTo('know-us')">Heritage & Craft</a></li>
+          <li><a href="#quiz" onclick="app.navigateTo('find-scent')">Scent Finder Quiz</a></li>
+          <li><a href="#circle-of-legends" onclick="app.navigateTo('circle-of-legends')">The Circle of Legends</a></li>
+          <li><a href="#circle-of-legends-rules" onclick="app.navigateTo('circle-of-legends-rules')">Loyalty Program Rules & Bylaws</a></li>
+          <li><a href="#dossier" onclick="app.navigateTo('profile')">Client Account & Orders</a></li>
+          <li><a href="#track-order" onclick="app.navigateTo('track-order')">Track Consignment</a></li>
+          <li><a href="#admin" onclick="app.navigateTo('admin')" style="opacity: 0.55; font-size: 0.72rem;">Sanctum Command</a></li>
         </ul>
       </div>
 
@@ -168,8 +201,9 @@
           <li><a onclick="app.openPolicyModal('privacy')">Privacy Policy</a></li>
           <li><a onclick="app.openPolicyModal('shipping')">Shipping & Armored Delivery</a></li>
           <li><a onclick="app.openPolicyModal('refund')">Refund & Replacement Guarantee</a></li>
-          <li><a onclick="app.navigateTo('faqs')">Legal Metrology & FAQs</a></li>
-          <li><a onclick="app.navigateTo('contact')">Grievance & Concierge</a></li>
+          <li><a onclick="app.navigateTo('circle-of-legends-rules')">Circle of Legends Charter & Rules</a></li>
+          <li><a href="#faqs" onclick="app.navigateTo('faqs')">Legal Metrology & FAQs</a></li>
+          <li><a href="#contact" onclick="app.navigateTo('contact')">Grievance & Concierge</a></li>
         </ul>
       </div>
 
@@ -183,7 +217,7 @@
         </div>
         <div style="margin-top: 1.2rem;">
           <button class="btn btn-glass btn-compact" style="width: 100%; font-size: 0.75rem;" onclick="window.open('https://wa.me/917770009170', '_blank')">
-            💬 WhatsApp Concierge: +91 777000 9170
+            WhatsApp Concierge: +91 777000 9170
           </button>
         </div>
       </div>
@@ -197,15 +231,45 @@
         <span><strong>Mfg Lic No:</strong> GC/1428-A (Nava Naroda, Ahmedabad)</span>
       </div>
       <div class="footer-bottom-trust">
-        <span class="trust-pill">⚡ 256-Bit SSL Razorpay Secured</span>
-        <span class="trust-pill">🇮🇳 UPI • Cards • NetBanking • COD</span>
-        <span class="trust-pill">🚚 Complimentary Express BlueDart Delivery</span>
+        <span class="trust-pill">256-Bit SSL Razorpay Secured</span>
+        <span class="trust-pill">UPI • Cards • NetBanking • COD</span>
+        <span class="trust-pill">Complimentary Express BlueDart Delivery</span>
       </div>
       <div class="footer-copyright-text">
-        © 2026 Mytholis Luxury Fragrances Pvt. Ltd. All rights reserved. Liquid Glass UI Architecture.
+        © 2026 Mytholis Luxury Fragrances Pvt. Ltd. All rights reserved. Haute Parfumerie • Mayfair & Ahmedabad.
       </div>
     </div>
   </footer>
+
+  <!-- Floating WhatsApp Concierge Trigger -->
+  <a href="https://wa.me/917770009170?text=Hello%20Mytholis%2C%20I%20need%20help%20selecting%20my%20signature%20extrait." 
+     target="_blank" 
+     rel="noopener noreferrer" 
+     class="floating-whatsapp-btn" 
+     id="floating-whatsapp-btn" 
+     title="Chat with Mytholis Concierge">
+    <span class="whatsapp-pulse"></span>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+    </svg>
+    <span class="whatsapp-label">Concierge</span>
+  </a>
+
+  <!-- Mobile Sticky Bottom Buy Bar (Shows on product view or scroll) -->
+  <div class="mobile-sticky-buy-bar" id="mobile-sticky-buy-bar">
+    <div class="sticky-buy-inner">
+      <img src="assets/product/2petralux.webp" id="sticky-buy-img" alt="Product Thumbnail" class="sticky-buy-thumb" />
+      <div class="sticky-buy-details">
+        <span class="sticky-buy-name" id="sticky-buy-name">Petralux Extrait</span>
+        <span class="sticky-buy-price gold-text" id="sticky-buy-price">₹4,999</span>
+      </div>
+      <div class="sticky-buy-action">
+        <button class="btn btn-gold sticky-buy-btn" id="sticky-buy-btn" onclick="app.stickyBuyAction()">
+          Acquire Now
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Bundled & Optimized Application Engine (Includes GSAP & Animations) -->
   <script type="module" src="/js/main.js"></script>

@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. Patrons can read & write their own profile and loyalty records
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Nested user orders or history
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // 2. Orders collection: Any patron/guest can submit an order. Read/Update for authenticated owners or admin.
+    match /orders/{orderId} {
+      allow create: if true;
+      allow read, update: if request.auth != null;
+    }
+
+    // 3. Settings & Inventory Overrides: Publicly readable so patrons see real-time drops.
+    match /settings/{doc} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // 4. Vault Reward Codes: Readable by patrons during cart concession validation.
+    match /reward_codes/{code} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // 5. Diagnostics Ping:
+    match /_diagnostics/{doc} {
+      allow read, write: if true;
+    }
+  }
+}

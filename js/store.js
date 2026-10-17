@@ -4,12 +4,12 @@
    ========================================================================== */
 
 const CURRENCY_CONFIG = {
-  INR: { symbol: '₹', rate: 1.0, name: 'INR (₹)', flag: '🇮🇳' },
-  USD: { symbol: '$', rate: 0.0116, name: 'USD ($)', flag: '🇺🇸' },
-  GBP: { symbol: '£', rate: 0.0092, name: 'GBP (£)', flag: '🇬🇧' },
-  AED: { symbol: 'AED ', rate: 0.0425, name: 'AED (د.إ)', flag: '🇦🇪' },
-  CNY: { symbol: '¥', rate: 0.084, name: 'CNY (¥)', flag: '🇨🇳' },
-  RUB: { symbol: '₽', rate: 1.06, name: 'RUB (₽)', flag: '🇷🇺' }
+  INR: { symbol: '₹', rate: 1.0, name: 'INR (₹)', flag: 'INR' },
+  USD: { symbol: '$', rate: 0.0116, name: 'USD ($)', flag: 'USD' },
+  GBP: { symbol: '£', rate: 0.0092, name: 'GBP (£)', flag: 'GBP' },
+  AED: { symbol: 'AED ', rate: 0.0425, name: 'AED (د.إ)', flag: 'AED' },
+  CNY: { symbol: '¥', rate: 0.084, name: 'CNY (¥)', flag: 'CNY' },
+  RUB: { symbol: '₽', rate: 1.06, name: 'RUB (₽)', flag: 'RUB' }
 };
 
 /* ==========================================================================
@@ -31,7 +31,7 @@ const LOYALTY_TIERS = [
     birthday: "30% Off 1 Item with purchase",
     birthdayPerk: "30% Off 1 Item with purchase",
     earlyAccess: "Standard Release",
-    icon: "👁️"
+    roman: "I"
   },
   {
     level: 2,
@@ -47,7 +47,7 @@ const LOYALTY_TIERS = [
     birthday: "50% Off 1 Item max ₹4,000",
     birthdayPerk: "50% Off 1 Item max ₹4,000",
     earlyAccess: "1-Day Early Access",
-    icon: "🗝️"
+    roman: "II"
   },
   {
     level: 3,
@@ -63,7 +63,7 @@ const LOYALTY_TIERS = [
     birthday: "Free 15ml Bottle + 400M with order",
     birthdayPerk: "Free 15ml Bottle + 400M with order",
     earlyAccess: "3-Day Early Access",
-    icon: "⚔️"
+    roman: "III"
   },
   {
     level: 4,
@@ -79,7 +79,7 @@ const LOYALTY_TIERS = [
     birthday: "Free 50ml Bottle + 500M with order",
     birthdayPerk: "Free 50ml Bottle + 500M with order",
     earlyAccess: "1-Week Early Access",
-    icon: "📜"
+    roman: "IV"
   },
   {
     level: 5,
@@ -95,7 +95,7 @@ const LOYALTY_TIERS = [
     birthday: "Free 100ml Bottle + 750M with order",
     birthdayPerk: "Free 100ml Bottle + 750M with order",
     earlyAccess: "1-Month Private Reserve Access",
-    icon: "👑"
+    roman: "V"
   }
 ];
 
@@ -109,7 +109,7 @@ const LOYALTY_REWARDS = [
     type: "discount",
     amount: 200,
     minOrder: 1500,
-    icon: "🎟️"
+    badge: "Concession"
   },
   {
     id: "DISC_400",
@@ -120,7 +120,7 @@ const LOYALTY_REWARDS = [
     type: "discount",
     amount: 400,
     minOrder: 1500,
-    icon: "🎟️"
+    badge: "Concession"
   },
   {
     id: "FREE_8ML",
@@ -130,7 +130,7 @@ const LOYALTY_REWARDS = [
     cost: 500,
     type: "gift",
     giftItem: "8ml Deluxe Travel Atomizer",
-    icon: "✨"
+    badge: "Complimentary"
   },
   {
     id: "DISC_800",
@@ -141,7 +141,7 @@ const LOYALTY_REWARDS = [
     type: "discount",
     amount: 800,
     minOrder: 0,
-    icon: "⚜️"
+    badge: "Concession"
   },
   {
     id: "FREE_15ML",
@@ -151,7 +151,7 @@ const LOYALTY_REWARDS = [
     cost: 1100,
     type: "gift",
     giftItem: "15ml Vault Flacon Miniature",
-    icon: "🧪"
+    badge: "Complimentary"
   },
   {
     id: "DISC_2500",
@@ -162,7 +162,7 @@ const LOYALTY_REWARDS = [
     type: "discount",
     amount: 2500,
     minOrder: 0,
-    icon: "🏛️"
+    badge: "Concession"
   },
   {
     id: "FREE_50ML",
@@ -172,7 +172,7 @@ const LOYALTY_REWARDS = [
     cost: 3500,
     type: "gift",
     giftItem: "Full 50ml Signature Extrait",
-    icon: "👑"
+    badge: "Complimentary Flacon"
   },
   {
     id: "FREE_100ML",
@@ -182,7 +182,7 @@ const LOYALTY_REWARDS = [
     cost: 5000,
     type: "gift",
     giftItem: "Full 100ml Masterpiece Extrait",
-    icon: "🏆"
+    badge: "Complimentary Flacon"
   }
 ];
 
@@ -551,6 +551,30 @@ class MytholisStore {
       milestoneMsg += ' • Pantheon Sovereign Claimed (+1,000M)';
     }
 
+    // Automate ₹1,000 Discovery Coffret Voucher (MYTH-COFFRET-1000)
+    let coffretVoucherAwarded = false;
+    const hasCoffret = items.some(item => item.id === 'mytholis-discovery-set');
+    if (hasCoffret) {
+      const existingCoffretVoucher = this.loyalty.active_reward_codes.find(
+        c => c.code === 'MYTH-COFFRET-1000' && !c.used
+      );
+      if (!existingCoffretVoucher) {
+        this.loyalty.active_reward_codes.unshift({
+          code: 'MYTH-COFFRET-1000',
+          id: 'COFFRET_1000',
+          title: '₹1,000 Off 100ml Flacon (Discovery Privilege)',
+          type: 'discount',
+          amount: 1000,
+          minOrder: 4999,
+          requires100ml: true,
+          used: false,
+          createdAt: new Date().toISOString()
+        });
+        coffretVoucherAwarded = true;
+        milestoneMsg += ' • ₹1,000 Flacon Voucher Unlocked (MYTH-COFFRET-1000)';
+      }
+    }
+
     if (this.loyalty.applied_reward_code) {
       const activeCode = this.loyalty.active_reward_codes.find(
         c => c.code === this.loyalty.applied_reward_code
@@ -570,7 +594,8 @@ class MytholisStore {
       totalLegacyEarned: spendEarned + bottleMilestoneBonus + milestoneBonus,
       newFullBottles,
       newlyUnlockedCodex,
-      milestoneMsg
+      milestoneMsg,
+      coffretVoucherAwarded
     };
   }
 
@@ -641,6 +666,16 @@ class MytholisStore {
       };
     }
 
+    if (existing.requires100ml) {
+      const has100ml = this.cart.some(item => Number(item.size) === 100);
+      if (!has100ml) {
+        return { 
+          success: false, 
+          error: "This voucher is exclusively redeemable against a full 100ml flacon." 
+        };
+      }
+    }
+
     this.loyalty.applied_reward_code = existing.code;
     this.syncUserWithLoyalty();
     this.notify();
@@ -665,6 +700,11 @@ class MytholisStore {
     const subtotal = subtotalINR !== null ? subtotalINR : this.getCartTotal();
     const reward = this.getAppliedReward();
     if (!reward || reward.type !== 'discount') return 0;
+
+    // Special privilege for Discovery Coffret voucher on full 100ml flacon
+    if (reward.code === 'MYTH-COFFRET-1000') {
+      return 1000;
+    }
 
     // Guardrail: Max 30% of cart subtotal (in base INR) or ₹2,500, whichever is lower
     const maxAllowed = Math.min(Math.floor(subtotal * 0.30), 2500);

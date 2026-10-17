@@ -298,14 +298,14 @@ h1, h2, h3, h4, .font-title {
 }
 
 .section-header .divider::after {
-  content: '❖';
+  content: '';
   position: absolute;
   top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  color: var(--gold-primary);
-  font-size: 0.75rem;
-  background: var(--bg-deep);
-  padding: 0 6px;
+  width: 6px;
+  height: 6px;
+  background: var(--gold-primary);
+  transform: translate(-50%, -50%) rotate(45deg);
+  box-shadow: 0 0 6px rgba(212, 175, 55, 0.4);
 }
 
 /* Page View Containers */

@@ -1,0 +1,29 @@
+{
+  "name": "Mytholis | Haute Parfumerie",
+  "short_name": "Mytholis",
+  "description": "Six elements. Six legends. One house. Haute Parfumerie extraits hand-formulated in Mayfair and distilled in India.",
+  "start_url": "/#home",
+  "display": "standalone",
+  "background_color": "#020C08",
+  "theme_color": "#041812",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "192x192",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

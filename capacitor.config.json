@@ -1,0 +1,10 @@
+{
+  "appId": "com.samar.mytholis",
+  "appName": "Mytholis",
+  "webDir": "dist",
+  "backgroundColor": "#020C08",
+  "android": {
+    "backgroundColor": "#020C08",
+    "allowMixedContent": true
+  }
+}

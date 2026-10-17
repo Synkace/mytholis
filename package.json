@@ -6,12 +6,19 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "android:sync": "vite build && npx cap sync android",
+    "android:open": "npx cap open android"
   },
   "devDependencies": {
     "vite": "^6.2.0"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "firebase": "^13.0.0",
+    "firebase-admin": "^14.5.0",
     "gsap": "^3.15.0"
   }
 }

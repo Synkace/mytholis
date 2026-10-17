@@ -5,9 +5,16 @@
    ========================================================================== */
 
 const Components = {
-  /* Render Product Card with 3D Pop-out Overlap & Contained Glass Sheen */
+  /* Render Product Card with 3D Pop-out Overlap, Wear Metrics & Instant Quick Add */
   renderProductCard(product) {
     const isWishlisted = store.isInWishlist(product.id);
+    const defaultSize = product.sizes && product.sizes.length > 0 ? product.sizes[product.sizes.length - 1] : { ml: 100, price: product.price };
+    const travelSize = product.sizes ? product.sizes.find(s => s.ml === 8) : null;
+    const sillageLabel = product.sillageRating >= 95 ? "Formidable" : "Intimate";
+    const occasionLabel = product.scentFamily.includes("Royal") || product.scentFamily.includes("Resinous") || product.scentFamily.includes("Smoky")
+      ? "Evening Gala"
+      : "Signature Wear";
+
     return `
       <div class="product-card" data-id="${product.id}" onclick="app.openProductView('${product.id}')">
         <!-- Strictly-Clipped Liquid Glass Background with Hover Sheen -->
@@ -27,15 +34,44 @@ const Components = {
         <div class="product-card-info">
           <span class="product-card-collection">${product.collection}</span>
           <h3 class="product-card-title">${product.name}</h3>
+
+          <!-- Quick-Glance Wear Metrics Badges -->
+          <div class="product-card-wear-metrics">
+            <span class="wear-metric-pill" title="Longevity on skin">${product.longevityHours}h Longevity</span>
+            <span class="wear-metric-pill" title="Sillage projection">${sillageLabel}</span>
+            <span class="wear-metric-pill" title="Recommended setting">${occasionLabel}</span>
+          </div>
+
           <p class="product-card-accord">${product.accords.slice(0, 3).join(' • ')}</p>
+
+          <!-- Quick Size Selection Pills on Card -->
+          ${product.sizes && product.sizes.length > 1 ? `
+            <div class="card-size-selector" onclick="event.stopPropagation()">
+              ${product.sizes.map(s => `
+                <button class="card-size-pill ${s.ml === defaultSize.ml ? 'active' : ''}" 
+                        onclick="app.selectCardSize(event, '${product.id}', ${s.ml}, ${s.price})">
+                  ${s.ml}ml • ₹${s.price.toLocaleString()}
+                </button>
+              `).join('')}
+            </div>
+          ` : ''}
+
           <div class="product-card-footer">
             <div>
-              <span class="product-price">${store.formatPrice(product.price)}</span>
+              <span class="product-price" id="card-price-${product.id}">${store.formatPrice(defaultSize.price)}</span>
               <span class="product-tax-note">MRP (Incl. taxes)</span>
             </div>
-            <button class="btn btn-glass product-explore-btn" onclick="event.stopPropagation(); app.openProductView('${product.id}')">
-              Explore ✦
-            </button>
+            <div class="product-card-actions">
+              <button class="btn btn-gold quick-add-btn" 
+                      id="card-buy-btn-${product.id}"
+                      onclick="event.stopPropagation(); app.quickAddToCart('${product.id}')"
+                      title="Quick Add Flacon to Cart">
+                Acquire
+              </button>
+              <button class="btn btn-glass product-explore-btn" onclick="event.stopPropagation(); app.openProductView('${product.id}')">
+                Details
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -54,7 +90,7 @@ const Components = {
         <div class="hero-header-wrap">
           <div class="hero-kicker">
             <span class="kicker-line"></span>
-            <span class="kicker-text">HAUTE PARFUMERIE · 30% EXTRAIT CONCENTRATION</span>
+            <span class="kicker-text">HAUTE PARFUMERIE · 40% EXTRAIT CONCENTRATION</span>
             <span class="kicker-line"></span>
           </div>
 
@@ -124,7 +160,7 @@ const Components = {
             </span>
           </button>
           <div class="subline-text" id="heroSublineText">
-            <span id="heroSublineName">Oud Rion Extrait</span> · <span>30% Pure Concentration</span> · <span>Hand-Distilled in Mayfair &amp; Ahmedabad</span>
+            <span id="heroSublineName">Oud Rion Extrait</span> · <span>40% Pure Concentration</span> · <span>Hand-Distilled in Mayfair &amp; Ahmedabad</span>
           </div>
         </div>
       </section>
@@ -137,11 +173,11 @@ const Components = {
             "Wear Your Legend."
           </h2>
           <p class="font-garamond brand-essence-desc">
-            Alchemic extraits hand-formulated in Mayfair, London and artisanally distilled in Ahmedabad, India. Crafted with 28%–30% pure fragrance oil concentration and encased in flacons of liquid crystal.
+            Alchemic extraits hand-formulated in Mayfair, London and artisanally distilled in Ahmedabad, India. Crafted with 40% pure fragrance oil concentration and encased in flacons of liquid crystal.
           </p>
           <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
             <button class="btn btn-gold" onclick="app.openProductView('mytholis-discovery-set')">
-              Order Discovery Set (6 × 10ml) • ₹1,999 ✦
+              Order Discovery Set (6 × 10ml) • ₹3,999
             </button>
             <button class="btn btn-glass" onclick="app.navigateTo('know-us')">
               Read Our Heritage
@@ -154,24 +190,24 @@ const Components = {
       <section class="container" style="margin-bottom: 6rem;">
         <div class="discovery-vault-banner liquid-glass-card">
           <div class="discovery-banner-content">
-            <span class="glass-pill" style="margin-bottom: 0.8rem;">✦ Master Discovery Edition</span>
+            <span class="glass-pill" style="margin-bottom: 0.8rem;">Master Discovery Edition</span>
             <h2 class="font-title gold-shimmer-text" style="font-size: clamp(1.6rem, 3vw, 2.3rem); margin-bottom: 0.8rem;">
               The Mytholis Vault Discovery Coffret
             </h2>
             <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">
-              Cannot decide on your signature extract? Experience all 6 master creations in deluxe 10ml travel flacons. Includes a <strong>₹1,000 voucher</strong> redeemable against your first full 100ml flacon.
+              Cannot decide on your signature extrait? Experience all 6 master creations in deluxe 10ml travel flacons. Includes a <strong>₹1,000 voucher</strong> redeemable against your first full 100ml flacon.
             </p>
             <div class="discovery-banner-perks">
-              <span>✦ 6 × 10ml Deluxe Atomizers</span>
-              <span>✦ All 6 Extraits de Parfum</span>
-              <span>✦ Free Pan-India Armored Delivery</span>
+              <span>6 × 10ml Deluxe Atomizers</span>
+              <span>All 6 Extraits de Parfum</span>
+              <span>Free Pan-India Armored Delivery</span>
             </div>
             <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
-              <button class="btn btn-gold" onclick="app.openProductView('mytholis-discovery-set')">
-                Explore Discovery Coffret (₹1,999) ✦
+              <button class="btn btn-gold" onclick="app.acquireCoffretNow()">
+                Acquire Coffret • ₹3,999
               </button>
               <button class="btn btn-glass" onclick="app.buyNowWhatsApp('mytholis-discovery-set')">
-                💬 Order via WhatsApp
+                Order via WhatsApp
               </button>
             </div>
           </div>
@@ -192,7 +228,7 @@ const Components = {
         <div class="hero-card-row">
           <a href="javascript:void(0)" onclick="app.openProductView('king-scar')" alt="King Scar">
             <div class="card">
-              <div class="wrapper kingscar">
+              <div class="wrapper king-scar">
                 <img src="assets/hero/kingscarcard.webp" class="cover-image base-card-img" alt="King Scar Cover" loading="eager" decoding="async" />
                 <img src="assets/hero/kingscarbg.webp" class="cover-image hover-bg-img" alt="King Scar Atmosphere" loading="eager" decoding="async" />
               </div>
@@ -202,7 +238,7 @@ const Components = {
 
           <a href="javascript:void(0)" onclick="app.openProductView('oud-rion')" alt="Oud Rion">
             <div class="card">
-              <div class="wrapper oudrion">
+              <div class="wrapper oud-rion">
                 <img src="assets/hero/oudrioncard.webp" class="cover-image base-card-img" alt="Oud Rion Cover" loading="eager" decoding="async" />
                 <img src="assets/hero/oudrionbg.webp" class="cover-image hover-bg-img" alt="Oud Rion Atmosphere" loading="eager" decoding="async" />
               </div>
@@ -223,44 +259,92 @@ const Components = {
 
         <div style="text-align: center; margin-top: 5rem;">
           <button class="btn btn-gold" onclick="app.navigateTo('collections')">
-            Explore All Extraits in Catalog ✦
+            Explore All Extraits in Catalog
           </button>
         </div>
       </section>
 
-      <!-- Olfactory Notes Pyramid Showcase -->
-      <section class="container" style="margin-bottom: 6rem;">
+      <!-- Olfactory Notes Pyramid Showcase (Interactive Anatomie de Parfum) -->
+      <section class="container" style="margin-bottom: 6rem;" id="pyramid-section">
         <div class="section-header">
           <span class="tagline">Anatomie de Parfum</span>
           <h2>The Pyramid of Resonance</h2>
           <div class="divider"></div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
-          <div class="liquid-glass-card" style="padding: 2.5rem; text-align: center;">
-            <div style="font-size: 2rem; margin-bottom: 1rem; color: var(--gold-primary);">✦</div>
-            <h3 class="font-title" style="margin-bottom: 0.8rem; color: var(--gold-light);">Top Notes: Ether</h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
-              Solar Kashmiri saffron, Italian bergamot rind, and crushed pink peppercorn. The immediate spark of luminous energy that awakens the spirit.
-            </p>
-          </div>
+        ${(() => {
+          const pyramidScentIds = ['petralux', 'ash', 'king-scar', 'spark', 'oud-rion', 'wood-sera'];
+          const pyramidScents = pyramidScentIds.map(id => {
+            const p = MYTHOLIS_CATALOG.find(item => item.id === id);
+            const shortName = p ? p.name.replace(' Extrait de Parfum', '').trim() : id;
+            return { id, product: p, shortName };
+          }).filter(s => s.product);
 
-          <div class="liquid-glass-card" style="padding: 2.5rem; text-align: center;">
-            <div style="font-size: 2rem; margin-bottom: 1rem; color: var(--gold-primary);">✦✦</div>
-            <h3 class="font-title" style="margin-bottom: 0.8rem; color: var(--gold-light);">Heart Notes: Core</h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
-              Taif and Damascus rose, smoked frankincense, and Florentine orris root. The lingering, evocative emotional signature.
-            </p>
-          </div>
+          const activeId = (typeof app !== 'undefined' && app.activePyramidScent) ? app.activePyramidScent : 'petralux';
+          const activeScentObj = pyramidScents.find(s => s.id === activeId) || pyramidScents[0];
+          const activeScent = activeScentObj.product;
+          const activeShortName = activeScentObj.shortName;
 
-          <div class="liquid-glass-card" style="padding: 2.5rem; text-align: center;">
-            <div style="font-size: 2rem; margin-bottom: 1rem; color: var(--gold-primary);">✦✦✦</div>
-            <h3 class="font-title" style="margin-bottom: 0.8rem; color: var(--gold-light);">Base Notes: Anchor</h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
-              Sustainably cultivated Assam agarwood accord, golden amber resin, and Haitian vetiver. An enduring presence lasting 8–10+ hours.
-            </p>
-          </div>
-        </div>
+          return `
+            <!-- 6 Interactive Extrait Tabs -->
+            <div class="pyramid-tabs-nav" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 2.5rem;">
+              ${pyramidScents.map(s => {
+                const isActive = s.id === activeScentObj.id;
+                return `
+                  <button class="glass-pill pyramid-tab-btn ${isActive ? 'active' : ''}"
+                          onclick="app.selectPyramidScent('${s.id}')"
+                          data-scent-id="${s.id}"
+                          style="cursor: pointer; transition: all 0.25s ease; ${isActive ? 'background: var(--gold-primary); color: #020C08; border-color: var(--gold-light); font-weight: 600;' : ''}">
+                    ${s.shortName}
+                  </button>
+                `;
+              }).join('')}
+            </div>
+
+            <!-- Notes Pyramid Grid -->
+            <div id="pyramid-resonance-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; transition: opacity 0.25s ease, transform 0.25s ease;">
+              <div class="liquid-glass-card" style="padding: 2.5rem; text-align: center;">
+                <div style="font-family: var(--font-serif-title); font-size: 1.5rem; margin-bottom: 1rem; color: var(--gold-primary); letter-spacing: 0.15em;">I</div>
+                <h3 class="font-title" style="margin-bottom: 0.8rem; color: var(--gold-light);">Top Notes: Ether</h3>
+                <p id="pyramid-top-notes" style="color: var(--gold-light); font-size: 0.95rem; font-weight: 500; margin-bottom: 0.6rem; line-height: 1.5;">
+                  ${activeScent.notes.top.join(' · ')}
+                </p>
+                <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6;">
+                  The immediate spark of luminous olfactory energy that awakens the spirit.
+                </p>
+              </div>
+
+              <div class="liquid-glass-card" style="padding: 2.5rem; text-align: center;">
+                <div style="font-family: var(--font-serif-title); font-size: 1.5rem; margin-bottom: 1rem; color: var(--gold-primary); letter-spacing: 0.15em;">II</div>
+                <h3 class="font-title" style="margin-bottom: 0.8rem; color: var(--gold-light);">Heart Notes: Core</h3>
+                <p id="pyramid-heart-notes" style="color: var(--gold-light); font-size: 0.95rem; font-weight: 500; margin-bottom: 0.6rem; line-height: 1.5;">
+                  ${activeScent.notes.heart.join(' · ')}
+                </p>
+                <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6;">
+                  The lingering, evocative emotional signature and sacred core as the extrait unfolds.
+                </p>
+              </div>
+
+              <div class="liquid-glass-card" style="padding: 2.5rem; text-align: center;">
+                <div style="font-family: var(--font-serif-title); font-size: 1.5rem; margin-bottom: 1rem; color: var(--gold-primary); letter-spacing: 0.15em;">III</div>
+                <h3 class="font-title" style="margin-bottom: 0.8rem; color: var(--gold-light);">Base Notes: Anchor</h3>
+                <p id="pyramid-base-notes" style="color: var(--gold-light); font-size: 0.95rem; font-weight: 500; margin-bottom: 0.6rem; line-height: 1.5;">
+                  ${activeScent.notes.base.join(' · ')}
+                </p>
+                <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6;">
+                  Sustainably cultivated Assam agarwood accord, golden amber resin, and Haitian vetiver. An enduring presence lasting 12–14+ hours on skin and 48+ hours on attire.
+                </p>
+              </div>
+            </div>
+
+            <!-- Direct CTA Button below Pyramid -->
+            <div style="text-align: center; margin-top: 3rem;">
+              <button id="pyramid-cta-btn" class="btn btn-gold" onclick="app.openProductView('${activeScent.id}')">
+                Acquire ${activeShortName} →
+              </button>
+            </div>
+          `;
+        })()}
       </section>
     `;
   },
@@ -316,7 +400,7 @@ const Components = {
             Founded on the principle of uncompromised olfactory artistry, House Mytholis unites British formulation heritage with the richness of Indian distillation mastery. Designed in Mayfair, London and handcrafted in Ahmedabad, India.
           </p>
           <p class="craft-story-text">
-            Each composition is blended with 28%–30% IFRA-certified fine perfume oils and undergoes 120 days of cold maceration inside dark emerald glass carboys before receiving hand-blown crystal encapsulation.
+            Each composition is blended with 40% IFRA-certified fine perfume oils and undergoes 120 days of cold maceration inside dark emerald glass carboys before receiving hand-blown crystal encapsulation.
           </p>
         </div>
 
@@ -326,7 +410,7 @@ const Components = {
             <p>Days Cold Barrel Maceration</p>
           </div>
           <div class="pyramid-node liquid-glass-card">
-            <h4 class="gold-text" style="font-size: 2.2rem; margin-bottom: 0.5rem;">28–30%</h4>
+            <h4 class="gold-text" style="font-size: 2.2rem; margin-bottom: 0.5rem;">40%</h4>
             <p>Extrait de Parfum Concentration</p>
           </div>
           <div class="pyramid-node liquid-glass-card">
@@ -337,7 +421,7 @@ const Components = {
 
         <div style="text-align: center; margin-top: 3rem;">
           <button class="btn btn-gold" onclick="app.navigateTo('find-scent')">
-            Begin Olfactory Quiz ✦
+            Begin Olfactory Quiz
           </button>
         </div>
       </div>
@@ -351,20 +435,20 @@ const Components = {
         step: 1,
         title: "What atmosphere stirs your spirit most?",
         options: [
-          { icon: "👑", text: "Regal presence & absinthe spice (Aromatic · Men)", product: "king-scar" },
-          { icon: "🔥", text: "Smouldering embers & sacred woods (Woody · Unisex)", product: "ash" },
-          { icon: "💎", text: "Radiant golden pineapple & chypre (Fruity · Unisex)", product: "petralux" },
-          { icon: "⚡", text: "Electric neroli, citrus & leather (Aromatic · Unisex)", product: "spark" }
+          { letter: "A", text: "Regal presence & absinthe spice (Aromatic · Men)", product: "king-scar" },
+          { letter: "B", text: "Smouldering embers & sacred woods (Woody · Unisex)", product: "ash" },
+          { letter: "C", text: "Radiant golden pineapple & chypre (Fruity · Unisex)", product: "petralux" },
+          { letter: "D", text: "Electric neroli, citrus & leather (Aromatic · Unisex)", product: "spark" }
         ]
       },
       {
         step: 2,
         title: "Which presence do you wish to command?",
         options: [
-          { icon: "👑", text: "The King of Woods: Royal Oud & Saffron", product: "oud-rion" },
-          { icon: "🌲", text: "The Forest at Golden Hour: Velvet Rose & Oud", product: "wood-sera" },
-          { icon: "✨", text: "Light Trapped in Stone: Golden Fruit & Birch", product: "petralux" },
-          { icon: "🕯️", text: "Sacred Embers: Sandalwood & Amber", product: "ash" }
+          { letter: "A", text: "The King of Woods: Royal Oud & Saffron", product: "oud-rion" },
+          { letter: "B", text: "The Forest at Golden Hour: Velvet Rose & Oud", product: "wood-sera" },
+          { letter: "C", text: "Light Trapped in Stone: Golden Fruit & Birch", product: "petralux" },
+          { letter: "D", text: "Sacred Embers: Sandalwood & Amber", product: "ash" }
         ]
       }
     ];
@@ -377,25 +461,44 @@ const Components = {
             <!-- Scent Initiation Milestone Banner -->
             <div class="initiation-reward-banner liquid-glass-card" style="margin-bottom: 1.5rem; border: 1px solid var(--gold-primary); padding: 1.2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; text-align: left;">
               <div>
-                <span class="glass-pill" style="font-size: 0.68rem; color: var(--gold-light);">✦ The Circle of Legends</span>
+                <span class="glass-pill" style="font-size: 0.68rem; color: var(--gold-light);">The Circle of Legends</span>
                 <h4 style="font-size: 1.05rem; color: var(--gold-light); margin: 0.4rem 0 0.2rem;">Initiation Honorific Awarded</h4>
-                <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">+150 Spendable Mythos & +100 Legacy Mythos credited to your Obsidian Vault.</p>
+                <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">+150 Spendable Mythos & +100 Legacy Mythos credited to your Circle of Legends account.</p>
               </div>
-              <button class="btn btn-gold" style="font-size: 0.78rem; padding: 0.5rem 1.1rem;" onclick="app.openProfileModal()">View Obsidian Dossier 👑</button>
+              <button class="btn btn-gold" style="font-size: 0.78rem; padding: 0.5rem 1.1rem;" onclick="app.navigateTo('circle-of-legends')">View Vault Rewards</button>
             </div>
 
-            <span class="glass-pill" style="margin-bottom: 1rem;">✦ 98.6% Olfactory Match</span>
-            <h2 class="gold-shimmer-text quiz-match-title">Your Signature Extract Is: ${matchedProduct.name}</h2>
+            <span class="glass-pill" style="margin-bottom: 1rem;">98.6% Olfactory Match</span>
+            <h2 class="gold-shimmer-text quiz-match-title">Your Signature Extrait Is: ${matchedProduct.name}</h2>
             <div style="max-width: 320px; margin: 0 auto 2rem;" class="bottle-pedestal-glow">
               <img src="${matchedProduct.image}" alt="${matchedProduct.name}" class="quiz-result-img" />
             </div>
             <h3 style="font-size: 1.8rem; margin-bottom: 0.5rem;">${matchedProduct.name}</h3>
             <p class="subtitle" style="margin-bottom: 1.5rem;">${matchedProduct.subtitle}</p>
-            <p style="color: var(--text-muted); max-width: 550px; margin: 0 auto 2rem;">
-              "${matchedProduct.tagline}" ${matchedProduct.description}
-            </p>
+            <!-- Discovery Coffret Guarantee & Upgrade Hook -->
+            <div class="coffret-upgrade-card liquid-glass-card" style="margin-bottom: 2rem; padding: 1.2rem; border: 1px solid rgba(212, 175, 55, 0.4); text-align: left;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+                <div>
+                  <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">The Discovery Guarantee</span>
+                  <h4 style="font-size: 1.05rem; color: var(--gold-light); margin: 0.3rem 0 0.2rem;">Try before committing to a full flacon</h4>
+                  <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">
+                    Experience this scent alongside all 5 other extraits in the <strong>Vault Discovery Coffret (6 × 10ml)</strong>. Includes a <strong>₹1,000 voucher</strong> redeemable against your first 100ml flacon!
+                  </p>
+                </div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: var(--gold-primary);">₹3,999</div>
+              </div>
+            </div>
+
             <div class="quiz-result-actions">
-              <button class="btn btn-gold" onclick="app.openProductView('${matchedProduct.id}')">View Scent Details</button>
+              <button class="btn btn-gold" style="flex: 1;" onclick="app.quickAddToCart('${matchedProduct.id}')">
+                Acquire Matched Flacon (${store.formatPrice(matchedProduct.price)})
+              </button>
+              <button class="btn btn-gold" style="flex: 1; background: linear-gradient(135deg, #10B981 0%, #047857 100%); border: 1px solid #34D399;" onclick="app.quickAddToCart('mytholis-discovery-set')">
+                Try in Discovery Coffret (₹3,999)
+              </button>
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.2rem;">
+              <button class="btn btn-glass" onclick="app.openProductView('${matchedProduct.id}')">View Detailed Pyramids</button>
               <button class="btn btn-glass" onclick="app.renderQuizStep(1)">Retake Quiz</button>
             </div>
           </div>
@@ -418,7 +521,7 @@ const Components = {
           <div class="quiz-options-grid">
             ${currentQ.options.map(opt => `
               <div class="quiz-option-card liquid-glass-card" onclick="app.renderQuizStep(${step + 1})">
-                <span class="quiz-option-icon">${opt.icon}</span>
+                <span class="quiz-option-icon" style="font-family: var(--font-serif-title); font-size: 1.05rem; color: var(--gold-primary); font-weight: 600;">${opt.letter}</span>
                 <span class="quiz-option-text">${opt.text}</span>
               </div>
             `).join('')}
@@ -444,7 +547,7 @@ const Components = {
           </label>
           <div class="track-input-wrap">
             <input type="text" id="track-order-input" class="engraving-input" style="flex-grow: 1; font-size: 1rem;" placeholder="e.g. MYTH-89021 or MYTH-VIP-99420" value="MYTH-89021" />
-            <button class="btn btn-gold track-search-btn" onclick="app.searchTrackOrder()">Track Order ✦</button>
+            <button class="btn btn-gold track-search-btn" onclick="app.searchTrackOrder()">Track Order</button>
           </div>
 
           <div id="track-result-box" class="track-result-container">
@@ -462,32 +565,40 @@ const Components = {
             <!-- Progress Tracker -->
             <div class="tracker-steps-grid">
               <div class="tracker-step-item">
-                <div class="tracker-icon-circle completed">✓</div>
+                <div class="tracker-icon-circle completed">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
                 <h5>Order Placed</h5>
                 <span>Aug 24</span>
               </div>
 
               <div class="tracker-step-item">
-                <div class="tracker-icon-circle completed">✓</div>
+                <div class="tracker-icon-circle completed">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
                 <h5>Vault Packed</h5>
                 <span>Aug 24</span>
               </div>
 
               <div class="tracker-step-item">
-                <div class="tracker-icon-circle completed">✓</div>
+                <div class="tracker-icon-circle completed">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
                 <h5>Dispatched</h5>
                 <span>Aug 25</span>
               </div>
 
               <div class="tracker-step-item">
-                <div class="tracker-icon-circle active liquid-pulse">🚚</div>
+                <div class="tracker-icon-circle active liquid-pulse">
+                  <span style="font-size: 0.75rem; font-weight: 700; color: var(--gold-light);">4</span>
+                </div>
                 <h5>Out for Delivery</h5>
                 <span style="color: var(--gold-primary);">BlueDart Express</span>
               </div>
             </div>
 
             <p class="track-location-status">
-              📍 Current Location: BlueDart Armored Express Hub (Ahmedabad Air Cargo Terminal). Dispatched for destination delivery.
+              Current Location: BlueDart Armored Express Hub (Ahmedabad Air Cargo Terminal). Dispatched for destination delivery.
             </p>
           </div>
         </div>
@@ -500,7 +611,7 @@ const Components = {
     const faqList = [
       {
         q: "What makes Mytholis Extrait de Parfum different from mass market perfumes?",
-        a: "While typical commercial perfumes contain only 10–15% fragrance oil (Eau de Toilette), Mytholis handcrafts Extraits de Parfum at a high 28%–30% concentration using IFRA-compliant fine fragrance oils. This yields extraordinary depth, rich sillage, and a lingering presence that lasts 8–10+ hours."
+        a: "While typical commercial perfumes contain only 10–15% fragrance oil (Eau de Toilette), Mytholis handcrafts Extraits de Parfum at a formidable 40% concentration using IFRA-compliant fine fragrance oils. This yields extraordinary depth, rich sillage, and a lingering presence that lasts 8–10+ hours."
       },
       {
         q: "Are the gold bottle engravings personalized and permanent?",
@@ -591,7 +702,7 @@ const Components = {
               </div>
 
               <button type="submit" class="btn btn-gold" style="width: 100%;">
-                Send Concierge Message ✦
+                Send Concierge Message
               </button>
             </form>
           </div>
@@ -599,34 +710,34 @@ const Components = {
           <!-- Right: Registered Office & Atelier -->
           <div class="contact-info-col">
             <div class="liquid-glass-card" style="padding: 2rem;">
-              <span class="glass-pill" style="margin-bottom: 0.8rem;">🇮🇳 Registered Office (India)</span>
+              <span class="glass-pill" style="margin-bottom: 0.8rem;">Registered Office · India</span>
               <h4 style="font-size: 1.2rem; color: var(--gold-light); margin-bottom: 0.5rem;">Mytholis Luxury Fragrances Pvt. Ltd.</h4>
               <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6;">
                 Vasant Vihar 2, Nava Naroda,<br/>
                 Ahmedabad, Gujarat 382330, India<br/>
                 <strong>GSTIN:</strong> 24AAECM4821P1ZT<br/>
-                ☎ +91 777000 9170 • ✉ concierge@mytholis.com
+                Tel: +91 777000 9170 • concierge@mytholis.com
               </p>
             </div>
 
             <div class="liquid-glass-card" style="padding: 2rem;">
-              <span class="glass-pill" style="margin-bottom: 0.8rem;">🇬🇧 Formulation Design Studio</span>
+              <span class="glass-pill" style="margin-bottom: 0.8rem;">Formulation Design Studio · London</span>
               <h4 style="font-size: 1.2rem; color: var(--gold-light); margin-bottom: 0.5rem;">Mytholis London Studio</h4>
               <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6;">
                 18 Hanover Square, Mayfair,<br/>
                 London W1S 1HN, United Kingdom<br/>
-                ✉ london@mytholis.com
+                london@mytholis.com
               </p>
             </div>
 
             <div class="liquid-glass-card" style="padding: 2rem;">
-              <span class="glass-pill" style="margin-bottom: 0.8rem;">⚡ Instant WhatsApp Concierge</span>
-              <h4 style="font-size: 1.2rem; color: var(--gold-light); margin-bottom: 0.5rem;">Live Chat & Quick Buy</h4>
+              <span class="glass-pill" style="margin-bottom: 0.8rem;">WhatsApp Concierge</span>
+              <h4 style="font-size: 1.2rem; color: var(--gold-light); margin-bottom: 0.5rem;">Live Chat & Inquiries</h4>
               <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
-                Connect directly with our fragrance concierge on WhatsApp for instant orders.
+                Connect directly with our fragrance concierge on WhatsApp for orders and private inquiries.
               </p>
               <button class="btn btn-gold btn-compact" onclick="window.open('https://wa.me/917770009170?text=' + encodeURIComponent('Hello Mytholis Concierge, I would like to inquire about your Extrait collection.'), '_blank')">
-                💬 Chat on WhatsApp (+91 777000 9170)
+                Chat on WhatsApp (+91 777000 9170)
               </button>
             </div>
           </div>
@@ -665,7 +776,7 @@ const Components = {
               <img src="${product.image}" alt="${product.name}" class="main-bottle-view-img tilt-element" id="transparent-bottle-img" />
             </div>
             <div class="subtitle" style="margin-top: 2rem; font-size: 1rem;">
-              ✦ Handcrafted Crystal Flacon
+              Handcrafted Crystal Flacon
             </div>
             <div style="margin-top: 0.5rem;">
               <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-primary);">${product.concentration}</span>
@@ -688,7 +799,10 @@ const Components = {
                 <span class="product-price" id="detail-product-price" style="font-size: 2.2rem;">${store.formatPrice(currentPrice)}</span>
                 <span class="mrp-tax-tag" id="detail-mrp-tag">MRP (Incl. of all taxes) • ₹${unitPricePerMl}/ml</span>
               </div>
-              <span style="color: var(--gold-primary); font-size: 0.9rem;">★ ${product.rating} (${product.reviewsCount} verified reviews)</span>
+              <span style="color: var(--gold-primary); font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px;">
+                <svg width="12" height="12" fill="var(--gold-primary)" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                ${product.rating} (${product.reviewsCount} verified reviews)
+              </span>
             </div>
 
             <p class="product-detail-desc">
@@ -714,15 +828,32 @@ const Components = {
             <!-- Engraving Option -->
             <div class="engraving-box">
               <label style="font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-primary);">
-                ✦ Complimentary Gold Initials Engraving:
+                Complimentary Gold Initials Engraving:
               </label>
               <input type="text" id="engraving-text" class="engraving-input" placeholder="e.g. A.V. 2026" maxlength="12" />
             </div>
 
-            <!-- Performance Gauges -->
+            <!-- Performance Gauges & Quick-Glance Wear Indicators -->
+            <div class="product-wear-summary-strip liquid-glass-card" style="margin-bottom: 1.5rem; padding: 0.9rem 1.2rem; display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
+              <div class="wear-indicator-item">
+                <span class="wear-ind-label">Longevity</span>
+                <strong class="wear-ind-val gold-text">10–12 Hours</strong>
+              </div>
+              <div class="wear-ind-divider"></div>
+              <div class="wear-indicator-item">
+                <span class="wear-ind-label">Sillage Projection</span>
+                <strong class="wear-ind-val gold-text">${product.sillageRating >= 95 ? "Formidable" : "Intimate & Radiant"}</strong>
+              </div>
+              <div class="wear-ind-divider"></div>
+              <div class="wear-indicator-item">
+                <span class="wear-ind-label">Best Setting</span>
+                <strong class="wear-ind-val gold-text">${product.gender === 'Masculine' ? 'Evening & Power Signature' : 'Evening / Signature Presence'}</strong>
+              </div>
+            </div>
+
             <div class="performance-meters">
               <div class="meter-card">
-                <div class="meter-title">Longevity (${product.longevityHours}h)</div>
+                <div class="meter-title">Concentration Longevity (${product.longevityHours}h)</div>
                 <div class="meter-bar-track">
                   <div class="meter-bar-fill" style="width: ${(product.longevityHours / 12) * 100}%;"></div>
                 </div>
@@ -739,19 +870,19 @@ const Components = {
             <div class="product-detail-actions-stacked">
               <div class="action-btn-row">
                 <button class="btn btn-gold btn-whatsapp-buy" onclick="app.buyNowWhatsApp('${product.id}')">
-                  <span>💬</span> Order via WhatsApp Concierge ✦
+                  Order via WhatsApp Concierge
                 </button>
                 <button class="btn btn-gold btn-razorpay-buy" onclick="app.buyNowRazorpay('${product.id}')">
-                  <span>⚡</span> Pay via UPI / Razorpay
+                  Pay via UPI / Razorpay
                 </button>
               </div>
 
               <div class="action-btn-row secondary-actions">
                 <button class="btn btn-glass" style="flex: 2;" onclick="app.addProductToCart('${product.id}')">
-                  Add to Cart ✦
+                  Add to Cart
                 </button>
                 <button class="btn btn-glass ${isWishlisted ? 'active' : ''}" style="flex: 1;" onclick="store.toggleWishlist('${product.id}'); app.renderCurrentView();">
-                  ♥ ${isWishlisted ? 'Saved' : 'Wishlist'}
+                  ${isWishlisted ? 'Saved to Wishlist' : 'Add to Wishlist'}
                 </button>
               </div>
             </div>
@@ -759,8 +890,8 @@ const Components = {
             <!-- Mandatory Legal Metrology Dossier Card -->
             <div class="legal-metrology-card liquid-glass-card" style="margin-top: 2rem;">
               <div class="legal-metrology-header">
-                <span class="legal-metrology-badge">⚖️ Mandatory Legal Metrology Dossier</span>
-                <span class="legal-metrology-country">Country of Origin: India 🇮🇳</span>
+                <span class="legal-metrology-badge">Legal Metrology Dossier</span>
+                <span class="legal-metrology-country">Country of Origin: India</span>
               </div>
               <div class="legal-metrology-grid">
                 <div class="legal-metrology-item">
@@ -847,7 +978,13 @@ const Components = {
     return `
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div class="modal-crest-icon">🛍️</div>
+          <div class="modal-crest-icon">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+          </div>
           <div>
             <h3 class="modal-title font-title">Your Cart (${count})</h3>
             <p class="modal-subtitle">Complimentary express armored delivery across India</p>
@@ -859,12 +996,11 @@ const Components = {
       <div class="modal-scroll-body">
         ${store.cart.length === 0 ? `
           <div class="modal-empty-state liquid-glass-card">
-            <div class="modal-empty-icon">✦</div>
-            <h4 class="modal-empty-title">Your Scent Vault is Empty</h4>
-            <p class="modal-empty-desc font-garamond">Explore our signature extraits or order the Vault Discovery Set (6 × 10ml).</p>
+            <h4 class="modal-empty-title">Your Cart is Empty</h4>
+            <p class="modal-empty-desc font-garamond">Explore our signature extraits or order the Vault Discovery Coffret (6 × 10ml).</p>
             <div style="display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem;">
               <button class="btn btn-gold" onclick="app.closeCartModal(); app.openProductView('mytholis-discovery-set');">
-                Discovery Set (₹1,999) ✦
+                Discovery Coffret (₹3,999)
               </button>
               <button class="btn btn-glass" onclick="app.closeCartModal(); app.navigateTo('collections');">
                 Explore Catalog
@@ -891,10 +1027,22 @@ const Components = {
             `).join('')}
           </div>
 
+          <!-- Discovery Coffret Guarantee Callout Banner (if Coffret in cart) -->
+          ${store.cart.some(i => i.id === 'mytholis-discovery-set') ? `
+            <div class="coffret-guarantee-cart-alert liquid-glass-card" style="margin-top: 0.9rem; padding: 0.85rem 1rem; border: 1px solid var(--gold-primary); background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(4, 24, 18, 0.7) 100%);">
+              <div style="display: flex; align-items: center; gap: 0.6rem; color: var(--gold-light); font-weight: 700; font-size: 0.84rem;">
+                Discovery Guarantee Activated
+              </div>
+              <p style="font-size: 0.76rem; color: var(--text-muted); margin: 0.3rem 0 0; line-height: 1.5;">
+                Includes a <strong>₹1,000 voucher</strong> redeemable against your first full 100ml flacon!
+              </p>
+            </div>
+          ` : ''}
+
           <!-- Vault Concessions & Voucher Input -->
           <div class="modal-section-box liquid-glass-card" style="margin-top: 1rem; padding: 1rem;">
             <div class="modal-section-header" style="margin-bottom: 0.6rem;">
-              <h5 class="modal-section-title" style="font-size: 0.82rem;">✦ Mythos Society Concession / Voucher</h5>
+              <h5 class="modal-section-title" style="font-size: 0.82rem;">Mythos Society Concession / Voucher</h5>
               <span class="modal-section-hint">Margin guardrails applied</span>
             </div>
 
@@ -919,7 +1067,7 @@ const Components = {
                 <input type="text" id="cart-voucher-input" class="engraving-input" placeholder="Enter MYTH-... Code" style="margin: 0; text-transform: uppercase; font-size: 0.82rem; padding: 0.5rem 0.8rem;" />
                 <button class="btn btn-gold" style="font-size: 0.75rem; padding: 0.5rem 1rem; white-space: nowrap;"
                         onclick="const el = document.getElementById('cart-voucher-input'); if(el && el.value.trim()){ app.applyCartRewardCode(el.value.trim()); }">
-                  Apply ✦
+                  Apply
                 </button>
               </div>
             `}
@@ -937,7 +1085,6 @@ const Components = {
 
             <!-- Estimated Mythos Earnings -->
             <div style="margin-top: 0.8rem; padding: 0.6rem 0.8rem; border-radius: 8px; background: rgba(4, 24, 18, 0.4); border: 1px solid rgba(212, 175, 55, 0.15); font-size: 0.74rem; color: var(--gold-light); display: flex; align-items: center; gap: 0.5rem;">
-              <span>✦</span>
               <div>
                 Acquisition Earnings: <strong>+${estLoyalty.spendEarned} Spendable M</strong> & <strong>+${estLoyalty.legacyEarned} Legacy M</strong>
               </div>
@@ -972,10 +1119,10 @@ const Components = {
           </div>
           <div class="modal-cart-actions-row">
             <button class="btn btn-gold" style="flex: 1;" onclick="app.openRazorpayModal()">
-              <span>⚡</span> Pay via UPI / Razorpay ✦
+              Pay via UPI / Razorpay
             </button>
             <button class="btn btn-glass" style="flex: 1;" onclick="app.checkoutCartWhatsApp()">
-              <span>💬</span> Order via WhatsApp
+              Order via WhatsApp
             </button>
           </div>
         </div>
@@ -995,7 +1142,11 @@ const Components = {
     return `
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div class="modal-crest-icon" style="color: #E74C3C;">♥</div>
+          <div class="modal-crest-icon" style="color: var(--gold-primary);">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </div>
           <div>
             <h3 class="modal-title font-title">Wishlist Vault (${items.length})</h3>
             <p class="modal-subtitle">Your curated personal extrait reserve</p>
@@ -1007,11 +1158,10 @@ const Components = {
       <div class="modal-scroll-body">
         ${items.length === 0 ? `
           <div class="modal-empty-state liquid-glass-card">
-            <div class="modal-empty-icon" style="color: #E74C3C;">♥</div>
             <h4 class="modal-empty-title">Your Wishlist is Empty</h4>
             <p class="modal-empty-desc font-garamond">Save your favorite signature extraits to revisit them anytime.</p>
             <button class="btn btn-gold" onclick="app.closeWishlistModal(); app.navigateTo('collections');">
-              Explore Extraits ✦
+              Explore Extraits
             </button>
           </div>
         ` : `
@@ -1026,7 +1176,7 @@ const Components = {
                 </div>
                 <div class="modal-item-btn-group">
                   <button class="btn btn-gold modal-item-cta-btn" onclick="store.addToCart('${p.id}'); app.closeWishlistModal(); app.openCartModal();">
-                    Add to Cart ✦
+                    Add to Cart
                   </button>
                   <button class="btn btn-glass modal-item-explore-btn" onclick="app.closeWishlistModal(); app.openProductView('${p.id}');">
                     Explore
@@ -1043,7 +1193,7 @@ const Components = {
 
       <div class="modal-footer">
         <button class="btn btn-glass" style="width: 100%; font-size: 0.8rem; padding: 0.6rem 1rem;" onclick="app.closeWishlistModal(); app.navigateTo('collections');">
-          Browse All Extraits ✦
+          Browse All Extraits
         </button>
       </div>
     `;
@@ -1102,7 +1252,7 @@ const Components = {
           </div>
           <div style="text-align: right;">
             <span class="glass-pill" style="border-color: var(--gold-primary); color: var(--gold-primary);">
-              ✦ ${currentTier.multiplier || 1}x Earning Multiplier
+              ${currentTier.multiplier || 1}x Earning Multiplier
             </span>
           </div>
         </div>
@@ -1130,7 +1280,7 @@ const Components = {
           </div>
         ` : `
           <div style="margin-top: 1rem; padding: 0.8rem 1rem; border-radius: 10px; background: rgba(212, 175, 55, 0.1); border: 1px solid var(--gold-primary); font-size: 0.82rem; color: var(--gold-light);">
-            👑 <strong>Pinnacle Status:</strong> You hold the highest honor in the Mythos Society. Enjoy 5x Mythos on all acquisitions, 1-month early access to maceration vintages, and bespoke private flacon conciergerie.
+            <strong>Pinnacle Status:</strong> You hold the highest honor in the Mythos Society. Enjoy 5x Mythos on all acquisitions, 1-month early access to maceration vintages, and bespoke private flacon conciergerie.
           </div>
         `}
       </div>
@@ -1140,12 +1290,12 @@ const Components = {
         <div class="modal-section-box liquid-glass-card" style="border: 1px solid var(--gold-primary); background: radial-gradient(circle at 10% 50%, rgba(212, 175, 55, 0.15) 0%, rgba(4, 24, 18, 0.6) 100%);">
           <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
             <div>
-              <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">✦ Scent Initiate Privilege</span>
+              <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">Scent Initiate Privilege</span>
               <h5 style="font-size: 0.95rem; color: var(--gold-light); margin: 0.3rem 0 0.2rem;">Claim Your 150 Mythos Initiation Bounty</h5>
               <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0;">Register your olfactory signature in the VIP Dossier to unlock +150 Spendable & +100 Legacy Mythos.</p>
             </div>
             <button class="btn btn-gold" style="font-size: 0.78rem; padding: 0.45rem 1rem;" onclick="app.completeUserInitiation()">
-              Claim Honorific ✦
+              Claim Privilege
             </button>
           </div>
         </div>
@@ -1155,7 +1305,7 @@ const Components = {
       <div class="modal-section-box liquid-glass-card">
         <div class="modal-section-header">
           <div>
-            <h4 class="modal-section-title">✦ The Pantheon Codex</h4>
+            <h4 class="modal-section-title">The Pantheon Codex</h4>
             <span class="modal-section-hint">Acquire 50ml or 100ml flacons to illuminate and unlock legend milestones</span>
           </div>
           <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-light);">${unlockedCount} / 6 Illuminated</span>
@@ -1165,21 +1315,21 @@ const Components = {
         <div class="codex-milestones-row">
           <div class="codex-milestone-box ${loyalty.trinity_claimed || unlockedCount >= 3 ? 'claimed' : ''}">
             <div>
-              <strong style="color: var(--gold-light); font-size: 0.82rem;">✦ The Trinity (3 Core Scents)</strong>
+              <strong style="color: var(--gold-light); font-size: 0.82rem;">The Trinity (3 Core Scents)</strong>
               <span style="display: block; font-size: 0.72rem; color: var(--text-muted);">+300 Spendable & +300 Legacy Mythos</span>
             </div>
             <span class="glass-pill" style="font-size: 0.65rem;">
-              ${loyalty.trinity_claimed || unlockedCount >= 3 ? 'Unlocked ✓' : `${unlockedCount}/3 Flacons`}
+              ${loyalty.trinity_claimed || unlockedCount >= 3 ? 'Unlocked' : `${unlockedCount}/3 Flacons`}
             </span>
           </div>
 
           <div class="codex-milestone-box ${loyalty.pantheon_claimed || unlockedCount >= 6 ? 'claimed' : ''}">
             <div>
-              <strong style="color: var(--gold-light); font-size: 0.82rem;">👑 The Full Pantheon (All 6 Scents)</strong>
+              <strong style="color: var(--gold-light); font-size: 0.82rem;">The Full Pantheon (All 6 Scents)</strong>
               <span style="display: block; font-size: 0.72rem; color: var(--text-muted);">+1,000 Spendable & +1,000 Legacy Mythos</span>
             </div>
             <span class="glass-pill" style="font-size: 0.65rem;">
-              ${loyalty.pantheon_claimed || unlockedCount >= 6 ? 'Unlocked ✓' : `${unlockedCount}/6 Flacons`}
+              ${loyalty.pantheon_claimed || unlockedCount >= 6 ? 'Unlocked' : `${unlockedCount}/6 Flacons`}
             </span>
           </div>
         </div>
@@ -1201,13 +1351,13 @@ const Components = {
                 </div>
                 <div>
                   ${isUnlocked 
-                    ? `<span class="codex-badge illuminated">✦ ILLUMINATED</span>` 
-                    : `<span class="codex-badge locked">🔒 50ml / 100ml Needed</span>`
+                    ? `<span class="codex-badge illuminated">ILLUMINATED</span>` 
+                    : `<span class="codex-badge locked">50ml / 100ml Required</span>`
                   }
                   ${!isUnlocked ? `
                     <button class="btn btn-glass" style="width: 100%; font-size: 0.68rem; padding: 0.35rem 0.5rem; margin-top: 0.6rem;"
                             onclick="${isModal ? 'app.closeProfileModal();' : ''} app.openProductView('${id}')">
-                      Acquire Flacon ✦
+                      Acquire Flacon
                     </button>
                   ` : ''}
                 </div>
@@ -1221,7 +1371,7 @@ const Components = {
       <div class="modal-section-box liquid-glass-card">
         <div class="modal-section-header">
           <div>
-            <h4 class="modal-section-title">✦ The Vault Redemption</h4>
+            <h4 class="modal-section-title">The Vault Redemptions</h4>
             <span class="modal-section-hint">Convert spendable Mythos into concessions or complimentary flacons</span>
           </div>
           <span class="gold-text" style="font-size: 0.85rem; font-weight: 700;">Balance: ${(loyalty.spendable_mythos || 0).toLocaleString()} M</span>
@@ -1230,7 +1380,7 @@ const Components = {
         ${unusedCodes.length > 0 ? `
           <div style="margin-bottom: 1.2rem;">
             <div style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.6rem;">
-              ✦ Ready to Apply Vouchers (${unusedCodes.length})
+              Available Vouchers (${unusedCodes.length})
             </div>
             <div class="active-codes-grid">
               ${unusedCodes.map(c => `
@@ -1243,7 +1393,7 @@ const Components = {
                   <div style="display: flex; gap: 0.4rem; margin-top: 0.2rem;">
                     <button class="btn btn-gold" style="flex: 1; font-size: 0.72rem; padding: 0.4rem;"
                             onclick="${isModal ? 'app.closeProfileModal();' : ''} app.openCartModal(); app.applyCartRewardCode('${c.code}');">
-                      Apply to Cart ✦
+                      Apply to Cart
                     </button>
                     <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.4rem 0.6rem;" onclick="app.copyRewardCode('${c.code}')">
                       Copy
@@ -1265,7 +1415,7 @@ const Components = {
             return `
               <div class="loyalty-reward-card ${isLevelLocked ? 'locked' : ''}">
                 <div class="reward-top-row">
-                  <div class="reward-icon-wrap">${r.type === 'gift' ? '🎁' : '🏷️'}</div>
+                  <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-primary); text-transform: uppercase;">${r.badge || (r.type === 'gift' ? 'Gift' : 'Voucher')}</span>
                   <span class="reward-cost-pill">${r.cost} M</span>
                 </div>
                 <h5 class="reward-title">${r.title}</h5>
@@ -1273,7 +1423,7 @@ const Components = {
                 <div>
                   ${isLevelLocked ? `
                     <button class="btn btn-glass" style="width: 100%; font-size: 0.7rem; padding: 0.45rem; opacity: 0.6; cursor: not-allowed;" disabled>
-                      🔒 Unlocks at ${minTierObj ? minTierObj.name : `Level ${r.minLevel}`}
+                      Unlocks at ${minTierObj ? minTierObj.name : `Level ${r.minLevel}`}
                     </button>
                   ` : !isAffordable ? `
                     <button class="btn btn-glass" style="width: 100%; font-size: 0.7rem; padding: 0.45rem; opacity: 0.6; cursor: not-allowed;" disabled>
@@ -1281,7 +1431,7 @@ const Components = {
                     </button>
                   ` : `
                     <button class="btn btn-gold" style="width: 100%; font-size: 0.72rem; padding: 0.45rem;" onclick="app.redeemReward('${r.id}')">
-                      Redeem for ${r.cost} M ✦
+                      Redeem for ${r.cost} M
                     </button>
                   `}
                 </div>
@@ -1294,7 +1444,7 @@ const Components = {
       <!-- 4. Tier Perks Comparative Table -->
       <div class="modal-section-box liquid-glass-card">
         <div class="modal-section-header">
-          <h4 class="modal-section-title">✦ The Circle of Legends Hierarchy</h4>
+          <h4 class="modal-section-title">The Circle of Legends Hierarchy</h4>
           <span class="modal-section-hint">Dual-Key Tier Structure & Privileges</span>
         </div>
 
@@ -1335,30 +1485,595 @@ const Components = {
             </tbody>
           </table>
         </div>
+
+        <!-- Link to Official Bylaws & Rules Page -->
+        <div style="text-align: center; margin-top: 1.2rem; padding: 1rem; border-radius: 12px; background: rgba(212, 175, 55, 0.08); border: 1px dashed var(--gold-primary);">
+          <span style="font-size: 0.82rem; color: var(--gold-light); margin-right: 0.8rem; display: inline-block; margin-bottom: 0.4rem;">
+            Want to inspect the full dual-key bylaws, margin guardrails & charter?
+          </span>
+          <button class="btn btn-gold" style="font-size: 0.75rem; padding: 0.4rem 1rem;" onclick="${isModal ? 'app.closeProfileModal();' : ''} app.navigateTo('circle-of-legends-rules')">
+            Read Official Rules & Regulations
+          </button>
+        </div>
       </div>
     `;
   },
 
-  /* Render User Profile View */
+  /* --------------------------------------------------------------------------
+     THE CIRCLE OF LEGENDS - DEDICATED RULES & REGULATIONS PAGE VIEW
+     -------------------------------------------------------------------------- */
+  renderLoyaltyRules() {
+    const currentTier = store.getCurrentTier ? store.getCurrentTier() : LOYALTY_TIERS[0];
+    const loyalty = store.loyalty || {};
+    const tiers = store.LOYALTY_TIERS || LOYALTY_TIERS;
+    const rewards = store.LOYALTY_REWARDS || LOYALTY_REWARDS;
+
+    return `
+      <div class="loyalty-rules-wrap">
+        <!-- Hero Header -->
+        <div class="loyalty-rules-hero liquid-glass-card">
+          <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-light); margin-bottom: 0.8rem; letter-spacing: 0.15em;">
+            HOUSE MYTHOLIS · OFFICIAL CONSTITUTION
+          </span>
+          <h1 class="gold-shimmer-text" style="font-size: clamp(2rem, 3.8vw, 3rem); font-family: var(--font-serif-title); margin-bottom: 0.6rem;">
+            The Circle of Legends
+          </h1>
+          <p style="font-size: 1.1rem; color: var(--gold-light); font-family: var(--font-serif-title); margin-bottom: 1rem;">
+            Rules, Regulations, Dual-Key Governance & Concession Bylaws
+          </p>
+          <div class="divider" style="margin: 1.2rem auto;"></div>
+          <p style="color: var(--text-muted); max-width: 680px; margin: 0 auto 1.5rem; font-size: 0.92rem; line-height: 1.7;">
+            Welcome to the official operational charter of <em>The Mythos Society</em>. This constitution governs points accrual, dual-key tier elevations, the Pantheon Codex, and the mathematical margin guardrails protecting House Mytholis Haute Parfumerie.
+          </p>
+
+          <!-- Current Member Status Header -->
+          <div style="display: inline-flex; align-items: center; gap: 1rem; padding: 0.8rem 1.4rem; border-radius: 30px; background: rgba(4, 24, 18, 0.6); border: 1px solid rgba(212, 175, 55, 0.3); flex-wrap: wrap; justify-content: center;">
+            <span style="font-size: 0.82rem; color: var(--text-muted);">Your Standing:</span>
+            <strong style="color: var(--gold-light); font-size: 0.9rem;">Level ${currentTier.level}: ${currentTier.name}</strong>
+            <span style="color: var(--gold-primary);">•</span>
+            <span style="font-size: 0.82rem; color: var(--gold-light);">${(loyalty.spendable_mythos || 0).toLocaleString()} Spendable M</span>
+            <button class="btn btn-gold" style="font-size: 0.72rem; padding: 0.35rem 0.8rem;" onclick="app.navigateTo('circle-of-legends')">
+              View Rewards
+            </button>
+          </div>
+        </div>
+
+        <!-- Sticky Navigation Anchor Bar -->
+        <nav class="loyalty-nav-anchor-bar">
+          <a class="loyalty-anchor-pill" onclick="document.getElementById('art-1').scrollIntoView({ behavior: 'smooth' })">I. Membership</a>
+          <a class="loyalty-anchor-pill" onclick="document.getElementById('art-2').scrollIntoView({ behavior: 'smooth' })">II. Two Currencies</a>
+          <a class="loyalty-anchor-pill" onclick="document.getElementById('art-3').scrollIntoView({ behavior: 'smooth' })">III. Dual-Key Tiers</a>
+          <a class="loyalty-anchor-pill" onclick="document.getElementById('art-4').scrollIntoView({ behavior: 'smooth' })">IV. Points & Codex</a>
+          <a class="loyalty-anchor-pill" onclick="document.getElementById('art-5').scrollIntoView({ behavior: 'smooth' })">V. Margin Guardrails</a>
+          <a class="loyalty-anchor-pill" onclick="document.getElementById('art-6').scrollIntoView({ behavior: 'smooth' })">VI. House Governance</a>
+        </nav>
+
+        <!-- ARTICLE I -->
+        <section id="art-1" class="loyalty-article-card liquid-glass-card">
+          <div class="loyalty-article-header">
+            <span class="loyalty-article-num">ARTICLE I</span>
+            <h2 class="loyalty-article-title">Membership & The Scent Initiation Protocol</h2>
+          </div>
+
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 1.2rem;">
+            Enrollment into <strong>The Circle of Legends</strong> constitutes an exclusive privilege extended to patrons of House Mytholis. Membership is voluntary, automatic upon first qualification, and subject to adherence to these bylaws.
+          </p>
+
+          <div class="loyalty-rule-grid">
+            <div class="loyalty-rule-subcard">
+              <div class="loyalty-rule-subcard-title">
+                § 1.1 Automatic Enrollment
+              </div>
+              <p class="loyalty-rule-subcard-desc">
+                Any client who completes a flacon acquisition through official House Mytholis channels or completes the Scent Finder Quiz is automatically inducted as a Level 1 Observer.
+              </p>
+            </div>
+
+            <div class="loyalty-rule-subcard">
+              <div class="loyalty-rule-subcard-title">
+                § 1.2 The Initiation Bounty
+              </div>
+              <p class="loyalty-rule-subcard-desc">
+                Upon completing their olfactory signature via the Scent Finder Quiz or registering in the Obsidian Dossier, each initiate receives a one-time grant of <strong>+150 Spendable Mythos</strong> (₹150 concession value) and <strong>+100 Legacy Mythos</strong>.
+              </p>
+            </div>
+
+            <div class="loyalty-rule-subcard">
+              <div class="loyalty-rule-subcard-title">
+                § 1.3 Singular Identity & Non-Transferability
+              </div>
+              <p class="loyalty-rule-subcard-desc">
+                Each membership is linked strictly to a single verified client profile, verified WhatsApp contact, and email address. Points, privileges, and unlocked flacons cannot be transferred, sold, or pooled across accounts.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ARTICLE II -->
+        <section id="art-2" class="loyalty-article-card liquid-glass-card">
+          <div class="loyalty-article-header">
+            <span class="loyalty-article-num">ARTICLE II</span>
+            <h2 class="loyalty-article-title">The Dual-Currency Architecture: Spendable vs. Legacy Mythos</h2>
+          </div>
+
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 1.5rem;">
+            House Mytholis operates a bifurcated loyalty accounting model. This ensures that enjoying your rewards never penalizes or diminishes your earned prestige and tier ranking.
+          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+            <!-- Spendable Mythos -->
+            <div class="liquid-glass-card" style="padding: 1.8rem; border: 1.5px solid rgba(212, 175, 55, 0.35);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+                <span class="glass-pill" style="color: var(--gold-light);">Liquid Concession Power</span>
+                <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-primary);">Spendable</span>
+              </div>
+              <h3 style="font-family: var(--font-serif-title); color: var(--gold-light); font-size: 1.3rem; margin-bottom: 0.5rem;">
+                Spendable Mythos
+              </h3>
+              <div style="font-size: 0.82rem; color: var(--gold-primary); font-weight: 700; margin-bottom: 1rem;">
+                100 Spendable Mythos = ₹100 INR Concession Value
+              </div>
+              <ul style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.7; padding-left: 1.2rem; margin: 0;">
+                <li>Redeemable in the Vault for single-use discount concession codes (e.g., ₹200, ₹400, ₹800, ₹2,500 off).</li>
+                <li>Used to claim complimentary travel atomizers (8ml), flacon miniatures (15ml), or full extrait bottles.</li>
+                <li><strong>Deducted immediately</strong> from your balance upon voucher generation in the Vault.</li>
+              </ul>
+            </div>
+
+            <!-- Legacy Mythos -->
+            <div class="liquid-glass-card" style="padding: 1.8rem; border: 1.5px solid rgba(212, 175, 55, 0.35);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+                <span class="glass-pill" style="color: var(--gold-light);">Permanent Honorific Score</span>
+                <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-primary);">Lifetime</span>
+              </div>
+              <h3 style="font-family: var(--font-serif-title); color: var(--gold-light); font-size: 1.3rem; margin-bottom: 0.5rem;">
+                Legacy Mythos
+              </h3>
+              <div style="font-size: 0.82rem; color: var(--gold-primary); font-weight: 700; margin-bottom: 1rem;">
+                Lifetime Status Score — NEVER Decreases
+              </div>
+              <ul style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.7; padding-left: 1.2rem; margin: 0;">
+                <li>Tracks the patron's lifetime journey and volume within House Mytholis.</li>
+                <li><strong>Never decreases</strong> when Spendable Mythos is redeemed in the Vault.</li>
+                <li>Serves as Key 1 of the Dual-Key requirement to elevate your status through Levels 1 to 5.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ARTICLE III -->
+        <section id="art-3" class="loyalty-article-card liquid-glass-card">
+          <div class="loyalty-article-header">
+            <span class="loyalty-article-num">ARTICLE III</span>
+            <h2 class="loyalty-article-title">The Dual-Key Tier Elevation Criteria (Levels 1–5)</h2>
+          </div>
+
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 1.2rem;">
+            Elevation in The Circle of Legends cannot be achieved merely through casual spend or volume alone. House Mytholis enforces a strict <strong>Dual-Key Protocol</strong>: advancing to the next tier requires satisfying <em>both</em> the Lifetime Legacy Mythos milestone and the Full Bottles count simultaneously.
+          </p>
+
+          <div class="tier-perks-table-wrap" style="margin: 1.5rem 0;">
+            <table class="tier-perks-table">
+              <thead>
+                <tr>
+                  <th>Tier Level</th>
+                  <th>Key 1: Legacy Mythos</th>
+                  <th>Key 2: Full Bottles</th>
+                  <th>Earning Multiplier</th>
+                  <th>Shipping Privilege</th>
+                  <th>Early Access</th>
+                  <th>Annual Birthday Honor</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tiers.map(t => `
+                  <tr class="${t.level === currentTier.level ? 'current-tier-row' : ''}">
+                    <td>
+                      <strong style="color: var(--gold-light);">Level ${t.level}: ${t.name}</strong>
+                      ${t.level === currentTier.level ? '<span class="glass-pill" style="font-size: 0.6rem; margin-left: 0.4rem;">YOU ARE HERE</span>' : ''}
+                      <div style="font-size: 0.72rem; color: var(--text-muted);">${t.tagline || ''}</div>
+                    </td>
+                    <td><strong>${t.minLegacy.toLocaleString()} M</strong></td>
+                    <td><strong>${t.minBottles} ${t.minBottles === 1 ? 'Bottle' : 'Bottles'}</strong> (50ml/100ml)</td>
+                    <td><strong class="gold-text">${t.multiplier}x</strong> (${t.cashbackPct || (t.multiplier * 3)}% return)</td>
+                    <td>${t.freeShippingMin === 0 ? 'Complimentary Armored' : `Free over ₹${t.freeShippingMin.toLocaleString()}`}</td>
+                    <td>${t.earlyAccess}</td>
+                    <td>${t.birthdayPerk || t.birthday}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="loyalty-guardrail-alert">
+            <div class="loyalty-guardrail-alert-header">
+              The Dual-Key Governance Rule
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-main); margin: 0; line-height: 1.6;">
+              If a patron accumulates 3,000 Legacy Mythos but owns only 2 Full Bottles, they remain at <strong>Level 2: The Curator</strong> until acquiring their 3rd full bottle (50ml or 100ml), which then unlocks <strong>Level 3: The Collector</strong>. Both keys must turn to open the chamber.
+            </p>
+          </div>
+        </section>
+
+        <!-- ARTICLE IV -->
+        <section id="art-4" class="loyalty-article-card liquid-glass-card">
+          <div class="loyalty-article-header">
+            <span class="loyalty-article-num">ARTICLE IV</span>
+            <h2 class="loyalty-article-title">Points Arithmetic, Bottle Bonuses & The Pantheon Codex</h2>
+          </div>
+
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 1.2rem;">
+            Every acquisition from House Mytholis contributes transparently to your Spendable Mythos balance and Legacy status.
+          </p>
+
+          <div class="loyalty-rule-grid">
+            <div class="loyalty-rule-subcard">
+              <div class="loyalty-rule-subcard-title">
+                § 4.1 Base Acquisition Earning Formula
+              </div>
+              <p class="loyalty-rule-subcard-desc">
+                For every ₹100 spent in base order subtotal, the member earns 3 base Mythos multiplied by their active Tier multiplier.
+              </p>
+              <div class="loyalty-formula-box">
+                Spendable M = ⌊Subtotal INR ÷ 100⌋ × 3 × Tier Multiplier
+              </div>
+              <p style="font-size: 0.76rem; color: var(--text-muted); margin: 0;">
+                <em>Example:</em> An Archivist (4x multiplier) acquiring a ₹6,999 flacon earns: ⌊6999 ÷ 100⌋ × 3 × 4 = <strong>828 Spendable Mythos</strong>.
+              </p>
+            </div>
+
+            <div class="loyalty-rule-subcard">
+              <div class="loyalty-rule-subcard-title">
+                § 4.2 Full Bottle Milestone Bonuses
+              </div>
+              <p class="loyalty-rule-subcard-desc">
+                In addition to purchase points, full bottles permanently accelerate your Legacy Status:
+              </p>
+              <ul style="color: var(--gold-light); font-size: 0.82rem; line-height: 1.7; padding-left: 1.2rem; margin: 0.5rem 0;">
+                <li>Each <strong>50ml Flacon</strong>: <strong>+300 Legacy Mythos</strong> & +1 Bottle Count</li>
+                <li>Each <strong>100ml Flacon</strong>: <strong>+500 Legacy Mythos</strong> & +1 Bottle Count</li>
+              </ul>
+              <p style="font-size: 0.74rem; color: var(--text-muted); margin: 0;">
+                <em>Note:</em> The Discovery Coffret (6 × 10ml) and 8ml sprays earn standard spendable points but do not award bottle milestone points.
+              </p>
+            </div>
+
+            <div class="loyalty-rule-subcard">
+              <div class="loyalty-rule-subcard-title">
+                § 4.3 The Pantheon Codex Milestones
+              </div>
+              <p class="loyalty-rule-subcard-desc">
+                Collecting unique flacons across our 6 core signature extraits (<em>Ash, King Scar, Petralux, Spark, Oud Rion, Wood Sera</em>) illuminates them in your Codex:
+              </p>
+              <ul style="color: var(--gold-light); font-size: 0.82rem; line-height: 1.7; padding-left: 1.2rem; margin: 0.5rem 0;">
+                <li><strong>The Trinity (3 Scents):</strong> +300 Spendable & +300 Legacy Mythos</li>
+                <li><strong>The Full Pantheon (All 6 Scents):</strong> +1,000 Spendable & +1,000 Legacy Mythos</li>
+              </ul>
+            </div>
+
+            <div class="loyalty-rule-subcard">
+              <div class="loyalty-rule-subcard-title">
+                § 4.4 Olfactory Inscriptions (Reviews)
+              </div>
+              <p class="loyalty-rule-subcard-desc">
+                Patrons at <strong>Level 2 (The Curator)</strong> and above may submit verified olfactory reviews:
+              </p>
+              <ul style="color: var(--gold-light); font-size: 0.82rem; line-height: 1.7; padding-left: 1.2rem; margin: 0.5rem 0;">
+                <li>Written Scent Inscription: <strong>+50 Spendable Mythos</strong></li>
+                <li>Scent Inscription with Media (Unboxing Photo/Video): <strong>+100 Spendable Mythos</strong></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ARTICLE V -->
+        <section id="art-5" class="loyalty-article-card liquid-glass-card">
+          <div class="loyalty-article-header">
+            <span class="loyalty-article-num">ARTICLE V</span>
+            <h2 class="loyalty-article-title">Redemption Vault Charters & Margin Guardrails</h2>
+          </div>
+
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 1.2rem;">
+            Spendable Mythos can be converted into unique single-use concession codes via the Obsidian Vault. To safeguard the economic sustainability and pure maceration quality of Haute Parfumerie, strict margin guardrails are enforced.
+          </p>
+
+          <!-- The Margin Guardrail Box -->
+          <div class="loyalty-guardrail-alert">
+            <div class="loyalty-guardrail-alert-header">
+              § 5.1 The 30% / ₹2,500 Margin Guardrail Rule
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-main); margin-bottom: 0.8rem; line-height: 1.6;">
+              The maximum discount concession permitted through Mythos vouchers on any single order is hard-capped at <strong>30% of the cart subtotal (in base INR) or ₹2,500, whichever is lower</strong>.
+            </p>
+            <div style="background: rgba(4, 24, 18, 0.5); padding: 0.8rem 1rem; border-radius: 8px; font-size: 0.8rem; color: var(--gold-light);">
+              • On a ₹3,999 Discovery Set order, the maximum concession allowable is 30% = <strong>₹1,199</strong>.<br/>
+              • On a ₹6,999 Oud Rion order, a ₹2,500 voucher is utilized up to the ₹2,099 cap (30%). To utilize the full ₹2,500 voucher in a single order, the cart subtotal must be ₹8,334 or greater.
+            </div>
+          </div>
+
+          <div class="loyalty-rule-grid">
+            <div class="loyalty-rule-subcard">
+              <div class="loyalty-rule-subcard-title">
+                § 5.2 Single-Voucher Non-Stacking Policy
+              </div>
+              <p class="loyalty-rule-subcard-desc">
+                Only one <code>MYTH-...</code> voucher code may be applied per checkout transaction. Mythos vouchers cannot be stacked with sitewide seasonal sale codes or influencer promotions.
+              </p>
+            </div>
+
+            <div class="loyalty-rule-subcard">
+              <div class="loyalty-rule-subcard-title">
+                § 5.3 Vault Flacon Gifts (Free Items)
+              </div>
+              <p class="loyalty-rule-subcard-desc">
+                Vouchers for complimentary gifts (8ml, 15ml, 50ml, 100ml) attach to your next qualifying order and ship inside the armored case free of charge. Gifts cannot be redeemed for fiat currency.
+              </p>
+            </div>
+          </div>
+
+          <!-- Official Rewards Catalog Table -->
+          <h4 style="color: var(--gold-light); font-size: 1rem; margin: 1.5rem 0 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;">
+            The 8 Official Vault Redemptions
+          </h4>
+          <div class="tier-perks-table-wrap">
+            <table class="tier-perks-table">
+              <thead>
+                <tr>
+                  <th>Voucher ID</th>
+                  <th>Required Tier</th>
+                  <th>Cost (Mythos)</th>
+                  <th>Reward Benefit</th>
+                  <th>Minimum Order Condition</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rewards.map(r => `
+                  <tr>
+                    <td><code>${r.id}</code></td>
+                    <td><strong>Level ${r.minLevel}: ${tiers[r.minLevel - 1] ? tiers[r.minLevel - 1].name : ''}</strong></td>
+                    <td><strong class="gold-text">${r.cost} M</strong></td>
+                    <td>${r.title}</td>
+                    <td>${r.minOrder ? `Min order ₹${r.minOrder.toLocaleString()}` : 'No minimum order'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ARTICLE VI -->
+        <section id="art-6" class="loyalty-article-card liquid-glass-card">
+          <div class="loyalty-article-header">
+            <span class="loyalty-article-num">ARTICLE VI</span>
+            <h2 class="loyalty-article-title">Legal Charter, Expiration & House Governance</h2>
+          </div>
+
+          <div class="loyalty-rule-grid">
+            <div class="loyalty-rule-subcard">
+              <div class="loyalty-rule-subcard-title">
+                § 6.1 12-Month Rolling Validity
+              </div>
+              <p class="loyalty-rule-subcard-desc">
+                Mythos points remain active for <strong>12 continuous months</strong> from your last recorded transaction or dossier interaction. Any subsequent order resets the 12-month clock for your entire balance.
+              </p>
+            </div>
+
+            <div class="loyalty-rule-subcard">
+              <div class="loyalty-rule-subcard-title">
+                § 6.2 No Fiat Monetary Value
+              </div>
+              <p class="loyalty-rule-subcard-desc">
+                Mythos points, status levels, and vouchers constitute proprietary client honorifics. They carry zero fiat monetary value, create no property interest, and cannot be exchanged for cash under any circumstance.
+              </p>
+            </div>
+
+            <div class="loyalty-rule-subcard">
+              <div class="loyalty-rule-subcard-title">
+                § 6.3 Anti-Fraud & Fair Use Protection
+              </div>
+              <p class="loyalty-rule-subcard-desc">
+                House Mytholis reserves the sole right to audit accounts, invalidate fraudulent vouchers, reverse points credited from cancelled or chargebacked orders, or revoke status in cases of unauthorized resale or automated exploitation.
+              </p>
+            </div>
+
+            <div class="loyalty-rule-subcard">
+              <div class="loyalty-rule-subcard-title">
+                § 6.4 Governing Jurisdiction
+              </div>
+              <p class="loyalty-rule-subcard-desc">
+                The Circle of Legends is administered under the laws of the Republic of India. Any disputes arising under this charter are subject exclusively to the courts of Ahmedabad, Gujarat, India.
+              </p>
+            </div>
+          </div>
+
+          <!-- Bottom Action Buttons -->
+          <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+            <button class="btn btn-gold" onclick="app.navigateTo('circle-of-legends')">
+              Explore Circle of Legends Vault
+            </button>
+            <button class="btn btn-glass" onclick="app.navigateTo('collections')">
+              Explore Signature Extraits
+            </button>
+            <button class="btn btn-glass" onclick="app.navigateTo('find-scent')">
+              Take Scent Quiz
+            </button>
+          </div>
+        </section>
+      </div>
+    `;
+  },
+
+  /* Render Dedicated Circle of Legends Loyalty & Vault Page */
+  renderCircleOfLegends() {
+    return `
+      <div class="container" style="padding-top: 2rem; padding-bottom: 5rem;">
+        <div class="section-header">
+          <span class="tagline">Honorary Client Society</span>
+          <h2>The Circle of Legends</h2>
+          <div class="divider"></div>
+          <p style="color: var(--text-muted); max-width: 650px; margin: 0 auto; font-size: 0.95rem;">
+            Acquire handcrafted extraits, illuminate the Pantheon Codex, unlock dual-key elevation tiers, and redeem exclusive vault flacons.
+          </p>
+        </div>
+
+        ${this.renderLoyaltyDossierContent(false)}
+      </div>
+    `;
+  },
+
+  /* Render Firebase Authentication & Cloud Sync Widget */
+  renderFirebaseAuthWidget() {
+    const isAuth = store.firebaseUser;
+    if (isAuth) {
+      return `
+        <div class="modal-section-box liquid-glass-card" style="padding: 1.1rem; margin-bottom: 1.5rem; border: 1px solid rgba(16, 185, 129, 0.45); background: rgba(16, 185, 129, 0.08);">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <svg width="18" height="18" fill="none" stroke="#10B981" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <div>
+                <span class="glass-pill" style="font-size: 0.62rem; color: #10B981; border-color: #10B981; padding: 0.15rem 0.5rem;">Firebase Realtime Cloud Synced</span>
+                <p style="font-size: 0.82rem; color: var(--gold-light); margin: 0.2rem 0 0; font-weight: 500;">
+                  ${isAuth.email || isAuth.displayName || 'Patron Authenticated'}
+                </p>
+              </div>
+            </div>
+            <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.75rem;" onclick="app.handleFirebaseSignOut()">
+              Sign Out
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="modal-section-box liquid-glass-card" style="padding: 1.3rem; margin-bottom: 1.5rem; border: 1px solid rgba(212, 175, 55, 0.35); background: rgba(4, 24, 18, 0.75);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+          <div>
+            <span class="glass-pill" style="font-size: 0.62rem; color: var(--gold-light);">Cloud Dossier Synchronization</span>
+            <h5 style="color: var(--gold-light); margin: 0.3rem 0 0.15rem; font-size: 0.95rem;">VIP Patron Authentication & Database Sync</h5>
+          </div>
+        </div>
+        <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 0.9rem;">
+          Sign in to automatically sync your Circle of Legends tier points, unlocked flacon codex, and vault vouchers across Android and web.
+        </p>
+
+        <!-- Google 1-Tap Sign-In -->
+        <button class="btn btn-gold" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.6rem; padding: 0.6rem 1rem; font-size: 0.82rem; margin-bottom: 0.8rem;" onclick="app.handleGoogleSignIn()">
+          <svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+          Sign In with Google
+        </button>
+
+        <!-- Email Sign-In / Register Form -->
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.8rem;">
+          <input type="email" id="auth-email-input" class="engraving-input" placeholder="Patron Email Address" style="font-size: 0.8rem; padding: 0.5rem 0.8rem; flex: 1;" />
+          <input type="password" id="auth-password-input" class="engraving-input" placeholder="Password" style="font-size: 0.8rem; padding: 0.5rem 0.8rem; flex: 1;" />
+        </div>
+        <div style="display: flex; gap: 0.6rem;">
+          <button class="btn btn-glass" style="flex: 1; font-size: 0.75rem; padding: 0.45rem 0.8rem;" onclick="app.handleEmailSignIn()">
+            Email Sign In
+          </button>
+          <button class="btn btn-glass" style="flex: 1; font-size: 0.75rem; padding: 0.45rem 0.8rem;" onclick="app.handleEmailSignUp()">
+            Register Account
+          </button>
+        </div>
+      </div>
+    `;
+  },
+
+  /* Render Dedicated User Profile Page View */
   renderProfile() {
     const u = store.user;
     const currentTier = store.getCurrentTier();
 
     return `
-      <div class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
-        <div class="profile-header-card liquid-glass-card" style="margin-bottom: 2rem;">
-          <div class="vip-badge-icon">👑</div>
-          <div>
-            <span class="glass-pill" style="margin-bottom: 0.5rem;">${currentTier.name}</span>
-            <h2 class="profile-welcome-title">Welcome, ${u.name}</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem;">${u.email} • ${(store.loyalty ? store.loyalty.spendable_mythos : 0).toLocaleString()} Spendable Mythos (${(store.loyalty ? store.loyalty.legacy_mythos : 0).toLocaleString()} Legacy M)</p>
+      <div class="container" style="padding-top: 2rem; padding-bottom: 5rem; max-width: 960px;">
+        <!-- Profile Header -->
+        <div class="profile-header-card liquid-glass-card" style="margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 1.2rem;">
+            <div class="vip-badge-icon" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(212, 175, 55, 0.15); border: 1.5px solid var(--gold-primary); font-family: var(--font-serif-title); font-size: 1.4rem; color: var(--gold-light);">${u.name ? u.name.charAt(0).toUpperCase() : 'M'}</div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+                <h2 class="profile-welcome-title" style="margin: 0; font-size: clamp(1.4rem, 2.8vw, 2rem);">${u.name}</h2>
+                <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-light);">${currentTier.name}</span>
+              </div>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">${u.email} • Member since 2026</p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+            <button class="btn btn-gold" onclick="app.navigateTo('circle-of-legends')">
+              Circle of Legends Rewards
+            </button>
+            <button class="btn btn-glass" onclick="app.logoutUser()">
+              Sign Out
+            </button>
           </div>
         </div>
 
-        ${this.renderLoyaltyDossierContent(false)}
+        <!-- Firebase Cloud Authentication & Realtime Sync Widget -->
+        ${this.renderFirebaseAuthWidget()}
 
-        <div class="liquid-glass-card profile-orders-card" style="margin-top: 2rem;">
-          <h3 class="font-title" style="margin-bottom: 1.5rem;">Recent Vault Acquisitions</h3>
+        <!-- Account Balance & Privileges Quick Glance -->
+        <div class="loyalty-stats-grid" style="margin-bottom: 2.5rem;">
+          <div class="loyalty-stat-box liquid-glass-card">
+            <div class="loyalty-stat-label">Available Mythos</div>
+            <div class="loyalty-stat-val gold-shimmer-text">${(store.loyalty ? store.loyalty.spendable_mythos : 0).toLocaleString()} M</div>
+            <div class="loyalty-stat-hint">₹${(store.loyalty ? store.loyalty.spendable_mythos : 0).toLocaleString()} Concession Value</div>
+          </div>
+          <div class="loyalty-stat-box liquid-glass-card">
+            <div class="loyalty-stat-label">Status Standing</div>
+            <div class="loyalty-stat-val" style="font-size: 1.25rem;">Level ${currentTier.level}</div>
+            <div class="loyalty-stat-hint">${currentTier.name}</div>
+          </div>
+          <div class="loyalty-stat-box liquid-glass-card">
+            <div class="loyalty-stat-label">Flacons Owned</div>
+            <div class="loyalty-stat-val">${store.loyalty ? store.loyalty.full_bottles_purchased : 0}</div>
+            <div class="loyalty-stat-hint">50ml / 100ml Extraits</div>
+          </div>
+          <div class="loyalty-stat-box liquid-glass-card">
+            <div class="loyalty-stat-label">Acquisition Cashback</div>
+            <div class="loyalty-stat-val" style="font-size: 1.25rem;">${currentTier.multiplier || 1}x Back</div>
+            <div class="loyalty-stat-hint">${currentTier.cashbackPct || ((currentTier.multiplier || 1) * 3)}% Extrait Return</div>
+          </div>
+        </div>
+
+        <!-- Account Settings & Saved Dispatch Coordinates Form -->
+        <div class="liquid-glass-card" style="padding: 2rem; margin-bottom: 2.5rem;">
+          <h3 class="font-title" style="margin-bottom: 0.5rem; color: var(--gold-light);">Client Coordinates & Dispatch Information</h3>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+            Default shipping address and contact coordinates used for 1-tap express checkout.
+          </p>
+
+          <form onsubmit="app.updateUserProfile(event)">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+              <div>
+                <label style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.4rem;">Full Name</label>
+                <input type="text" id="profile-edit-name" class="engraving-input" value="${u.name || ''}" required />
+              </div>
+              <div>
+                <label style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.4rem;">Mobile / WhatsApp</label>
+                <input type="tel" id="profile-edit-phone" class="engraving-input" value="${u.phone || '+91 777000 9170'}" />
+              </div>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+              <label style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.4rem;">Delivery Address</label>
+              <input type="text" id="profile-edit-address" class="engraving-input" value="${u.address || 'Vasant Vihar 2, Nava Naroda, Ahmedabad, Gujarat 382330'}" />
+            </div>
+
+            <button type="submit" class="btn btn-gold" style="font-size: 0.82rem; padding: 0.6rem 1.4rem;">
+              Save Profile
+            </button>
+          </form>
+        </div>
+
+        <!-- Recent Vault Orders -->
+        <div class="liquid-glass-card profile-orders-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 0.8rem;">
+            <h3 class="font-title" style="margin: 0;">Recent Vault Acquisitions</h3>
+            <button class="btn btn-glass" style="font-size: 0.75rem; padding: 0.35rem 0.85rem;" onclick="app.navigateTo('track-order')">
+              Track Consignment
+            </button>
+          </div>
           <div class="table-responsive">
             <table class="order-history-table">
               <thead>
@@ -1388,36 +2103,36 @@ const Components = {
     `;
   },
 
-  /* Render VIP Profile & Vault Modal (Popup) with Currency and Track Order */
+  /* Render Fast, Elegant VIP Profile Modal (Popup) */
   renderProfileModal() {
     const u = store.user;
     const currentTier = store.getCurrentTier();
     const currencies = [
-      { code: 'INR', flag: '🇮🇳', sym: '₹' },
-      { code: 'USD', flag: '🇺🇸', sym: '$' },
-      { code: 'GBP', flag: '🇬🇧', sym: '£' },
-      { code: 'AED', flag: '🇦🇪', sym: 'AED' },
-      { code: 'CNY', flag: '🇨🇳', sym: '¥' },
-      { code: 'RUB', flag: '🇷🇺', sym: '₽' }
+      { code: 'INR', sym: '₹' },
+      { code: 'USD', sym: '$' },
+      { code: 'GBP', sym: '£' },
+      { code: 'AED', sym: 'AED' },
+      { code: 'CNY', sym: '¥' },
+      { code: 'RUB', sym: '₽' }
     ];
 
     return `
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div class="modal-crest-icon">👑</div>
+          <div class="modal-crest-icon" style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(212, 175, 55, 0.15); border: 1px solid var(--gold-primary); font-family: var(--font-serif-title); font-size: 0.95rem; color: var(--gold-light);">${u.name ? u.name.charAt(0).toUpperCase() : 'M'}</div>
           <div>
-            <h3 class="modal-title font-title">The Obsidian Dossier</h3>
-            <p class="modal-subtitle">The Circle of Legends • VIP Client Vault</p>
+            <h3 class="modal-title font-title">Client Profile</h3>
+            <p class="modal-subtitle">House Mytholis Patron • ${currentTier.name}</p>
           </div>
         </div>
-        <button class="icon-btn modal-close-btn" onclick="app.closeProfileModal()" title="Close Vault">✕</button>
+        <button class="icon-btn modal-close-btn" onclick="app.closeProfileModal()" title="Close Profile">✕</button>
       </div>
 
       <div class="modal-scroll-body">
-        <!-- VIP Member Overview -->
-        <div class="profile-modal-user-card liquid-glass-card">
+        <!-- Client Member Card -->
+        <div class="profile-modal-user-card liquid-glass-card" style="padding: 1.2rem; margin-bottom: 1.2rem;">
           <div class="profile-avatar-wrap">
-            <span>👑</span>
+            <span>${u.name ? u.name.charAt(0).toUpperCase() : 'M'}</span>
           </div>
           <div class="profile-modal-user-info">
             <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
@@ -1426,114 +2141,102 @@ const Components = {
             </div>
             <p class="profile-user-email">${u.email}</p>
             <div class="profile-points-pill">
-              ✦ <strong>${(store.loyalty ? store.loyalty.spendable_mythos : 0).toLocaleString()}</strong> Spendable Mythos &nbsp;|&nbsp; <strong>${(store.loyalty ? store.loyalty.legacy_mythos : 0).toLocaleString()}</strong> Legacy M
+              <strong>${(store.loyalty ? store.loyalty.spendable_mythos : 0).toLocaleString()}</strong> Spendable Mythos &nbsp;|&nbsp; <strong>${(store.loyalty ? store.loyalty.legacy_mythos : 0).toLocaleString()}</strong> Legacy M
             </div>
           </div>
         </div>
 
-        <!-- Full Circle of Legends Loyalty Program -->
-        ${this.renderLoyaltyDossierContent(true)}
+        <!-- Firebase Authentication & Cloud Sync Widget -->
+        ${this.renderFirebaseAuthWidget()}
 
-        <!-- 5. Currency Selector -->
-        <div class="modal-section-box liquid-glass-card">
-          <div class="modal-section-header">
-            <h4 class="modal-section-title">✦ Store Currency (Base: INR ₹)</h4>
+        <!-- Direct Action Hub to Dedicated Loyalty Page -->
+        <div class="modal-section-box liquid-glass-card" style="padding: 1.1rem; margin-bottom: 1.2rem; border: 1px solid var(--gold-primary); background: linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(4, 24, 18, 0.6) 100%);">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
+            <div>
+              <span class="glass-pill" style="font-size: 0.62rem; color: var(--gold-light);">The Circle of Legends</span>
+              <h5 style="color: var(--gold-light); margin: 0.3rem 0 0.15rem; font-size: 0.95rem;">Pantheon Codex & Vault Rewards</h5>
+              <p style="font-size: 0.76rem; color: var(--text-muted); margin: 0;">Access full bottle unlocks, concession codes & tier privileges.</p>
+            </div>
+            <button class="btn btn-gold" style="font-size: 0.75rem; padding: 0.45rem 0.9rem;" onclick="app.closeProfileModal(); app.navigateTo('circle-of-legends');">
+              Open Loyalty Page
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Profile Details & Coordinates -->
+        <div class="modal-section-box liquid-glass-card" style="padding: 1.1rem; margin-bottom: 1.2rem;">
+          <h4 class="modal-section-title" style="font-size: 0.85rem; margin-bottom: 0.8rem;">Client Coordinates</h4>
+          <div style="display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.82rem;">
+            <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
+              <span>Phone / WhatsApp:</span>
+              <strong style="color: var(--text-main);">${u.phone || '+91 777000 9170'}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
+              <span>Default Address:</span>
+              <span style="color: var(--text-main); text-align: right; max-width: 60%;">${u.address || 'Ahmedabad, Gujarat, India'}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
+              <span>Bottles Acquired:</span>
+              <strong class="gold-text">${store.loyalty ? store.loyalty.full_bottles_purchased : 0} Full Flacons</strong>
+            </div>
+          </div>
+          <div style="margin-top: 0.9rem; text-align: right;">
+            <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.75rem;" onclick="app.closeProfileModal(); app.navigateTo('profile');">
+              Edit Account
+            </button>
+          </div>
+        </div>
+
+        <!-- Store Currency Selector -->
+        <div class="modal-section-box liquid-glass-card" style="padding: 1.1rem; margin-bottom: 1.2rem;">
+          <div class="modal-section-header" style="margin-bottom: 0.7rem;">
+            <h4 class="modal-section-title" style="font-size: 0.85rem;">Store Currency</h4>
             <span class="modal-section-hint">Auto-converts all prices</span>
           </div>
           <div class="currency-modal-grid">
             ${currencies.map(c => `
               <button class="currency-modal-pill ${store.currency === c.code ? 'active' : ''}" 
                       onclick="app.setCurrency('${c.code}')">
-                <span class="curr-flag">${c.flag}</span>
-                <span class="curr-code">${c.code}</span>
+                <span class="curr-code" style="font-weight: 600;">${c.code}</span>
                 <span class="curr-sym">(${c.sym})</span>
               </button>
             `).join('')}
           </div>
         </div>
 
-        <!-- 6. Live Consignment & Order Tracker -->
-        <div class="modal-section-box liquid-glass-card">
-          <div class="modal-section-header">
-            <h4 class="modal-section-title">✦ Track Consignment</h4>
-            <span class="modal-section-hint">Armored express telemetry</span>
-          </div>
-          
-          <div class="modal-track-input-row">
-            <input type="text" id="modal-track-input" class="engraving-input" value="MYTH-89021" placeholder="Enter Order / Tracking ID" />
-            <button class="btn btn-gold modal-track-btn" onclick="app.searchTrackOrderModal()">
-              Track ✦
+        <!-- Recent Order Summary -->
+        <div class="modal-section-box liquid-glass-card" style="padding: 1.1rem;">
+          <div class="modal-section-header" style="margin-bottom: 0.7rem;">
+            <h4 class="modal-section-title" style="font-size: 0.85rem;">Recent Vault Order</h4>
+            <button class="glass-pill" style="font-size: 0.65rem; cursor: pointer;" onclick="app.closeProfileModal(); app.navigateTo('track-order');">
+              Track Consignment
             </button>
           </div>
-
-          <div class="modal-track-result" id="modal-track-result-box">
-            <div class="track-order-header" style="padding-bottom: 0.6rem; margin-bottom: 0.6rem;">
+          ${u.orders && u.orders.length > 0 ? `
+            <div class="modal-order-row">
               <div>
-                <span class="glass-pill" style="font-size: 0.65rem;">Order #MYTH-89021 • In Flight</span>
-                <h5 style="font-size: 0.95rem; color: var(--text-main); margin-top: 0.3rem;">Petralux Extrait de Parfum (100ml)</h5>
+                <div style="font-family: var(--font-serif-title); color: var(--gold-light); font-size: 0.85rem;">
+                  ${u.orders[0].id} <span style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-sans);">• ${u.orders[0].date}</span>
+                </div>
+                <p style="font-size: 0.78rem; color: var(--text-main); margin-top: 0.15rem;">${u.orders[0].items}</p>
               </div>
               <div style="text-align: right;">
-                <span style="font-size: 0.7rem; color: var(--text-muted);">Est. Delivery:</span>
-                <strong style="color: var(--gold-primary); font-size: 0.82rem; display: block;">Tomorrow, 2:00 PM</strong>
+                <span class="gold-text" style="font-weight: 700; font-size: 0.85rem;">${store.formatPrice(u.orders[0].total)}</span>
+                <span class="glass-pill" style="font-size: 0.62rem; display: inline-block; margin-top: 0.2rem; padding: 0.15rem 0.5rem;">${u.orders[0].status}</span>
               </div>
             </div>
-
-            <div class="tracker-steps-grid" style="margin-bottom: 0.8rem; gap: 0.4rem;">
-              <div class="tracker-step-item">
-                <div class="tracker-icon-circle completed" style="width: 28px; height: 28px; font-size: 0.75rem;">✓</div>
-                <h6 style="font-size: 0.7rem; margin-top: 0.3rem;">Maceration</h6>
-                <span style="font-size: 0.62rem;">Sealed</span>
-              </div>
-              <div class="tracker-step-item">
-                <div class="tracker-icon-circle completed" style="width: 28px; height: 28px; font-size: 0.75rem;">✓</div>
-                <h6 style="font-size: 0.7rem; margin-top: 0.3rem;">Gold Inlaid</h6>
-                <span style="font-size: 0.62rem;">QC Passed</span>
-              </div>
-              <div class="tracker-step-item">
-                <div class="tracker-icon-circle active liquid-pulse" style="width: 28px; height: 28px; font-size: 0.75rem;">🚚</div>
-                <h6 style="font-size: 0.7rem; margin-top: 0.3rem; color: var(--gold-light);">In Transit</h6>
-                <span style="font-size: 0.62rem; color: var(--gold-primary);">BlueDart</span>
-              </div>
-              <div class="tracker-step-item">
-                <div class="tracker-icon-circle" style="width: 28px; height: 28px; font-size: 0.75rem; background: rgba(14, 66, 51, 0.4); color: var(--text-muted);">✦</div>
-                <h6 style="font-size: 0.7rem; margin-top: 0.3rem;">Delivery</h6>
-                <span style="font-size: 0.62rem;">Armored</span>
-              </div>
-            </div>
-
-            <p class="track-location-status" style="font-size: 0.75rem; margin: 0; padding: 0.5rem 0.8rem;">
-              📍 <strong>Telemetry:</strong> Dispatched from Ahmedabad Fragrance Vault Hub to regional delivery hub.
-            </p>
-          </div>
-        </div>
-
-        <!-- 7. Recent Vault Acquisitions -->
-        <div class="modal-section-box liquid-glass-card">
-          <div class="modal-section-header">
-            <h4 class="modal-section-title">✦ Recent Vault Orders</h4>
-          </div>
-          <div class="modal-orders-list">
-            ${u.orders.map(o => `
-              <div class="modal-order-row">
-                <div>
-                  <div style="font-family: var(--font-serif-title); color: var(--gold-light); font-size: 0.85rem;">
-                    ${o.id} <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-sans);">• ${o.date}</span>
-                  </div>
-                  <p style="font-size: 0.8rem; color: var(--text-main); margin-top: 0.15rem;">${o.items}</p>
-                </div>
-                <div style="text-align: right;">
-                  <span class="gold-text" style="font-weight: 700; font-size: 0.85rem;">${store.formatPrice(o.total)}</span>
-                  <span class="glass-pill" style="font-size: 0.62rem; display: inline-block; margin-top: 0.2rem; padding: 0.15rem 0.5rem;">${o.status}</span>
-                </div>
-              </div>
-            `).join('')}
-          </div>
+          ` : `
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">No previous orders found.</p>
+          `}
         </div>
       </div>
 
-      <div class="modal-footer">
-        <button class="btn btn-glass" style="width: 100%; font-size: 0.8rem; padding: 0.6rem 1rem;" onclick="app.closeProfileModal()">
-          Close Dossier ✦
+      <div class="modal-footer" style="display: flex; gap: 0.8rem;">
+        <button class="btn btn-glass" style="flex: 1; font-size: 0.78rem; padding: 0.6rem 1rem;" onclick="app.closeProfileModal()">
+          Close
+        </button>
+        <button class="btn btn-gold" style="flex: 1; font-size: 0.78rem; padding: 0.6rem 1rem;" onclick="app.closeProfileModal(); app.navigateTo('circle-of-legends');">
+          Circle of Legends
         </button>
       </div>
     `;
@@ -1613,7 +2316,11 @@ const Components = {
     return `
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div class="modal-crest-icon">⚖️</div>
+          <div class="modal-crest-icon">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
           <div>
             <h3 class="modal-title font-title">${title}</h3>
             <p class="modal-subtitle">Mytholis Luxury Fragrances Pvt. Ltd. (Ahmedabad, India)</p>
@@ -1630,7 +2337,7 @@ const Components = {
 
       <div class="modal-footer">
         <button class="btn btn-gold" style="width: 100%; font-size: 0.8rem; padding: 0.6rem 1rem;" onclick="app.closePolicyModal()">
-          I Understand & Agree ✦
+          I Understand & Agree
         </button>
       </div>
     `;
@@ -1649,7 +2356,12 @@ const Components = {
     return `
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div class="modal-crest-icon" style="color: #3399CC;">⚡</div>
+          <div class="modal-crest-icon" style="color: var(--gold-light);">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="2" y="5" width="20" height="14" rx="2"/>
+              <line x1="2" y1="10" x2="22" y2="10"/>
+            </svg>
+          </div>
           <div>
             <h3 class="modal-title font-title">Razorpay Express Checkout</h3>
             <p class="modal-subtitle">256-Bit SSL Encrypted Instant Payment</p>
@@ -1691,54 +2403,612 @@ const Components = {
 
         <!-- Payment Method Tabs -->
         <div class="liquid-glass-card" style="padding: 1.2rem;">
-          <h5 style="font-size: 0.85rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem;">
-            ✦ Select Payment Mode
-          </h5>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
+            <h5 style="font-size: 0.85rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; margin: 0;">
+              Select Payment Mode
+            </h5>
+            <span class="glass-pill" style="font-size: 0.65rem; color: #10B981; border-color: #10B981;">
+              Save ₹200 via Prepaid UPI
+            </span>
+          </div>
 
-          <!-- UPI Apps Grid -->
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-bottom: 1.2rem;">
+          <!-- UPI Apps Grid (1-Tap Fast Checkout) -->
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-bottom: 0.8rem;">
             <div class="razorpay-method-pill active" onclick="app.selectPaymentMethod(this, 'upi_gpay')">
-              <span style="font-size: 1.1rem;">📱</span>
-              <span>Google Pay</span>
+              <span style="font-weight: 600;">Google Pay</span>
             </div>
             <div class="razorpay-method-pill" onclick="app.selectPaymentMethod(this, 'upi_phonepe')">
-              <span style="font-size: 1.1rem;">🟣</span>
-              <span>PhonePe</span>
+              <span style="font-weight: 600;">PhonePe</span>
             </div>
             <div class="razorpay-method-pill" onclick="app.selectPaymentMethod(this, 'upi_paytm')">
-              <span style="font-size: 1.1rem;">🔵</span>
-              <span>Paytm / UPI</span>
+              <span style="font-weight: 600;">Paytm / UPI</span>
             </div>
           </div>
 
-          <!-- Cards & NetBanking Options -->
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; margin-bottom: 1.2rem;">
+          <!-- Cards & COD Options -->
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; margin-bottom: 1rem;">
             <div class="razorpay-method-pill" onclick="app.selectPaymentMethod(this, 'cards')">
-              <span style="font-size: 1.1rem;">💳</span>
               <span>Credit / Debit Card</span>
             </div>
             <div class="razorpay-method-pill" onclick="app.selectPaymentMethod(this, 'cod')">
-              <span style="font-size: 1.1rem;">📦</span>
-              <span>Cash on Delivery (COD)</span>
+              <span>Cash on Delivery</span>
             </div>
           </div>
 
+          <!-- COD Notice / Guardrail (Only allowed for Discovery Coffret or requires OTP confirmation) -->
+          <div id="cod-guardrail-notice" class="cod-guardrail-box" style="display: none; padding: 0.75rem 1rem; border-radius: 8px; background: rgba(245, 158, 11, 0.12); border: 1px solid #F59E0B; font-size: 0.75rem; color: #FCD34D; margin-bottom: 1rem;">
+            <strong>COD Policy:</strong> Cash on Delivery is available for the Discovery Coffret (₹3,999). For full flacons (50ml/100ml), an automated WhatsApp dispatch confirmation OTP is required, or switch to UPI to save ₹200 instantly.
+          </div>
+
+          <!-- Magic Checkout Notice -->
+          <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem; background: rgba(4, 24, 18, 0.6); border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(212, 175, 55, 0.15);">
+            <svg width="14" height="14" fill="none" stroke="var(--gold-primary)" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span style="font-size: 0.72rem; color: var(--gold-light);">Razorpay Magic 1-Tap Checkout active. No forced account registration required.</span>
+          </div>
+
           <!-- Shipping Details Form -->
-          <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
-            <input type="text" class="engraving-input" placeholder="Full Delivery Name" value="${store.user.name}" />
+          <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+            <input type="text" id="checkout-name" class="engraving-input" placeholder="Full Delivery Name" value="${store.user.name || ''}" />
             <div style="display: flex; gap: 0.6rem;">
-              <input type="tel" class="engraving-input" placeholder="Mobile / WhatsApp (+91 777000 9170)" style="flex: 1;" />
-              <input type="text" class="engraving-input" placeholder="PIN Code" style="flex: 1;" />
+              <input type="tel" id="checkout-phone" class="engraving-input" placeholder="Mobile / WhatsApp Number (+91...)" style="flex: 1;" />
+              <input type="text" id="checkout-pincode" class="engraving-input" placeholder="PIN Code" style="flex: 1;" />
             </div>
-            <input type="text" class="engraving-input" placeholder="Flat, Street, Area, Landmark Address" />
+            <input type="text" id="checkout-address" class="engraving-input" placeholder="Flat, Street, Area, Landmark Address" />
           </div>
         </div>
       </div>
 
       <div class="modal-footer" style="display: flex; gap: 0.8rem;">
         <button class="btn btn-gold" style="flex: 1;" onclick="app.completeRazorpayPayment(${finalAmount})">
-          Authorize & Pay ${store.formatPrice(finalAmount)} ✦
+          Authorize & Pay ${store.formatPrice(finalAmount)}
         </button>
+      </div>
+    `;
+  },
+
+  /* ==========================================================================
+     SANCTUM COMMAND - LIVE BACKEND INTEGRATION DIAGNOSTICS BAR
+     ========================================================================== */
+  renderBackendDiagnosticsBar() {
+    const diag = (typeof app !== 'undefined' && app.backendDiagnostics) ? app.backendDiagnostics : {
+      running: false,
+      clientConfig: { status: 'untested', label: 'Vite Config (Ready to Verify)' },
+      authState: { status: 'untested', label: 'Auth State (Ready to Verify)' },
+      firestoreClient: { status: 'untested', label: 'Firestore Lite (Ready to Verify)' },
+      serverlessApi: { status: 'untested', label: 'Serverless /api/health (Ready to Verify)' }
+    };
+
+    return `
+      <div class="admin-diagnostics-card liquid-glass-card" id="admin-diagnostics-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-primary);">LIVE HEALTH MATRIX</span>
+            <h3 style="font-size: 1.05rem; color: var(--gold-light); margin: 0;">Backend Integration Status</h3>
+          </div>
+          <button class="btn btn-gold" id="btn-run-diagnostics" style="font-size: 0.72rem; padding: 0.45rem 1rem;" onclick="app.testBackend()">
+            ${diag.running ? 'Testing All 4 Pillars...' : 'Run Backend Diagnostics'}
+          </button>
+        </div>
+
+        <div class="admin-diag-grid">
+          <div class="admin-diag-pillar">
+            <div class="admin-diag-title">1. Client Firebase Config</div>
+            <div class="admin-diag-badge status-${diag.clientConfig.status}">
+              ${diag.clientConfig.label}
+            </div>
+          </div>
+          <div class="admin-diag-pillar">
+            <div class="admin-diag-title">2. Firebase Auth State</div>
+            <div class="admin-diag-badge status-${diag.authState.status}">
+              ${diag.authState.label}
+            </div>
+          </div>
+          <div class="admin-diag-pillar">
+            <div class="admin-diag-title">3. Client Firestore Lite</div>
+            <div class="admin-diag-badge status-${diag.firestoreClient.status}">
+              ${diag.firestoreClient.label}
+            </div>
+          </div>
+          <div class="admin-diag-pillar">
+            <div class="admin-diag-title">4. Serverless API (/api/health)</div>
+            <div class="admin-diag-badge status-${diag.serverlessApi.status}">
+              ${diag.serverlessApi.label}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  /* ==========================================================================
+     SANCTUM COMMAND - HIGH-SECURITY FOUNDER ADMIN CONSOLE (#admin)
+     ========================================================================== */
+  renderAdmin() {
+    const configuredAdminEmail = (import.meta.env.VITE_ADMIN_EMAIL || '').trim().toLowerCase();
+    const currentUser = (typeof firebaseService !== 'undefined' && firebaseService.currentUser) || (typeof store !== 'undefined' && store.firebaseUser);
+    const userEmail = (currentUser?.email || '').trim().toLowerCase();
+    
+    // Check if authenticated user matches configured admin email
+    const isAuthorized = Boolean(configuredAdminEmail && userEmail && (userEmail === configuredAdminEmail));
+
+    // 1. Unauthenticated or Unauthorized Gate
+    if (!isAuthorized) {
+      return `
+        <div class="container" style="min-height: 80vh; max-width: 900px; margin: 0 auto; padding-top: 3rem;">
+          ${this.renderBackendDiagnosticsBar()}
+
+          <div class="admin-auth-card liquid-glass-card" style="margin: 2rem auto;">
+            <span class="glass-pill" style="color: var(--gold-primary); letter-spacing: 0.25em; margin-bottom: 1.2rem; font-size: 0.7rem;">
+              RESTRICTED FOUNDER GATEWAY
+            </span>
+            <h1 class="gold-shimmer-text font-title" style="font-size: 2.2rem; margin-bottom: 0.5rem;">
+              Sanctum Command
+            </h1>
+            <p class="font-garamond" style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.6; margin-bottom: 2rem;">
+              Operations desk, dispatch vault, VIP society ledger, and live inventory switchboard. Access restricted strictly to verified Mytholis Founders.
+            </p>
+
+            ${currentUser ? `
+              <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 10px; padding: 1.2rem; margin-bottom: 1.8rem; text-align: left;">
+                <div style="color: #FCA5A5; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                  Access Denied
+                </div>
+                <div style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.5;">
+                  Authenticated account: <strong style="color: var(--text-main);">${userEmail}</strong> does not match the configured Founder email.<br/>
+                  ${configuredAdminEmail ? `<span style="font-size: 0.72rem; color: #F59E0B;">Target Founder Identity: ${configuredAdminEmail}</span>` : `<span style="font-size: 0.72rem; color: #F59E0B;">Note: VITE_ADMIN_EMAIL is not yet configured in your .env file.</span>`}
+                </div>
+              </div>
+              <button class="btn btn-glass" style="width: 100%; border-color: rgba(239, 68, 68, 0.5); color: #FCA5A5;" onclick="app.handleFirebaseSignOut()">
+                Sign Out Current Session
+              </button>
+            ` : `
+              <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <button class="btn btn-gold" style="width: 100%; padding: 0.9rem; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 0.8rem;" onclick="app.handleAdminGoogleSignIn()">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/></svg>
+                  Founder Google Authentication
+                </button>
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 0.5rem;">
+                  Sign in with the Google Account registered under <code style="color: var(--gold-light);">${configuredAdminEmail || 'VITE_ADMIN_EMAIL'}</code>
+                </div>
+              </div>
+            `}
+          </div>
+        </div>
+      `;
+    }
+
+    // 2. Authorized Founder Admin Console
+    const activeTab = app.adminActiveTab || 'orders';
+    const adminData = app.adminData || { orders: [], users: [], inventory: {}, codes: [] };
+    const ordersList = adminData.orders || [];
+    const usersList = adminData.users || [];
+    const inventoryMap = adminData.inventory || {};
+    const codesList = adminData.codes || [];
+
+    return `
+      <div class="admin-panel-container">
+        <!-- Admin Top Navigation Bar -->
+        <div class="admin-top-bar liquid-glass-card">
+          <div class="admin-brand-block">
+            <span class="glass-pill admin-badge">SANCTUM COMMAND</span>
+            <h1 class="admin-title gold-shimmer-text font-title">Operations & Vault Desk</h1>
+            <div class="admin-subtext">
+              Founder Session: <strong style="color: var(--gold-light);">${userEmail}</strong> &bull; Status: <span style="color:#10B981; font-weight:700;">Verified High Sovereign</span>
+            </div>
+          </div>
+          <div class="admin-top-actions">
+            <button class="btn btn-glass" style="font-size: 0.75rem; padding: 0.6rem 1rem;" onclick="app.refreshAdminDashboard()" title="Reload Cloud Ledger">
+              ↻ Refresh Live Ledger
+            </button>
+            <button class="btn btn-glass" style="font-size: 0.75rem; padding: 0.6rem 1rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.handleFirebaseSignOut()">
+              Exit Sanctum
+            </button>
+          </div>
+        </div>
+
+        <!-- Backend Health & Diagnostics Bar -->
+        ${this.renderBackendDiagnosticsBar()}
+
+        <!-- 4 Clean Navigation Tabs -->
+        <div class="admin-tab-nav">
+          <button class="admin-tab-btn ${activeTab === 'orders' ? 'active' : ''}" onclick="app.setAdminTab('orders')">
+            Orders & Dispatch Desk (${ordersList.length})
+          </button>
+          <button class="admin-tab-btn ${activeTab === 'users' ? 'active' : ''}" onclick="app.setAdminTab('users')">
+            Mythos Society VIP Manager (${usersList.length})
+          </button>
+          <button class="admin-tab-btn ${activeTab === 'inventory' ? 'active' : ''}" onclick="app.setAdminTab('inventory')">
+            Inventory & Drop Switchboard
+          </button>
+          <button class="admin-tab-btn ${activeTab === 'codes' ? 'active' : ''}" onclick="app.setAdminTab('codes')">
+            Promo & Vault Code Inspector (${codesList.length})
+          </button>
+        </div>
+
+        <!-- TAB 1: ORDERS & DISPATCH DESK -->
+        ${activeTab === 'orders' ? `
+          <div class="admin-tab-pane">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <h3 style="font-size: 1.3rem; color: var(--gold-light); margin: 0 0 0.2rem;">Armored Dispatch Desk</h3>
+                <p style="color: var(--text-muted); font-size: 0.82rem; margin: 0;">Review packing lists, highlight attached free vault gifts, and dispatch consignments with 1-click WhatsApp tracking.</p>
+              </div>
+            </div>
+
+            ${ordersList.length === 0 ? `
+              <div class="liquid-glass-card" style="padding: 3rem; text-align: center; border: 1px solid rgba(212, 175, 55, 0.2);">
+                <h4 style="color: var(--gold-light); margin-bottom: 0.5rem;">No Consignments in Firestore Yet</h4>
+                <p style="color: var(--text-muted); font-size: 0.85rem; max-width: 500px; margin: 0 auto 1.5rem;">Orders submitted through customer checkout will stream directly here with live customer address, items, and attached gift alerts.</p>
+                <button class="btn btn-glass" onclick="app.refreshAdminDashboard()">↻ Check For New Orders</button>
+              </div>
+            ` : `
+              <div class="admin-table-wrapper">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Order ID & Date</th>
+                      <th>Patron & Delivery Coordinates</th>
+                      <th>Items Purchased</th>
+                      <th>Attached Vault Gift</th>
+                      <th>Total & Status</th>
+                      <th>Dispatch & Armored Tracking</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${ordersList.map(order => {
+                      const orderId = order.orderId || order.id || 'MYTH-UNKNOWN';
+                      const patronName = order.name || order.shipping?.name || order.userEmail || 'Mytholis Patron';
+                      const patronPhone = order.phone || order.shipping?.phone || '';
+                      const patronAddress = order.address || order.shipping?.address || order.city || 'India Express Delivery';
+                      const items = Array.isArray(order.items) ? order.items : [];
+                      const totalAmount = order.total || order.amount || 0;
+                      const currentStatus = order.status || 'Placed';
+                      const courier = order.courier || 'BlueDart Express';
+                      const awb = order.awb_number || order.tracking || '';
+
+                      // Detect attached Free Vault Gifts (Never miss while packing)
+                      const hasCoffretVoucher = items.some(i => i.id === 'mytholis-discovery-set' || (i.name && i.name.toLowerCase().includes('coffret')));
+                      const isHighValue = totalAmount >= 6000;
+                      let attachedGift = order.freeGift || null;
+                      if (!attachedGift && hasCoffretVoucher) {
+                        attachedGift = '₹1,000 Discovery Voucher Attached (Include Gold Wax Seal Card)';
+                      } else if (!attachedGift && isHighValue) {
+                        attachedGift = 'High-Tier Order: Include Complimentary 15ml Discovery Flacon';
+                      }
+
+                      return `
+                        <tr>
+                          <td>
+                            <strong style="color: var(--gold-primary); font-family: monospace; font-size: 0.9rem;">${orderId}</strong>
+                            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">
+                              ${order.timestamp?.toDate ? order.timestamp.toDate().toLocaleDateString('en-IN') : (order.date || 'Recent')}
+                            </div>
+                          </td>
+                          <td>
+                            <strong style="color: var(--text-main);">${patronName}</strong>
+                            ${patronPhone ? `<div style="font-size: 0.78rem; color: var(--gold-light); font-family: monospace;">${patronPhone}</div>` : ''}
+                            <div style="font-size: 0.72rem; color: var(--text-muted); max-width: 220px; line-height: 1.4; margin-top: 0.2rem;">
+                              ${patronAddress}
+                            </div>
+                          </td>
+                          <td>
+                            <div style="font-size: 0.8rem; line-height: 1.5;">
+                              ${items.length > 0 ? items.map(item => `
+                                <div>&bull; ${item.name || item.id} (${item.size || 50}ml) × ${item.qty || item.quantity || 1}</div>
+                              `).join('') : '<span style="color: var(--text-muted);">Custom Order Items</span>'}
+                            </div>
+                          </td>
+                          <td>
+                            ${attachedGift ? `
+                              <div class="admin-gift-badge">
+                                VAULT GIFT: ${attachedGift}
+                              </div>
+                            ` : `
+                              <span style="font-size: 0.75rem; color: var(--text-muted);">Standard Consignment</span>
+                            `}
+                          </td>
+                          <td>
+                            <div style="font-weight: 700; color: var(--gold-light);">${store.formatPrice(totalAmount)}</div>
+                            <div style="margin-top: 0.3rem;">
+                              <span class="admin-status-pill status-${currentStatus.toLowerCase().replace(/\s+/g, '-')}">
+                                ${currentStatus}
+                              </span>
+                            </div>
+                          </td>
+                          <td>
+                            <div style="display: flex; flex-direction: column; gap: 0.4rem; min-width: 220px;">
+                              <div style="display: flex; gap: 0.4rem;">
+                                <input type="text" id="courier-${orderId}" class="admin-input-compact" placeholder="Courier (e.g. BlueDart)" value="${courier}" style="flex: 1;" />
+                                <input type="text" id="awb-${orderId}" class="admin-input-compact" placeholder="AWB / Tracking #" value="${awb}" style="flex: 1.2;" />
+                              </div>
+                              <div style="display: flex; gap: 0.4rem;">
+                                <select id="status-${orderId}" class="admin-input-compact" style="flex: 1; background: rgba(4, 24, 18, 0.9);">
+                                  <option value="Placed" ${currentStatus === 'Placed' ? 'selected' : ''}>Placed</option>
+                                  <option value="Packed" ${currentStatus === 'Packed' ? 'selected' : ''}>Packed</option>
+                                  <option value="Dispatched" ${currentStatus === 'Dispatched' ? 'selected' : ''}>Dispatched</option>
+                                  <option value="Delivered" ${currentStatus === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                                </select>
+                                <button class="btn btn-gold" style="font-size: 0.7rem; padding: 0.45rem 0.75rem; white-space: nowrap;" onclick="app.saveAndDispatchOrder('${orderId}', '${patronPhone}')">
+                                  Save & WhatsApp
+                                </button>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            `}
+          </div>
+        ` : ''}
+
+        <!-- TAB 2: MYTHOS SOCIETY VIP MANAGER -->
+        ${activeTab === 'users' ? `
+          <div class="admin-tab-pane">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <h3 style="font-size: 1.3rem; color: var(--gold-light); margin: 0 0 0.2rem;">Mythos Society VIP Ledger</h3>
+                <p style="color: var(--text-muted); font-size: 0.82rem; margin: 0;">Inspect patron tiers, spendable/legacy points, bottle purchase milestones, and illuminate Pantheon Codex scents.</p>
+              </div>
+              <div style="min-width: 260px;">
+                <input type="text" id="admin-user-search" class="admin-input-compact" style="width: 100%; padding: 0.6rem 0.9rem;" placeholder="Search by name, email, or UID..." oninput="app.filterAdminUsers(this.value)" />
+              </div>
+            </div>
+
+            <!-- Quick Adjust Modal / Form -->
+            <div class="liquid-glass-card" style="margin-bottom: 2rem; padding: 1.5rem; border: 1px solid rgba(212, 175, 55, 0.35);">
+              <h4 style="font-size: 1rem; color: var(--gold-light); margin-bottom: 0.8rem;">Adjust Patron Loyalty Ledger</h4>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.8rem; align-items: end;">
+                <div>
+                  <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Target Patron UID / Email</label>
+                  <input type="text" id="adjust-uid-input" class="admin-input-compact" style="width: 100%;" placeholder="Paste user UID or select below" />
+                </div>
+                <div>
+                  <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Spendable Mythos (+ / -)</label>
+                  <input type="number" id="adjust-spendable-input" class="admin-input-compact" style="width: 100%;" placeholder="+500 or -200" />
+                </div>
+                <div>
+                  <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Legacy Mythos (+ / -)</label>
+                  <input type="number" id="adjust-legacy-input" class="admin-input-compact" style="width: 100%;" placeholder="+1000" />
+                </div>
+                <div>
+                  <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Add Full Bottles Count</label>
+                  <input type="number" id="adjust-bottles-input" class="admin-input-compact" style="width: 100%;" placeholder="+1" />
+                </div>
+                <div>
+                  <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Illuminate Codex Scent</label>
+                  <select id="adjust-codex-input" class="admin-input-compact" style="width: 100%; background: rgba(4, 24, 18, 0.9);">
+                    <option value="">None / Leave as is</option>
+                    <option value="king-scar">King Scar</option>
+                    <option value="petralux">Petralux</option>
+                    <option value="oud-rion">Oud Rion</option>
+                    <option value="spark">Spark</option>
+                    <option value="wood-sera">Wood Sera</option>
+                    <option value="ash">Ash</option>
+                  </select>
+                </div>
+                <div>
+                  <button class="btn btn-gold" style="width: 100%; padding: 0.6rem; font-size: 0.75rem;" onclick="app.submitUserMythosAdjustment()">
+                    Apply Adjustment
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Patron Cards Grid -->
+            <div class="admin-card-grid" id="admin-users-list">
+              ${usersList.length === 0 ? `
+                <div class="liquid-glass-card" style="grid-column: 1 / -1; padding: 2.5rem; text-align: center;">
+                  <p style="color: var(--text-muted); font-size: 0.9rem;">No patrons found in cloud database. Patrons will automatically register upon sign-in.</p>
+                </div>
+              ` : usersList.map(u => {
+                const profile = u.profile || {};
+                const loyalty = u.loyalty || {};
+                const codex = Array.isArray(loyalty.codex_unlocked) ? loyalty.codex_unlocked : [];
+
+                return `
+                  <div class="admin-user-card liquid-glass-card" data-username="${(profile.name || '').toLowerCase()}" data-email="${(profile.email || u.uid || '').toLowerCase()}">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.8rem;">
+                      <div>
+                        <h4 style="font-size: 1.05rem; color: var(--text-main); margin: 0 0 0.2rem;">${profile.name || 'Patron'}</h4>
+                        <div style="font-size: 0.75rem; color: var(--gold-light); font-family: monospace;">${profile.email || 'No email attached'}</div>
+                      </div>
+                      <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-primary);">
+                        ${profile.tier || 'Level 1: The Initiate'}
+                      </span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; text-align: center; background: rgba(2, 14, 10, 0.6); padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(212, 175, 55, 0.15);">
+                      <div>
+                        <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Spendable</div>
+                        <div style="font-size: 1rem; font-weight: 700; color: var(--gold-light);">${loyalty.spendable_mythos || 0} M</div>
+                      </div>
+                      <div>
+                        <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Legacy</div>
+                        <div style="font-size: 1rem; font-weight: 700; color: #6EE7B7;">${loyalty.legacy_mythos || 0}</div>
+                      </div>
+                      <div>
+                        <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Flacons</div>
+                        <div style="font-size: 1rem; font-weight: 700; color: var(--gold-light);">${loyalty.full_bottles_purchased || 0}</div>
+                      </div>
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                      <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.05em;">Unlocked Pantheon Codex:</div>
+                      <div>
+                        ${codex.length > 0 ? codex.map(s => `
+                          <span class="admin-codex-pill">${s}</span>
+                        `).join('') : '<span style="font-size: 0.72rem; color: var(--text-muted);">None unlocked yet</span>'}
+                      </div>
+                    </div>
+
+                    <button class="btn btn-glass" style="width: 100%; font-size: 0.72rem; padding: 0.45rem;" onclick="app.populateUserAdjustmentForm('${u.uid}')">
+                      Quick Select for Adjustment &rarr;
+                    </button>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- TAB 3: INVENTORY & DROP SWITCHBOARD -->
+        ${activeTab === 'inventory' ? `
+          <div class="admin-tab-pane">
+            <div style="margin-bottom: 1.5rem;">
+              <h3 style="font-size: 1.3rem; color: var(--gold-light); margin: 0 0 0.2rem;">Inventory & Drop Switchboard</h3>
+              <p style="color: var(--text-muted); font-size: 0.82rem; margin: 0;">Manage real-time availability across all 6 Extraits (8ml, 50ml, 100ml) and the Discovery Coffret. Override stock states with 1-click toggles.</p>
+            </div>
+
+            <div class="admin-card-grid">
+              ${MYTHOLIS_CATALOG.map(product => {
+                const sizes = product.sizes || [{ ml: 50, price: product.price }];
+
+                return `
+                  <div class="admin-inventory-card liquid-glass-card">
+                    <div>
+                      <div style="display: flex; gap: 0.8rem; align-items: center; margin-bottom: 0.8rem;">
+                        <img src="${product.image}" alt="${product.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);" />
+                        <div>
+                          <h4 style="font-size: 0.95rem; color: var(--text-main); margin: 0;">${product.name}</h4>
+                          <span style="font-size: 0.72rem; color: var(--gold-light);">${product.subtitle || ''}</span>
+                        </div>
+                      </div>
+
+                      <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                        ${sizes.map(s => {
+                          const skuKey = `${product.id}_${s.ml}`;
+                          const currentStatus = inventoryMap[skuKey] || 'in_stock';
+
+                          return `
+                            <div style="background: rgba(2, 14, 10, 0.6); padding: 0.7rem 0.8rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.15);">
+                              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem;">
+                                <strong>${s.ml}ml Flacon</strong>
+                                <span style="color: var(--gold-light); font-weight: 700;">${store.formatPrice(s.price)}</span>
+                              </div>
+                              <div class="admin-toggle-group">
+                                <button class="admin-toggle-btn ${currentStatus === 'in_stock' ? 'active-stock' : ''}" onclick="app.toggleInventorySku('${skuKey}', 'in_stock')">
+                                  In Stock
+                                </button>
+                                <button class="admin-toggle-btn ${currentStatus === 'sold_out' ? 'active-sold' : ''}" onclick="app.toggleInventorySku('${skuKey}', 'sold_out')">
+                                  Sold Out
+                                </button>
+                                <button class="admin-toggle-btn ${currentStatus === 'early_access' ? 'active-early' : ''}" onclick="app.toggleInventorySku('${skuKey}', 'early_access')">
+                                  Early Drop
+                                </button>
+                              </div>
+                            </div>
+                          `;
+                        }).join('')}
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- TAB 4: PROMO & VAULT CODE INSPECTOR -->
+        ${activeTab === 'codes' ? `
+          <div class="admin-tab-pane">
+            <div style="margin-bottom: 1.5rem;">
+              <h3 style="font-size: 1.3rem; color: var(--gold-light); margin: 0 0 0.2rem;">Promo & Vault Code Inspector</h3>
+              <p style="color: var(--text-muted); font-size: 0.82rem; margin: 0;">Mint custom one-time VIP codes, concession vouchers, or creator partnership codes into the cloud ledger.</p>
+            </div>
+
+            <!-- Mint Code Form -->
+            <div class="liquid-glass-card" style="margin-bottom: 2rem; padding: 1.5rem; border: 1px solid rgba(212, 175, 55, 0.35);">
+              <h4 style="font-size: 1rem; color: var(--gold-light); margin-bottom: 0.8rem;">Mint Custom Sanctum Code</h4>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.8rem; align-items: end;">
+                <div>
+                  <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Code Name</label>
+                  <input type="text" id="mint-code-input" class="admin-input-compact" style="width: 100%; text-transform: uppercase;" placeholder="MYTH-VIP-ALEXANDER" />
+                </div>
+                <div>
+                  <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Concession Title</label>
+                  <input type="text" id="mint-title-input" class="admin-input-compact" style="width: 100%;" placeholder="e.g. ₹1,000 VIP Privilege" />
+                </div>
+                <div>
+                  <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Discount Amount (₹)</label>
+                  <input type="number" id="mint-amount-input" class="admin-input-compact" style="width: 100%;" placeholder="1000" />
+                </div>
+                <div>
+                  <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Min Order Required (₹)</label>
+                  <input type="number" id="mint-minorder-input" class="admin-input-compact" style="width: 100%;" placeholder="3000" />
+                </div>
+                <div>
+                  <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Max Total Uses</label>
+                  <input type="number" id="mint-uses-input" class="admin-input-compact" style="width: 100%;" placeholder="1" value="1" />
+                </div>
+                <div>
+                  <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Target Email (Optional)</label>
+                  <input type="email" id="mint-email-input" class="admin-input-compact" style="width: 100%;" placeholder="vip@patron.com" />
+                </div>
+                <div style="grid-column: 1 / -1; display: flex; gap: 0.8rem; align-items: center;">
+                  <input type="text" id="mint-note-input" class="admin-input-compact" style="flex: 1;" placeholder="Internal Reference Note (e.g. Granted to Alexander for VIP concierge request)" />
+                  <button class="btn btn-gold" style="padding: 0.6rem 1.4rem; font-size: 0.78rem; white-space: nowrap;" onclick="app.submitNewVipCode()">
+                    Mint Sanctum Code
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Existing Codes Table -->
+            <div class="admin-table-wrapper">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Voucher Code</th>
+                    <th>Perk & Concession</th>
+                    <th>Order Threshold</th>
+                    <th>Uses Remaining</th>
+                    <th>Target / Patron Note</th>
+                    <th>Date Minted</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${codesList.length === 0 ? `
+                    <tr>
+                      <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        No custom codes found in cloud ledger. Mint your first VIP code above!
+                      </td>
+                    </tr>
+                  ` : codesList.map(c => `
+                    <tr>
+                      <td>
+                        <strong style="color: var(--gold-primary); font-family: monospace; font-size: 0.95rem;">${c.code || c.id}</strong>
+                      </td>
+                      <td>
+                        <strong style="color: var(--text-main); font-size: 0.85rem;">${c.title || 'Concession'}</strong>
+                        <div style="font-size: 0.75rem; color: var(--gold-light);">₹${c.amount || 0} Off</div>
+                      </td>
+                      <td>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Min. ₹${c.minOrder || 0}</span>
+                      </td>
+                      <td>
+                        <span class="glass-pill" style="font-size: 0.7rem; color: #10B981;">
+                          ${c.maxUses ? `${c.usesCount || 0} / ${c.maxUses} used` : (c.used ? 'Redeemed' : 'Active')}
+                        </span>
+                      </td>
+                      <td>
+                        <div style="font-size: 0.75rem; color: var(--text-main);">${c.targetEmail || 'Universal (Anyone)'}</div>
+                        ${c.note ? `<div style="font-size: 0.7rem; color: var(--text-muted);">${c.note}</div>` : ''}
+                      </td>
+                      <td>
+                        <span style="font-size: 0.72rem; color: var(--text-muted);">
+                          ${c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-IN') : 'Recent'}
+                        </span>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ` : ''}
       </div>
     `;
   }
@@ -1746,5 +3016,6 @@ const Components = {
 
 window.Components = Components;
 window.components = Components;
+
 
 
