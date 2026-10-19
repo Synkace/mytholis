@@ -24,7 +24,9 @@ import {
   updateDoc, 
   collection, 
   addDoc, 
-  serverTimestamp 
+  serverTimestamp,
+  query,
+  where
 } from "firebase/firestore";
 
 // Your web app's Firebase configuration with Vite environment variable support
@@ -165,49 +167,66 @@ export class FirebaseService {
 
         // Merge cloud loyalty state with store
         if (cloudData.loyalty) {
-          // Keep highest progress between cloud and local
-          const localLoyalty = this.store.loyalty;
-          const mergedLoyalty = Object.assign({}, localLoyalty, cloudData.loyalty);
-          mergedLoyalty.spendable_mythos = Math.max(localLoyalty.spendable_mythos || 0, cloudData.loyalty.spendable_mythos || 0);
-          mergedLoyalty.legacy_mythos = Math.max(localLoyalty.legacy_mythos || 0, cloudData.loyalty.legacy_mythos || 0);
-          mergedLoyalty.full_bottles_purchased = Math.max(localLoyalty.full_bottles_purchased || 0, cloudData.loyalty.full_bottles_purchased || 0);
-          
-          // Union codex unlocks
-          mergedLoyalty.codex_unlocked = Array.from(new Set([
-            ...(localLoyalty.codex_unlocked || []),
-            ...(cloudData.loyalty.codex_unlocked || [])
-          ]));
-
-          // Union active reward codes
-          const codesMap = new Map();
-          (localLoyalty.active_reward_codes || []).forEach(c => codesMap.set(c.code, c));
-          (cloudData.loyalty.active_reward_codes || []).forEach(c => codesMap.set(c.code, c));
-          mergedLoyalty.active_reward_codes = Array.from(codesMap.values());
-
-          this.store.loyalty = mergedLoyalty;
-          this.store.saveLocalStorage('mytholis_loyalty', mergedLoyalty);
+          this.store.loyalty = cloudData.loyalty;
+          this.store.saveLocalStorage('mytholis_loyalty', cloudData.loyalty);
         }
       } else {
-        // First-time cloud registration: upload current local profile & loyalty
+        // First-time cloud registration: create clean initial profile & loyalty
+        const initialLoyalty = {
+          spendable_mythos: 0,
+          legacy_mythos: 0,
+          full_bottles_purchased: 0,
+          initiation_completed: false,
+          codex_unlocked: [],
+          trinity_claimed: false,
+          pantheon_claimed: false,
+          reviewed_scents: [],
+          active_reward_codes: [],
+          applied_reward_code: null
+        };
+        const initialProfile = {
+          name: user.displayName || this.store.user.name || 'Mytholis Patron',
+          email: user.email,
+          phone: this.store.user.phone || '',
+          address: this.store.user.address || '',
+          pincode: this.store.user.pincode || '',
+          city: this.store.user.city || '',
+          createdAt: serverTimestamp()
+        };
+
         await setDoc(userDocRef, {
-          profile: {
-            name: user.displayName || this.store.user.name || 'Mytholis Patron',
-            email: user.email,
-            phone: this.store.user.phone || '',
-            address: this.store.user.address || '',
-            pincode: this.store.user.pincode || '',
-            city: this.store.user.city || '',
-            createdAt: serverTimestamp()
-          },
-          loyalty: this.store.loyalty,
+          profile: initialProfile,
+          loyalty: initialLoyalty,
           updatedAt: serverTimestamp()
         }, { merge: true });
+
+        this.store.loyalty = initialLoyalty;
+        this.store.saveLocalStorage('mytholis_loyalty', initialLoyalty);
       }
+
+      // Fetch user's real orders from Firestore orders collection
+      try {
+        const ordersQ = query(collection(db, "orders"), where("userId", "==", user.uid));
+        const ordersSnap = await getDocs(ordersQ);
+        const fetchedOrders = [];
+        ordersSnap.forEach(d => {
+          fetchedOrders.push({ id: d.id, ...d.data() });
+        });
+        fetchedOrders.sort((a, b) => new Date(b.createdAt || b.date || 0) - new Date(a.createdAt || a.date || 0));
+        this.store.user.orders = fetchedOrders;
+      } catch (errOrders) {
+        console.warn("[Mytholis Firebase] Could not fetch real orders:", errOrders.message);
+      }
+
+      this.store.user.isLoggedIn = true;
+      this.store.user.email = user.email;
+      if (user.displayName && !this.store.user.name) this.store.user.name = user.displayName;
+      this.store.saveLocalStorage('mytholis_user', this.store.user);
 
       this.store.firebaseUser = {
         uid: user.uid,
         email: user.email,
-        displayName: user.displayName,
+        displayName: user.displayName || this.store.user.name,
         photoURL: user.photoURL
       };
 

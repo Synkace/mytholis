@@ -43,6 +43,7 @@ class MytholisApp {
     // Subscribe store
     store.subscribe(() => {
       this.updateBadges();
+      this.updateNavAuth();
       this.renderCartModalContent();
       this.renderWishlistModalContent();
       this.renderProfileModalContent();
@@ -57,6 +58,9 @@ class MytholisApp {
     if (typeof firebaseService !== 'undefined') {
       firebaseService.init(store, this);
     }
+
+    // Initialize Navbar Auth State
+    this.updateNavAuth();
 
     // Hash & History router listeners for Deep-Linking and Browser Back-Button
     window.addEventListener('hashchange', () => this.handleHashRoute());
@@ -1675,6 +1679,77 @@ class MytholisApp {
     }
   }
 
+  /* Dynamic Navbar Auth Updater */
+  updateNavAuth() {
+    const slot = document.getElementById('nav-auth-slot');
+    if (!slot) return;
+
+    const isLogged = store.isUserLoggedIn();
+    const user = store.firebaseUser || store.user;
+
+    if (isLogged && user && (user.displayName || user.name || user.email)) {
+      const initial = (user.displayName || user.name || user.email || 'M').charAt(0).toUpperCase();
+      slot.innerHTML = `
+        <button class="icon-btn vip-profile-btn" onclick="app.openProfileModal()" title="Client Profile (${user.displayName || user.name || user.email})">
+          <span class="nav-avatar-initial">${initial}</span>
+          <span class="vip-dot"></span>
+        </button>
+      `;
+    } else {
+      slot.innerHTML = `
+        <button class="nav-signin-btn" onclick="app.openAuthModal('signin')" title="Sign In / Register">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+          </svg>
+          <span class="nav-signin-label">Sign In</span>
+        </button>
+      `;
+    }
+
+    const mobileAccountLink = document.getElementById('mobile-nav-account-link');
+    if (mobileAccountLink) {
+      if (isLogged) {
+        mobileAccountLink.textContent = "Client Account & Orders";
+        mobileAccountLink.setAttribute("onclick", "app.navigateTo('profile'); app.closeMobileMenu();");
+      } else {
+        mobileAccountLink.textContent = "Sign In / Register";
+        mobileAccountLink.setAttribute("onclick", "app.openAuthModal('signin'); app.closeMobileMenu();");
+      }
+    }
+  }
+
+  handleMobileAccountClick() {
+    this.closeMobileMenu();
+    if (store.isUserLoggedIn()) {
+      this.navigateTo('profile');
+    } else {
+      this.openAuthModal('signin');
+    }
+  }
+
+  /* Dedicated Auth Modal (Sign In / Register) */
+  openAuthModal(tab = 'signin') {
+    this.closeAllModals(false);
+    this.activeAuthTab = tab;
+    const modalBody = document.getElementById('profile-modal-body');
+    if (modalBody) {
+      modalBody.innerHTML = Components.renderAuthModal(this.activeAuthTab);
+    }
+    const overlay = document.getElementById('profile-modal-overlay');
+    if (overlay) {
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  switchAuthTab(tab) {
+    this.activeAuthTab = tab;
+    const modalBody = document.getElementById('profile-modal-body');
+    if (modalBody) {
+      modalBody.innerHTML = Components.renderAuthModal(this.activeAuthTab);
+    }
+  }
+
   /* VIP Profile Modal */
   openProfileModal() {
     this.closeAllModals(false);
@@ -1697,7 +1772,11 @@ class MytholisApp {
   renderProfileModalContent() {
     const modalBody = document.getElementById('profile-modal-body');
     if (modalBody) {
-      modalBody.innerHTML = Components.renderProfileModal();
+      if (!store.isUserLoggedIn()) {
+        modalBody.innerHTML = Components.renderAuthModal(this.activeAuthTab || 'signin');
+      } else {
+        modalBody.innerHTML = Components.renderProfileModal();
+      }
     }
   }
 
@@ -1804,7 +1883,8 @@ class MytholisApp {
     const result = await firebaseService.signInWithGoogle();
     if (result.success) {
       this.showToast(`Welcome to House Mytholis, ${result.user.displayName || result.user.email}!`);
-      this.renderProfileModalContent();
+      this.updateNavAuth();
+      this.closeProfileModal();
       if (store.currentView === 'profile') this.renderCurrentView();
     } else {
       this.showToast(`Sign-in error: ${result.error}`);
@@ -1827,7 +1907,8 @@ class MytholisApp {
     const result = await firebaseService.signInWithEmail(email, pass);
     if (result.success) {
       this.showToast(`Welcome back, ${result.user.displayName || result.user.email}!`);
-      this.renderProfileModalContent();
+      this.updateNavAuth();
+      this.closeProfileModal();
       if (store.currentView === 'profile') this.renderCurrentView();
     } else {
       this.showToast(result.error);
@@ -1836,9 +1917,14 @@ class MytholisApp {
 
   async handleEmailSignUp() {
     if (typeof firebaseService === 'undefined') return;
-    const emailEl = document.getElementById('auth-email-input');
-    const passEl = document.getElementById('auth-password-input');
+    const nameEl = document.getElementById('signup-name-input');
+    const emailEl = document.getElementById('signup-email-input') || document.getElementById('auth-email-input');
+    const phoneEl = document.getElementById('signup-phone-input');
+    const passEl = document.getElementById('signup-password-input') || document.getElementById('auth-password-input');
+
+    const name = nameEl ? nameEl.value.trim() : '';
     const email = emailEl ? emailEl.value.trim() : '';
+    const phone = phoneEl ? phoneEl.value.trim() : '';
     const pass = passEl ? passEl.value : '';
 
     if (!email || !pass) {
@@ -1851,10 +1937,17 @@ class MytholisApp {
     }
 
     this.showToast('Registering new VIP Patron Account...');
-    const result = await firebaseService.signUpWithEmail(email, pass, store.user.name || '');
+    const result = await firebaseService.signUpWithEmail(email, pass, name);
     if (result.success) {
+      if (name) store.user.name = name;
+      if (phone) store.user.phone = phone;
+      store.user.email = email;
+      store.user.isLoggedIn = true;
+      store.saveLocalStorage('mytholis_user', store.user);
+      store.notify();
       this.showToast(`VIP Dossier Account Activated for ${result.user.email}!`);
-      this.renderProfileModalContent();
+      this.updateNavAuth();
+      this.closeProfileModal();
       if (store.currentView === 'profile') this.renderCurrentView();
     } else {
       this.showToast(result.error);
@@ -1862,18 +1955,20 @@ class MytholisApp {
   }
 
   async handleFirebaseSignOut() {
-    if (typeof firebaseService === 'undefined') return;
-    await firebaseService.signOut();
-    this.showToast('Signed out of House Mytholis.');
-    this.renderProfileModalContent();
-    if (store.currentView === 'profile') this.renderCurrentView();
+    await this.logoutUser();
   }
 
-  logoutUser() {
+  async logoutUser() {
+    if (typeof firebaseService !== 'undefined') {
+      await firebaseService.signOut();
+    }
     store.logout();
     this.closeProfileModal();
+    this.updateNavAuth();
     this.showToast("Signed out of your client session.");
-    this.navigateTo('home');
+    if (store.currentView === 'profile' || store.currentView === 'user-profile') {
+      this.navigateTo('home');
+    }
   }
 
   /* 3D Tilt Effect on Bottles and Liquid Glass Cards */

@@ -1921,68 +1921,175 @@ const Components = {
     `;
   },
 
-  /* Render Firebase Authentication & Cloud Sync Widget */
-  renderFirebaseAuthWidget() {
-    const isAuth = store.firebaseUser;
-    if (isAuth) {
-      return `
-        <div class="modal-section-box liquid-glass-card" style="padding: 1.1rem; margin-bottom: 1.5rem; border: 1px solid rgba(16, 185, 129, 0.45); background: rgba(16, 185, 129, 0.08);">
-          <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; gap: 0.6rem;">
-              <svg width="18" height="18" fill="none" stroke="#10B981" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              <div>
-                <span class="glass-pill" style="font-size: 0.62rem; color: #10B981; border-color: #10B981; padding: 0.15rem 0.5rem;">Firebase Realtime Cloud Synced</span>
-                <p style="font-size: 0.82rem; color: var(--gold-light); margin: 0.2rem 0 0; font-weight: 500;">
-                  ${isAuth.email || isAuth.displayName || 'Patron Authenticated'}
-                </p>
-              </div>
-            </div>
-            <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.75rem;" onclick="app.handleFirebaseSignOut()">
-              Sign Out
-            </button>
-          </div>
-        </div>
-      `;
-    }
+  /* Render Dedicated Luxury Patron Auth Modal (Sign In & Sign Up) */
+  renderAuthModal(activeTab = 'signin') {
+    const isSignIn = activeTab === 'signin';
 
     return `
-      <div class="modal-section-box liquid-glass-card" style="padding: 1.3rem; margin-bottom: 1.5rem; border: 1px solid rgba(212, 175, 55, 0.35); background: rgba(4, 24, 18, 0.75);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="modal-crest-icon" style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(212, 175, 55, 0.15); border: 1px solid var(--gold-primary); font-family: var(--font-serif-title); font-size: 0.95rem; color: var(--gold-light);">M</div>
           <div>
-            <span class="glass-pill" style="font-size: 0.62rem; color: var(--gold-light);">Cloud Dossier Synchronization</span>
-            <h5 style="color: var(--gold-light); margin: 0.3rem 0 0.15rem; font-size: 0.95rem;">VIP Patron Authentication & Database Sync</h5>
+            <h3 class="modal-title font-title">The Sanctum Gate</h3>
+            <p class="modal-subtitle">House Mytholis • Patron Authentication</p>
           </div>
         </div>
-        <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 0.9rem;">
-          Sign in to automatically sync your Circle of Legends tier points, unlocked flacon codex, and vault vouchers across Android and web.
-        </p>
+        <button class="icon-btn modal-close-btn" onclick="app.closeProfileModal()" title="Close Sanctum Gate">✕</button>
+      </div>
 
-        <!-- Google 1-Tap Sign-In -->
-        <button class="btn btn-gold" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.6rem; padding: 0.6rem 1rem; font-size: 0.82rem; margin-bottom: 0.8rem;" onclick="app.handleGoogleSignIn()">
-          <svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-          Sign In with Google
+      <div class="modal-scroll-body" style="padding: 1.25rem;">
+        <!-- Auth Navigation Tabs -->
+        <div class="auth-nav-tabs">
+          <button class="auth-nav-tab-btn ${isSignIn ? 'active' : ''}" onclick="app.switchAuthTab('signin')">
+            Patron Sign In
+          </button>
+          <button class="auth-nav-tab-btn ${!isSignIn ? 'active' : ''}" onclick="app.switchAuthTab('register')">
+            Become a Patron
+          </button>
+        </div>
+
+        ${isSignIn ? `
+          <!-- TAB 1: SIGN IN -->
+          <div class="auth-tab-pane">
+            <!-- Google 1-Tap Fast Sign-In -->
+            <button class="btn btn-gold" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.65rem; padding: 0.75rem 1rem; font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);" onclick="app.handleGoogleSignIn()">
+              <svg width="18" height="18" viewBox="0 0 24 24">
+                <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.7 7.4l3.7 2.9C6.3 7.5 8.9 5 12 5z"/>
+                <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
+                <path fill="#FBBC05" d="M5.4 14.7c-.2-.7-.4-1.5-.4-2.7 0-1.1.2-1.9.4-2.7L1.7 6.4C.6 8.6 0 10.2 0 12s.6 3.4 1.7 5.6l3.7-2.9z"/>
+                <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.7-2.1-6.6-4.9L1.7 16.3C3.5 20.1 7.4 23 12 23z"/>
+              </svg>
+              <span>Continue with Google</span>
+            </button>
+
+            <div class="auth-divider-line">or with patron credentials</div>
+
+            <form onsubmit="event.preventDefault(); app.handleEmailSignIn();" style="display: flex; flex-direction: column; gap: 0.85rem;">
+              <div>
+                <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.35rem;">Patron Email</label>
+                <input type="email" id="auth-email-input" class="engraving-input" placeholder="patron@domain.com" style="width: 100%;" required />
+              </div>
+
+              <div>
+                <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.35rem;">Secret Key / Password</label>
+                <input type="password" id="auth-password-input" class="engraving-input" placeholder="••••••••" style="width: 100%;" required />
+              </div>
+
+              <button type="submit" class="btn btn-gold" style="width: 100%; padding: 0.7rem; font-size: 0.84rem; margin-top: 0.4rem;">
+                Enter The Sanctum
+              </button>
+            </form>
+
+            <div style="text-align: center; margin-top: 1.2rem;">
+              <p style="font-size: 0.76rem; color: var(--text-muted); margin: 0;">
+                First time at House Mytholis? 
+                <button type="button" style="background: none; border: none; color: var(--gold-light); font-weight: 600; cursor: pointer; text-decoration: underline; padding: 0;" onclick="app.switchAuthTab('register')">
+                  Create Patron Account
+                </button>
+              </p>
+            </div>
+          </div>
+        ` : `
+          <!-- TAB 2: REGISTER ACCOUNT -->
+          <div class="auth-tab-pane">
+            <div style="background: rgba(4, 24, 18, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px; padding: 0.75rem 0.9rem; margin-bottom: 1rem;">
+              <span class="glass-pill" style="font-size: 0.62rem; color: var(--gold-light); margin-bottom: 0.3rem;">Circle of Legends Privilege</span>
+              <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.45; margin: 0.2rem 0 0;">
+                Register to instantly unlock Level 1 Initiate, earn 3% cash return on acquisitions, save delivery coordinates, and track flacons across Android and web.
+              </p>
+            </div>
+
+            <!-- Google Quick Register -->
+            <button class="btn btn-gold" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.65rem; padding: 0.75rem 1rem; font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);" onclick="app.handleGoogleSignIn()">
+              <svg width="18" height="18" viewBox="0 0 24 24">
+                <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.7 7.4l3.7 2.9C6.3 7.5 8.9 5 12 5z"/>
+                <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
+                <path fill="#FBBC05" d="M5.4 14.7c-.2-.7-.4-1.5-.4-2.7 0-1.1.2-1.9.4-2.7L1.7 6.4C.6 8.6 0 10.2 0 12s.6 3.4 1.7 5.6l3.7-2.9z"/>
+                <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.7-2.1-6.6-4.9L1.7 16.3C3.5 20.1 7.4 23 12 23z"/>
+              </svg>
+              <span>Quick Register with Google</span>
+            </button>
+
+            <div class="auth-divider-line">or register with email</div>
+
+            <form onsubmit="event.preventDefault(); app.handleEmailSignUp();" style="display: flex; flex-direction: column; gap: 0.85rem;">
+              <div>
+                <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.35rem;">Full Name</label>
+                <input type="text" id="signup-name-input" class="engraving-input" placeholder="Your Title & Full Name" style="width: 100%;" required />
+              </div>
+
+              <div>
+                <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.35rem;">Email Address</label>
+                <input type="email" id="signup-email-input" class="engraving-input" placeholder="patron@domain.com" style="width: 100%;" required />
+              </div>
+
+              <div>
+                <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.35rem;">Mobile / WhatsApp Number</label>
+                <input type="tel" id="signup-phone-input" class="engraving-input" placeholder="+91 98765 43210" style="width: 100%;" />
+              </div>
+
+              <div>
+                <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.35rem;">Create Password</label>
+                <input type="password" id="signup-password-input" class="engraving-input" placeholder="Min. 6 characters" style="width: 100%;" minlength="6" required />
+              </div>
+
+              <button type="submit" class="btn btn-gold" style="width: 100%; padding: 0.7rem; font-size: 0.84rem; margin-top: 0.4rem;">
+                Become a Mytholis Patron
+              </button>
+            </form>
+
+            <div style="text-align: center; margin-top: 1.2rem;">
+              <p style="font-size: 0.76rem; color: var(--text-muted); margin: 0;">
+                Already have an account? 
+                <button type="button" style="background: none; border: none; color: var(--gold-light); font-weight: 600; cursor: pointer; text-decoration: underline; padding: 0;" onclick="app.switchAuthTab('signin')">
+                  Sign In to Sanctum
+                </button>
+              </p>
+            </div>
+          </div>
+        `}
+      </div>
+
+      <div class="modal-footer" style="display: flex; gap: 0.8rem;">
+        <button class="btn btn-glass" style="flex: 1; font-size: 0.78rem; padding: 0.6rem 1rem;" onclick="app.closeProfileModal()">
+          Close
         </button>
-
-        <!-- Email Sign-In / Register Form -->
-        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.8rem;">
-          <input type="email" id="auth-email-input" class="engraving-input" placeholder="Patron Email Address" style="font-size: 0.8rem; padding: 0.5rem 0.8rem; flex: 1;" />
-          <input type="password" id="auth-password-input" class="engraving-input" placeholder="Password" style="font-size: 0.8rem; padding: 0.5rem 0.8rem; flex: 1;" />
-        </div>
-        <div style="display: flex; gap: 0.6rem;">
-          <button class="btn btn-glass" style="flex: 1; font-size: 0.75rem; padding: 0.45rem 0.8rem;" onclick="app.handleEmailSignIn()">
-            Email Sign In
-          </button>
-          <button class="btn btn-glass" style="flex: 1; font-size: 0.75rem; padding: 0.45rem 0.8rem;" onclick="app.handleEmailSignUp()">
-            Register Account
-          </button>
-        </div>
       </div>
     `;
   },
 
   /* Render Dedicated User Profile Page View */
   renderProfile() {
+    if (!store.isUserLoggedIn()) {
+      return `
+        <div class="container" style="padding-top: 4rem; padding-bottom: 6rem; max-width: 680px; text-align: center;">
+          <div class="liquid-glass-card" style="padding: 3rem 2rem; border: 1px solid rgba(212, 175, 55, 0.4); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);">
+            <div style="width: 60px; height: 60px; margin: 0 auto 1.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(212, 175, 55, 0.15); border: 1.5px solid var(--gold-primary); font-family: var(--font-serif-title); font-size: 1.6rem; color: var(--gold-light);">
+              M
+            </div>
+            <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-light); margin-bottom: 0.8rem;">House Mytholis</span>
+            <h2 class="font-title" style="color: var(--gold-light); font-size: 2rem; margin-bottom: 0.8rem;">Enter The Sanctum</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; max-width: 480px; margin: 0 auto 2rem;">
+              Sign in to access your personal Patron Dossier, manage delivery coordinates, view consignment tracking, and claim Circle of Legends rewards.
+            </p>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+              <button class="btn btn-gold" style="padding: 0.8rem 2rem; font-size: 0.9rem;" onclick="app.openAuthModal('signin')">
+                Sign In to Sanctum
+              </button>
+              <button class="btn btn-glass" style="padding: 0.8rem 1.8rem; font-size: 0.9rem;" onclick="app.openAuthModal('register')">
+                Become a Patron
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     const u = store.user;
+    const fbUser = store.firebaseUser;
+    const displayName = (fbUser && fbUser.displayName) || u.name || 'Mytholis Patron';
+    const email = (fbUser && fbUser.email) || u.email || '';
+    const initial = displayName.charAt(0).toUpperCase() || 'M';
     const currentTier = store.getCurrentTier();
 
     return `
@@ -1990,13 +2097,13 @@ const Components = {
         <!-- Profile Header -->
         <div class="profile-header-card liquid-glass-card" style="margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;">
           <div style="display: flex; align-items: center; gap: 1.2rem;">
-            <div class="vip-badge-icon" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(212, 175, 55, 0.15); border: 1.5px solid var(--gold-primary); font-family: var(--font-serif-title); font-size: 1.4rem; color: var(--gold-light);">${u.name ? u.name.charAt(0).toUpperCase() : 'M'}</div>
+            <div class="vip-badge-icon" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(212, 175, 55, 0.15); border: 1.5px solid var(--gold-primary); font-family: var(--font-serif-title); font-size: 1.4rem; color: var(--gold-light);">${initial}</div>
             <div>
               <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
-                <h2 class="profile-welcome-title" style="margin: 0; font-size: clamp(1.4rem, 2.8vw, 2rem);">${u.name}</h2>
+                <h2 class="profile-welcome-title" style="margin: 0; font-size: clamp(1.4rem, 2.8vw, 2rem);">${displayName}</h2>
                 <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-light);">${currentTier.name}</span>
               </div>
-              <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">${u.email} • Member since 2026</p>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">${email} • Circle of Legends Patron</p>
             </div>
           </div>
           <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
@@ -2008,9 +2115,6 @@ const Components = {
             </button>
           </div>
         </div>
-
-        <!-- Firebase Cloud Authentication & Realtime Sync Widget -->
-        ${this.renderFirebaseAuthWidget()}
 
         <!-- Account Balance & Privileges Quick Glance -->
         <div class="loyalty-stats-grid" style="margin-bottom: 2.5rem;">
@@ -2047,57 +2151,84 @@ const Components = {
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
               <div>
                 <label style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.4rem;">Full Name</label>
-                <input type="text" id="profile-edit-name" class="engraving-input" value="${u.name || ''}" required />
+                <input type="text" id="profile-edit-name" class="engraving-input" value="${displayName}" required />
               </div>
               <div>
                 <label style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.4rem;">Mobile / WhatsApp</label>
-                <input type="tel" id="profile-edit-phone" class="engraving-input" value="${u.phone || '+91 777000 9170'}" />
+                <input type="tel" id="profile-edit-phone" class="engraving-input" value="${u.phone || ''}" placeholder="+91 98765 43210" />
               </div>
             </div>
 
             <div style="margin-bottom: 1.5rem;">
               <label style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.4rem;">Delivery Address</label>
-              <input type="text" id="profile-edit-address" class="engraving-input" value="${u.address || 'Vasant Vihar 2, Nava Naroda, Ahmedabad, Gujarat 382330'}" />
+              <input type="text" id="profile-edit-address" class="engraving-input" value="${u.address || ''}" placeholder="Flat / House, Street, Area, City, State, PIN" />
             </div>
 
             <button type="submit" class="btn btn-gold" style="font-size: 0.82rem; padding: 0.6rem 1.4rem;">
-              Save Profile
+              Save Profile Coordinates
             </button>
           </form>
         </div>
 
         <!-- Recent Vault Orders -->
         <div class="liquid-glass-card profile-orders-card">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 0.8rem;">
-            <h3 class="font-title" style="margin: 0;">Recent Vault Acquisitions</h3>
-            <button class="btn btn-glass" style="font-size: 0.75rem; padding: 0.35rem 0.85rem;" onclick="app.navigateTo('track-order')">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.8rem;">
+            <div>
+              <h3 class="font-title" style="margin: 0; color: var(--gold-light);">Vault Consignment History</h3>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0.2rem 0 0;">Recent orders linked to your patron profile.</p>
+            </div>
+            <button class="btn btn-glass" style="font-size: 0.75rem; padding: 0.4rem 0.9rem;" onclick="app.navigateTo('track-order')">
               Track Consignment
             </button>
           </div>
-          <div class="table-responsive">
-            <table class="order-history-table">
-              <thead>
-                <tr style="color: var(--gold-light);">
-                  <th>Order ID</th>
-                  <th>Date</th>
-                  <th>Item</th>
-                  <th>Total</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${u.orders.map(o => `
+
+          ${u.orders && u.orders.length > 0 ? `
+            <div class="profile-orders-table-wrap">
+              <table class="profile-orders-table">
+                <thead>
                   <tr>
-                    <td style="font-family: var(--font-serif-title);">${o.id}</td>
-                    <td>${o.date}</td>
-                    <td>${o.items}</td>
-                    <td class="gold-text">${store.formatPrice(o.total)}</td>
-                    <td><span class="glass-pill">${o.status}</span></td>
+                    <th>Order ID</th>
+                    <th>Date</th>
+                    <th>Extrait Item</th>
+                    <th>Total</th>
+                    <th>Dispatch Status</th>
+                    <th>AWB / Tracking</th>
                   </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  ${u.orders.map(o => `
+                    <tr>
+                      <td style="font-family: var(--font-serif-title); color: var(--gold-light); font-weight: 600;">${o.id}</td>
+                      <td>${o.date || new Date().toLocaleDateString()}</td>
+                      <td>${o.items || 'Extrait de Parfum'}</td>
+                      <td class="gold-text" style="font-weight: 700;">${store.formatPrice(o.total)}</td>
+                      <td><span class="glass-pill" style="font-size: 0.7rem; color: #10B981;">${o.status || 'Processing'}</span></td>
+                      <td>
+                        ${o.tracking ? `
+                          <button class="btn btn-glass btn-compact" style="font-size: 0.7rem;" onclick="app.navigateTo('track-order'); document.getElementById('track-order-input').value = '${o.id}'; app.searchTrackOrder();">
+                            ${o.tracking}
+                          </button>
+                        ` : '<span style="color: var(--text-muted); font-size: 0.75rem;">Armored Prep</span>'}
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : `
+            <div style="text-align: center; padding: 3rem 1rem;">
+              <svg width="40" height="40" fill="none" stroke="rgba(212, 175, 55, 0.4)" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 0.8rem;">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <h4 style="color: var(--gold-light); font-size: 1rem; margin-bottom: 0.3rem;">No Previous Consignments</h4>
+              <p style="color: var(--text-muted); font-size: 0.82rem; margin: 0 auto 1.2rem; max-width: 380px;">Your acquisition records and dispatch telemetry will appear here once your first flacon is ordered.</p>
+              <button class="btn btn-gold" style="font-size: 0.78rem; padding: 0.5rem 1.2rem;" onclick="app.navigateTo('collections')">
+                Explore Vault Extraits
+              </button>
+            </div>
+          `}
         </div>
       </div>
     `;
@@ -2105,7 +2236,15 @@ const Components = {
 
   /* Render Fast, Elegant VIP Profile Modal (Popup) */
   renderProfileModal() {
+    if (!store.isUserLoggedIn()) {
+      return this.renderAuthModal('signin');
+    }
+
     const u = store.user;
+    const fbUser = store.firebaseUser;
+    const displayName = (fbUser && fbUser.displayName) || u.name || 'Mytholis Patron';
+    const email = (fbUser && fbUser.email) || u.email || '';
+    const initial = displayName.charAt(0).toUpperCase() || 'M';
     const currentTier = store.getCurrentTier();
     const currencies = [
       { code: 'INR', sym: '₹' },
@@ -2119,10 +2258,10 @@ const Components = {
     return `
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div class="modal-crest-icon" style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(212, 175, 55, 0.15); border: 1px solid var(--gold-primary); font-family: var(--font-serif-title); font-size: 0.95rem; color: var(--gold-light);">${u.name ? u.name.charAt(0).toUpperCase() : 'M'}</div>
+          <div class="modal-crest-icon" style="width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(212, 175, 55, 0.15); border: 1px solid var(--gold-primary); font-family: var(--font-serif-title); font-size: 1rem; color: var(--gold-light);">${initial}</div>
           <div>
-            <h3 class="modal-title font-title">Client Profile</h3>
-            <p class="modal-subtitle">House Mytholis Patron • ${currentTier.name}</p>
+            <h3 class="modal-title font-title">Patron Dossier</h3>
+            <p class="modal-subtitle">House Mytholis • ${currentTier.name}</p>
           </div>
         </div>
         <button class="icon-btn modal-close-btn" onclick="app.closeProfileModal()" title="Close Profile">✕</button>
@@ -2132,22 +2271,33 @@ const Components = {
         <!-- Client Member Card -->
         <div class="profile-modal-user-card liquid-glass-card" style="padding: 1.2rem; margin-bottom: 1.2rem;">
           <div class="profile-avatar-wrap">
-            <span>${u.name ? u.name.charAt(0).toUpperCase() : 'M'}</span>
+            <span>${initial}</span>
           </div>
           <div class="profile-modal-user-info">
             <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-              <h4 class="profile-user-name">${u.name}</h4>
+              <h4 class="profile-user-name">${displayName}</h4>
               <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">${currentTier.name}</span>
             </div>
-            <p class="profile-user-email">${u.email}</p>
+            <p class="profile-user-email">${email}</p>
             <div class="profile-points-pill">
               <strong>${(store.loyalty ? store.loyalty.spendable_mythos : 0).toLocaleString()}</strong> Spendable Mythos &nbsp;|&nbsp; <strong>${(store.loyalty ? store.loyalty.legacy_mythos : 0).toLocaleString()}</strong> Legacy M
             </div>
           </div>
         </div>
 
-        <!-- Firebase Authentication & Cloud Sync Widget -->
-        ${this.renderFirebaseAuthWidget()}
+        <!-- Cloud Sync Status Pill -->
+        <div class="modal-section-box liquid-glass-card" style="padding: 0.9rem 1.1rem; margin-bottom: 1.2rem; border: 1px solid rgba(16, 185, 129, 0.35); background: rgba(16, 185, 129, 0.06); display: flex; justify-content: space-between; align-items: center; gap: 0.6rem;">
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <svg width="16" height="16" fill="none" stroke="#10B981" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <div>
+              <span class="glass-pill" style="font-size: 0.6rem; color: #10B981; border-color: #10B981; padding: 0.1rem 0.4rem;">Connected Patron</span>
+              <p style="font-size: 0.78rem; color: var(--gold-light); margin: 0.15rem 0 0;">${email}</p>
+            </div>
+          </div>
+          <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.75rem;" onclick="app.logoutUser()">
+            Sign Out
+          </button>
+        </div>
 
         <!-- Direct Action Hub to Dedicated Loyalty Page -->
         <div class="modal-section-box liquid-glass-card" style="padding: 1.1rem; margin-bottom: 1.2rem; border: 1px solid var(--gold-primary); background: linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(4, 24, 18, 0.6) 100%);">
@@ -2158,31 +2308,7 @@ const Components = {
               <p style="font-size: 0.76rem; color: var(--text-muted); margin: 0;">Access full bottle unlocks, concession codes & tier privileges.</p>
             </div>
             <button class="btn btn-gold" style="font-size: 0.75rem; padding: 0.45rem 0.9rem;" onclick="app.closeProfileModal(); app.navigateTo('circle-of-legends');">
-              Open Loyalty Page
-            </button>
-          </div>
-        </div>
-
-        <!-- Quick Profile Details & Coordinates -->
-        <div class="modal-section-box liquid-glass-card" style="padding: 1.1rem; margin-bottom: 1.2rem;">
-          <h4 class="modal-section-title" style="font-size: 0.85rem; margin-bottom: 0.8rem;">Client Coordinates</h4>
-          <div style="display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.82rem;">
-            <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
-              <span>Phone / WhatsApp:</span>
-              <strong style="color: var(--text-main);">${u.phone || '+91 777000 9170'}</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
-              <span>Default Address:</span>
-              <span style="color: var(--text-main); text-align: right; max-width: 60%;">${u.address || 'Ahmedabad, Gujarat, India'}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
-              <span>Bottles Acquired:</span>
-              <strong class="gold-text">${store.loyalty ? store.loyalty.full_bottles_purchased : 0} Full Flacons</strong>
-            </div>
-          </div>
-          <div style="margin-top: 0.9rem; text-align: right;">
-            <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.75rem;" onclick="app.closeProfileModal(); app.navigateTo('profile');">
-              Edit Account
+              Open Loyalty
             </button>
           </div>
         </div>
@@ -2207,7 +2333,7 @@ const Components = {
         <!-- Recent Order Summary -->
         <div class="modal-section-box liquid-glass-card" style="padding: 1.1rem;">
           <div class="modal-section-header" style="margin-bottom: 0.7rem;">
-            <h4 class="modal-section-title" style="font-size: 0.85rem;">Recent Vault Order</h4>
+            <h4 class="modal-section-title" style="font-size: 0.85rem;">Recent Vault Consignment</h4>
             <button class="glass-pill" style="font-size: 0.65rem; cursor: pointer;" onclick="app.closeProfileModal(); app.navigateTo('track-order');">
               Track Consignment
             </button>
@@ -2216,17 +2342,17 @@ const Components = {
             <div class="modal-order-row">
               <div>
                 <div style="font-family: var(--font-serif-title); color: var(--gold-light); font-size: 0.85rem;">
-                  ${u.orders[0].id} <span style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-sans);">• ${u.orders[0].date}</span>
+                  ${u.orders[0].id} <span style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-sans);">• ${u.orders[0].date || new Date().toLocaleDateString()}</span>
                 </div>
-                <p style="font-size: 0.78rem; color: var(--text-main); margin-top: 0.15rem;">${u.orders[0].items}</p>
+                <p style="font-size: 0.78rem; color: var(--text-main); margin-top: 0.15rem;">${u.orders[0].items || 'Extrait de Parfum'}</p>
               </div>
               <div style="text-align: right;">
                 <span class="gold-text" style="font-weight: 700; font-size: 0.85rem;">${store.formatPrice(u.orders[0].total)}</span>
-                <span class="glass-pill" style="font-size: 0.62rem; display: inline-block; margin-top: 0.2rem; padding: 0.15rem 0.5rem;">${u.orders[0].status}</span>
+                <span class="glass-pill" style="font-size: 0.62rem; display: inline-block; margin-top: 0.2rem; padding: 0.15rem 0.5rem;">${u.orders[0].status || 'Processing'}</span>
               </div>
             </div>
           ` : `
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">No previous orders found.</p>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">No previous consignments on file.</p>
           `}
         </div>
       </div>

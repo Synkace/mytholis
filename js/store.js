@@ -198,65 +198,51 @@ class MytholisStore {
     this.cart = this.loadLocalStorage('mytholis_cart', []);
     this.wishlist = this.loadLocalStorage('mytholis_wishlist', []);
     
-    // Core Loyalty State: The Circle of Legends
+    // Fresh guest initial loyalty: The Circle of Legends (clean slate)
     const defaultLoyalty = {
-      spendable_mythos: 1450,
-      legacy_mythos: 1600,
-      full_bottles_purchased: 2,
-      initiation_completed: true,
-      codex_unlocked: ['petralux', 'oud-rion'],
+      spendable_mythos: 0,
+      legacy_mythos: 0,
+      full_bottles_purchased: 0,
+      initiation_completed: false,
+      codex_unlocked: [],
       trinity_claimed: false,
       pantheon_claimed: false,
       reviewed_scents: [],
-      active_reward_codes: [
-        {
-          code: "MYTH-DISC_400-8821",
-          id: "DISC_400",
-          title: "₹400 Off Voucher",
-          type: "discount",
-          amount: 400,
-          minOrder: 1500,
-          used: false,
-          createdAt: "2026-08-01T10:00:00.000Z"
-        }
-      ],
+      active_reward_codes: [],
       applied_reward_code: null
     };
 
     const loadedLoyalty = this.loadLocalStorage('mytholis_loyalty', defaultLoyalty);
     this.loyalty = Object.assign({}, defaultLoyalty, loadedLoyalty);
-    if (!Array.isArray(this.loyalty.codex_unlocked)) this.loyalty.codex_unlocked = ['petralux', 'oud-rion'];
-    if (!Array.isArray(this.loyalty.active_reward_codes)) this.loyalty.active_reward_codes = defaultLoyalty.active_reward_codes;
+    if (!Array.isArray(this.loyalty.codex_unlocked)) this.loyalty.codex_unlocked = [];
+    if (!Array.isArray(this.loyalty.active_reward_codes)) this.loyalty.active_reward_codes = [];
     if (!Array.isArray(this.loyalty.reviewed_scents)) this.loyalty.reviewed_scents = [];
-    if (typeof this.loyalty.spendable_mythos !== 'number') this.loyalty.spendable_mythos = 1450;
-    if (typeof this.loyalty.legacy_mythos !== 'number') this.loyalty.legacy_mythos = 1600;
-    if (typeof this.loyalty.full_bottles_purchased !== 'number') this.loyalty.full_bottles_purchased = 2;
+    if (typeof this.loyalty.spendable_mythos !== 'number') this.loyalty.spendable_mythos = 0;
+    if (typeof this.loyalty.legacy_mythos !== 'number') this.loyalty.legacy_mythos = 0;
+    if (typeof this.loyalty.full_bottles_purchased !== 'number') this.loyalty.full_bottles_purchased = 0;
 
-    this.user = this.loadLocalStorage('mytholis_user', {
-      isLoggedIn: true,
-      name: "Lord Alexander",
-      email: "alexander@mytholis.com",
-      tier: "Level 2: The Curator",
-      points: this.loyalty.spendable_mythos,
-      orders: [
-        {
-          id: "MYTH-89021",
-          date: "2026-07-28",
-          items: "Petralux Extrait de Parfum (100ml)",
-          total: 4999,
-          status: "Delivered",
-          tracking: "MYTH-VIP-99420"
-        },
-        {
-          id: "MYTH-78412",
-          date: "2026-05-14",
-          items: "Oud Rion Extrait de Parfum (100ml)",
-          total: 6999,
-          status: "Delivered",
-          tracking: "MYTH-VIP-88124"
-        }
-      ]
-    });
+    const defaultUser = {
+      isLoggedIn: false,
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      pincode: "",
+      city: "",
+      tier: "Level 1: The Initiate",
+      points: 0,
+      orders: []
+    };
+
+    this.user = this.loadLocalStorage('mytholis_user', defaultUser);
+
+    // Auto-purge any legacy mock "Lord Alexander" data from existing client localStorage
+    if (this.user.email === 'alexander@mytholis.com' || this.user.name === 'Lord Alexander') {
+      this.user = Object.assign({}, defaultUser);
+      this.saveLocalStorage('mytholis_user', this.user);
+      this.loyalty = Object.assign({}, defaultLoyalty);
+      this.saveLocalStorage('mytholis_loyalty', this.loyalty);
+    }
 
     // Ensure user tier & points mirror loyalty state
     this.syncUserWithLoyalty();
@@ -402,9 +388,42 @@ class MytholisStore {
     this.notify();
   }
 
+  isUserLoggedIn() {
+    return Boolean(
+      (this.firebaseUser && this.firebaseUser.uid) || 
+      (this.user && this.user.isLoggedIn && this.user.email && this.user.email !== 'alexander@mytholis.com')
+    );
+  }
+
   logout() {
-    this.user.isLoggedIn = false;
+    this.firebaseUser = null;
+    this.user = {
+      isLoggedIn: false,
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      pincode: "",
+      city: "",
+      tier: "Level 1: The Initiate",
+      points: 0,
+      orders: []
+    };
     this.saveLocalStorage('mytholis_user', this.user);
+
+    this.loyalty = {
+      spendable_mythos: 0,
+      legacy_mythos: 0,
+      full_bottles_purchased: 0,
+      initiation_completed: false,
+      codex_unlocked: [],
+      trinity_claimed: false,
+      pantheon_claimed: false,
+      reviewed_scents: [],
+      active_reward_codes: [],
+      applied_reward_code: null
+    };
+    this.saveLocalStorage('mytholis_loyalty', this.loyalty);
     this.notify();
   }
 
