@@ -4634,3 +4634,577 @@ div#cardsRow {
 
 
 
+
+/* ==========================================================================
+   SOVEREIGN COMMAND ADMIN PANEL (#admin) - DARK EMERALD & LIQUID GOLD
+   ========================================================================== */
+
+.sovereign-admin-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold-primary);
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 999px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.sovereign-admin-link:hover {
+  background: rgba(212, 175, 55, 0.25);
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+  transform: translateY(-1px);
+}
+
+.sovereign-container {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 6rem;
+  position: relative;
+}
+
+/* Sovereign Top Header Bar */
+.sovereign-header-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.8rem 2.2rem;
+  margin-bottom: 2rem;
+  background: radial-gradient(circle at 10% 20%, rgba(4, 32, 22, 0.95) 0%, rgba(2, 12, 8, 0.98) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 16px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(212, 175, 55, 0.2);
+  flex-wrap: wrap;
+}
+
+.sovereign-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.sovereign-crest {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.25) 0%, rgba(4, 24, 18, 0.9) 100%);
+  border: 1.5px solid var(--gold-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif-title);
+  font-size: 1.6rem;
+  color: var(--gold-light);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.25);
+}
+
+.sovereign-title-group h1 {
+  font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+  margin: 0 0 0.2rem;
+  letter-spacing: 0.05em;
+}
+
+.sovereign-auth-indicator {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sovereign-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 10px #10B981;
+  animation: pulseDot 2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+.sovereign-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+/* Sovereign Tab Navigation */
+.sovereign-nav-bar {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.4rem;
+  margin-bottom: 2rem;
+  background: rgba(2, 12, 8, 0.8);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  scrollbar-width: thin;
+}
+
+.sovereign-tab {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.sovereign-tab:hover {
+  color: var(--gold-light);
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.sovereign-tab.active {
+  color: #020C08;
+  background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold-primary) 100%);
+  border-color: var(--gold-primary);
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.35);
+  font-weight: 700;
+}
+
+/* Module A: Telemetry KPI Cards */
+.sovereign-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.sovereign-kpi-card {
+  padding: 1.5rem;
+  border-radius: 14px;
+  background: radial-gradient(circle at top left, rgba(4, 30, 22, 0.85) 0%, rgba(2, 12, 8, 0.95) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.sovereign-kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--gold-primary), transparent);
+}
+
+.sovereign-kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+}
+
+.sovereign-kpi-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.sovereign-kpi-icon {
+  font-size: 1.2rem;
+  opacity: 0.8;
+}
+
+.sovereign-kpi-value {
+  font-size: 1.85rem;
+  font-family: var(--font-serif-title);
+  color: var(--gold-light);
+  line-height: 1.2;
+  margin-bottom: 0.4rem;
+}
+
+.sovereign-kpi-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Status Counters Bar */
+.sovereign-status-bar {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  padding: 1.2rem 1.5rem;
+  margin-bottom: 2rem;
+  background: rgba(4, 24, 18, 0.6);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 12px;
+}
+
+.sovereign-counter-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sovereign-counter-num {
+  font-weight: 700;
+  color: var(--gold-light);
+  font-size: 0.9rem;
+}
+
+/* Module B & Tables */
+.sovereign-filter-bar {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 1.2rem;
+  background: rgba(4, 24, 18, 0.6);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 12px;
+}
+
+.sovereign-search-input {
+  flex: 2;
+  min-width: 240px;
+  background: rgba(2, 12, 8, 0.8);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  color: var(--gold-light);
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.sovereign-select {
+  flex: 1;
+  min-width: 160px;
+  background: rgba(2, 12, 8, 0.9);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  color: var(--gold-light);
+  padding: 0.65rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+/* Orders Cards / Table Container */
+.sovereign-orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sovereign-order-card {
+  background: radial-gradient(circle at 10% 10%, rgba(4, 28, 20, 0.9) 0%, rgba(2, 12, 8, 0.95) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  transition: border-color 0.25s ease;
+}
+
+.sovereign-order-card:hover {
+  border-color: rgba(212, 175, 55, 0.6);
+}
+
+.sovereign-order-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+  margin-bottom: 1rem;
+}
+
+.sovereign-order-id {
+  font-size: 1.15rem;
+  font-family: var(--font-serif-title);
+  color: var(--gold-light);
+  letter-spacing: 0.05em;
+}
+
+.sovereign-order-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.sovereign-badges-wrap {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.sovereign-pill {
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.sovereign-pill.status-pending { background: rgba(245, 158, 11, 0.2); border: 1px solid #F59E0B; color: #FCD34D; }
+.sovereign-pill.status-confirmed { background: rgba(59, 130, 246, 0.2); border: 1px solid #3B82F6; color: #93C5FD; }
+.sovereign-pill.status-packed { background: rgba(168, 85, 247, 0.2); border: 1px solid #A855F7; color: #E9D5FF; }
+.sovereign-pill.status-shipped { background: rgba(14, 165, 233, 0.2); border: 1px solid #0EA5E9; color: #BAE6FD; }
+.sovereign-pill.status-delivered { background: rgba(16, 185, 129, 0.2); border: 1px solid #10B981; color: #6EE7B7; }
+.sovereign-pill.status-cancelled { background: rgba(239, 68, 68, 0.2); border: 1px solid #EF4444; color: #FCA5A5; }
+.sovereign-pill.status-rto { background: rgba(244, 63, 94, 0.2); border: 1px solid #F43F5E; color: #FECDD3; }
+
+.sovereign-pill.payment-paid { background: rgba(16, 185, 129, 0.15); border: 1px solid #10B981; color: #34D399; }
+.sovereign-pill.payment-pending { background: rgba(245, 158, 11, 0.15); border: 1px solid #F59E0B; color: #FBBF24; }
+.sovereign-pill.payment-cod { background: rgba(212, 175, 55, 0.15); border: 1px solid var(--gold-primary); color: var(--gold-light); }
+
+.sovereign-order-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.sovereign-subpanel {
+  background: rgba(2, 12, 8, 0.6);
+  padding: 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sovereign-subpanel-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold-primary);
+  margin-bottom: 0.6rem;
+  font-weight: 600;
+}
+
+.sovereign-item-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+}
+
+.sovereign-finance-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  padding: 0.25rem 0;
+}
+
+.sovereign-finance-row.total-row {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(212, 175, 55, 0.3);
+  font-weight: 700;
+  color: var(--gold-light);
+  font-size: 0.95rem;
+}
+
+/* WhatsApp and Action Controls */
+.sovereign-order-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.btn-whatsapp-verify {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #25D366;
+  color: #020C08;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-whatsapp-verify:hover {
+  background: #20BA5A;
+  box-shadow: 0 0 15px rgba(37, 211, 102, 0.4);
+}
+
+.btn-whatsapp-dispatch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(37, 211, 102, 0.15);
+  color: #25D366;
+  border: 1px solid #25D366;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-whatsapp-dispatch:hover {
+  background: rgba(37, 211, 102, 0.3);
+  box-shadow: 0 0 15px rgba(37, 211, 102, 0.3);
+}
+
+/* Product Manager Grid/Table */
+.sovereign-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.85rem;
+}
+
+.sovereign-table th {
+  background: rgba(2, 12, 8, 0.9);
+  color: var(--gold-primary);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.9rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.sovereign-table td {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  vertical-align: middle;
+}
+
+.sovereign-table tr:hover td {
+  background: rgba(212, 175, 55, 0.04);
+}
+
+.sovereign-table-img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.sovereign-inline-input {
+  width: 90px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  color: var(--gold-light);
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  text-align: right;
+}
+
+/* Modals */
+.sovereign-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.sovereign-modal-box {
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: radial-gradient(circle at 10% 10%, rgba(4, 28, 20, 0.98) 0%, rgba(2, 12, 8, 0.99) 100%);
+  border: 1px solid var(--gold-primary);
+  border-radius: 16px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(212, 175, 55, 0.2);
+  padding: 2rem;
+}
+
+.sovereign-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.sovereign-field-label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--gold-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+}
+
+.sovereign-form-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  color: var(--gold-light);
+  padding: 0.7rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-family: inherit;
+}
+
+.sovereign-form-input:focus {
+  outline: none;
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+.sovereign-form-textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  color: var(--gold-light);
+  padding: 0.7rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  min-height: 120px;
+  resize: vertical;
+}

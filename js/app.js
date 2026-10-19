@@ -4,7 +4,8 @@
    ========================================================================== */
 
 import gsap from 'gsap';
-import { db, collection, getDocs, doc, getDoc, setDoc, firebaseConfig } from './firebase.js';
+import { AdminComponents } from './adminComponents.js';
+import { firebaseService, db, collection, getDocs, doc, getDoc, setDoc, firebaseConfig } from './firebase.js';
 
 if (typeof window !== 'undefined') {
   window.gsap = gsap;
@@ -268,6 +269,11 @@ class MytholisApp {
 
     // Support #admin (Sanctum Command Founder Desk)
     if (rawHash === 'admin') {
+      if (!store.isAdmin()) {
+        this.showToast("Restricted Sanctum. Sovereign Admin authorization required.", "error");
+        this.navigateTo('home', null, true);
+        return;
+      }
       this.navigateTo('admin', null, false);
       return;
     }
@@ -282,6 +288,12 @@ class MytholisApp {
   }
 
   navigateTo(viewName, paramId = null, pushHash = true) {
+    if (viewName === 'admin' && !store.isAdmin()) {
+      this.showToast("Restricted Sanctum. Sovereign Admin authorization required.", "error");
+      this.navigateTo('home', null, true);
+      return;
+    }
+
     if (pushHash) {
       let targetHash = viewName;
       if (viewName === 'product') {
@@ -466,11 +478,7 @@ class MytholisApp {
 
     // If on admin view, load data if authenticated as admin
     if (store.currentView === 'admin' || store.currentView === 'sanctum-command') {
-      const configuredAdminEmail = (import.meta.env.VITE_ADMIN_EMAIL || '').trim().toLowerCase();
-      const currentUser = (typeof firebaseService !== 'undefined' && firebaseService.currentUser) || store.firebaseUser;
-      const userEmail = (currentUser?.email || '').trim().toLowerCase();
-      const isAuthorized = Boolean(configuredAdminEmail && userEmail && (userEmail === configuredAdminEmail));
-      if (isAuthorized && !this.adminLoading && (!this.adminData.orders.length && !this.adminData.users.length)) {
+      if (store.isAdmin() && !this.adminLoading && (!this.adminData.orders.length && !this.adminData.users.length)) {
         this.loadAdminDashboard();
       }
     }
@@ -1709,8 +1717,13 @@ class MytholisApp {
     const mobileAccountLink = document.getElementById('mobile-nav-account-link');
     if (mobileAccountLink) {
       if (isLogged) {
-        mobileAccountLink.textContent = "Client Account & Orders";
-        mobileAccountLink.setAttribute("onclick", "app.navigateTo('profile'); app.closeMobileMenu();");
+        if (store.isAdmin()) {
+          mobileAccountLink.innerHTML = "👑 Sovereign Admin Desk";
+          mobileAccountLink.setAttribute("onclick", "app.navigateTo('admin'); app.closeMobileMenu();");
+        } else {
+          mobileAccountLink.textContent = "Client Account & Orders";
+          mobileAccountLink.setAttribute("onclick", "app.navigateTo('profile'); app.closeMobileMenu();");
+        }
       } else {
         mobileAccountLink.textContent = "Sign In / Register";
         mobileAccountLink.setAttribute("onclick", "app.openAuthModal('signin'); app.closeMobileMenu();");
@@ -2095,7 +2108,7 @@ class MytholisApp {
   }
 
   /* ==========================================================================
-     SANCTUM COMMAND - FOUNDER OPERATIONS & DISPATCH DESK CONTROLLER
+     SANCTUM COMMAND - SOVEREIGN OPERATIONS & DISPATCH DESK CONTROLLER
      ========================================================================== */
   setAdminTab(tabName) {
     this.adminActiveTab = tabName;
@@ -2109,13 +2122,11 @@ class MytholisApp {
     }
     const res = await firebaseService.signInWithGoogle();
     if (res.success && res.user) {
-      const configuredAdminEmail = (import.meta.env.VITE_ADMIN_EMAIL || '').trim().toLowerCase();
-      const userEmail = (res.user.email || '').trim().toLowerCase();
-      if (configuredAdminEmail && userEmail === configuredAdminEmail) {
-        this.showToast('Sanctum Command: Sovereign Founder Authenticated.');
+      if (store.isAdmin()) {
+        this.showToast('Sovereign Command: High Sovereign Authenticated.');
         await this.loadAdminDashboard();
       } else {
-        this.showToast('Authenticated, but this account lacks Sanctum Command privileges.');
+        this.showToast('Authenticated, but this account lacks Sovereign Administrator privileges.');
         this.renderCurrentView();
       }
     } else {
@@ -2123,260 +2134,56 @@ class MytholisApp {
     }
   }
 
-  async callAdminApi(action, payload = {}) {
-    const user = (typeof firebaseService !== 'undefined' && firebaseService.currentUser);
-    if (!user) {
-      throw new Error('Not authenticated with verified Google account');
-    }
-    const token = await user.getIdToken();
-
-    try {
-      const response = await fetch('/api/admin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ action, payload })
-      });
-
-      if (response.ok) {
-        return await response.json();
-      }
-
-      // If 404 (local dev with pure Vite server without Vercel Serverless Function runner)
-      if (response.status === 404) {
-        console.warn("[Sanctum Command] /api/admin returned 404. Running direct Firestore fallback in development.");
-        return await this.fallbackDirectFirestoreAdminAction(action, payload);
-      }
-
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.error || `Server responded with status ${response.status}`);
-    } catch (err) {
-      if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('404'))) {
-        return await this.fallbackDirectFirestoreAdminAction(action, payload);
-      }
-      throw err;
-    }
-  }
-
-  /* Development / Offline Direct Firestore Fallback */
-  async fallbackDirectFirestoreAdminAction(action, payload) {
-    if (typeof firebaseService === 'undefined' || !firebaseService.currentUser) {
-      throw new Error('Firebase unavailable');
-    }
-
-    switch (action) {
-      case 'GET_DASHBOARD_DATA': {
-        const ordersSnap = await getDocs(collection(db, 'orders')).catch(() => ({ docs: [] }));
-        const usersSnap = await getDocs(collection(db, 'users')).catch(() => ({ docs: [] }));
-        const invSnap = await getDoc(doc(db, 'settings', 'inventory')).catch(() => ({ exists: () => false }));
-        const codesSnap = await getDocs(collection(db, 'reward_codes')).catch(() => ({ docs: [] }));
-
-        const orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        const users = usersSnap.docs.map(d => ({ uid: d.id, ...d.data() }));
-        const inventory = invSnap.exists() ? invSnap.data() : {};
-        const codes = codesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-        return { success: true, data: { orders, users, inventory, codes } };
-      }
-
-      case 'UPDATE_ORDER_STATUS': {
-        const { orderId, status, courier, awb_number } = payload;
-        await setDoc(doc(db, 'orders', orderId), {
-          status,
-          courier,
-          awb_number,
-          updated_at: new Date().toISOString()
-        }, { merge: true });
-        return { success: true };
-      }
-
-      case 'ADJUST_USER_MYTHOS': {
-        const { targetUid, spendableDelta = 0, legacyDelta = 0, addBottleCount = 0, unlockScent } = payload;
-        const userRef = doc(db, 'users', targetUid);
-        const userSnap = await getDoc(userRef);
-        const userData = userSnap.exists ? userSnap.data() : { profile: {}, loyalty: {} };
-        const loyalty = Object.assign({}, userData.loyalty || {});
-
-        loyalty.spendable_mythos = Math.max(0, (loyalty.spendable_mythos || 0) + Number(spendableDelta || 0));
-        loyalty.legacy_mythos = Math.max(0, (loyalty.legacy_mythos || 0) + Number(legacyDelta || 0));
-        loyalty.full_bottles_purchased = Math.max(0, (loyalty.full_bottles_purchased || 0) + Number(addBottleCount || 0));
-
-        if (unlockScent) {
-          const codex = Array.isArray(loyalty.codex_unlocked) ? [...loyalty.codex_unlocked] : [];
-          if (!codex.includes(unlockScent)) codex.push(unlockScent);
-          loyalty.codex_unlocked = codex;
-        }
-
-        const LOYALTY_TIERS = [
-          { level: 1, name: "The Initiate", minLegacy: 0, minBottles: 0 },
-          { level: 2, name: "The Curator", minLegacy: 500, minBottles: 1 },
-          { level: 3, name: "The Collector", minLegacy: 2500, minBottles: 3 },
-          { level: 4, name: "The Archivist", minLegacy: 8000, minBottles: 6 },
-          { level: 5, name: "The Patron", minLegacy: 20000, minBottles: 12 }
-        ];
-        let newTier = "Level 1: The Initiate";
-        for (let i = LOYALTY_TIERS.length - 1; i >= 0; i--) {
-          if (loyalty.legacy_mythos >= LOYALTY_TIERS[i].minLegacy && loyalty.full_bottles_purchased >= LOYALTY_TIERS[i].minBottles) {
-            newTier = `Level ${LOYALTY_TIERS[i].level}: ${LOYALTY_TIERS[i].name}`;
-            break;
-          }
-        }
-
-        const profile = Object.assign({}, userData.profile || {}, { tier: newTier, points: loyalty.spendable_mythos });
-        await setDoc(userRef, { loyalty, profile, updatedAt: new Date().toISOString() }, { merge: true });
-        return { success: true, tier: newTier };
-      }
-
-      case 'TOGGLE_INVENTORY': {
-        const { skuKey, status } = payload;
-        await setDoc(doc(db, 'settings', 'inventory'), {
-          [skuKey]: status,
-          updated_at: new Date().toISOString()
-        }, { merge: true });
-        return { success: true };
-      }
-
-      case 'CREATE_VIP_CODE': {
-        const { code, title, type = 'discount', amount = 500, minOrder = 1500, maxUses = 1, targetEmail = null, note = '' } = payload;
-        const normalizedCode = String(code).trim().toUpperCase();
-        await setDoc(doc(db, 'reward_codes', normalizedCode), {
-          code: normalizedCode,
-          title: title || 'VIP Sanctum Concession',
-          type,
-          amount: Number(amount) || 0,
-          minOrder: Number(minOrder) || 0,
-          used: false,
-          maxUses: Number(maxUses) || 1,
-          usesCount: 0,
-          targetEmail: targetEmail ? String(targetEmail).trim().toLowerCase() : null,
-          note: note || '',
-          createdAt: new Date().toISOString()
-        });
-        return { success: true };
-      }
-
-      default:
-        throw new Error(`Unsupported fallback action: ${action}`);
-    }
-  }
-
   async loadAdminDashboard() {
+    if (!store.isAdmin()) {
+      return;
+    }
     this.adminLoading = true;
     try {
-      const res = await this.callAdminApi('GET_DASHBOARD_DATA');
-      if (res && res.success && res.data) {
-        this.adminData = res.data;
-        this.renderCurrentView();
+      if (typeof firebaseService !== 'undefined') {
+        const res = await firebaseService.fetchAdminDashboardData();
+        if (res && res.success && res.data) {
+          this.adminData = res.data;
+          this.renderCurrentView();
+        }
       }
     } catch (err) {
-      console.error("[Sanctum Command] Error loading dashboard:", err);
-      this.showToast(`Sanctum Command notice: ${err.message}`);
+      console.error("[Sovereign Command] Error loading dashboard:", err);
+      this.showToast(`Sovereign Command notice: ${err.message}`);
     } finally {
       this.adminLoading = false;
     }
   }
 
   async refreshAdminDashboard() {
-    this.showToast('Refreshing live cloud ledger...');
+    this.showToast('Synchronizing Sovereign cloud ledger with Firestore...');
     await this.loadAdminDashboard();
-    this.showToast('Sanctum Command: Live cloud ledger synchronized.');
+    this.showToast('Sovereign Command: Live cloud ledger synchronized.');
   }
 
-  async saveAndDispatchOrder(orderId, phone) {
-    const courierEl = document.getElementById(`courier-${orderId}`);
-    const awbEl = document.getElementById(`awb-${orderId}`);
-    const statusEl = document.getElementById(`status-${orderId}`);
+  // --- Module B: Order, Payment & COD Command Handlers ---
+  filterAdminOrders() {
+    const searchInput = document.getElementById('admin-order-search');
+    const filterStatus = document.getElementById('admin-order-filter-status');
+    const filterType = document.getElementById('admin-order-filter-type');
 
-    const courier = courierEl ? courierEl.value.trim() : 'BlueDart Express';
-    const awb_number = awbEl ? awbEl.value.trim() : '';
-    const status = statusEl ? statusEl.value : 'Dispatched';
+    const query = (searchInput?.value || '').toLowerCase().trim();
+    const statusVal = (filterStatus?.value || 'ALL').toUpperCase();
+    const typeVal = (filterType?.value || 'ALL').toUpperCase();
 
-    try {
-      await this.callAdminApi('UPDATE_ORDER_STATUS', {
-        orderId,
-        status,
-        courier,
-        awb_number
-      });
+    const orderCards = document.querySelectorAll('.sovereign-order-card');
+    orderCards.forEach(card => {
+      const cardId = (card.getAttribute('data-order-id') || '').toLowerCase();
+      const cardPatron = (card.getAttribute('data-patron') || '').toLowerCase();
+      const cardPhone = (card.getAttribute('data-phone') || '').toLowerCase();
+      const cardStatus = (card.getAttribute('data-status') || '').toUpperCase();
+      const cardType = (card.getAttribute('data-payment-type') || '').toUpperCase();
 
-      const order = this.adminData.orders.find(o => (o.orderId || o.id) === orderId);
-      if (order) {
-        order.status = status;
-        order.courier = courier;
-        order.awb_number = awb_number;
-      }
+      const matchesSearch = !query || cardId.includes(query) || cardPatron.includes(query) || cardPhone.includes(query);
+      const matchesStatus = statusVal === 'ALL' || cardStatus === statusVal;
+      const matchesType = typeVal === 'ALL' || cardType === typeVal;
 
-      this.showToast(`Order ${orderId} updated to ${status}.`);
-
-      const cleanPhone = (phone || '').replace(/[^0-9]/g, '');
-      const luxuryMsg = `Dear Patron, your Mytholis Haute Parfumerie consignment (Order ${orderId}) has been sealed with our obsidian wax seal and dispatched via ${courier}.\n\nYour armored tracking AWB is: ${awb_number || 'Pending'}.\nTrack live at: https://mytholis.com/#track-order\n\nWear your legend.\n— The Mytholis Sanctum`;
-
-      if (cleanPhone) {
-        window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(luxuryMsg)}`, '_blank');
-      } else {
-        this.showToast(`Order status saved. (No phone attached for WhatsApp)`);
-      }
-
-      this.renderCurrentView();
-    } catch (err) {
-      console.error("[Sanctum Command] Error dispatching order:", err);
-      this.showToast(`Dispatch failed: ${err.message}`);
-    }
-  }
-
-  populateUserAdjustmentForm(uid) {
-    const input = document.getElementById('adjust-uid-input');
-    if (input) {
-      input.value = uid;
-      input.focus();
-      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }
-
-  async submitUserMythosAdjustment() {
-    const uidEl = document.getElementById('adjust-uid-input');
-    const spendableEl = document.getElementById('adjust-spendable-input');
-    const legacyEl = document.getElementById('adjust-legacy-input');
-    const bottlesEl = document.getElementById('adjust-bottles-input');
-    const codexEl = document.getElementById('adjust-codex-input');
-
-    const targetUid = uidEl ? uidEl.value.trim() : '';
-    const spendableDelta = spendableEl ? Number(spendableEl.value || 0) : 0;
-    const legacyDelta = legacyEl ? Number(legacyEl.value || 0) : 0;
-    const addBottleCount = bottlesEl ? Number(bottlesEl.value || 0) : 0;
-    const unlockScent = codexEl ? codexEl.value.trim() : '';
-
-    if (!targetUid) {
-      this.showToast('Please provide a target patron UID or select one from below.');
-      return;
-    }
-
-    try {
-      const res = await this.callAdminApi('ADJUST_USER_MYTHOS', {
-        targetUid,
-        spendableDelta,
-        legacyDelta,
-        addBottleCount,
-        unlockScent
-      });
-
-      this.showToast(`Patron ledger updated! Recalculated Tier: ${res.tier || 'Updated'}`);
-      await this.loadAdminDashboard();
-    } catch (err) {
-      console.error("[Sanctum Command] Error adjusting user:", err);
-      this.showToast(`Adjustment failed: ${err.message}`);
-    }
-  }
-
-  filterAdminUsers(query) {
-    const term = (query || '').toLowerCase().trim();
-    const cards = document.querySelectorAll('.admin-user-card');
-    cards.forEach(card => {
-      const name = card.getAttribute('data-username') || '';
-      const email = card.getAttribute('data-email') || '';
-      if (!term || name.includes(term) || email.includes(term)) {
+      if (matchesSearch && matchesStatus && matchesType) {
         card.style.display = 'block';
       } else {
         card.style.display = 'none';
@@ -2384,58 +2191,503 @@ class MytholisApp {
     });
   }
 
-  async toggleInventorySku(skuKey, newStatus) {
+  async updateAdminOrderStatus(orderId, newStatus) {
     try {
-      await this.callAdminApi('TOGGLE_INVENTORY', {
-        skuKey,
-        status: newStatus
-      });
-
-      if (!this.adminData.inventory) this.adminData.inventory = {};
-      this.adminData.inventory[skuKey] = newStatus;
-
-      this.showToast(`SKU ${skuKey} set to ${newStatus.replace('_', ' ').toUpperCase()}`);
-      this.renderCurrentView();
+      if (typeof firebaseService === 'undefined') return;
+      this.showToast(`Updating Order #${orderId} status to ${newStatus}...`);
+      const res = await firebaseService.updateOrderStatus(orderId, { status: newStatus });
+      if (res.success) {
+        const order = (this.adminData.orders || []).find(o => (o.id || o.orderId) === orderId);
+        if (order) order.status = newStatus;
+        this.showToast(`Order #${orderId} status updated to ${newStatus}.`);
+        this.renderCurrentView();
+      } else {
+        this.showToast(`Failed to update status: ${res.error}`);
+      }
     } catch (err) {
-      console.error("[Sanctum Command] Error toggling inventory:", err);
-      this.showToast(`Inventory update failed: ${err.message}`);
+      console.error("[Sovereign Command] updateAdminOrderStatus error:", err);
+      this.showToast(`Status update failed: ${err.message}`);
     }
   }
 
-  async submitNewVipCode() {
-    const codeEl = document.getElementById('mint-code-input');
-    const titleEl = document.getElementById('mint-title-input');
-    const amountEl = document.getElementById('mint-amount-input');
-    const minOrderEl = document.getElementById('mint-minorder-input');
-    const usesEl = document.getElementById('mint-uses-input');
-    const emailEl = document.getElementById('mint-email-input');
-    const noteEl = document.getElementById('mint-note-input');
+  async toggleAdminPaymentStatus(orderId, currentStatus) {
+    try {
+      if (typeof firebaseService === 'undefined') return;
+      const isCurrentlyPaid = (currentStatus || '').toLowerCase() === 'paid';
+      const newStatus = isCurrentlyPaid ? 'Pending' : 'Paid';
 
-    const code = codeEl ? codeEl.value.trim().toUpperCase() : '';
-    if (!code) {
-      this.showToast('Please specify a voucher code (e.g. MYTH-VIP-ALEXANDER).');
+      this.showToast(`Switching payment status to ${newStatus}...`);
+      const res = await firebaseService.updateOrderStatus(orderId, { paymentStatus: newStatus });
+      if (res.success) {
+        const order = (this.adminData.orders || []).find(o => (o.id || o.orderId) === orderId);
+        if (order) order.paymentStatus = newStatus;
+
+        if (newStatus === 'Paid') {
+          this.showToast(`Order #${orderId} marked as Paid. Patron loyalty processed.`);
+        } else {
+          this.showToast(`Order #${orderId} marked as Pending.`);
+        }
+        await this.loadAdminDashboard();
+      } else {
+        this.showToast(`Failed to toggle payment: ${res.error}`);
+      }
+    } catch (err) {
+      console.error("[Sovereign Command] toggleAdminPaymentStatus error:", err);
+      this.showToast(`Payment toggle failed: ${err.message}`);
+    }
+  }
+
+  async saveAdminOrderTracking(orderId) {
+    const courierEl = document.getElementById(`courier-${orderId}`);
+    const awbEl = document.getElementById(`awb-${orderId}`);
+    const trackingUrlEl = document.getElementById(`tracking-url-${orderId}`);
+
+    const courierName = courierEl ? courierEl.value.trim() : 'BlueDart Express';
+    const trackingNumber = awbEl ? awbEl.value.trim() : '';
+    const trackingUrl = trackingUrlEl ? trackingUrlEl.value.trim() : '';
+
+    try {
+      if (typeof firebaseService === 'undefined') return;
+      const res = await firebaseService.updateOrderStatus(orderId, {
+        courierName,
+        trackingNumber,
+        trackingUrl: trackingUrl || (trackingNumber ? `https://www.bluedart.com/tracking?handler=t&awb=awb&numbers=${trackingNumber}` : '')
+      });
+
+      if (res.success) {
+        const order = (this.adminData.orders || []).find(o => (o.id || o.orderId) === orderId);
+        if (order) {
+          order.courierName = courierName;
+          order.trackingNumber = trackingNumber;
+          order.trackingUrl = trackingUrl;
+        }
+        this.showToast(`Consignment courier & AWB saved for #${orderId}.`);
+      } else {
+        this.showToast(`Failed saving courier details: ${res.error}`);
+      }
+    } catch (err) {
+      console.error("[Sovereign Command] saveAdminOrderTracking error:", err);
+      this.showToast(`Courier update error: ${err.message}`);
+    }
+  }
+
+  verifyCodWhatsApp(orderId, phone, total) {
+    const cleanPhone = (phone || '').replace(/[^0-9]/g, '');
+    if (!cleanPhone) {
+      this.showToast('No valid WhatsApp phone number found for this patron.');
+      return;
+    }
+    const msg = `Dear Patron,\n\nThis is Mytholis Haute Parfumerie regarding your bespoke fragrance order #${orderId} with Cash on Delivery (Payable: ₹${total}).\n\nTo initiate hand-crafted bottling and obsidian wax sealing of your flacon, please reply *CONFIRM* to this message.\n\nWarmest regards,\nThe Sovereign Sanctum | Mytholis Haute Parfumerie`;
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+  }
+
+  sendDispatchWhatsApp(orderId, phone) {
+    const cleanPhone = (phone || '').replace(/[^0-9]/g, '');
+    if (!cleanPhone) {
+      this.showToast('No valid WhatsApp phone number found for this patron.');
       return;
     }
 
-    try {
-      await this.callAdminApi('CREATE_VIP_CODE', {
-        code,
-        title: titleEl ? titleEl.value.trim() : 'VIP Privilege',
-        amount: amountEl ? Number(amountEl.value || 0) : 500,
-        minOrder: minOrderEl ? Number(minOrderEl.value || 0) : 1500,
-        maxUses: usesEl ? Number(usesEl.value || 1) : 1,
-        targetEmail: emailEl ? emailEl.value.trim() : null,
-        note: noteEl ? noteEl.value.trim() : ''
-      });
+    const order = (this.adminData.orders || []).find(o => (o.id || o.orderId) === orderId) || {};
+    const courier = order.courierName || 'BlueDart Express';
+    const awb = order.trackingNumber || 'Active in Transit';
+    const trackingUrl = order.trackingUrl || 'https://mytholis.com/#track-order';
 
-      this.showToast(`Sanctum Code ${code} minted into the Vault ledger!`);
+    const msg = `Dear Patron,\n\nYour Mytholis Haute Parfumerie consignment (Order #${orderId}) has been sealed with our obsidian wax crest and dispatched via ${courier}.\n\nArmored Tracking AWB: ${awb}\nTrack live at: ${trackingUrl}\n\nWear your legend.\n— The Mytholis Sovereign Desk`;
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+  }
+
+  // --- Module C: Fragrance Vault & Product CRUD Handlers ---
+  async seedCatalogToFirestore() {
+    if (typeof firebaseService === 'undefined') return;
+    if (!confirm('Seed local default catalog (6 Extrait de Parfum creations at 40% concentration) to Firestore? Existing products will be preserved.')) {
+      return;
+    }
+
+    this.showToast('Seeding default catalog to Firestore products collection...');
+    const catalog = store.getProducts();
+    const res = await firebaseService.seedProductsToFirestore(catalog);
+    if (res.success) {
+      this.showToast(`Catalog sync complete! ${res.count} products seeded to Firestore.`);
       await this.loadAdminDashboard();
-    } catch (err) {
-      console.error("[Sanctum Command] Error minting code:", err);
-      this.showToast(`Minting code failed: ${err.message}`);
+    } else {
+      this.showToast(`Catalog seeding failed: ${res.error}`);
     }
   }
 
+  openProductEditorModal(productId = null) {
+    let prod = null;
+    if (productId) {
+      prod = (this.adminData.products || store.getProducts()).find(p => p.id === productId);
+    }
+    const modalHtml = AdminComponents.renderProductModal(prod);
+    this.injectAdminModal(modalHtml);
+  }
+
+  async saveAdminProduct(event) {
+    event.preventDefault();
+    try {
+      const getVal = id => document.getElementById(id)?.value?.trim() || '';
+      const getNum = id => Number(document.getElementById(id)?.value || 0);
+      const getChecked = id => Boolean(document.getElementById(id)?.checked);
+
+      const prodData = {
+        id: getVal('prod-id'),
+        name: getVal('prod-name'),
+        tagline: getVal('prod-tagline'),
+        category: getVal('prod-category'),
+        price: getNum('prod-price'),
+        compareAtPrice: getNum('prod-compare-price'),
+        stock: getNum('prod-stock'),
+        inStock: getChecked('prod-instock'),
+        isFeatured: getChecked('prod-featured'),
+        size: getVal('prod-size'),
+        concentration: getVal('prod-concentration'),
+        notes: {
+          top: getVal('prod-notes-top'),
+          heart: getVal('prod-notes-heart'),
+          base: getVal('prod-notes-base'),
+          accords: getVal('prod-notes-accords')
+        },
+        batchCode: getVal('prod-batch'),
+        macerationDate: getVal('prod-maceration'),
+        image: getVal('prod-image'),
+        description: getVal('prod-description')
+      };
+
+      this.showToast('Saving fragrance to vault catalog...');
+      const res = await firebaseService.saveProduct(prodData);
+      if (res.success) {
+        this.closeAdminModal();
+        this.showToast(`Fragrance "${prodData.name}" saved to vault.`);
+        await this.loadAdminDashboard();
+      } else {
+        this.showToast(`Failed to save product: ${res.error}`);
+      }
+    } catch (err) {
+      console.error("[Sovereign Command] saveAdminProduct error:", err);
+      this.showToast(`Error saving fragrance: ${err.message}`);
+    }
+  }
+
+  async deleteAdminProduct(productId) {
+    if (!confirm(`Are you certain you wish to purge "${productId}" from the vault catalog?`)) {
+      return;
+    }
+    try {
+      const res = await firebaseService.deleteProduct(productId);
+      if (res.success) {
+        this.showToast(`Fragrance ${productId} removed from catalog.`);
+        await this.loadAdminDashboard();
+      } else {
+        this.showToast(`Failed to delete: ${res.error}`);
+      }
+    } catch (err) {
+      console.error("[Sovereign Command] deleteAdminProduct error:", err);
+      this.showToast(`Delete failed: ${err.message}`);
+    }
+  }
+
+  async updateProductInline(productId, field, value) {
+    try {
+      let finalVal = value;
+      if (field === 'price' || field === 'stock') {
+        finalVal = Number(value);
+      } else if (field === 'inStock') {
+        finalVal = Boolean(value);
+      }
+      const res = await firebaseService.updateProductQuick(productId, { [field]: finalVal });
+      if (res.success) {
+        const prod = (this.adminData.products || []).find(p => p.id === productId);
+        if (prod) prod[field] = finalVal;
+        this.showToast(`Updated ${productId} ${field} to ${value}.`);
+      } else {
+        this.showToast(`Inline update failed: ${res.error}`);
+      }
+    } catch (err) {
+      console.error("[Sovereign Command] updateProductInline error:", err);
+      this.showToast(`Update error: ${err.message}`);
+    }
+  }
+
+  // --- Module D: Posts & Lore CRUD Handlers ---
+  openPostEditorModal(postId = null) {
+    let post = null;
+    if (postId) {
+      post = (this.adminData.posts || []).find(p => p.id === postId);
+    }
+    const modalHtml = AdminComponents.renderPostModal(post);
+    this.injectAdminModal(modalHtml);
+  }
+
+  async saveAdminPost(event) {
+    event.preventDefault();
+    try {
+      const getVal = id => document.getElementById(id)?.value?.trim() || '';
+      const getChecked = id => Boolean(document.getElementById(id)?.checked);
+
+      const postData = {
+        id: getVal('post-id') || undefined,
+        title: getVal('post-title'),
+        subtitle: getVal('post-subtitle'),
+        category: getVal('post-category'),
+        coverImage: getVal('post-image'),
+        linkedProductId: getVal('post-product-id'),
+        body: getVal('post-body'),
+        isPublished: getChecked('post-published')
+      };
+
+      this.showToast('Committing chronicle to lore archives...');
+      const res = await firebaseService.savePost(postData);
+      if (res.success) {
+        this.closeAdminModal();
+        this.showToast(`Chronicle "${postData.title}" archived successfully.`);
+        await this.loadAdminDashboard();
+      } else {
+        this.showToast(`Failed to archive chronicle: ${res.error}`);
+      }
+    } catch (err) {
+      console.error("[Sovereign Command] saveAdminPost error:", err);
+      this.showToast(`Error archiving chronicle: ${err.message}`);
+    }
+  }
+
+  async deleteAdminPost(postId) {
+    if (!confirm('Are you certain you wish to purge this chronicle from the archives?')) {
+      return;
+    }
+    try {
+      const res = await firebaseService.deletePost(postId);
+      if (res.success) {
+        this.showToast('Chronicle purged from lore archives.');
+        await this.loadAdminDashboard();
+      } else {
+        this.showToast(`Purge failed: ${res.error}`);
+      }
+    } catch (err) {
+      console.error("[Sovereign Command] deleteAdminPost error:", err);
+      this.showToast(`Delete failed: ${err.message}`);
+    }
+  }
+
+  // --- Module E: Patrons, Mythos & Tiers Handlers ---
+  filterAdminPatrons() {
+    const input = document.getElementById('admin-patron-search');
+    const query = (input?.value || '').toLowerCase().trim();
+    const rows = document.querySelectorAll('.sovereign-patron-card');
+    rows.forEach(row => {
+      const name = (row.getAttribute('data-name') || '').toLowerCase();
+      const email = (row.getAttribute('data-email') || '').toLowerCase();
+      const phone = (row.getAttribute('data-phone') || '').toLowerCase();
+      if (!query || name.includes(query) || email.includes(query) || phone.includes(query)) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  openAdjustMythosModal(uid, name, currentPoints) {
+    const modalHtml = AdminComponents.renderAdjustMythosModal(uid, name, currentPoints);
+    this.injectAdminModal(modalHtml);
+  }
+
+  async submitAdjustMythos(event) {
+    event.preventDefault();
+    try {
+      const uid = document.getElementById('adjust-mythos-uid')?.value;
+      const delta = Number(document.getElementById('adjust-mythos-delta')?.value || 0);
+      const reason = document.getElementById('adjust-mythos-reason')?.value?.trim() || 'Sovereign adjustment';
+
+      if (!uid) return;
+      this.showToast(`Adjusting Mythos balance (${delta > 0 ? '+' : ''}${delta}M)...`);
+      const res = await firebaseService.adjustPatronMythos(uid, delta, reason);
+      if (res.success) {
+        this.closeAdminModal();
+        this.showToast(`Mythos adjusted. New balance: ${res.newBalance}M.`);
+        await this.loadAdminDashboard();
+      } else {
+        this.showToast(`Adjustment failed: ${res.error}`);
+      }
+    } catch (err) {
+      console.error("[Sovereign Command] submitAdjustMythos error:", err);
+      this.showToast(`Error adjusting coins: ${err.message}`);
+    }
+  }
+
+  openOverrideTierModal(uid, name, currentLevel, currentBottles) {
+    const modalHtml = AdminComponents.renderOverrideTierModal(uid, name, currentLevel, currentBottles);
+    this.injectAdminModal(modalHtml);
+  }
+
+  async submitOverrideTier(event) {
+    event.preventDefault();
+    try {
+      const uid = document.getElementById('override-tier-uid')?.value;
+      const tier = document.getElementById('override-tier-level')?.value;
+      const bottles = Number(document.getElementById('override-tier-bottles')?.value || 0);
+
+      if (!uid) return;
+      this.showToast(`Setting patron standing to ${tier}...`);
+      const res = await firebaseService.overridePatronTier(uid, tier, bottles);
+      if (res.success) {
+        this.closeAdminModal();
+        this.showToast(`Patron standing updated to ${tier}.`);
+        await this.loadAdminDashboard();
+      } else {
+        this.showToast(`Override failed: ${res.error}`);
+      }
+    } catch (err) {
+      console.error("[Sovereign Command] submitOverrideTier error:", err);
+      this.showToast(`Error overriding tier: ${err.message}`);
+    }
+  }
+
+  async togglePatronAdmin(uid, makeAdmin) {
+    const label = makeAdmin ? 'Promote patron to Sovereign Administrator' : 'Revoke Sovereign Administrator privileges';
+    if (!confirm(`Are you certain you wish to ${label.toLowerCase()}?`)) {
+      return;
+    }
+    try {
+      const res = await firebaseService.togglePatronAdmin(uid, makeAdmin);
+      if (res.success) {
+        this.showToast(`Permissions updated: ${makeAdmin ? 'Admin Granted' : 'Patron Standing'}`);
+        await this.loadAdminDashboard();
+      } else {
+        this.showToast(`Permission change failed: ${res.error}`);
+      }
+    } catch (err) {
+      console.error("[Sovereign Command] togglePatronAdmin error:", err);
+      this.showToast(`Admin toggle error: ${err.message}`);
+    }
+  }
+
+  // --- Module F: Global Settings & Promo Codes Handlers ---
+  async saveGlobalSettings(event) {
+    event.preventDefault();
+    try {
+      const getNum = id => Number(document.getElementById(id)?.value || 0);
+      const getChecked = id => Boolean(document.getElementById(id)?.checked);
+
+      const currentSettings = this.adminData.settings || store.globalSettings || {};
+
+      const settingsData = {
+        ...currentSettings,
+        cashbackRate: getNum('set-cashback-rate'),
+        redemptionRatio: getNum('set-redemption-ratio'),
+        maxCartRedeemPercent: getNum('set-max-cart-redeem'),
+        signupBonus: getNum('set-signup-bonus'),
+        codEnabled: getChecked('set-cod-enabled'),
+        codFee: getNum('set-cod-fee'),
+        maxCodAmount: getNum('set-max-cod-amount'),
+        freeShippingThreshold: getNum('set-free-shipping-threshold'),
+        shippingFee: getNum('set-shipping-fee')
+      };
+
+      this.showToast('Synchronizing global commerce rules to Firestore...');
+      const res = await firebaseService.saveGlobalSettings(settingsData);
+      if (res.success) {
+        this.showToast('Global economy & checkout rules saved.');
+        await this.loadAdminDashboard();
+      } else {
+        this.showToast(`Failed saving settings: ${res.error}`);
+      }
+    } catch (err) {
+      console.error("[Sovereign Command] saveGlobalSettings error:", err);
+      this.showToast(`Settings save error: ${err.message}`);
+    }
+  }
+
+  openAddPromoModal() {
+    const modalHtml = AdminComponents.renderAddPromoModal();
+    this.injectAdminModal(modalHtml);
+  }
+
+  async submitAddPromoCode(event) {
+    event.preventDefault();
+    try {
+      const code = document.getElementById('new-promo-code')?.value?.trim().toUpperCase();
+      const discountType = document.getElementById('new-promo-type')?.value;
+      const value = Number(document.getElementById('new-promo-value')?.value || 0);
+      const minOrder = Number(document.getElementById('new-promo-minorder')?.value || 0);
+
+      if (!code) {
+        this.showToast('Voucher code is required.');
+        return;
+      }
+
+      const currentSettings = this.adminData.settings || store.globalSettings || {};
+      const promoCodes = Array.isArray(currentSettings.promoCodes) ? [...currentSettings.promoCodes] : [];
+
+      const existingIdx = promoCodes.findIndex(p => p.code === code);
+      const newEntry = { code, discountType, value, minOrder, active: true };
+      if (existingIdx >= 0) {
+        promoCodes[existingIdx] = newEntry;
+      } else {
+        promoCodes.push(newEntry);
+      }
+
+      this.showToast(`Minting Sanctum Key ${code}...`);
+      const res = await firebaseService.saveGlobalSettings({ ...currentSettings, promoCodes });
+      if (res.success) {
+        this.closeAdminModal();
+        this.showToast(`Sanctum Key ${code} minted into the Vault ledger!`);
+        await this.loadAdminDashboard();
+      } else {
+        this.showToast(`Failed to mint promo key: ${res.error}`);
+      }
+    } catch (err) {
+      console.error("[Sovereign Command] submitAddPromoCode error:", err);
+      this.showToast(`Mint key failed: ${err.message}`);
+    }
+  }
+
+  async togglePromoCode(code, active) {
+    try {
+      const currentSettings = this.adminData.settings || store.globalSettings || {};
+      const promoCodes = (currentSettings.promoCodes || []).map(p => {
+        if (p.code === code) return { ...p, active };
+        return p;
+      });
+      await firebaseService.saveGlobalSettings({ ...currentSettings, promoCodes });
+      this.showToast(`Promo Key ${code} ${active ? 'activated' : 'deactivated'}.`);
+      await this.loadAdminDashboard();
+    } catch (err) {
+      console.error("[Sovereign Command] togglePromoCode error:", err);
+      this.showToast(`Toggle failed: ${err.message}`);
+    }
+  }
+
+  async deletePromoCode(code) {
+    if (!confirm(`Permanently revoke Sanctum Key ${code}?`)) return;
+    try {
+      const currentSettings = this.adminData.settings || store.globalSettings || {};
+      const promoCodes = (currentSettings.promoCodes || []).filter(p => p.code !== code);
+      await firebaseService.saveGlobalSettings({ ...currentSettings, promoCodes });
+      this.showToast(`Sanctum Key ${code} revoked.`);
+      await this.loadAdminDashboard();
+    } catch (err) {
+      console.error("[Sovereign Command] deletePromoCode error:", err);
+      this.showToast(`Delete failed: ${err.message}`);
+    }
+  }
+
+  // --- Modal Helpers for Sovereign Command ---
+  injectAdminModal(html) {
+    this.closeAdminModal();
+    const container = document.createElement('div');
+    container.id = 'sovereign-modal-backdrop';
+    container.innerHTML = html;
+    document.body.appendChild(container);
+  }
+
+  closeAdminModal() {
+    const existing = document.getElementById('sovereign-modal-backdrop');
+    if (existing) {
+      existing.remove();
+    }
+  }
+  
   /* ==========================================================================
      BACKEND INTEGRATION DIAGNOSTICS & HEALTH CHECK CONTROLLER
      ========================================================================== */

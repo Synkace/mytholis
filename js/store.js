@@ -229,12 +229,34 @@ class MytholisStore {
       address: "",
       pincode: "",
       city: "",
+      role: "patron",
+      isAdmin: false,
       tier: "Level 1: The Initiate",
       points: 0,
       orders: []
     };
 
     this.user = this.loadLocalStorage('mytholis_user', defaultUser);
+
+    // Dynamic products catalog with local fallback
+    this.products = (typeof MYTHOLIS_CATALOG !== 'undefined') ? [...MYTHOLIS_CATALOG] : [];
+
+    // Global Economy & Store Settings synced to Firestore settings/global
+    this.globalSettings = this.loadLocalStorage('mytholis_global_settings', {
+      mythosEarnPct: 3,
+      redemptionRatio: 1,
+      maxMythosRedemptionPct: 30,
+      signupBonusMythos: 100,
+      codEnabled: true,
+      codFee: 0,
+      maxCodAmount: 15000,
+      freeShippingThreshold: 3000,
+      standardShippingFee: 150,
+      promoCodes: [
+        { code: 'LEGEND10', discountType: 'percent', value: 10, minOrder: 1999, active: true },
+        { code: 'ROYAL500', discountType: 'flat', value: 500, minOrder: 3999, active: true }
+      ]
+    });
 
     // Auto-purge any legacy mock "Lord Alexander" data from existing client localStorage
     if (this.user.email === 'alexander@mytholis.com' || this.user.name === 'Lord Alexander') {
@@ -252,6 +274,43 @@ class MytholisStore {
     this.activeCategory = 'All';
     this.searchQuery = '';
     this.listeners = [];
+  }
+
+  /* Admin Authorization Gate */
+  isAdmin() {
+    const whitelist = (typeof window !== 'undefined' && window.ADMIN_EMAILS) || [
+      'gunhegarr@gmail.com',
+      'admin@mytholis.com',
+      'alexander@mytholis.com',
+      'founder@mytholis.com'
+    ];
+    const userEmail = ((this.firebaseUser && this.firebaseUser.email) || this.user.email || '').toLowerCase().trim();
+    if (userEmail && whitelist.some(e => e.toLowerCase() === userEmail)) return true;
+    if (this.user.isAdmin === true || this.user.role === 'admin') return true;
+    if (this.firebaseUser && (this.firebaseUser.isAdmin === true || this.firebaseUser.role === 'admin')) return true;
+    return false;
+  }
+
+  setProducts(list) {
+    if (Array.isArray(list) && list.length > 0) {
+      this.products = list;
+      if (typeof window !== 'undefined') {
+        window.MYTHOLIS_CATALOG = list;
+      }
+      this.notify();
+    }
+  }
+
+  getProducts() {
+    return (this.products && this.products.length) ? this.products : (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []);
+  }
+
+  setGlobalSettings(settings) {
+    if (settings && typeof settings === 'object') {
+      this.globalSettings = Object.assign({}, this.globalSettings, settings);
+      this.saveLocalStorage('mytholis_global_settings', this.globalSettings);
+      this.notify();
+    }
   }
 
   loadLocalStorage(key, defaultValue) {
@@ -308,7 +367,8 @@ class MytholisStore {
 
   /* Cart Methods */
   addToCart(productId, sizeMl = 100, engraving = '', quantity = 1) {
-    const product = MYTHOLIS_CATALOG.find(p => p.id === productId);
+    const catalog = this.getProducts();
+    const product = catalog.find(p => p.id === productId);
     if (!product) return;
 
     const sizeObj = product.sizes.find(s => s.ml === sizeMl) || product.sizes[0];
@@ -666,12 +726,31 @@ class MytholisStore {
     if (!rawCode) return { success: false, error: "Please enter a voucher code." };
     const codeStr = rawCode.trim().toUpperCase();
 
-    const existing = this.loyalty.active_reward_codes.find(
+    // Check Patron personalized Circle of Legends vouchers
+    let existing = this.loyalty.active_reward_codes.find(
       c => c.code.toUpperCase() === codeStr
     );
 
+    // If not found in personal vouchers, check store Global Promo Codes
+    if (!existing && this.globalSettings && Array.isArray(this.globalSettings.promoCodes)) {
+      const globalPromo = this.globalSettings.promoCodes.find(
+        p => p.code && p.code.toUpperCase() === codeStr && p.active !== false
+      );
+      if (globalPromo) {
+        existing = {
+          code: globalPromo.code.toUpperCase(),
+          title: `${globalPromo.code} Privilege`,
+          type: globalPromo.discountType || 'discount',
+          amount: Number(globalPromo.value) || 0,
+          minOrder: Number(globalPromo.minOrder) || 0,
+          isGlobalPromo: true,
+          used: false
+        };
+      }
+    }
+
     if (!existing) {
-      return { success: false, error: "Unrecognized Mythos code." };
+      return { success: false, error: "Unrecognized Mythos code or expired vault key." };
     }
     if (existing.used) {
       return { success: false, error: "This Mythos code has already been redeemed." };
@@ -710,24 +789,56 @@ class MytholisStore {
 
   getAppliedReward() {
     if (!this.loyalty || !this.loyalty.applied_reward_code) return null;
-    return this.loyalty.active_reward_codes.find(
-      c => c.code === this.loyalty.applied_reward_code && !c.used
-    ) || null;
+    const code = this.loyalty.applied_reward_code.toUpperCase();
+    
+    // Check personal active vouchers
+    const personal = this.loyalty.active_reward_codes.find(
+      c => c.code.toUpperCase() === code && !c.used
+    );
+    if (personal) return personal;
+
+    // Check store global promo codes
+    if (this.globalSettings && Array.isArray(this.globalSettings.promoCodes)) {
+      const promo = this.globalSettings.promoCodes.find(
+        p => p.code && p.code.toUpperCase() === code && p.active !== false
+      );
+      if (promo) {
+        return {
+          code: promo.code.toUpperCase(),
+          title: `${promo.code} Privilege`,
+          type: promo.discountType || 'discount',
+          amount: Number(promo.value) || 0,
+          minOrder: Number(promo.minOrder) || 0,
+          isGlobalPromo: true,
+          used: false
+        };
+      }
+    }
+
+    return null;
   }
 
   getDiscountAmount(subtotalINR = null) {
     const subtotal = subtotalINR !== null ? subtotalINR : this.getCartTotal();
     const reward = this.getAppliedReward();
-    if (!reward || reward.type !== 'discount') return 0;
+    if (!reward) return 0;
 
     // Special privilege for Discovery Coffret voucher on full 100ml flacon
     if (reward.code === 'MYTH-COFFRET-1000') {
       return 1000;
     }
 
+    let calculatedDiscount = 0;
+    if (reward.type === 'percent') {
+      calculatedDiscount = Math.floor(subtotal * (Number(reward.amount) / 100));
+    } else if (reward.type === 'discount' || reward.type === 'flat') {
+      calculatedDiscount = Number(reward.amount) || 0;
+    }
+
     // Guardrail: Max 30% of cart subtotal (in base INR) or ₹2,500, whichever is lower
-    const maxAllowed = Math.min(Math.floor(subtotal * 0.30), 2500);
-    return Math.min(reward.amount, maxAllowed);
+    const maxRedemptionPct = (this.globalSettings && this.globalSettings.maxMythosRedemptionPct) ? (this.globalSettings.maxMythosRedemptionPct / 100) : 0.30;
+    const maxAllowed = Math.min(Math.floor(subtotal * maxRedemptionPct), 2500);
+    return Math.min(calculatedDiscount, maxAllowed);
   }
 
   getAppliedGift() {

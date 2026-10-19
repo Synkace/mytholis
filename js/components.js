@@ -2106,7 +2106,12 @@ const Components = {
               <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">${email} • Circle of Legends Patron</p>
             </div>
           </div>
-          <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+          <div style="display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center;">
+            ${store.isAdmin() ? `
+              <button class="sovereign-admin-link" onclick="app.navigateTo('admin')">
+                👑 Sovereign Admin Desk
+              </button>
+            ` : ''}
             <button class="btn btn-gold" onclick="app.navigateTo('circle-of-legends')">
               Circle of Legends Rewards
             </button>
@@ -2284,6 +2289,14 @@ const Components = {
             </div>
           </div>
         </div>
+
+        ${store.isAdmin() ? `
+          <div style="margin-bottom: 1.2rem;">
+            <button class="btn btn-gold" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.6rem; padding: 0.75rem 1rem; font-size: 0.85rem;" onclick="app.closeProfileModal(); app.navigateTo('admin');">
+              <span>👑</span> Sovereign Admin Command Desk
+            </button>
+          </div>
+        ` : ''}
 
         <!-- Cloud Sync Status Pill -->
         <div class="modal-section-box liquid-glass-card" style="padding: 0.9rem 1.1rem; margin-bottom: 1.2rem; border: 1px solid rgba(16, 185, 129, 0.35); background: rgba(16, 185, 129, 0.06); display: flex; justify-content: space-between; align-items: center; gap: 0.6rem;">
@@ -2650,6 +2663,9 @@ const Components = {
      SANCTUM COMMAND - HIGH-SECURITY FOUNDER ADMIN CONSOLE (#admin)
      ========================================================================== */
   renderAdmin() {
+    if (typeof AdminComponents !== 'undefined' && AdminComponents.renderAdmin) {
+      return AdminComponents.renderAdmin();
+    }
     const configuredAdminEmail = (import.meta.env.VITE_ADMIN_EMAIL || '').trim().toLowerCase();
     const currentUser = (typeof firebaseService !== 'undefined' && firebaseService.currentUser) || (typeof store !== 'undefined' && store.firebaseUser);
     const userEmail = (currentUser?.email || '').trim().toLowerCase();

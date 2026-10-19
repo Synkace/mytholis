@@ -13,5 +13,6 @@ import './catalog.js';
 import './store.js';
 import './background.js';
 import './components.js';
+import './adminComponents.js';
 import './firebase.js';
 import './app.js';
