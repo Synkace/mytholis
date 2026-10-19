@@ -1697,11 +1697,20 @@ class MytholisApp {
 
     if (isLogged && user && (user.displayName || user.name || user.email)) {
       const initial = (user.displayName || user.name || user.email || 'M').charAt(0).toUpperCase();
-      slot.innerHTML = `
-        <button class="icon-btn vip-profile-btn" onclick="app.openProfileModal()" title="Client Profile (${user.displayName || user.name || user.email})">
-          <span class="nav-avatar-initial">${initial}</span>
-          <span class="vip-dot"></span>
+      const adminCrown = store.isAdmin() ? `
+        <button class="icon-btn sovereign-nav-admin-btn" onclick="app.navigateTo('admin')" title="👑 Open Sovereign Command Desk" style="margin-right: 0.4rem; color: var(--gold-primary); border: 1px solid rgba(212, 175, 55, 0.45); background: rgba(212, 175, 55, 0.12);">
+          <span style="font-size: 0.95rem;">👑</span>
         </button>
+      ` : '';
+
+      slot.innerHTML = `
+        <div style="display: flex; align-items: center;">
+          ${adminCrown}
+          <button class="icon-btn vip-profile-btn" onclick="app.openProfileModal()" title="Client Profile (${user.displayName || user.name || user.email})">
+            <span class="nav-avatar-initial">${initial}</span>
+            <span class="vip-dot"></span>
+          </button>
+        </div>
       `;
     } else {
       slot.innerHTML = `
