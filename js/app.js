@@ -21,6 +21,9 @@ class MytholisApp {
     this.isIntroAnimating = false;
     this.activePyramidScent = 'petralux';
     this.adminActiveTab = 'orders';
+    this.activeAuthTab = 'phone';
+    this.phoneOtpSent = false;
+    this.authPhoneNumber = '';
     this.adminData = {
       orders: [],
       users: [],
@@ -1766,6 +1769,7 @@ class MytholisApp {
 
   switchAuthTab(tab) {
     this.activeAuthTab = tab;
+    this.phoneOtpSent = false;
     const modalBody = document.getElementById('profile-modal-body');
     if (modalBody) {
       modalBody.innerHTML = Components.renderAuthModal(this.activeAuthTab);
@@ -1795,7 +1799,7 @@ class MytholisApp {
     const modalBody = document.getElementById('profile-modal-body');
     if (modalBody) {
       if (!store.isUserLoggedIn()) {
-        modalBody.innerHTML = Components.renderAuthModal(this.activeAuthTab || 'signin');
+        modalBody.innerHTML = Components.renderAuthModal(this.activeAuthTab || 'phone');
       } else {
         modalBody.innerHTML = Components.renderProfileModal();
       }
@@ -1899,6 +1903,119 @@ class MytholisApp {
   }
 
   /* Firebase Authentication Handlers */
+  async handleSendPhoneOtp() {
+    if (typeof firebaseService === 'undefined') return;
+    const countryCodeEl = document.getElementById('auth-country-code');
+    const phoneEl = document.getElementById('auth-phone-number');
+    const btnEl = document.getElementById('btn-send-phone-otp');
+
+    const countryCode = countryCodeEl ? countryCodeEl.value : '+91';
+    const rawNumber = phoneEl ? phoneEl.value.trim().replace(/[^0-9]/g, '') : '';
+
+    if (!rawNumber || rawNumber.length < 7) {
+      this.showToast('Please enter a valid mobile phone number.');
+      return;
+    }
+
+    const fullPhoneNumber = `${countryCode}${rawNumber}`;
+    this.authPhoneNumber = fullPhoneNumber;
+
+    if (btnEl) {
+      btnEl.disabled = true;
+      btnEl.innerHTML = `<span style="display:inline-block; animation: spin 1s linear infinite;">⟳</span> Dispatching SMS...`;
+    }
+
+    this.showToast(`Requesting SMS passcode for ${fullPhoneNumber}...`);
+    const res = await firebaseService.sendPhoneOtp(fullPhoneNumber, 'recaptcha-container');
+
+    if (res.success) {
+      this.phoneOtpSent = true;
+      this.showToast(`Passcode dispatched to ${fullPhoneNumber}!`);
+      this.renderProfileModalContent();
+      setTimeout(() => {
+        const otpInput = document.getElementById('auth-phone-otp');
+        if (otpInput) otpInput.focus();
+      }, 100);
+    } else {
+      if (btnEl) {
+        btnEl.disabled = false;
+        btnEl.textContent = 'Request SMS Passcode';
+      }
+      this.showToast(res.error);
+    }
+  }
+
+  async handleVerifyPhoneOtp() {
+    if (typeof firebaseService === 'undefined') return;
+    const otpInput = document.getElementById('auth-phone-otp');
+    const btnEl = document.getElementById('btn-verify-phone-otp');
+    const otp = otpInput ? otpInput.value.trim() : '';
+
+    if (!otp || otp.length !== 6) {
+      this.showToast('Please enter the complete 6-digit passcode.');
+      return;
+    }
+
+    if (btnEl) {
+      btnEl.disabled = true;
+      btnEl.innerHTML = `<span style="display:inline-block; animation: spin 1s linear infinite;">⟳</span> Verifying...`;
+    }
+
+    this.showToast('Verifying Sanctum Passcode...');
+    const res = await firebaseService.verifyPhoneOtp(otp);
+
+    if (res.success) {
+      this.showToast(`Welcome to House Mytholis! Signed in via Mobile.`);
+      this.phoneOtpSent = false;
+      this.authPhoneNumber = '';
+      this.updateNavAuth();
+      this.closeProfileModal();
+      if (store.currentView === 'profile') this.renderCurrentView();
+    } else {
+      if (btnEl) {
+        btnEl.disabled = false;
+        btnEl.textContent = 'Verify & Enter Sanctum';
+      }
+      this.showToast(res.error);
+    }
+  }
+
+  changeAuthPhoneNumber() {
+    this.phoneOtpSent = false;
+    this.renderProfileModalContent();
+  }
+
+  async resendAuthPhoneOtp() {
+    if (!this.authPhoneNumber) {
+      this.changeAuthPhoneNumber();
+      return;
+    }
+    this.showToast(`Resending SMS passcode to ${this.authPhoneNumber}...`);
+    const res = await firebaseService.sendPhoneOtp(this.authPhoneNumber, 'recaptcha-container');
+    if (res.success) {
+      this.showToast('New 6-digit passcode dispatched via SMS!');
+    } else {
+      this.showToast(res.error);
+    }
+  }
+
+  async handleForgotPassword() {
+    const emailEl = document.getElementById('auth-email-input');
+    let email = emailEl ? emailEl.value.trim() : '';
+    if (!email) {
+      email = prompt('Enter your registered Patron email to receive a password reset link:');
+    }
+    if (!email) return;
+
+    this.showToast(`Dispatching password reset link to ${email}...`);
+    const res = await firebaseService.sendPasswordReset(email);
+    if (res.success) {
+      this.showToast(`Password reset link dispatched to ${email}. Check your inbox!`);
+    } else {
+      this.showToast(res.error);
+    }
+  }
+
   async handleGoogleSignIn() {
     if (typeof firebaseService === 'undefined') return;
     this.showToast('Connecting to Google VIP Sign-In...');

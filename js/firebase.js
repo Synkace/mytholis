@@ -13,7 +13,10 @@ import {
   createUserWithEmailAndPassword, 
   signOut as firebaseSignOut, 
   onAuthStateChanged,
-  updateProfile
+  updateProfile,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  sendPasswordResetEmail
 } from "firebase/auth";
 import { 
   getFirestore, 
@@ -71,6 +74,7 @@ export class FirebaseService {
     this.currentUser = null;
     this.authListeners = [];
     this.isSyncing = false;
+    this.phoneConfirmationResult = null;
   }
 
   init(storeRef, appRef) {
@@ -84,7 +88,7 @@ export class FirebaseService {
     onAuthStateChanged(auth, async (user) => {
       this.currentUser = user;
       if (user) {
-        console.log("[Mytholis Firebase] Client authenticated:", user.email || user.uid);
+        console.log("[Mytholis Firebase] Client authenticated:", user.email || user.phoneNumber || user.uid);
         await this.syncUserDataOnLogin(user);
       } else {
         console.log("[Mytholis Firebase] Client signed out.");
@@ -114,6 +118,88 @@ export class FirebaseService {
       return { success: true, user: result.user };
     } catch (error) {
       console.error("[Mytholis Firebase] Google Sign-In Error:", error);
+      const friendly = this.formatAuthError(error.code);
+      return { success: false, error: friendly || error.message };
+    }
+  }
+
+  // Phone Number SMS OTP Authentication
+  setupRecaptcha(containerId = 'recaptcha-container') {
+    try {
+      if (typeof window === 'undefined') return null;
+      if (window.recaptchaVerifier) {
+        try { window.recaptchaVerifier.clear(); } catch (_) {}
+        window.recaptchaVerifier = null;
+      }
+      const containerEl = document.getElementById(containerId);
+      if (!containerEl) {
+        console.warn(`[Mytholis Firebase] Recaptcha container #${containerId} not found.`);
+        return null;
+      }
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+        size: 'invisible',
+        callback: () => {
+          // reCAPTCHA solved
+        },
+        'expired-callback': () => {
+          console.warn("[Mytholis Firebase] reCAPTCHA expired, resetting...");
+          if (window.recaptchaVerifier) {
+            try { window.recaptchaVerifier.clear(); } catch (_) {}
+            window.recaptchaVerifier = null;
+          }
+        }
+      });
+      return window.recaptchaVerifier;
+    } catch (err) {
+      console.error("[Mytholis Firebase] Recaptcha setup error:", err);
+      return null;
+    }
+  }
+
+  async sendPhoneOtp(fullPhoneNumber, containerId = 'recaptcha-container') {
+    try {
+      const verifier = this.setupRecaptcha(containerId);
+      if (!verifier) {
+        throw new Error("Could not initialize security verification. Please refresh and try again.");
+      }
+      const confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, verifier);
+      this.phoneConfirmationResult = confirmationResult;
+      window.phoneConfirmationResult = confirmationResult;
+      return { success: true };
+    } catch (error) {
+      console.error("[Mytholis Firebase] Phone OTP Send Error:", error);
+      if (window.recaptchaVerifier) {
+        try { window.recaptchaVerifier.clear(); } catch (_) {}
+        window.recaptchaVerifier = null;
+      }
+      const friendly = this.formatAuthError(error.code);
+      return { success: false, error: friendly || error.message };
+    }
+  }
+
+  async verifyPhoneOtp(otpCode) {
+    try {
+      const confirmationResult = this.phoneConfirmationResult || window.phoneConfirmationResult;
+      if (!confirmationResult) {
+        return { success: false, error: "Verification session expired. Please request a new code." };
+      }
+      const result = await confirmationResult.confirm(otpCode.trim());
+      await this.syncUserDataOnLogin(result.user);
+      return { success: true, user: result.user };
+    } catch (error) {
+      console.error("[Mytholis Firebase] Phone OTP Verify Error:", error);
+      const friendly = this.formatAuthError(error.code);
+      return { success: false, error: friendly || error.message };
+    }
+  }
+
+  // Password Reset
+  async sendPasswordReset(email) {
+    try {
+      await sendPasswordResetEmail(auth, email.trim());
+      return { success: true };
+    } catch (error) {
+      console.error("[Mytholis Firebase] Password Reset Error:", error);
       const friendly = this.formatAuthError(error.code);
       return { success: false, error: friendly || error.message };
     }
@@ -166,7 +252,14 @@ export class FirebaseService {
       case 'auth/email-already-in-use': return 'An account already exists with this email address. Please sign in instead.';
       case 'auth/weak-password': return 'Password must be at least 6 characters.';
       case 'auth/popup-closed-by-user': return 'Sign-in cancelled.';
-      case 'auth/configuration-not-found': return 'Google Sign-In is not enabled yet in your Firebase Console. Please register with Email & Password below, or enable Google in Firebase Console under Authentication > Sign-in method.';
+      case 'auth/configuration-not-found': return 'Sign-In provider is not enabled yet in your Firebase Console. Please register with Email & Password, or enable the provider in Firebase Console under Authentication > Sign-in method.';
+      case 'auth/invalid-phone-number': return 'Please enter a valid mobile number with country code (e.g. +91 98765 43210).';
+      case 'auth/missing-phone-number': return 'Mobile phone number is required.';
+      case 'auth/quota-exceeded': return 'SMS verification quota exceeded for today. Please try again later or sign in with Email.';
+      case 'auth/captcha-check-failed': return 'Security verification failed. Please refresh the page and try again.';
+      case 'auth/invalid-verification-code': return 'Incorrect 6-digit SMS passcode. Please check and re-enter.';
+      case 'auth/code-expired': return 'The 6-digit SMS passcode has expired. Please request a new code.';
+      case 'auth/too-many-requests': return 'Too many attempts. Please wait a few moments and try again.';
       default: return null;
     }
   }
@@ -187,7 +280,8 @@ export class FirebaseService {
         // Merge cloud profile with store
         if (cloudData.profile) {
           this.store.user = Object.assign({}, this.store.user, cloudData.profile, {
-            email: user.email,
+            email: user.email || cloudData.profile.email || (user.phoneNumber ? `${user.phoneNumber}@phone.mytholis.com` : ''),
+            phone: user.phoneNumber || cloudData.profile.phone || this.store.user.phone || '',
             uid: user.uid,
             photoURL: user.photoURL || null
           });
@@ -214,9 +308,9 @@ export class FirebaseService {
           applied_reward_code: null
         };
         const initialProfile = {
-          name: user.displayName || this.store.user.name || 'Mytholis Patron',
-          email: user.email,
-          phone: this.store.user.phone || '',
+          name: user.displayName || this.store.user.name || (user.phoneNumber ? `Patron (${user.phoneNumber})` : 'Mytholis Patron'),
+          email: user.email || (user.phoneNumber ? `${user.phoneNumber}@phone.mytholis.com` : ''),
+          phone: user.phoneNumber || this.store.user.phone || '',
           address: this.store.user.address || '',
           pincode: this.store.user.pincode || '',
           city: this.store.user.city || '',
@@ -266,13 +360,16 @@ export class FirebaseService {
       }
 
       this.store.user.isLoggedIn = true;
-      this.store.user.email = user.email;
+      this.store.user.email = user.email || (user.phoneNumber ? `${user.phoneNumber}@phone.mytholis.com` : '');
+      this.store.user.phone = user.phoneNumber || this.store.user.phone || '';
       if (user.displayName && !this.store.user.name) this.store.user.name = user.displayName;
+      else if (!this.store.user.name && user.phoneNumber) this.store.user.name = `Patron (${user.phoneNumber})`;
       this.store.saveLocalStorage('mytholis_user', this.store.user);
 
       this.store.firebaseUser = {
         uid: user.uid,
-        email: user.email,
+        email: this.store.user.email,
+        phone: this.store.user.phone,
         displayName: user.displayName || this.store.user.name,
         photoURL: user.photoURL,
         role: this.store.user.role,
