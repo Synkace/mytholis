@@ -114,7 +114,8 @@ export class FirebaseService {
       return { success: true, user: result.user };
     } catch (error) {
       console.error("[Mytholis Firebase] Google Sign-In Error:", error);
-      return { success: false, error: error.message };
+      const friendly = this.formatAuthError(error.code);
+      return { success: false, error: friendly || error.message };
     }
   }
 
@@ -159,12 +160,13 @@ export class FirebaseService {
     switch (code) {
       case 'auth/invalid-email': return 'Please enter a valid email address.';
       case 'auth/user-disabled': return 'This account has been disabled.';
-      case 'auth/user-not-found': return 'No account registered with this email.';
+      case 'auth/user-not-found': return 'No account registered with this email. Please register first.';
       case 'auth/wrong-password': return 'Incorrect password.';
       case 'auth/invalid-credential': return 'Invalid email or password.';
-      case 'auth/email-already-in-use': return 'An account already exists with this email address.';
+      case 'auth/email-already-in-use': return 'An account already exists with this email address. Please sign in instead.';
       case 'auth/weak-password': return 'Password must be at least 6 characters.';
       case 'auth/popup-closed-by-user': return 'Sign-in cancelled.';
+      case 'auth/configuration-not-found': return 'Google Sign-In is not enabled yet in your Firebase Console. Please register with Email & Password below, or enable Google in Firebase Console under Authentication > Sign-in method.';
       default: return null;
     }
   }
