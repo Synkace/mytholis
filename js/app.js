@@ -1231,13 +1231,161 @@ class MytholisApp {
   }
 
   /* Track Order Search */
-  searchTrackOrder() {
+  async searchTrackOrder() {
     const input = document.getElementById('track-order-input');
-    const val = input ? input.value.trim() : '';
-    if (val) {
-      this.showToast(`Tracking status updated for ${val}`);
-    } else {
+    const resultBox = document.getElementById('track-result-box');
+    const queryTerm = input ? input.value.trim() : '';
+
+    if (!queryTerm) {
       this.showToast("Please enter an Order ID or Tracking Number");
+      return;
+    }
+
+    if (resultBox) {
+      resultBox.innerHTML = `
+        <div style="text-align: center; padding: 2rem;">
+          <div style="color: var(--gold-light); font-size: 0.9rem; margin-bottom: 0.5rem;">
+            Searching sovereign cloud ledger for <strong>${queryTerm}</strong>...
+          </div>
+          <span style="display:inline-block; animation: spin 1s linear infinite; color: var(--gold-primary);">⟳</span>
+        </div>
+      `;
+    }
+
+    try {
+      // 1. Search in local memory first (patron orders or admin orders)
+      let foundOrder = (store.user?.orders || []).find(o => 
+        (o.id && o.id.toLowerCase() === queryTerm.toLowerCase()) ||
+        (o.orderId && o.orderId.toLowerCase() === queryTerm.toLowerCase()) ||
+        (o.trackingNumber && o.trackingNumber.toLowerCase() === queryTerm.toLowerCase()) ||
+        (o.awb_number && o.awb_number.toLowerCase() === queryTerm.toLowerCase())
+      );
+
+      // 2. Search in Firestore
+      if (!foundOrder && typeof db !== 'undefined') {
+        const { getDoc, doc, getDocs, collection, query, where } = await import('firebase/firestore');
+        // Check doc ID
+        const docSnap = await getDoc(doc(db, 'orders', queryTerm)).catch(() => null);
+        if (docSnap && docSnap.exists()) {
+          foundOrder = { id: docSnap.id, ...docSnap.data() };
+        } else {
+          // Check orderId field
+          const qSnap = await getDocs(query(collection(db, 'orders'), where('orderId', '==', queryTerm))).catch(() => null);
+          if (qSnap && !qSnap.empty) {
+            foundOrder = { id: qSnap.docs[0].id, ...qSnap.docs[0].data() };
+          } else {
+            // Check trackingNumber
+            const awbSnap = await getDocs(query(collection(db, 'orders'), where('trackingNumber', '==', queryTerm))).catch(() => null);
+            if (awbSnap && !awbSnap.empty) {
+              foundOrder = { id: awbSnap.docs[0].id, ...awbSnap.docs[0].data() };
+            }
+          }
+        }
+      }
+
+      if (!foundOrder) {
+        if (resultBox) {
+          resultBox.innerHTML = `
+            <div style="text-align: center; padding: 2.5rem 1.5rem; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px;">
+              <div style="color: #FCA5A5; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem;">Consignment Not Found</div>
+              <p style="color: var(--text-muted); font-size: 0.85rem; max-width: 500px; margin: 0 auto; line-height: 1.5;">
+                No consignment matching <strong>${queryTerm}</strong> was found in our active dispatch ledger. Please verify your Order ID from your confirmation email or WhatsApp notification.
+              </p>
+            </div>
+          `;
+        }
+        this.showToast(`No consignment found for ${queryTerm}.`);
+        return;
+      }
+
+      // Render Dynamic Live Result
+      const st = (foundOrder.status || 'Pending').toLowerCase();
+      const awb = foundOrder.trackingNumber || foundOrder.awb_number || '';
+      const courier = foundOrder.courierName || foundOrder.courier || 'BlueDart Express';
+      const trackingUrl = foundOrder.trackingUrl || (awb ? `https://shiprocket.co/tracking/${awb}` : '');
+      const estDate = foundOrder.estimatedDelivery || '3-5 Business Days';
+      const itemsDesc = Array.isArray(foundOrder.items) 
+        ? foundOrder.items.map(i => `${i.name || i.id} (${i.size || '50ml'}) × ${i.quantity || i.qty || 1}`).join(', ')
+        : (foundOrder.items || 'Extrait de Parfum Flacons');
+
+      const isPlaced = true;
+      const isPacked = ['packed', 'shipped', 'out for delivery', 'delivered'].includes(st);
+      const isShipped = ['shipped', 'out for delivery', 'delivered'].includes(st);
+      const isOut = ['out for delivery', 'delivered'].includes(st);
+      const isDelivered = st === 'delivered';
+
+      if (resultBox) {
+        resultBox.innerHTML = `
+          <div class="track-order-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 1.2rem; margin-bottom: 1.5rem;">
+            <div>
+              <span class="glass-pill" style="font-size: 0.68rem; color: var(--gold-light);">Order #${foundOrder.orderId || foundOrder.id}</span>
+              <h3 class="track-order-product-name" style="color: var(--gold-light); margin: 0.4rem 0 0.2rem; font-size: 1.15rem;">${itemsDesc}</h3>
+              <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">Courier: <strong style="color: var(--text-main);">${courier}</strong> ${awb ? `• AWB: <strong style="color: var(--gold-light);">${awb}</strong>` : ''}</p>
+            </div>
+            <div class="track-delivery-est" style="text-align: right;">
+              <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Estimated Delivery:</span>
+              <p style="font-weight: 700; color: var(--gold-primary); font-size: 1rem; margin: 0.2rem 0 0;">${estDate}</p>
+            </div>
+          </div>
+
+          <!-- Progress Tracker -->
+          <div class="tracker-steps-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; text-align: center; margin-bottom: 2rem;">
+            <div class="tracker-step-item">
+              <div class="tracker-icon-circle ${isPlaced ? 'completed' : ''}" style="margin: 0 auto 0.5rem; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: ${isPlaced ? 'var(--gold-primary)' : 'rgba(255,255,255,0.05)'}; color: #041812;">
+                ✓
+              </div>
+              <h5 style="font-size: 0.8rem; margin: 0 0 0.15rem; color: var(--text-main);">Order Placed</h5>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">Confirmed</span>
+            </div>
+
+            <div class="tracker-step-item">
+              <div class="tracker-icon-circle ${isPacked ? 'completed' : ''}" style="margin: 0 auto 0.5rem; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: ${isPacked ? 'var(--gold-primary)' : 'rgba(255,255,255,0.05)'}; color: #041812;">
+                ${isPacked ? '✓' : '2'}
+              </div>
+              <h5 style="font-size: 0.8rem; margin: 0 0 0.15rem; color: var(--text-main);">Wax Sealed</h5>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">Vault Packed</span>
+            </div>
+
+            <div class="tracker-step-item">
+              <div class="tracker-icon-circle ${isShipped ? 'completed' : ''}" style="margin: 0 auto 0.5rem; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: ${isShipped ? 'var(--gold-primary)' : 'rgba(255,255,255,0.05)'}; color: #041812;">
+                ${isShipped ? '✓' : '3'}
+              </div>
+              <h5 style="font-size: 0.8rem; margin: 0 0 0.15rem; color: var(--text-main);">In Transit</h5>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">${courier}</span>
+            </div>
+
+            <div class="tracker-step-item">
+              <div class="tracker-icon-circle ${isDelivered ? 'completed' : (isOut ? 'active' : '')}" style="margin: 0 auto 0.5rem; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: ${isDelivered ? 'var(--gold-primary)' : (isOut ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.05)')}; color: ${isDelivered ? '#041812' : 'var(--gold-light)'}; border: 1px solid var(--gold-primary);">
+                ${isDelivered ? '✓' : '4'}
+              </div>
+              <h5 style="font-size: 0.8rem; margin: 0 0 0.15rem; color: var(--text-main);">${isDelivered ? 'Delivered' : 'Delivery'}</h5>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">${isDelivered ? 'Received' : 'Pending'}</span>
+            </div>
+          </div>
+
+          <div style="background: rgba(4, 24, 18, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px; padding: 1rem; margin-bottom: 1.2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem;">
+              <div>
+                <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">Live Consignment Telemetry</span>
+                <p style="font-size: 0.84rem; color: var(--text-main); margin: 0.35rem 0 0;">
+                  ${foundOrder.lastActivity || foundOrder.shiprocketRawStatus || `Status: ${foundOrder.status || 'Dispatched'}`}
+                  ${foundOrder.lastLocation ? ` &bull; Location: <strong style="color: var(--gold-light);">${foundOrder.lastLocation}</strong>` : ''}
+                </p>
+              </div>
+              ${trackingUrl ? `
+                <a href="${trackingUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-gold" style="font-size: 0.78rem; padding: 0.5rem 1rem; text-decoration: none;">
+                  Track on ${courier} ↗
+                </a>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }
+
+      this.showToast(`Loaded live telemetry for #${foundOrder.orderId || foundOrder.id}`);
+    } catch (err) {
+      console.error("[Mytholis Track Order] Search error:", err);
+      this.showToast(`Tracking inquiry error: ${err.message}`);
     }
   }
 
@@ -1870,7 +2018,15 @@ class MytholisApp {
   searchTrackOrderModal() {
     const input = document.getElementById('modal-track-input');
     const val = input ? input.value.trim() : '';
-    this.showToast(`Consignment ${val || 'MYTH-89021'} telemetry verified.`);
+    this.closeProfileModal();
+    this.navigateTo('track-order');
+    setTimeout(() => {
+      const pageInput = document.getElementById('track-order-input');
+      if (pageInput && val) {
+        pageInput.value = val;
+        this.searchTrackOrder();
+      }
+    }, 150);
   }
 
   /* User Profile Account Management */
