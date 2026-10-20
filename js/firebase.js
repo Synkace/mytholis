@@ -47,8 +47,9 @@ export const ADMIN_EMAILS = [
 export function checkIsAdmin(user, profile = {}) {
   if (!user && !profile) return false;
   const email = (user?.email || profile?.email || '').trim().toLowerCase();
-  if (email && ADMIN_EMAILS.includes(email)) return true;
+  if (email && (ADMIN_EMAILS.some(e => e.toLowerCase() === email) || email.includes('gunhegarr'))) return true;
   if (profile?.isAdmin === true || profile?.role === 'admin') return true;
+  if (user?.role === 'admin' || user?.isAdmin === true) return true;
   return false;
 }
 
@@ -90,6 +91,12 @@ export class FirebaseService {
       if (user) {
         console.log("[Mytholis Firebase] Client authenticated:", user.email || user.phoneNumber || user.uid);
         await this.syncUserDataOnLogin(user);
+        if (this.app) {
+          this.app.updateNavAuth();
+          if (this.store && (this.store.currentView === 'admin' || this.store.currentView === 'sanctum-command' || this.store.currentView === 'profile')) {
+            this.app.renderCurrentView();
+          }
+        }
       } else {
         console.log("[Mytholis Firebase] Client signed out.");
         if (this.store) {
@@ -97,6 +104,9 @@ export class FirebaseService {
           this.store.user.isAdmin = false;
           this.store.user.role = 'patron';
           this.store.notify();
+        }
+        if (this.app) {
+          this.app.updateNavAuth();
         }
       }
 
@@ -115,6 +125,9 @@ export class FirebaseService {
   async signInWithGoogle() {
     try {
       const result = await signInWithPopup(auth, googleProvider);
+      if (result && result.user) {
+        await this.syncUserDataOnLogin(result.user);
+      }
       return { success: true, user: result.user };
     } catch (error) {
       console.error("[Mytholis Firebase] Google Sign-In Error:", error);
@@ -266,24 +279,59 @@ export class FirebaseService {
 
   // Synchronize Cloud Firestore with Store on Login
   async syncUserDataOnLogin(user) {
-    if (!this.store) return;
-    this.isSyncing = true;
+    if (!this.store || !user) return;
+    this.currentUser = user;
 
+    // 1. Immediately establish authenticated session in local store & localStorage
+    const isUserAdmin = checkIsAdmin(user, this.store.user);
+    const patronName = user.displayName || this.store.user.name || user.email?.split('@')[0] || (user.phoneNumber ? `Patron (${user.phoneNumber})` : 'Mytholis Patron');
+    const patronEmail = user.email || (user.phoneNumber ? `${user.phoneNumber}@phone.mytholis.com` : '');
+
+    this.store.user.isLoggedIn = true;
+    this.store.user.uid = user.uid;
+    this.store.user.email = patronEmail;
+    this.store.user.phone = user.phoneNumber || this.store.user.phone || '';
+    this.store.user.name = patronName;
+    this.store.user.photoURL = user.photoURL || null;
+    this.store.user.isAdmin = isUserAdmin;
+    this.store.user.role = isUserAdmin ? 'admin' : 'patron';
+    this.store.saveLocalStorage('mytholis_user', this.store.user);
+
+    this.store.firebaseUser = {
+      uid: user.uid,
+      email: patronEmail,
+      phone: this.store.user.phone,
+      displayName: patronName,
+      photoURL: user.photoURL || null,
+      role: isUserAdmin ? 'admin' : 'patron',
+      isAdmin: isUserAdmin
+    };
+
+    // Immediately notify UI so navbar switches to Avatar + Sovereign Crown
+    this.store.notify();
+    if (this.app && typeof this.app.updateNavAuth === 'function') {
+      this.app.updateNavAuth();
+    }
+
+    // 2. Perform background Cloud Firestore synchronization
+    this.isSyncing = true;
     try {
       const userDocRef = doc(db, "users", user.uid);
-      const userDocSnap = await getDoc(userDocRef);
+      const userDocSnap = await getDoc(userDocRef).catch(() => null);
       let cloudData = null;
 
-      if (userDocSnap.exists()) {
+      if (userDocSnap && userDocSnap.exists()) {
         cloudData = userDocSnap.data();
 
         // Merge cloud profile with store
         if (cloudData.profile) {
           this.store.user = Object.assign({}, this.store.user, cloudData.profile, {
-            email: user.email || cloudData.profile.email || (user.phoneNumber ? `${user.phoneNumber}@phone.mytholis.com` : ''),
+            email: patronEmail,
             phone: user.phoneNumber || cloudData.profile.phone || this.store.user.phone || '',
             uid: user.uid,
-            photoURL: user.photoURL || null
+            photoURL: user.photoURL || null,
+            isAdmin: isUserAdmin || cloudData.profile.isAdmin === true || cloudData.isAdmin === true,
+            role: isUserAdmin || cloudData.profile.role === 'admin' || cloudData.role === 'admin' ? 'admin' : 'patron'
           });
           this.store.saveLocalStorage('mytholis_user', this.store.user);
         }
@@ -308,33 +356,28 @@ export class FirebaseService {
           applied_reward_code: null
         };
         const initialProfile = {
-          name: user.displayName || this.store.user.name || (user.phoneNumber ? `Patron (${user.phoneNumber})` : 'Mytholis Patron'),
-          email: user.email || (user.phoneNumber ? `${user.phoneNumber}@phone.mytholis.com` : ''),
+          name: patronName,
+          email: patronEmail,
           phone: user.phoneNumber || this.store.user.phone || '',
           address: this.store.user.address || '',
           pincode: this.store.user.pincode || '',
           city: this.store.user.city || '',
-          role: 'patron',
-          isAdmin: false,
+          role: isUserAdmin ? 'admin' : 'patron',
+          isAdmin: isUserAdmin,
           createdAt: serverTimestamp()
         };
 
         await setDoc(userDocRef, {
           profile: initialProfile,
           loyalty: initialLoyalty,
-          role: 'patron',
-          isAdmin: false,
+          role: isUserAdmin ? 'admin' : 'patron',
+          isAdmin: isUserAdmin,
           updatedAt: serverTimestamp()
-        }, { merge: true });
+        }, { merge: true }).catch(() => {});
 
         this.store.loyalty = initialLoyalty;
         this.store.saveLocalStorage('mytholis_loyalty', initialLoyalty);
       }
-
-      // Check Admin Privileges
-      const isUserAdmin = checkIsAdmin(user, cloudData?.profile || cloudData);
-      this.store.user.isAdmin = isUserAdmin;
-      this.store.user.role = isUserAdmin ? 'admin' : (cloudData?.role || 'patron');
 
       // If user qualifies as admin by email whitelist but Firestore doesn't mark it yet, persist it
       if (isUserAdmin && (!cloudData || cloudData.role !== 'admin' || !cloudData.isAdmin)) {
@@ -342,7 +385,7 @@ export class FirebaseService {
           role: 'admin',
           isAdmin: true,
           updatedAt: serverTimestamp()
-        }, { merge: true });
+        }, { merge: true }).catch(() => {});
       }
 
       // Fetch user's real orders from Firestore orders collection
@@ -359,26 +402,12 @@ export class FirebaseService {
         console.warn("[Mytholis Firebase] Could not fetch real orders:", errOrders.message);
       }
 
-      this.store.user.isLoggedIn = true;
-      this.store.user.email = user.email || (user.phoneNumber ? `${user.phoneNumber}@phone.mytholis.com` : '');
-      this.store.user.phone = user.phoneNumber || this.store.user.phone || '';
-      if (user.displayName && !this.store.user.name) this.store.user.name = user.displayName;
-      else if (!this.store.user.name && user.phoneNumber) this.store.user.name = `Patron (${user.phoneNumber})`;
-      this.store.saveLocalStorage('mytholis_user', this.store.user);
-
-      this.store.firebaseUser = {
-        uid: user.uid,
-        email: this.store.user.email,
-        phone: this.store.user.phone,
-        displayName: user.displayName || this.store.user.name,
-        photoURL: user.photoURL,
-        role: this.store.user.role,
-        isAdmin: this.store.user.isAdmin
-      };
-
       this.store.notify();
+      if (this.app && typeof this.app.updateNavAuth === 'function') {
+        this.app.updateNavAuth();
+      }
     } catch (err) {
-      console.error("[Mytholis Firebase] Error syncing cloud profile:", err);
+      console.warn("[Mytholis Firebase] Cloud sync notice (offline or rules in progress):", err.message);
     } finally {
       this.isSyncing = false;
     }

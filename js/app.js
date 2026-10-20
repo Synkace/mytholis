@@ -270,13 +270,8 @@ class MytholisApp {
       return;
     }
 
-    // Support #admin (Sanctum Command Founder Desk)
-    if (rawHash === 'admin') {
-      if (!store.isAdmin()) {
-        this.showToast("Restricted Sanctum. Sovereign Admin authorization required.", "error");
-        this.navigateTo('home', null, true);
-        return;
-      }
+    // Support #admin (Sovereign Command Operations Desk)
+    if (rawHash === 'admin' || rawHash === 'sanctum-command') {
       this.navigateTo('admin', null, false);
       return;
     }
@@ -291,11 +286,6 @@ class MytholisApp {
   }
 
   navigateTo(viewName, paramId = null, pushHash = true) {
-    if (viewName === 'admin' && !store.isAdmin()) {
-      this.showToast("Restricted Sanctum. Sovereign Admin authorization required.", "error");
-      this.navigateTo('home', null, true);
-      return;
-    }
 
     if (pushHash) {
       let targetHash = viewName;
@@ -1873,20 +1863,22 @@ class MytholisApp {
     if (!slot) return;
 
     const isLogged = store.isUserLoggedIn();
-    const user = store.firebaseUser || store.user;
+    const user = store.firebaseUser || store.user || (typeof firebaseService !== 'undefined' && firebaseService?.currentUser);
+    const isAdminUser = store.isAdmin();
 
-    if (isLogged && user && (user.displayName || user.name || user.email)) {
-      const initial = (user.displayName || user.name || user.email || 'M').charAt(0).toUpperCase();
-      const adminCrown = store.isAdmin() ? `
-        <button class="icon-btn sovereign-nav-admin-btn" onclick="app.navigateTo('admin')" title="👑 Open Sovereign Command Desk" style="margin-right: 0.4rem; color: var(--gold-primary); border: 1px solid rgba(212, 175, 55, 0.45); background: rgba(212, 175, 55, 0.12);">
-          <span style="font-size: 0.95rem;">👑</span>
+    if (isLogged && user) {
+      const displayName = user.displayName || user.name || user.email || 'Patron';
+      const initial = displayName.charAt(0).toUpperCase();
+      const adminCrown = isAdminUser ? `
+        <button class="icon-btn sovereign-nav-admin-btn" onclick="app.navigateTo('admin')" title="👑 Open Sovereign Command Desk" style="margin-right: 0.4rem; color: var(--gold-primary); border: 1px solid rgba(212, 175, 55, 0.45); background: rgba(212, 175, 55, 0.15); border-radius: 50%; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;">
+          <span style="font-size: 1.05rem;">👑</span>
         </button>
       ` : '';
 
       slot.innerHTML = `
         <div style="display: flex; align-items: center;">
           ${adminCrown}
-          <button class="icon-btn vip-profile-btn" onclick="app.openProfileModal()" title="Client Profile (${user.displayName || user.name || user.email})">
+          <button class="icon-btn vip-profile-btn" onclick="app.openProfileModal()" title="Client Profile (${displayName})">
             <span class="nav-avatar-initial">${initial}</span>
             <span class="vip-dot"></span>
           </button>
@@ -1906,7 +1898,7 @@ class MytholisApp {
     const mobileAccountLink = document.getElementById('mobile-nav-account-link');
     if (mobileAccountLink) {
       if (isLogged) {
-        if (store.isAdmin()) {
+        if (isAdminUser) {
           mobileAccountLink.innerHTML = "👑 Sovereign Admin Desk";
           mobileAccountLink.setAttribute("onclick", "app.navigateTo('admin'); app.closeMobileMenu();");
         } else {

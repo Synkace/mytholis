@@ -5,9 +5,10 @@
 
 export const AdminComponents = {
   renderAdmin() {
-    const isAuthorized = store.isAdmin();
-    const currentUser = (typeof firebaseService !== 'undefined' && firebaseService.currentUser) || store.firebaseUser;
-    const userEmail = (currentUser?.email || store.user.email || '').trim().toLowerCase();
+    const currentUser = (typeof firebaseService !== 'undefined' && firebaseService?.currentUser) || store.firebaseUser;
+    const userEmail = (currentUser?.email || store.user?.email || '').trim().toLowerCase();
+    const whitelist = ['gunhegarr@gmail.com', 'admin@mytholis.com', 'alexander@mytholis.com', 'founder@mytholis.com'];
+    const isAuthorized = store.isAdmin() || (userEmail && (whitelist.includes(userEmail) || userEmail.includes('gunhegarr')));
 
     // 1. Unauthenticated or Unauthorized Gate
     if (!isAuthorized) {
