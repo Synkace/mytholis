@@ -433,6 +433,7 @@ export class FirebaseService {
       case 'auth/configuration-not-found': return 'Sign-In provider is not enabled yet in your Firebase Console. Please register with Email & Password, or enable the provider in Firebase Console under Authentication > Sign-in method.';
       case 'auth/operation-not-allowed': return 'Phone Authentication is not enabled in Firebase Console. Please go to Firebase Console > Authentication > Sign-in method and enable "Phone".';
       case 'auth/app-not-authorized': return 'This domain is not authorized for Phone Auth. Please add it to Firebase Console > Authentication > Settings > Authorized domains.';
+      case 'auth/invalid-app-credential': return 'Firebase cannot verify this app or domain (auth/invalid-app-credential). Please ensure your domain is added to Firebase Console > Authentication > Settings > Authorized Domains, or add this number under "Phone numbers for testing".';
       case 'auth/invalid-phone-number': return 'Please enter a valid mobile number with country code (e.g. +91 98765 43210).';
       case 'auth/missing-phone-number': return 'Mobile phone number is required.';
       case 'auth/quota-exceeded': return 'SMS verification quota exceeded for today. Please try again later or sign in with Email.';
