@@ -1,5 +1,3 @@
-import { adminDb } from './_firebaseAdmin.js';
-
 // Status mapper from Shiprocket to Mytholis Haute Parfumerie Statuses
 function mapShiprocketStatus(status) {
   if (!status) return 'Shipped';
@@ -70,6 +68,15 @@ export default async function handler(req, res) {
     const events = Array.isArray(payload) ? payload : [payload];
     const results = [];
 
+    // Safely attempt dynamic load of adminDb
+    let adminDb = null;
+    try {
+      const adminModule = await import('./_firebaseAdmin.js');
+      adminDb = adminModule.adminDb || null;
+    } catch (importErr) {
+      console.warn('[Dispatch Webhook] Firebase Admin not available:', importErr.message);
+    }
+
     for (const item of events) {
       try {
         const awb = (item.awb || item.awb_code || item.awb_number || item.tracking_number || '').trim();
@@ -86,9 +93,9 @@ export default async function handler(req, res) {
           continue;
         }
 
-        // Check if Firebase Admin DB is available
+        // If Firebase Admin DB is not initialized on Vercel
         if (!adminDb) {
-          console.warn('[Dispatch Webhook] adminDb is not initialized (standby mode). Skipping Firestore write.');
+          console.warn('[Dispatch Webhook] adminDb in standby mode. Skipping Firestore write.');
           results.push({
             orderId,
             awb,
@@ -164,7 +171,6 @@ export default async function handler(req, res) {
         }
 
         // COD & Loyalty Settlement Guardrail:
-        // When COD order is delivered, mark as paid and grant loyalty return
         let loyaltyCredited = false;
         if (isDelivered && isCod && !targetOrderDoc.rewardsCredited) {
           updateData.paymentStatus = 'Paid';
