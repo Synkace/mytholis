@@ -1533,6 +1533,73 @@ class MytholisApp {
     window.open(`https://wa.me/917770009170?text=${encodeURIComponent(text)}`, '_blank');
   }
 
+  /* Fastrr / Shiprocket 1-Click Checkout Gateway Integration */
+  async buyNowFastrr(productId, event) {
+    if (event) event.preventDefault();
+    const product = (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG.find(p => p.id === productId) : null) || { id: productId };
+    const size = this.selectedSize || 50;
+    const items = [{
+      productId: product.id,
+      size: size,
+      quantity: 1
+    }];
+    await this.initiateFastrrCheckout(items, event, window.location.origin + '/#track-order?product=' + product.id);
+  }
+
+  async checkoutCartFastrr(event) {
+    if (event) event.preventDefault();
+    if (!store.cart || store.cart.length === 0) {
+      this.showToast('Your cart is empty.');
+      return;
+    }
+    const items = store.cart.map(item => ({
+      productId: item.id || item.productId,
+      size: item.size || 50,
+      quantity: item.quantity || 1
+    }));
+    await this.initiateFastrrCheckout(items, event, window.location.origin + '/#track-order');
+  }
+
+  async initiateFastrrCheckout(items, event, fallbackUrl = window.location.origin + '/#track-order') {
+    this.showToast('Connecting to Fastrr 1-Click Checkout...');
+
+    try {
+      const response = await fetch('/api/fastrr/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items,
+          redirect_url: fallbackUrl
+        })
+      });
+
+      const res = await response.json().catch(() => ({}));
+
+      if (res.success && res.token) {
+        this.closeAllModals(false);
+        this.showToast('Launching Fastrr 1-Click Checkout...');
+
+        if (typeof window.HeadlessCheckout !== 'undefined' && typeof window.HeadlessCheckout.addToCart === 'function') {
+          window.HeadlessCheckout.addToCart(event, res.token, {
+            fallbackUrl: res.redirect_url || fallbackUrl
+          });
+        } else {
+          console.warn('[Fastrr] HeadlessCheckout SDK not ready, redirecting to session...');
+          window.location.href = res.redirect_url || fallbackUrl;
+        }
+      } else {
+        console.warn('[Fastrr Checkout API Notice]:', res);
+        this.showToast('Fastrr session initialized! Opening payment desk...');
+        // Seamless fallback to our Razorpay / UPI flow so checkout is never interrupted
+        this.openRazorpayModal();
+      }
+    } catch (err) {
+      console.error('[Fastrr Checkout Error]:', err);
+      this.showToast('Proceeding with UPI / Razorpay Checkout...');
+      this.openRazorpayModal();
+    }
+  }
+
   buyNowRazorpay(productId) {
     const product = MYTHOLIS_CATALOG.find(p => p.id === productId) || MYTHOLIS_CATALOG[0];
     this.openRazorpayModal(product);

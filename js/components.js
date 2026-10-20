@@ -866,14 +866,20 @@ const Components = {
               </div>
             </div>
 
-            <!-- Action Buttons: WhatsApp Buy, Razorpay Pay, Add to Cart -->
+            <!-- Action Buttons: Fastrr 1-Click Buy, Razorpay UPI, WhatsApp Buy, Add to Cart -->
             <div class="product-detail-actions-stacked">
-              <div class="action-btn-row">
-                <button class="btn btn-gold btn-whatsapp-buy" onclick="app.buyNowWhatsApp('${product.id}')">
-                  Order via WhatsApp Concierge
+              <div class="action-btn-row" style="margin-bottom: 0.6rem;">
+                <button class="btn btn-gold" onclick="app.buyNowFastrr('${product.id}', event)" style="width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #FF6C37 0%, #D84210 100%); color: #ffffff; font-weight: 700; box-shadow: 0 4px 18px rgba(255, 108, 55, 0.35); display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: none; font-size: 0.9rem;">
+                  <span>⚡</span> Fastrr 1-Click Checkout (UPI · Cards · COD)
                 </button>
+              </div>
+
+              <div class="action-btn-row">
                 <button class="btn btn-gold btn-razorpay-buy" onclick="app.buyNowRazorpay('${product.id}')">
                   Pay via UPI / Razorpay
+                </button>
+                <button class="btn btn-glass btn-whatsapp-buy" onclick="app.buyNowWhatsApp('${product.id}')">
+                  WhatsApp Concierge
                 </button>
               </div>
 
@@ -1117,13 +1123,18 @@ const Components = {
               <span class="gold-text modal-total-amount">${store.formatPrice(finalTotal)}</span>
             </div>
           </div>
-          <div class="modal-cart-actions-row">
-            <button class="btn btn-gold" style="flex: 1;" onclick="app.openRazorpayModal()">
-              Pay via UPI / Razorpay
+          <div class="modal-cart-actions-row" style="flex-direction: column; gap: 0.6rem;">
+            <button class="btn btn-gold" style="width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #FF6C37 0%, #D84210 100%); color: #ffffff; font-weight: 700; box-shadow: 0 4px 18px rgba(255, 108, 55, 0.35); display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: none; font-size: 0.9rem;" onclick="app.checkoutCartFastrr(event)">
+              <span>⚡</span> Fastrr 1-Click Checkout (UPI · Cards · COD)
             </button>
-            <button class="btn btn-glass" style="flex: 1;" onclick="app.checkoutCartWhatsApp()">
-              Order via WhatsApp
-            </button>
+            <div style="display: flex; gap: 0.6rem; width: 100%;">
+              <button class="btn btn-glass" style="flex: 1;" onclick="app.openRazorpayModal()">
+                UPI / Razorpay
+              </button>
+              <button class="btn btn-glass" style="flex: 1;" onclick="app.checkoutCartWhatsApp()">
+                Order via WhatsApp
+              </button>
+            </div>
           </div>
         </div>
       ` : ''}
