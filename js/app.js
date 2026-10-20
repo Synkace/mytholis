@@ -1950,6 +1950,9 @@ class MytholisApp {
   switchAuthTab(tab) {
     this.activeAuthTab = tab;
     this.phoneOtpSent = false;
+    if (typeof firebaseService !== 'undefined') {
+      firebaseService.clearRecaptcha();
+    }
     const modalBody = document.getElementById('profile-modal-body');
     if (modalBody) {
       modalBody.innerHTML = Components.renderAuthModal(this.activeAuthTab);
@@ -1968,6 +1971,9 @@ class MytholisApp {
   }
 
   closeProfileModal() {
+    if (typeof firebaseService !== 'undefined') {
+      firebaseService.clearRecaptcha();
+    }
     const overlay = document.getElementById('profile-modal-overlay');
     if (overlay) {
       overlay.classList.remove('active');

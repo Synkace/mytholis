@@ -136,30 +136,66 @@ export class FirebaseService {
     }
   }
 
+  // Clear reCAPTCHA widget and remove orphaned badges
+  clearRecaptcha() {
+    if (typeof window === 'undefined') return;
+    if (window.recaptchaVerifier) {
+      try { window.recaptchaVerifier.clear(); } catch (_) {}
+      window.recaptchaVerifier = null;
+    }
+    document.querySelectorAll('.grecaptcha-badge').forEach(badge => {
+      try {
+        const parent = badge.closest('div[style*="position: fixed"]') || badge.parentElement;
+        if (parent && parent !== document.body) {
+          parent.remove();
+        } else {
+          badge.remove();
+        }
+      } catch (_) {}
+    });
+  }
+
   // Phone Number SMS OTP Authentication
-  setupRecaptcha(containerId = 'recaptcha-container') {
+  setupRecaptcha(containerId = 'recaptcha-container', forceRecreate = false) {
     try {
       if (typeof window === 'undefined') return null;
-      if (window.recaptchaVerifier) {
-        try { window.recaptchaVerifier.clear(); } catch (_) {}
-        window.recaptchaVerifier = null;
+
+      // 1. If we already have a valid verifier attached and not forced to recreate, reuse it
+      const existingContainer = document.getElementById(containerId);
+      if (window.recaptchaVerifier && existingContainer && !forceRecreate) {
+        return window.recaptchaVerifier;
       }
-      const containerEl = document.getElementById(containerId);
+
+      // 2. Clear existing verifier & detached badges
+      this.clearRecaptcha();
+
+      // 3. Ensure a clean container exists
+      let containerEl = document.getElementById(containerId);
       if (!containerEl) {
-        console.warn(`[Mytholis Firebase] Recaptcha container #${containerId} not found.`);
-        return null;
+        // Fallback: create container on body so it is always present
+        containerEl = document.createElement('div');
+        containerEl.id = containerId;
+        document.body.appendChild(containerEl);
+      } else if (containerEl.parentNode) {
+        // VITAL FIX for "reCAPTCHA has already been rendered in this element":
+        // Google reCAPTCHA tracks DOM node instances internally. If a DOM node was rendered into,
+        // creating a new RecaptchaVerifier on that exact DOM node throws an error.
+        // Replacing the container node with a brand new node generates a clean, unrendered DOM reference!
+        const freshContainer = document.createElement('div');
+        freshContainer.id = containerId;
+        containerEl.parentNode.replaceChild(freshContainer, containerEl);
+        containerEl = freshContainer;
       }
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+
+      // 4. Initialize RecaptchaVerifier on the fresh DOM element
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, containerEl, {
         size: 'invisible',
         callback: () => {
           // reCAPTCHA solved
         },
         'expired-callback': () => {
           console.warn("[Mytholis Firebase] reCAPTCHA expired, resetting...");
-          if (window.recaptchaVerifier) {
-            try { window.recaptchaVerifier.clear(); } catch (_) {}
-            window.recaptchaVerifier = null;
-          }
+          this.clearRecaptcha();
         }
       });
       return window.recaptchaVerifier;
@@ -171,22 +207,40 @@ export class FirebaseService {
 
   async sendPhoneOtp(fullPhoneNumber, containerId = 'recaptcha-container') {
     try {
-      const verifier = this.setupRecaptcha(containerId);
+      let verifier = this.setupRecaptcha(containerId);
       if (!verifier) {
         throw new Error("Could not initialize security verification. Please refresh and try again.");
       }
-      const confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, verifier);
+
+      let confirmationResult;
+      try {
+        confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, verifier);
+      } catch (firstError) {
+        const isRenderError = firstError.message?.includes('already been rendered') ||
+                              firstError.code === 'auth/captcha-check-failed' ||
+                              firstError.code === 'auth/internal-error';
+        if (isRenderError) {
+          console.warn('[Mytholis Firebase] reCAPTCHA collision detected. Re-initializing fresh container and retrying...');
+          verifier = this.setupRecaptcha(containerId, true);
+          if (!verifier) throw firstError;
+          confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, verifier);
+        } else {
+          throw firstError;
+        }
+      }
+
       this.phoneConfirmationResult = confirmationResult;
       window.phoneConfirmationResult = confirmationResult;
       return { success: true };
     } catch (error) {
       console.error("[Mytholis Firebase] Phone OTP Send Error:", error);
-      if (window.recaptchaVerifier) {
-        try { window.recaptchaVerifier.clear(); } catch (_) {}
-        window.recaptchaVerifier = null;
-      }
+      this.clearRecaptcha();
       const friendly = this.formatAuthError(error.code);
-      return { success: false, error: friendly || error.message };
+      let errMsg = friendly || error.message;
+      if (error.message?.includes('already been rendered')) {
+        errMsg = 'Security check reset. Please tap Request SMS Passcode again.';
+      }
+      return { success: false, error: errMsg };
     }
   }
 
@@ -266,6 +320,8 @@ export class FirebaseService {
       case 'auth/weak-password': return 'Password must be at least 6 characters.';
       case 'auth/popup-closed-by-user': return 'Sign-in cancelled.';
       case 'auth/configuration-not-found': return 'Sign-In provider is not enabled yet in your Firebase Console. Please register with Email & Password, or enable the provider in Firebase Console under Authentication > Sign-in method.';
+      case 'auth/operation-not-allowed': return 'Phone Authentication is not enabled in Firebase Console. Please go to Firebase Console > Authentication > Sign-in method and enable "Phone".';
+      case 'auth/app-not-authorized': return 'This domain is not authorized for Phone Auth. Please add it to Firebase Console > Authentication > Settings > Authorized domains.';
       case 'auth/invalid-phone-number': return 'Please enter a valid mobile number with country code (e.g. +91 98765 43210).';
       case 'auth/missing-phone-number': return 'Mobile phone number is required.';
       case 'auth/quota-exceeded': return 'SMS verification quota exceeded for today. Please try again later or sign in with Email.';
