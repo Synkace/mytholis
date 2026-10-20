@@ -16,7 +16,11 @@ import {
   updateProfile,
   RecaptchaVerifier,
   signInWithPhoneNumber,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  linkWithCredential
 } from "firebase/auth";
 import { 
   getFirestore, 
@@ -305,6 +309,113 @@ export class FirebaseService {
     } catch (error) {
       console.error("[Mytholis Firebase] Sign Out Error:", error);
       return { success: false, error: error.message };
+    }
+  }
+
+  // Update Patron Profile (Name, Phone, Address, Coordinates, Avatar Photo)
+  async updatePatronProfile(profileData = {}) {
+    try {
+      const user = auth.currentUser || this.currentUser;
+      if (!user) {
+        return { success: false, error: 'No active patron session found.' };
+      }
+
+      // 1. Update Firebase Auth display name and photoURL if provided
+      const authUpdates = {};
+      if (profileData.name && profileData.name.trim()) {
+        authUpdates.displayName = profileData.name.trim();
+      }
+      if (profileData.photoURL !== undefined) {
+        authUpdates.photoURL = profileData.photoURL;
+      }
+      if (Object.keys(authUpdates).length > 0) {
+        await updateProfile(user, authUpdates).catch(err => console.warn('[Firebase Auth] updateProfile warn:', err.message));
+      }
+
+      // 2. Persist to Cloud Firestore under users/{uid}.profile
+      const userDocRef = doc(db, "users", user.uid);
+      const cleanData = { ...profileData, updatedAt: new Date().toISOString() };
+      await setDoc(userDocRef, { profile: cleanData }, { merge: true });
+
+      return { success: true };
+    } catch (error) {
+      console.error("[Mytholis Firebase] Update Patron Profile Error:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Change or Update Patron Password
+  async updatePatronPassword(currentPassword, newPassword) {
+    try {
+      const user = auth.currentUser || this.currentUser;
+      if (!user) {
+        return { success: false, error: 'No active patron session found.' };
+      }
+
+      if (!newPassword || newPassword.length < 6) {
+        return { success: false, error: 'New password must be at least 6 characters.' };
+      }
+
+      // If current password provided and user has email, re-authenticate first to prevent auth/requires-recent-login
+      if (currentPassword && user.email && !user.email.endsWith('@phone.mytholis.com')) {
+        try {
+          const credential = EmailAuthProvider.credential(user.email, currentPassword);
+          await reauthenticateWithCredential(user, credential);
+        } catch (reauthErr) {
+          console.warn("[Mytholis Firebase] Re-authentication failed:", reauthErr);
+          if (reauthErr.code === 'auth/wrong-password' || reauthErr.code === 'auth/invalid-credential') {
+            return { success: false, error: 'Current password does not match.' };
+          }
+        }
+      }
+
+      await updatePassword(user, newPassword);
+      return { success: true };
+    } catch (error) {
+      console.error("[Mytholis Firebase] Update Password Error:", error);
+      if (error.code === 'auth/requires-recent-login') {
+        return { 
+          success: false, 
+          error: 'Security timeout: please sign out and sign back in, or use the "Send Password Reset Link" button below.' 
+        };
+      }
+      const friendly = this.formatAuthError(error.code);
+      return { success: false, error: friendly || error.message };
+    }
+  }
+
+  // Link Email & Password to a Phone-authenticated account
+  async linkEmailPasswordToPhone(email, password) {
+    try {
+      const user = auth.currentUser || this.currentUser;
+      if (!user) {
+        return { success: false, error: 'No active patron session found.' };
+      }
+
+      if (!email || !email.includes('@')) {
+        return { success: false, error: 'Please enter a valid email address.' };
+      }
+      if (!password || password.length < 6) {
+        return { success: false, error: 'Password must be at least 6 characters.' };
+      }
+
+      const credential = EmailAuthProvider.credential(email.trim(), password);
+      await linkWithCredential(user, credential);
+
+      // Update Firestore user record with real email
+      await this.updatePatronProfile({ email: email.trim() });
+      if (this.store) {
+        this.store.user.email = email.trim();
+        if (this.store.firebaseUser) this.store.firebaseUser.email = email.trim();
+        this.store.saveLocalStorage('mytholis_user', this.store.user);
+        this.store.notify();
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error("[Mytholis Firebase] Link Email/Password Error:", error);
+      const friendly = this.formatAuthError(error.code);
+      return { success: false, error: friendly || error.message };
     }
   }
 

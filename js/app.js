@@ -30,6 +30,7 @@ class MytholisApp {
     this.activePyramidScent = 'petralux';
     this.adminActiveTab = 'orders';
     this.activeAuthTab = 'phone';
+    this.activeDossierTab = 'overview';
     this.phoneOtpSent = false;
     this.authPhoneNumber = '';
     this.adminData = {
@@ -1880,6 +1881,7 @@ class MytholisApp {
     if (isLogged && user) {
       const displayName = user.displayName || user.name || user.email || 'Patron';
       const initial = displayName.charAt(0).toUpperCase();
+      const photoURL = user.photoURL || null;
       const adminCrown = isAdminUser ? `
         <button class="icon-btn sovereign-nav-admin-btn" onclick="app.navigateTo('admin')" title="👑 Open Sovereign Command Desk" style="margin-right: 0.4rem; color: var(--gold-primary); border: 1px solid rgba(212, 175, 55, 0.45); background: rgba(212, 175, 55, 0.15); border-radius: 50%; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;">
           <span style="font-size: 1.05rem;">👑</span>
@@ -1889,8 +1891,12 @@ class MytholisApp {
       slot.innerHTML = `
         <div style="display: flex; align-items: center;">
           ${adminCrown}
-          <button class="icon-btn vip-profile-btn" onclick="app.openProfileModal()" title="Client Profile (${displayName})">
-            <span class="nav-avatar-initial">${initial}</span>
+          <button class="icon-btn vip-profile-btn" onclick="app.openProfileModal()" title="Client Profile (${displayName})" style="padding: 0; overflow: hidden; width: 38px; height: 38px; border-radius: 50%;">
+            ${photoURL ? `
+              <img src="${photoURL}" alt="${displayName}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;" />
+            ` : `
+              <span class="nav-avatar-initial">${initial}</span>
+            `}
             <span class="vip-dot"></span>
           </button>
         </div>
@@ -2067,33 +2073,264 @@ class MytholisApp {
     }, 150);
   }
 
-  /* User Profile Account Management */
-  updateUserProfile(event) {
-    if (event) event.preventDefault();
-    const nameEl = document.getElementById('profile-edit-name');
-    const phoneEl = document.getElementById('profile-edit-phone');
-    const addrEl = document.getElementById('profile-edit-address');
+  /* User Profile Account Management & Patron Dossier Controller */
+  setDossierTab(tab) {
+    this.activeDossierTab = tab;
+    this.renderProfileModalContent();
+  }
 
-    if (nameEl && nameEl.value.trim()) {
-      store.user.name = nameEl.value.trim();
-    }
-    if (phoneEl) {
-      store.user.phone = phoneEl.value.trim();
-    }
-    if (addrEl) {
-      store.user.address = addrEl.value.trim();
+  async handleProfilePhotoUpload(event) {
+    const file = event.target?.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      this.showToast('Please select a valid image file (JPG, PNG, WebP).');
+      return;
     }
 
+    if (file.size > 10 * 1024 * 1024) {
+      this.showToast('Image size exceeds 10MB limit.');
+      return;
+    }
+
+    this.showToast('Processing patron portrait...');
+
+    try {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = async () => {
+          try {
+            const canvas = document.createElement('canvas');
+            const targetDim = 256;
+            canvas.width = targetDim;
+            canvas.height = targetDim;
+            const ctx = canvas.getContext('2d');
+
+            // Center square crop
+            const minSide = Math.min(img.width, img.height);
+            const startX = (img.width - minSide) / 2;
+            const startY = (img.height - minSide) / 2;
+            ctx.drawImage(img, startX, startY, minSide, minSide, 0, 0, targetDim, targetDim);
+
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+            // Update store
+            store.user.photoURL = compressedDataUrl;
+            if (store.firebaseUser) {
+              store.firebaseUser.photoURL = compressedDataUrl;
+            }
+            store.saveLocalStorage('mytholis_user', store.user);
+            store.notify();
+
+            // Persist to Firebase Auth & Firestore
+            if (typeof firebaseService !== 'undefined') {
+              await firebaseService.updatePatronProfile({ photoURL: compressedDataUrl });
+            }
+
+            this.updateNavAuth();
+            this.renderProfileModalContent();
+            if (store.currentView === 'profile' || store.currentView === 'user-profile') {
+              this.renderCurrentView();
+            }
+            this.showToast('Patron portrait updated successfully.');
+          } catch (procErr) {
+            console.error('[ProfilePhoto] Processing failed:', procErr);
+            this.showToast('Failed to process image portrait.');
+          }
+        };
+        img.onerror = () => {
+          this.showToast('Unable to decode image file.');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error('[ProfilePhoto] File read error:', err);
+      this.showToast('Error reading image file.');
+    }
+  }
+
+  async handleRemoveProfilePhoto() {
+    store.user.photoURL = null;
+    if (store.firebaseUser) {
+      store.firebaseUser.photoURL = null;
+    }
     store.saveLocalStorage('mytholis_user', store.user);
-    if (typeof firebaseService !== 'undefined') {
-      firebaseService.pushLocalStateToCloud();
-    }
     store.notify();
-    this.showToast("Client profile & dispatch coordinates saved.");
-    this.closeProfileModal();
+
+    if (typeof firebaseService !== 'undefined') {
+      await firebaseService.updatePatronProfile({ photoURL: null });
+    }
+
+    this.updateNavAuth();
+    this.renderProfileModalContent();
     if (store.currentView === 'profile' || store.currentView === 'user-profile') {
       this.renderCurrentView();
     }
+    this.showToast('Patron portrait removed.');
+  }
+
+  async handleSaveDossierProfile(event) {
+    if (event) event.preventDefault();
+
+    const name = document.getElementById('dossier-name-input')?.value?.trim();
+    const phone = document.getElementById('dossier-phone-input')?.value?.trim();
+    const address = document.getElementById('dossier-address-input')?.value?.trim();
+    const city = document.getElementById('dossier-city-input')?.value?.trim();
+    const state = document.getElementById('dossier-state-input')?.value?.trim();
+    const pincode = document.getElementById('dossier-pincode-input')?.value?.trim();
+
+    if (name) store.user.name = name;
+    if (phone !== undefined) store.user.phone = phone;
+    if (address !== undefined) store.user.address = address;
+    if (city !== undefined) store.user.city = city;
+    if (state !== undefined) store.user.state = state;
+    if (pincode !== undefined) store.user.pincode = pincode;
+
+    if (store.firebaseUser) {
+      if (name) store.firebaseUser.displayName = name;
+      if (phone !== undefined) store.firebaseUser.phone = phone;
+    }
+
+    store.saveLocalStorage('mytholis_user', store.user);
+    store.notify();
+
+    if (typeof firebaseService !== 'undefined') {
+      await firebaseService.updatePatronProfile({
+        name,
+        phone,
+        address,
+        city,
+        state,
+        pincode
+      });
+    }
+
+    this.showToast('Patron coordinates & profile saved.');
+    this.updateNavAuth();
+    this.setDossierTab('overview');
+    if (store.currentView === 'profile' || store.currentView === 'user-profile') {
+      this.renderCurrentView();
+    }
+  }
+
+  async handleChangePassword(event) {
+    if (event) event.preventDefault();
+
+    const currPass = document.getElementById('security-curr-pass')?.value || '';
+    const newPass = document.getElementById('security-new-pass')?.value || '';
+    const confPass = document.getElementById('security-conf-pass')?.value || '';
+
+    if (!newPass || newPass.length < 6) {
+      this.showToast('New password must be at least 6 characters.');
+      return;
+    }
+
+    if (newPass !== confPass) {
+      this.showToast('New passwords do not match. Please verify.');
+      return;
+    }
+
+    const btnEl = document.getElementById('btn-change-password');
+    if (btnEl) {
+      btnEl.disabled = true;
+      btnEl.innerText = 'Updating Master Password...';
+    }
+
+    try {
+      const res = await firebaseService.updatePatronPassword(currPass, newPass);
+      if (res.success) {
+        this.showToast('Master password updated successfully.');
+        const currEl = document.getElementById('security-curr-pass');
+        const newEl = document.getElementById('security-new-pass');
+        const confEl = document.getElementById('security-conf-pass');
+        if (currEl) currEl.value = '';
+        if (newEl) newEl.value = '';
+        if (confEl) confEl.value = '';
+        this.setDossierTab('overview');
+      } else {
+        this.showToast(res.error || 'Failed to update password.');
+      }
+    } catch (err) {
+      console.error('[ChangePassword] Error:', err);
+      this.showToast('Password update encountered an error.');
+    } finally {
+      if (btnEl) {
+        btnEl.disabled = false;
+        btnEl.innerText = 'Update Master Password';
+      }
+    }
+  }
+
+  async handleSendPasswordResetFromDossier() {
+    const userEmail = store.firebaseUser?.email || store.user?.email;
+    let targetEmail = userEmail;
+
+    if (!targetEmail || targetEmail.endsWith('@phone.mytholis.com')) {
+      targetEmail = prompt('Enter your personal email address to receive password setup instructions:');
+    }
+
+    if (!targetEmail || !targetEmail.includes('@')) {
+      this.showToast('Please provide a valid email address.');
+      return;
+    }
+
+    this.showToast(`Dispatching password instructions to ${targetEmail}...`);
+    try {
+      const res = await firebaseService.sendPasswordReset(targetEmail);
+      if (res.success) {
+        this.showToast(`Password link dispatched to ${targetEmail}. Please check your inbox.`);
+      } else {
+        this.showToast(res.error || 'Failed to dispatch password link.');
+      }
+    } catch (err) {
+      this.showToast('Error sending reset link.');
+    }
+  }
+
+  async handleLinkEmailPassword(event) {
+    if (event) event.preventDefault();
+
+    const email = document.getElementById('security-link-email')?.value?.trim();
+    const pass = document.getElementById('security-link-pass')?.value;
+
+    if (!email || !email.includes('@')) {
+      this.showToast('Please enter a valid email address.');
+      return;
+    }
+    if (!pass || pass.length < 6) {
+      this.showToast('Password must be at least 6 characters.');
+      return;
+    }
+
+    const btnEl = document.getElementById('btn-link-email-pass');
+    if (btnEl) {
+      btnEl.disabled = true;
+      btnEl.innerText = 'Linking Credentials...';
+    }
+
+    try {
+      const res = await firebaseService.linkEmailPasswordToPhone(email, pass);
+      if (res.success) {
+        this.showToast(`Email ${email} linked! You can now sign in via SMS OTP or Password.`);
+        this.renderProfileModalContent();
+      } else {
+        this.showToast(res.error || 'Failed to link email & password.');
+      }
+    } catch (err) {
+      console.error('[LinkEmailPassword] Error:', err);
+      this.showToast('Encountered an error linking credentials.');
+    } finally {
+      if (btnEl) {
+        btnEl.disabled = false;
+        btnEl.innerText = 'Link Email & Password to Account';
+      }
+    }
+  }
+
+  updateUserProfile(event) {
+    return this.handleSaveDossierProfile(event);
   }
 
   /* Firebase Authentication Handlers */
