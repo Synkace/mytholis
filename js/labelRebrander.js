@@ -78,7 +78,7 @@ export function generateShiprocketOrderPayload(order, config = {}) {
     order_id: orderId,
     order_date: order.createdAt ? new Date(order.createdAt).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
     pickup_location: config.pickupLocation || 'Primary',
-    channel_id: config.channelId || '',
+    channel_id: config.channelId || '12602315',
     comment: 'Mytholis Haute Parfumerie Consignment - Handle With Care',
     
     // DEFENSE-IN-DEPTH BRAND OVERRIDE:
