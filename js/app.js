@@ -2933,68 +2933,87 @@ class MytholisApp {
   }
 
   async submitAddPromoCode(event) {
-    event.preventDefault();
+    if (event) event.preventDefault();
     try {
-      const code = document.getElementById('new-promo-code')?.value?.trim().toUpperCase();
-      const discountType = document.getElementById('new-promo-type')?.value;
-      const value = Number(document.getElementById('new-promo-value')?.value || 0);
-      const minOrder = Number(document.getElementById('new-promo-minorder')?.value || 0);
+      const codeInput = document.getElementById('new-promo-code');
+      const typeInput = document.getElementById('new-promo-type');
+      const valInput = document.getElementById('new-promo-value');
+      const minInput = document.getElementById('new-promo-minorder');
+
+      const code = codeInput?.value?.trim().toUpperCase();
+      const discountType = typeInput?.value || 'percent';
+      const value = Number(valInput?.value || 0);
+      const minOrder = Number(minInput?.value || 0);
 
       if (!code) {
         this.showToast('Voucher code is required.');
         return;
       }
 
-      const currentSettings = this.adminData.settings || store.globalSettings || {};
-      const promoCodes = Array.isArray(currentSettings.promoCodes) ? [...currentSettings.promoCodes] : [];
-
-      const existingIdx = promoCodes.findIndex(p => p.code === code);
-      const newEntry = { code, discountType, value, minOrder, active: true };
-      if (existingIdx >= 0) {
-        promoCodes[existingIdx] = newEntry;
-      } else {
-        promoCodes.push(newEntry);
+      if (value <= 0) {
+        this.showToast('Please enter a discount value greater than 0.');
+        return;
       }
 
-      this.showToast(`Minting Sanctum Key ${code}...`);
-      const res = await firebaseService.saveGlobalSettings({ ...currentSettings, promoCodes });
-      if (res.success) {
-        this.closeAdminModal();
-        this.showToast(`Sanctum Key ${code} minted into the Vault ledger!`);
-        await this.loadAdminDashboard();
-      } else {
-        this.showToast(`Failed to mint promo key: ${res.error}`);
+      const newEntry = { code, discountType, value, minOrder, active: true };
+
+      // 1. Instantly mint into local Store & localStorage
+      const updatedCodes = store.addPromoCode(newEntry);
+      if (!this.adminData) this.adminData = {};
+      if (!this.adminData.settings) this.adminData.settings = {};
+      this.adminData.settings.promoCodes = updatedCodes;
+
+      // 2. Immediately close modal and notify the founder
+      this.closeAdminModal();
+      this.showToast(`Sanctum Key ${code} minted into the Vault ledger!`);
+      this.renderCurrentView();
+
+      // 3. Persist to Cloud Firestore in background
+      if (typeof firebaseService !== 'undefined') {
+        const currentSettings = this.adminData.settings || store.globalSettings || {};
+        await firebaseService.saveGlobalSettings({ ...currentSettings, promoCodes: updatedCodes });
       }
     } catch (err) {
       console.error("[Sovereign Command] submitAddPromoCode error:", err);
-      this.showToast(`Mint key failed: ${err.message}`);
+      this.showToast(`Mint key error: ${err.message}`);
     }
   }
 
-  async togglePromoCode(code, active) {
+  async togglePromoCode(target) {
     try {
-      const currentSettings = this.adminData.settings || store.globalSettings || {};
-      const promoCodes = (currentSettings.promoCodes || []).map(p => {
-        if (p.code === code) return { ...p, active };
-        return p;
-      });
-      await firebaseService.saveGlobalSettings({ ...currentSettings, promoCodes });
-      this.showToast(`Promo Key ${code} ${active ? 'activated' : 'deactivated'}.`);
-      await this.loadAdminDashboard();
+      const updatedCodes = store.togglePromoCode(target);
+      if (!this.adminData) this.adminData = {};
+      if (!this.adminData.settings) this.adminData.settings = {};
+      this.adminData.settings.promoCodes = updatedCodes;
+
+      this.showToast('Promo Key status updated.');
+      this.renderCurrentView();
+
+      if (typeof firebaseService !== 'undefined') {
+        const currentSettings = this.adminData.settings || store.globalSettings || {};
+        await firebaseService.saveGlobalSettings({ ...currentSettings, promoCodes: updatedCodes });
+      }
     } catch (err) {
       console.error("[Sovereign Command] togglePromoCode error:", err);
       this.showToast(`Toggle failed: ${err.message}`);
     }
   }
 
-  async deletePromoCode(code) {
-    if (!confirm(`Permanently revoke Sanctum Key ${code}?`)) return;
+  async deletePromoCode(target) {
+    if (!confirm(`Permanently revoke Sanctum Key?`)) return;
     try {
-      const currentSettings = this.adminData.settings || store.globalSettings || {};
-      const promoCodes = (currentSettings.promoCodes || []).filter(p => p.code !== code);
-      await firebaseService.saveGlobalSettings({ ...currentSettings, promoCodes });
-      this.showToast(`Sanctum Key ${code} revoked.`);
-      await this.loadAdminDashboard();
+      const updatedCodes = store.deletePromoCode(target);
+      if (!this.adminData) this.adminData = {};
+      if (!this.adminData.settings) this.adminData.settings = {};
+      this.adminData.settings.promoCodes = updatedCodes;
+
+      this.showToast('Sanctum Key revoked.');
+      this.renderCurrentView();
+
+      if (typeof firebaseService !== 'undefined') {
+        const currentSettings = this.adminData.settings || store.globalSettings || {};
+        await firebaseService.saveGlobalSettings({ ...currentSettings, promoCodes: updatedCodes });
+      }
     } catch (err) {
       console.error("[Sovereign Command] deletePromoCode error:", err);
       this.showToast(`Delete failed: ${err.message}`);

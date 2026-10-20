@@ -321,6 +321,63 @@ class MytholisStore {
     }
   }
 
+  addPromoCode(entry) {
+    if (!this.globalSettings) this.globalSettings = {};
+    if (!Array.isArray(this.globalSettings.promoCodes)) {
+      this.globalSettings.promoCodes = [];
+    }
+    const code = String(entry.code || '').trim().toUpperCase();
+    if (!code) return this.globalSettings.promoCodes;
+
+    const normalized = {
+      code,
+      discountType: entry.discountType || 'percent',
+      value: Number(entry.value) || 0,
+      minOrder: Number(entry.minOrder) || 0,
+      active: entry.active !== false
+    };
+
+    const idx = this.globalSettings.promoCodes.findIndex(p => p.code && p.code.toUpperCase() === code);
+    if (idx >= 0) {
+      this.globalSettings.promoCodes[idx] = normalized;
+    } else {
+      this.globalSettings.promoCodes.push(normalized);
+    }
+
+    this.saveLocalStorage('mytholis_global_settings', this.globalSettings);
+    this.notify();
+    return this.globalSettings.promoCodes;
+  }
+
+  togglePromoCode(target) {
+    if (!this.globalSettings || !Array.isArray(this.globalSettings.promoCodes)) return [];
+    if (typeof target === 'number') {
+      if (this.globalSettings.promoCodes[target]) {
+        this.globalSettings.promoCodes[target].active = !this.globalSettings.promoCodes[target].active;
+      }
+    } else {
+      const targetStr = String(target).trim().toUpperCase();
+      const p = this.globalSettings.promoCodes.find(x => x.code && x.code.toUpperCase() === targetStr);
+      if (p) p.active = !p.active;
+    }
+    this.saveLocalStorage('mytholis_global_settings', this.globalSettings);
+    this.notify();
+    return this.globalSettings.promoCodes;
+  }
+
+  deletePromoCode(target) {
+    if (!this.globalSettings || !Array.isArray(this.globalSettings.promoCodes)) return [];
+    if (typeof target === 'number') {
+      this.globalSettings.promoCodes.splice(target, 1);
+    } else {
+      const targetStr = String(target).trim().toUpperCase();
+      this.globalSettings.promoCodes = this.globalSettings.promoCodes.filter(x => x.code && x.code.toUpperCase() !== targetStr);
+    }
+    this.saveLocalStorage('mytholis_global_settings', this.globalSettings);
+    this.notify();
+    return this.globalSettings.promoCodes;
+  }
+
   loadLocalStorage(key, defaultValue) {
     try {
       const saved = localStorage.getItem(key);

@@ -860,12 +860,12 @@ export const AdminComponents = {
                           <td><strong style="color: var(--gold-light);">${pc.discountType === 'percent' ? `${pc.value}%` : `₹${pc.value}`}</strong></td>
                           <td>₹${pc.minOrder || 0}</td>
                           <td>
-                            <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.6rem; border-color: ${pc.active !== false ? '#10B981' : '#EF4444'}; color: ${pc.active !== false ? '#6EE7B7' : '#FCA5A5'};" onclick="app.togglePromoCode(${idx})">
+                            <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.6rem; border-color: ${pc.active !== false ? '#10B981' : '#EF4444'}; color: ${pc.active !== false ? '#6EE7B7' : '#FCA5A5'};" onclick="app.togglePromoCode('${pc.code}')">
                               ${pc.active !== false ? 'Active' : 'Paused'}
                             </button>
                           </td>
                           <td>
-                            <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.6rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.deletePromoCode(${idx})">
+                            <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.6rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.deletePromoCode('${pc.code}')">
                               Delete
                             </button>
                           </td>
