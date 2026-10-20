@@ -327,6 +327,9 @@ export const AdminComponents = {
                 <option value="Paid">Status: Paid</option>
                 <option value="PendingPay">Status: Unpaid / Pending COD</option>
               </select>
+              <button class="btn btn-gold" style="font-size: 0.78rem; padding: 0.5rem 1rem; display: inline-flex; align-items: center; gap: 0.4rem;" onclick="app.openLabelRebranderModal()">
+                🏷️ Label Rebrander Studio
+              </button>
               <button class="btn btn-glass" onclick="app.refreshAdminDashboard()">
                 ↻ Reload Orders
               </button>
@@ -457,8 +460,11 @@ export const AdminComponents = {
                         </button>
                       </div>
 
-                      <!-- 1-Click WhatsApp Buttons -->
-                      <div style="display: flex; gap: 0.5rem;">
+                      <!-- 1-Click Actions: Label Rebrander & WhatsApp -->
+                      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-gold" style="font-size: 0.72rem; padding: 0.45rem 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem; background: linear-gradient(135deg, #D4AF37 0%, #AA820A 100%); color: #041812; font-weight: 700;" onclick="app.openLabelRebranderForOrder('${orderId}')" title="Rebrand Shiprocket 4x6 Label with Mytholis Identity">
+                          🏷️ Rebrand Label
+                        </button>
                         ${paymentMethod === 'COD' ? `
                           <button class="btn-whatsapp-verify" onclick="app.verifyCodWhatsApp('${orderId}')" title="Send WhatsApp COD Confirmation">
                             <span>💬</span> Verify COD
@@ -1216,6 +1222,243 @@ export const AdminComponents = {
               <button type="submit" class="btn btn-gold" style="padding: 0.7rem 1.8rem;">Mint & Activate Key</button>
             </div>
           </form>
+        </div>
+      </div>
+    `;
+  },
+
+  /* ==========================================================================
+     METHOD 3: SHIPROCKET PDF THERMAL LABEL REBRANDER STUDIO MODAL
+     ========================================================================== */
+  renderLabelRebranderModal(targetOrder = null, config = {}) {
+    const orderId = targetOrder ? (targetOrder.orderId || targetOrder.id || '') : '';
+    const patronName = targetOrder ? (targetOrder.userName || targetOrder.name || targetOrder.customer?.name || '') : '';
+    const courier = targetOrder ? (targetOrder.courierName || '') : '';
+    const awb = targetOrder ? (targetOrder.trackingNumber || targetOrder.awbCode || '') : '';
+    const existingLabelUrl = targetOrder ? (targetOrder.labelUrl || '') : '';
+
+    const savedConfig = config || (typeof store !== 'undefined' && store.globalSettings && store.globalSettings.labelConfig) || {};
+    const defaultPreset = savedConfig.preset || 'thermal-4x6-bottom';
+    const maskX = savedConfig.maskX !== undefined ? savedConfig.maskX : 14;
+    const maskY = savedConfig.maskY !== undefined ? savedConfig.maskY : 18;
+    const maskWidth = savedConfig.maskWidth !== undefined ? savedConfig.maskWidth : 260;
+    const maskHeight = savedConfig.maskHeight !== undefined ? savedConfig.maskHeight : 82;
+    const fontSize = savedConfig.fontSize !== undefined ? savedConfig.fontSize : 10;
+    const showLogo = savedConfig.showLogo !== false;
+    const hasTopMask = savedConfig.hasTopHeaderMask === true;
+
+    return `
+      <div class="sovereign-modal-backdrop" onclick="if(event.target === this) app.closeAdminModal()">
+        <div class="sovereign-modal-box" style="max-width: 980px; width: 95%;">
+          <!-- Header -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.8rem; flex-wrap: wrap; gap: 0.8rem;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-primary); letter-spacing: 0.1em;">METHOD 3 AUTOMATION</span>
+                <span class="glass-pill" style="font-size: 0.7rem; color: #10B981; border-color: #10B981;">100% Barcode Integrity</span>
+              </div>
+              <h3 class="font-title" style="color: var(--gold-light); margin: 0.3rem 0 0; font-size: 1.3rem;">
+                Mytholis Thermal Label Rebrander Studio
+              </h3>
+            </div>
+            <button class="icon-btn" onclick="app.closeAdminModal()" style="font-size: 1.3rem; color: var(--gold-light);">✕</button>
+          </div>
+
+          ${targetOrder ? `
+            <!-- Attached Order Context Bar -->
+            <div style="background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 0.8rem 1rem; margin-bottom: 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.6rem;">
+              <div>
+                <strong style="color: var(--gold-primary); font-size: 0.95rem;">Order #${orderId}</strong>
+                <span style="color: var(--text-muted); font-size: 0.85rem; margin-left: 0.5rem;">Patron: <strong style="color: var(--text-main);">${patronName}</strong></span>
+              </div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">
+                Courier: <strong style="color: var(--gold-light);">${courier || 'BlueDart'}</strong> &bull; AWB: <strong style="color: var(--gold-light); font-family: monospace;">${awb || 'Pending'}</strong>
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Two-Column Studio Layout -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+            
+            <!-- Column 1: Source PDF & Calibration Controls -->
+            <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+              
+              <!-- Source PDF Input Section -->
+              <div class="calibration-card">
+                <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold-light); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                  1. Source Shiprocket PDF Label
+                </div>
+
+                <!-- Drag & Drop Zone -->
+                <div class="label-dropzone" id="label-dropzone" onclick="document.getElementById('rebrander-file-input').click()">
+                  <input type="file" id="rebrander-file-input" accept="application/pdf" style="display: none;" onchange="app.handleLabelFileUpload(event)" />
+                  <div style="font-size: 1.8rem; margin-bottom: 0.4rem;">📄</div>
+                  <div style="color: var(--gold-light); font-weight: 600; font-size: 0.9rem; margin-bottom: 0.2rem;" id="dropzone-label-text">
+                    Drop Shiprocket 4x6 or A4 PDF Here
+                  </div>
+                  <div style="color: var(--text-muted); font-size: 0.75rem;">
+                    or click to browse from device
+                  </div>
+                </div>
+
+                <!-- Alternative: Direct URL -->
+                <div style="margin-top: 0.8rem;">
+                  <div style="display: flex; gap: 0.4rem;">
+                    <input type="text" id="rebrander-url-input" class="sovereign-form-input" placeholder="Or paste Shiprocket label PDF URL..." value="${existingLabelUrl}" style="font-size: 0.8rem; flex: 1;" />
+                    <button type="button" class="btn btn-glass" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;" onclick="app.loadLabelFromUrl()">
+                      Fetch
+                    </button>
+                  </div>
+                </div>
+
+                <div style="margin-top: 0.6rem; text-align: right;">
+                  <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.3rem 0.6rem; color: var(--gold-primary);" onclick="app.loadSampleThermalLabel()">
+                    ⚡ Test With Sample 4x6 Courier Label
+                  </button>
+                </div>
+              </div>
+
+              <!-- Alignment Presets & Geometry Slider Controls -->
+              <div class="calibration-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                  <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.05em;">
+                    2. Courier Alignment & Mask Presets
+                  </div>
+                  <button type="button" class="btn btn-glass" style="font-size: 0.68rem; padding: 0.2rem 0.5rem;" onclick="app.saveLabelCalibrationAsDefault()">
+                    💾 Save as Default
+                  </button>
+                </div>
+
+                <!-- Preset Selector -->
+                <div style="margin-bottom: 1rem;">
+                  <label class="sovereign-field-label">Template Preset</label>
+                  <select id="rebrander-preset-select" class="sovereign-select" style="width: 100%;" onchange="app.applyLabelPreset(this.value)">
+                    <option value="thermal-4x6-bottom" ${defaultPreset === 'thermal-4x6-bottom' ? 'selected' : ''}>Standard Shiprocket 4x6 Thermal (Bottom Sold By)</option>
+                    <option value="thermal-4x6-top-bottom" ${defaultPreset === 'thermal-4x6-top-bottom' ? 'selected' : ''}>Shiprocket 4x6 Thermal (Top Brand + Bottom Sold By)</option>
+                    <option value="a4-top-left" ${defaultPreset === 'a4-top-left' ? 'selected' : ''}>Shiprocket A4 Sheet Label (Top-Left Quadrant)</option>
+                    <option value="custom" ${defaultPreset === 'custom' ? 'selected' : ''}>Custom Manual Coordinates</option>
+                  </select>
+                </div>
+
+                <!-- Numeric / Slider Controls for White-Out Mask -->
+                <div class="calibration-slider-row">
+                  <label>Mask X Offset (pt):</label>
+                  <input type="range" id="slider-mask-x" min="0" max="100" value="${maskX}" oninput="app.updateMaskSliderVal('x', this.value)" />
+                  <span class="calibration-val-badge" id="val-mask-x">${maskX}</span>
+                </div>
+
+                <div class="calibration-slider-row">
+                  <label>Mask Y Position (pt):</label>
+                  <input type="range" id="slider-mask-y" min="0" max="200" value="${maskY}" oninput="app.updateMaskSliderVal('y', this.value)" />
+                  <span class="calibration-val-badge" id="val-mask-y">${maskY}</span>
+                </div>
+
+                <div class="calibration-slider-row">
+                  <label>Mask Width (pt):</label>
+                  <input type="range" id="slider-mask-w" min="150" max="320" value="${maskWidth}" oninput="app.updateMaskSliderVal('w', this.value)" />
+                  <span class="calibration-val-badge" id="val-mask-w">${maskWidth}</span>
+                </div>
+
+                <div class="calibration-slider-row">
+                  <label>Mask Height (pt):</label>
+                  <input type="range" id="slider-mask-h" min="40" max="140" value="${maskHeight}" oninput="app.updateMaskSliderVal('h', this.value)" />
+                  <span class="calibration-val-badge" id="val-mask-h">${maskHeight}</span>
+                </div>
+
+                <div class="calibration-slider-row">
+                  <label>Brand Font Size (pt):</label>
+                  <input type="range" id="slider-mask-font" min="8" max="14" value="${fontSize}" oninput="app.updateMaskSliderVal('font', this.value)" />
+                  <span class="calibration-val-badge" id="val-mask-font">${fontSize}</span>
+                </div>
+
+                <!-- Toggles -->
+                <div style="display: flex; gap: 1.5rem; margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid rgba(212, 175, 55, 0.15);">
+                  <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--gold-light); cursor: pointer;">
+                    <input type="checkbox" id="rebrander-show-logo" ${showLogo ? 'checked' : ''} onchange="app.triggerRebrandPreview()" style="accent-color: var(--gold-primary);" />
+                    Embed Mytholis Crest Logo
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--gold-light); cursor: pointer;">
+                    <input type="checkbox" id="rebrander-top-mask" ${hasTopMask ? 'checked' : ''} onchange="app.triggerRebrandPreview()" style="accent-color: var(--gold-primary);" />
+                    Mask Top Banner
+                  </label>
+                </div>
+              </div>
+
+              <!-- Brand Identity Stamp Customization -->
+              <div class="calibration-card">
+                <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold-light); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                  3. Thermal Typography Stamp
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                  <div>
+                    <label class="sovereign-field-label">Header Title</label>
+                    <input type="text" id="rebrander-title" class="sovereign-form-input" value="MYTHOLIS LUXURY PARFUMS" oninput="app.triggerRebrandPreview()" />
+                  </div>
+                  <div>
+                    <label class="sovereign-field-label">Subtitle</label>
+                    <input type="text" id="rebrander-subtitle" class="sovereign-form-input" value="Extrait de Parfum | Luxury Olfactory House" oninput="app.triggerRebrandPreview()" />
+                  </div>
+                  <div>
+                    <label class="sovereign-field-label">Return & Concierge Coordinates</label>
+                    <input type="text" id="rebrander-return" class="sovereign-form-input" value="House of Mytholis • www.mytholis.com • concierge@mytholis.com" oninput="app.triggerRebrandPreview()" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Column 2: Live PDF Rebranding Preview & Print Desk -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              <div class="calibration-card" style="height: 100%; display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                  <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.05em;">
+                    Interactive Thermal Print Preview
+                  </div>
+                  <span id="rebrander-status-pill" class="glass-pill" style="font-size: 0.68rem; color: var(--gold-primary);">
+                    Ready to Rebrand
+                  </span>
+                </div>
+
+                <!-- PDF Preview Frame / Viewer -->
+                <div style="flex: 1; min-height: 440px; position: relative; border-radius: 8px; overflow: hidden; background: #1a1a1a;">
+                  <iframe id="rebrander-preview-frame" class="rebrander-preview-frame" style="width: 100%; height: 100%; min-height: 440px; border: 0;"></iframe>
+                  <div id="rebrander-preview-placeholder" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(4, 28, 20, 0.95); padding: 2rem; text-align: center;">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">🏷️</div>
+                    <h4 class="font-title" style="color: var(--gold-light); margin: 0 0 0.4rem;">No PDF Loaded</h4>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); max-width: 320px; margin-bottom: 1.2rem;">
+                      Upload a Shiprocket PDF label or click the test button on the left to calibrate the white-out mask.
+                    </p>
+                    <button type="button" class="btn btn-gold" style="font-size: 0.8rem; padding: 0.6rem 1.4rem;" onclick="app.loadSampleThermalLabel()">
+                      Generate Sample 4x6 Label
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Action Controls Below Preview -->
+                <div style="margin-top: 1rem; display: flex; gap: 0.6rem; flex-wrap: wrap;">
+                  <button type="button" class="btn btn-gold" style="flex: 1.5; padding: 0.75rem 1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.4rem;" onclick="app.printRebrandedLabel()">
+                    🖨️ Direct Thermal Print
+                  </button>
+                  <button type="button" class="btn btn-glass" style="flex: 1.2; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem;" onclick="app.downloadRebrandedLabel('${orderId}')">
+                    ⬇️ Download PDF
+                  </button>
+                  ${targetOrder ? `
+                    <button type="button" class="btn btn-glass" style="flex: 1; padding: 0.75rem 1rem; color: #10B981; border-color: #10B981;" onclick="app.saveRebrandedLabelToOrder('${orderId}')">
+                      ✓ Save to Order
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Footer -->
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(212, 175, 55, 0.2); padding-top: 0.8rem;">
+            <span style="font-size: 0.75rem; color: var(--text-muted);">
+              🛡️ Method 3 Compliance: Legal KYC entity is preserved in courier manifests; shipping labels are branded exclusively for the patron.
+            </span>
+            <button type="button" class="btn btn-glass" onclick="app.closeAdminModal()">Close Studio</button>
+          </div>
         </div>
       </div>
     `;

@@ -672,6 +672,22 @@ export class FirebaseService {
     }
   }
 
+  // Save Shiprocket Shipping & Rebranded Label Metadata
+  async saveShiprocketOrderDetails(orderId, details = {}) {
+    return this.updateOrderStatus(orderId, {
+      shiprocketOrderId: details.shiprocketOrderId || details.order_id || '',
+      shipmentId: details.shipmentId || details.shipment_id || '',
+      awbCode: details.awbCode || details.awb_code || details.trackingNumber || '',
+      trackingNumber: details.awbCode || details.awb_code || details.trackingNumber || '',
+      courierName: details.courierName || details.courier_name || 'BlueDart Express',
+      labelUrl: details.labelUrl || details.label_url || '',
+      rebrandedLabelUrl: details.rebrandedLabelUrl || '',
+      rebrandedAt: details.rebrandedAt || new Date().toISOString(),
+      company_name: 'MYTHOLIS LUXURY PARFUMS',
+      reseller_name: 'MYTHOLIS LUXURY PARFUMS'
+    });
+  }
+
   // Settle COD order rewards with duplicate protection
   async settleCodOrderLoyalty(orderId, orderData = null) {
     try {

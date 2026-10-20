@@ -6,6 +6,14 @@
 import gsap from 'gsap';
 import { AdminComponents } from './adminComponents.js';
 import { firebaseService, db, collection, getDocs, doc, getDoc, setDoc, firebaseConfig } from './firebase.js';
+import { 
+  LABEL_PRESETS, 
+  rebrandShiprocketLabelPdf, 
+  downloadPdfBlob, 
+  printPdfBlob, 
+  generateShiprocketOrderPayload,
+  generateSampleThermalLabelPdf
+} from './labelRebrander.js';
 
 if (typeof window !== 'undefined') {
   window.gsap = gsap;
@@ -38,6 +46,9 @@ class MytholisApp {
       firestoreClient: { status: 'untested', label: 'Firestore Lite (Ready to Verify)' },
       serverlessApi: { status: 'untested', label: 'Serverless /api/health (Ready to Verify)' }
     };
+    this.currentRebranderPdfBytes = null;
+    this.activeRebrandedResult = null;
+    this.targetRebranderOrder = null;
   }
 
   init() {
@@ -3146,6 +3157,319 @@ class MytholisApp {
     this.showToast('Backend health diagnostics complete.');
     console.log('[Mytholis Backend Diagnostics Matrix]', this.backendDiagnostics);
     return this.backendDiagnostics;
+  }
+
+  /* ==========================================================================
+     METHOD 3: SHIPROCKET PDF THERMAL LABEL REBRANDER CONTROLLER
+     Client-side vector rebranding with 100% courier barcode integrity
+     ========================================================================== */
+
+  openLabelRebranderModal(targetOrder = null) {
+    this.targetRebranderOrder = targetOrder;
+    this.currentRebranderPdfBytes = null;
+    this.activeRebrandedResult = null;
+
+    let savedConfig = {};
+    try {
+      const localCfg = localStorage.getItem('mytholis_label_config');
+      if (localCfg) savedConfig = JSON.parse(localCfg);
+    } catch (e) {}
+
+    if (typeof store !== 'undefined' && store.globalSettings && store.globalSettings.labelConfig) {
+      savedConfig = { ...savedConfig, ...store.globalSettings.labelConfig };
+    }
+
+    const modalHtml = AdminComponents.renderLabelRebranderModal(targetOrder, savedConfig);
+    this.injectAdminModal(modalHtml);
+    this.setupLabelDropzone();
+
+    // If order has an existing label URL, auto-load it
+    if (targetOrder && targetOrder.labelUrl) {
+      this.loadLabelFromUrl(targetOrder.labelUrl);
+    }
+  }
+
+  openLabelRebranderForOrder(orderId) {
+    const order = (this.adminData && this.adminData.orders) 
+      ? this.adminData.orders.find(o => (o.orderId === orderId || o.id === orderId))
+      : null;
+    this.openLabelRebranderModal(order || { orderId });
+  }
+
+  setupLabelDropzone() {
+    const dropzone = document.getElementById('label-dropzone');
+    if (!dropzone) return;
+
+    ['dragenter', 'dragover'].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.add('dragover');
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.remove('dragover');
+      }, false);
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      const files = e.dataTransfer?.files;
+      if (files && files.length > 0) {
+        this.processUploadedPdfFile(files[0]);
+      }
+    }, false);
+  }
+
+  handleLabelFileUpload(event) {
+    const file = event.target?.files?.[0];
+    if (file) {
+      this.processUploadedPdfFile(file);
+    }
+  }
+
+  async processUploadedPdfFile(file) {
+    if (!file) return;
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      this.showToast('Please upload a valid PDF shipping label.');
+      return;
+    }
+
+    this.updateRebranderStatus('Reading PDF label...', 'var(--gold-primary)');
+    const dropLabel = document.getElementById('dropzone-label-text');
+    if (dropLabel) {
+      dropLabel.innerText = `📄 ${file.name} (${Math.round(file.size / 1024)} KB)`;
+    }
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      this.currentRebranderPdfBytes = arrayBuffer;
+      await this.triggerRebrandPreview();
+      this.showToast('Shiprocket PDF loaded into Rebrander Studio.');
+    } catch (err) {
+      console.error('[LabelRebrander] Error reading file:', err);
+      this.updateRebranderStatus('Error reading file', '#EF4444');
+      this.showToast('Failed to load PDF file.');
+    }
+  }
+
+  async loadLabelFromUrl(customUrl = null) {
+    const url = customUrl || document.getElementById('rebrander-url-input')?.value?.trim();
+    if (!url) {
+      this.showToast('Please enter a valid PDF URL or upload a file.');
+      return;
+    }
+
+    this.updateRebranderStatus('Fetching PDF from URL...', 'var(--gold-primary)');
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const arrayBuffer = await response.arrayBuffer();
+      this.currentRebranderPdfBytes = arrayBuffer;
+
+      const dropLabel = document.getElementById('dropzone-label-text');
+      if (dropLabel) {
+        dropLabel.innerText = `🔗 Label fetched from URL`;
+      }
+
+      await this.triggerRebrandPreview();
+      this.showToast('Label fetched successfully.');
+    } catch (err) {
+      console.warn('[LabelRebrander] Fetch failed, likely CORS or invalid URL:', err);
+      this.updateRebranderStatus('CORS/Network Block: Drag & Drop PDF instead', '#F59E0B');
+      this.showToast('Direct URL blocked by courier CORS. Please drop the downloaded PDF file directly.');
+    }
+  }
+
+  async loadSampleThermalLabel() {
+    this.updateRebranderStatus('Generating sample 4x6 courier label...', 'var(--gold-primary)');
+    try {
+      const sampleBytes = await generateSampleThermalLabelPdf();
+      this.currentRebranderPdfBytes = sampleBytes;
+
+      const dropLabel = document.getElementById('dropzone-label-text');
+      if (dropLabel) {
+        dropLabel.innerText = `⚡ Sample 4x6 BlueDart Label Active`;
+      }
+
+      await this.triggerRebrandPreview();
+      this.showToast('Sample 4x6 courier label generated. Notice the bottom "Sold By" box is now rebranded!');
+    } catch (err) {
+      console.error('[LabelRebrander] Failed to generate sample:', err);
+      this.updateRebranderStatus('Error creating sample', '#EF4444');
+    }
+  }
+
+  applyLabelPreset(presetKey) {
+    const preset = LABEL_PRESETS[presetKey];
+    if (!preset) return;
+
+    const setVal = (id, badgeId, val) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val;
+      const b = document.getElementById(badgeId);
+      if (b) b.innerText = val;
+    };
+
+    setVal('slider-mask-x', 'val-mask-x', preset.maskX);
+    setVal('slider-mask-y', 'val-mask-y', preset.maskY);
+    setVal('slider-mask-w', 'val-mask-w', preset.maskWidth);
+    setVal('slider-mask-h', 'val-mask-h', preset.maskHeight);
+    setVal('slider-mask-font', 'val-mask-font', preset.fontSize);
+
+    const topMaskCheck = document.getElementById('rebrander-top-mask');
+    if (topMaskCheck) topMaskCheck.checked = !!preset.hasTopHeaderMask;
+
+    this.triggerRebrandPreview();
+  }
+
+  updateMaskSliderVal(type, val) {
+    const badge = document.getElementById(`val-mask-${type}`);
+    if (badge) badge.innerText = val;
+
+    const presetSelect = document.getElementById('rebrander-preset-select');
+    if (presetSelect && presetSelect.value !== 'custom') {
+      presetSelect.value = 'custom';
+    }
+
+    this.debounceTriggerRebrand();
+  }
+
+  debounceTriggerRebrand() {
+    clearTimeout(this._rebrandDebounceTimer);
+    this._rebrandDebounceTimer = setTimeout(() => {
+      this.triggerRebrandPreview();
+    }, 150);
+  }
+
+  getRebranderFormOptions() {
+    const getNum = (id, def) => {
+      const el = document.getElementById(id);
+      return el ? parseFloat(el.value) : def;
+    };
+    const getStr = (id, def) => {
+      const el = document.getElementById(id);
+      return el ? el.value.trim() : def;
+    };
+
+    return {
+      maskX: getNum('slider-mask-x', 14),
+      maskY: getNum('slider-mask-y', 18),
+      maskWidth: getNum('slider-mask-w', 260),
+      maskHeight: getNum('slider-mask-h', 82),
+      fontSize: getNum('slider-mask-font', 10),
+      showLogo: document.getElementById('rebrander-show-logo')?.checked !== false,
+      hasTopHeaderMask: document.getElementById('rebrander-top-mask')?.checked === true,
+      topMaskX: 14,
+      topMaskY: 375,
+      topMaskWidth: 160,
+      topMaskHeight: 45,
+      brandTitle: getStr('rebrander-title', 'MYTHOLIS LUXURY PARFUMS'),
+      brandSubtitle: getStr('rebrander-subtitle', 'Extrait de Parfum | Luxury Olfactory House'),
+      returnAddressLine: getStr('rebrander-return', 'House of Mytholis • www.mytholis.com • concierge@mytholis.com'),
+      logoUrl: '/logo.png'
+    };
+  }
+
+  async triggerRebrandPreview() {
+    if (!this.currentRebranderPdfBytes) return;
+
+    this.updateRebranderStatus('Stamping vector brand...', 'var(--gold-primary)');
+    try {
+      const options = this.getRebranderFormOptions();
+      const result = await rebrandShiprocketLabelPdf(this.currentRebranderPdfBytes, options);
+      this.activeRebrandedResult = result;
+
+      const iframe = document.getElementById('rebrander-preview-frame');
+      const placeholder = document.getElementById('rebrander-preview-placeholder');
+
+      if (iframe) {
+        iframe.src = result.blobUrl;
+        iframe.style.display = 'block';
+      }
+      if (placeholder) {
+        placeholder.style.display = 'none';
+      }
+
+      this.updateRebranderStatus('✓ Rebranded (100% Barcode Safe)', '#10B981');
+    } catch (err) {
+      console.error('[LabelRebrander] Rebranding failed:', err);
+      this.updateRebranderStatus('Rebrand error: ' + err.message, '#EF4444');
+    }
+  }
+
+  updateRebranderStatus(text, color = 'var(--gold-primary)') {
+    const pill = document.getElementById('rebrander-status-pill');
+    if (pill) {
+      pill.innerText = text;
+      pill.style.color = color;
+      pill.style.borderColor = color;
+    }
+  }
+
+  printRebrandedLabel() {
+    if (!this.activeRebrandedResult || !this.activeRebrandedResult.blobUrl) {
+      this.showToast('Please load a PDF label first before printing.');
+      return;
+    }
+    this.showToast('Opening thermal print dialog...');
+    printPdfBlob(this.activeRebrandedResult.blobUrl);
+  }
+
+  downloadRebrandedLabel(orderId = '') {
+    if (!this.activeRebrandedResult || !this.activeRebrandedResult.blob) {
+      this.showToast('Please load and rebrand a PDF label first.');
+      return;
+    }
+    const filename = `MYTHOLIS-Label-${orderId || 'Rebranded'}.pdf`;
+    downloadPdfBlob(this.activeRebrandedResult.blob, filename);
+    this.showToast(`Downloaded ${filename}`);
+  }
+
+  async saveLabelCalibrationAsDefault() {
+    const options = this.getRebranderFormOptions();
+    const presetSelect = document.getElementById('rebrander-preset-select');
+    options.preset = presetSelect ? presetSelect.value : 'custom';
+
+    try {
+      localStorage.setItem('mytholis_label_config', JSON.stringify(options));
+    } catch (e) {}
+
+    if (typeof firebaseService !== 'undefined' && firebaseService.saveGlobalSettings) {
+      await firebaseService.saveGlobalSettings({ labelConfig: options });
+    }
+
+    this.showToast('Thermal calibration parameters saved as default.');
+  }
+
+  async saveRebrandedLabelToOrder(orderId) {
+    if (!orderId) {
+      this.showToast('No order associated with this session.');
+      return;
+    }
+    if (!this.activeRebrandedResult) {
+      this.showToast('Please generate a rebranded label preview first.');
+      return;
+    }
+
+    this.showToast('Archiving rebrand metadata to Order #' + orderId + '...');
+    try {
+      const options = this.getRebranderFormOptions();
+      if (typeof firebaseService !== 'undefined' && firebaseService.saveShiprocketOrderDetails) {
+        await firebaseService.saveShiprocketOrderDetails(orderId, {
+          rebrandedAt: new Date().toISOString(),
+          rebrandedBy: firebaseService.currentUser?.email || 'admin',
+          labelConfig: options
+        });
+      }
+      this.showToast(`Order #${orderId} tagged with rebranded thermal label.`);
+    } catch (err) {
+      console.error('[LabelRebrander] Error saving to order:', err);
+      this.showToast('Failed to save to order record.');
+    }
   }
 }
 
