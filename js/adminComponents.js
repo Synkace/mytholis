@@ -794,6 +794,35 @@ export const AdminComponents = {
                     </div>
                   </div>
                 </div>
+
+                <!-- Razorpay & UPI Payment Gateway Configuration -->
+                <div class="liquid-glass-card" style="padding: 1.5rem; grid-column: 1 / -1;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <h4 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.1rem;">
+                      💳 Razorpay & UPI Payment Gateway
+                    </h4>
+                    <div>
+                      ${(globalSettings.razorpayKeyId || '').trim() ? `
+                        <span class="glass-pill" style="font-size: 0.72rem; color: #10B981; border-color: #10B981; background: rgba(16, 185, 129, 0.1);">
+                          ● Gateway Active (${(globalSettings.razorpayKeyId || '').startsWith('rzp_test') ? 'Test Mode' : 'Live Mode'})
+                        </span>
+                      ` : `
+                        <span class="glass-pill" style="font-size: 0.72rem; color: #F59E0B; border-color: #F59E0B; background: rgba(245, 158, 11, 0.1);">
+                          ⚠️ Key Missing (Prepaid Orders Mocked / Fallback)
+                        </span>
+                      `}
+                    </div>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div>
+                      <label class="sovereign-field-label">Razorpay Key ID (API Key)</label>
+                      <input type="text" id="setting-razorpay-key-id" class="sovereign-form-input" style="font-family: monospace;" placeholder="rzp_live_xxxxxxxxxxxxxx or rzp_test_xxxxxxxxxxxxxx" value="${globalSettings.razorpayKeyId || ''}" />
+                      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">
+                        Get your API Key from <a href="https://dashboard.razorpay.com/app/keys" target="_blank" style="color: var(--gold-primary); text-decoration: underline;">Razorpay Dashboard → Settings → API Keys</a>. Paste it here to enable genuine UPI (GPay, PhonePe, Paytm, BHIM, QR), Debit/Credit Cards, and NetBanking on the checkout window.
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <!-- Promo Codes & Vault Keys Manager -->

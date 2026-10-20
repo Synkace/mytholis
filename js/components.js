@@ -2669,11 +2669,25 @@ const Components = {
             <strong>COD Policy:</strong> Cash on Delivery is available for the Discovery Coffret (₹3,999). For full flacons (50ml/100ml), an automated WhatsApp dispatch confirmation OTP is required, or switch to UPI to save ₹200 instantly.
           </div>
 
-          <!-- Magic Checkout Notice -->
-          <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem; background: rgba(4, 24, 18, 0.6); border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(212, 175, 55, 0.15);">
-            <svg width="14" height="14" fill="none" stroke="var(--gold-primary)" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            <span style="font-size: 0.72rem; color: var(--gold-light);">Razorpay Magic 1-Tap Checkout active. No forced account registration required.</span>
-          </div>
+          <!-- Gateway Status Notice -->
+          ${(() => {
+            const hasRzpKey = Boolean((store.globalSettings && store.globalSettings.razorpayKeyId && store.globalSettings.razorpayKeyId.trim()) || (import.meta.env && import.meta.env.VITE_RAZORPAY_KEY_ID));
+            if (hasRzpKey) {
+              return `
+                <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem; background: rgba(4, 24, 18, 0.6); border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(212, 175, 55, 0.15);">
+                  <svg width="14" height="14" fill="none" stroke="var(--gold-primary)" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  <span style="font-size: 0.72rem; color: var(--gold-light);">Razorpay 256-Bit SSL Instant Gateway Active (GPay, PhonePe, Paytm, Cards, NetBanking).</span>
+                </div>
+              `;
+            } else {
+              return `
+                <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem; background: rgba(245, 158, 11, 0.1); border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(245, 158, 11, 0.3);">
+                  <span style="font-size: 0.85rem;">⚠️</span>
+                  <span style="font-size: 0.72rem; color: #FCD34D;">Prepaid Gateway Key pending setup in Sovereign Admin Settings. Cash on Delivery (COD) is available.</span>
+                </div>
+              `;
+            }
+          })()}
 
           <!-- Shipping Details Form -->
           <div style="display: flex; flex-direction: column; gap: 0.8rem;">

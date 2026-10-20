@@ -1583,68 +1583,97 @@ class MytholisApp {
     const customerAddress = addressInput ? addressInput.value.trim() : (store.user.address || '');
     const customerPincode = pincodeInput ? pincodeInput.value.trim() : (store.user.pincode || '');
 
+    if (!customerPhone || customerPhone.replace(/\D/g, '').length < 10) {
+      this.showToast('Please provide a valid 10-digit mobile number for order delivery.');
+      if (phoneInput) phoneInput.focus();
+      return;
+    }
+
+    if (!customerAddress || customerAddress.length < 5) {
+      this.showToast('Please provide your complete delivery address.');
+      if (addressInput) addressInput.focus();
+      return;
+    }
+
     // Check payment method
     const activeMethodPill = document.querySelector('.razorpay-method-pill.active');
     const paymentMethod = activeMethodPill ? activeMethodPill.textContent.trim() : 'Razorpay 1-Tap';
     const isCOD = paymentMethod.toLowerCase().includes('cash on delivery') || paymentMethod.toLowerCase().includes('cod');
 
-    const rzpKey = (import.meta.env && import.meta.env.VITE_RAZORPAY_KEY_ID) || '';
+    // Retrieve live Razorpay Key from Firestore globalSettings, Vite env, or window global
+    const rzpKey = (store.globalSettings && store.globalSettings.razorpayKeyId && store.globalSettings.razorpayKeyId.trim()) ||
+                   (import.meta.env && import.meta.env.VITE_RAZORPAY_KEY_ID && import.meta.env.VITE_RAZORPAY_KEY_ID.trim()) ||
+                   (typeof window !== 'undefined' && window.RAZORPAY_KEY_ID) || '';
 
-    // If Razorpay SDK is available and live key is provided
-    if (window.Razorpay && rzpKey && !isCOD) {
-      const options = {
-        key: rzpKey,
-        amount: Math.round(Number(amount) * 100),
-        currency: store.currency || 'INR',
-        name: 'Mytholis Haute Parfumerie',
-        description: 'Luxury Extrait Consignment',
-        image: 'https://mytholis.com/favicon.png',
-        prefill: {
-          name: customerName,
-          email: store.user.email || (typeof firebaseService !== 'undefined' && firebaseService.currentUser?.email) || '',
-          contact: customerPhone
-        },
-        theme: {
-          color: '#041812'
-        },
-        modal: {
-          ondismiss: () => {
-            this.showToast('Payment window closed.');
-          }
-        },
-        handler: (response) => {
-          this.finalizeOrderPlacement(amount, {
-            customerName,
-            customerPhone,
-            customerAddress,
-            customerPincode,
-            paymentMethod: 'Razorpay UPI / Gateway',
-            paymentId: response.razorpay_payment_id || `PAY-${Date.now()}`
-          });
-        }
-      };
-
-      try {
-        const rzp = new window.Razorpay(options);
-        rzp.on('payment.failed', (resp) => {
-          this.showToast(`Payment declined: ${resp.error?.description || 'Transaction unsuccessful'}`);
-        });
-        rzp.open();
-        return;
-      } catch (err) {
-        console.warn("Razorpay invocation failed, proceeding with direct authorization fallback:", err);
-      }
+    // If Cash on Delivery is chosen
+    if (isCOD) {
+      this.finalizeOrderPlacement(amount, {
+        customerName,
+        customerPhone,
+        customerAddress,
+        customerPincode,
+        paymentMethod: 'Cash on Delivery (COD)',
+        paymentId: 'COD-PENDING'
+      });
+      return;
     }
 
-    // Direct authorization or COD
-    this.finalizeOrderPlacement(amount, {
-      customerName,
-      customerPhone,
-      customerAddress,
-      customerPincode,
-      paymentMethod: isCOD ? 'Cash on Delivery (COD)' : 'Razorpay Direct Auth',
-      paymentId: isCOD ? 'COD-PENDING' : `AUTH-${Date.now()}`
-    });
+    // Prepaid Order: Mandate valid Razorpay Key to prevent mocked orders
+    if (!rzpKey) {
+      console.warn("[Mytholis Payment] Razorpay Key ID not configured. Order will not be mocked.");
+      this.showToast('Razorpay Gateway Inactive: Please configure your Razorpay Key ID in Sovereign Admin Settings (or select Cash on Delivery).');
+      return;
+    }
+
+    if (!window.Razorpay) {
+      this.showToast('Payment gateway library is loading. Please try again in a moment.');
+      return;
+    }
+
+    // Launch official Razorpay standard payment modal with UPI, Cards, NetBanking
+    const options = {
+      key: rzpKey,
+      amount: Math.round(Number(amount) * 100),
+      currency: store.currency || 'INR',
+      name: 'Mytholis Haute Parfumerie',
+      description: 'Luxury Extrait Consignment',
+      image: 'https://www.mytholis.com/favicon.png',
+      prefill: {
+        name: customerName,
+        email: store.user.email || (typeof firebaseService !== 'undefined' && firebaseService.currentUser?.email) || '',
+        contact: customerPhone
+      },
+      theme: {
+        color: '#041812'
+      },
+      modal: {
+        ondismiss: () => {
+          this.showToast('Payment window closed.');
+        }
+      },
+      handler: (response) => {
+        console.log("[Razorpay] Payment successful:", response);
+        this.finalizeOrderPlacement(amount, {
+          customerName,
+          customerPhone,
+          customerAddress,
+          customerPincode,
+          paymentMethod: 'Razorpay UPI / Gateway',
+          paymentId: response.razorpay_payment_id || `PAY-${Date.now()}`
+        });
+      }
+    };
+
+    try {
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', (resp) => {
+        this.showToast(`Payment declined: ${resp.error?.description || 'Transaction unsuccessful'}`);
+      });
+      rzp.open();
+    } catch (err) {
+      console.error("Razorpay invocation failed:", err);
+      this.showToast(`Unable to launch Razorpay: ${err.message}`);
+    }
   }
 
   finalizeOrderPlacement(amount, details = {}) {
@@ -2848,22 +2877,48 @@ class MytholisApp {
   async saveGlobalSettings(event) {
     event.preventDefault();
     try {
-      const getNum = id => Number(document.getElementById(id)?.value || 0);
-      const getChecked = id => Boolean(document.getElementById(id)?.checked);
+      const getNum = id => {
+        const el = document.getElementById(id);
+        return el ? Number(el.value || 0) : null;
+      };
+      const getChecked = id => {
+        const el = document.getElementById(id);
+        return el ? Boolean(el.checked) : null;
+      };
+      const getStr = id => {
+        const el = document.getElementById(id);
+        return el ? String(el.value || '').trim() : '';
+      };
 
       const currentSettings = this.adminData.settings || store.globalSettings || {};
 
+      const mythosEarn = getNum('setting-mythos-earn') ?? getNum('set-cashback-rate') ?? 3;
+      const redemptionRatio = getNum('setting-redemption-ratio') ?? getNum('set-redemption-ratio') ?? 1;
+      const maxRedeem = getNum('setting-max-redemption-pct') ?? getNum('set-max-cart-redeem') ?? 30;
+      const signupBonus = getNum('setting-signup-bonus') ?? getNum('set-signup-bonus') ?? 100;
+      const codEnabled = getChecked('setting-cod-enabled') ?? getChecked('set-cod-enabled') ?? true;
+      const codFee = getNum('setting-cod-fee') ?? getNum('set-cod-fee') ?? 0;
+      const maxCodAmount = getNum('setting-max-cod-amount') ?? getNum('set-max-cod-amount') ?? 15000;
+      const freeShip = getNum('setting-free-ship-threshold') ?? getNum('set-free-shipping-threshold') ?? 3000;
+      const shipFee = getNum('setting-standard-ship-fee') ?? getNum('set-shipping-fee') ?? 150;
+      const razorpayKey = getStr('setting-razorpay-key-id') || currentSettings.razorpayKeyId || '';
+
       const settingsData = {
         ...currentSettings,
-        cashbackRate: getNum('set-cashback-rate'),
-        redemptionRatio: getNum('set-redemption-ratio'),
-        maxCartRedeemPercent: getNum('set-max-cart-redeem'),
-        signupBonus: getNum('set-signup-bonus'),
-        codEnabled: getChecked('set-cod-enabled'),
-        codFee: getNum('set-cod-fee'),
-        maxCodAmount: getNum('set-max-cod-amount'),
-        freeShippingThreshold: getNum('set-free-shipping-threshold'),
-        shippingFee: getNum('set-shipping-fee')
+        mythosEarnPct: mythosEarn,
+        cashbackRate: mythosEarn,
+        redemptionRatio: redemptionRatio,
+        maxMythosRedemptionPct: maxRedeem,
+        maxCartRedeemPercent: maxRedeem,
+        signupBonusMythos: signupBonus,
+        signupBonus: signupBonus,
+        codEnabled: codEnabled,
+        codFee: codFee,
+        maxCodAmount: maxCodAmount,
+        freeShippingThreshold: freeShip,
+        standardShippingFee: shipFee,
+        shippingFee: shipFee,
+        razorpayKeyId: razorpayKey
       };
 
       this.showToast('Synchronizing global commerce rules to Firestore...');
