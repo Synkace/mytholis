@@ -510,7 +510,8 @@ export const AdminComponents = {
                     <th>Flacon</th>
                     <th>Name & Concentration</th>
                     <th>Category</th>
-                    <th>Price (₹)</th>
+                    <th style="min-width: 210px;">Flacon Editions & Sizes (★ 50ml · 100ml · 8ml)</th>
+                    <th>Base Price (₹)</th>
                     <th>Stock Count</th>
                     <th>In Stock</th>
                     <th>Batch / Maceration</th>
@@ -518,7 +519,17 @@ export const AdminComponents = {
                   </tr>
                 </thead>
                 <tbody>
-                  ${productsList.map(prod => `
+                  ${productsList.map(prod => {
+                    const catalogMatch = (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []).find(c => c.id === prod.id);
+                    const prodSizes = (Array.isArray(prod.sizes) && prod.sizes.length > 0)
+                      ? prod.sizes
+                      : (catalogMatch && Array.isArray(catalogMatch.sizes) ? catalogMatch.sizes : [
+                          { ml: 8, price: 899 },
+                          { ml: 50, price: 3999 },
+                          { ml: 100, price: prod.price || 5999 }
+                        ]);
+
+                    return `
                     <tr>
                       <td>
                         <img src="${prod.image || 'assets/product/1kingscar.webp'}" class="sovereign-table-img" alt="${prod.name}" />
@@ -529,6 +540,24 @@ export const AdminComponents = {
                       </td>
                       <td>
                         <span class="glass-pill" style="font-size: 0.7rem; color: var(--text-muted);">${prod.collection || prod.subtitle || 'Signature'}</span>
+                      </td>
+                      <td>
+                        <div style="display: flex; flex-direction: column; gap: 0.35rem; min-width: 200px;">
+                          ${prodSizes.map(s => `
+                            <div style="display: flex; align-items: center; justify-content: space-between; background: ${s.ml === 50 ? 'rgba(16, 185, 129, 0.12)' : 'rgba(0, 0, 0, 0.35)'}; padding: 0.22rem 0.5rem; border-radius: 6px; border: 1px solid ${s.ml === 50 ? 'rgba(16, 185, 129, 0.5)' : (s.ml === 100 ? 'rgba(212, 175, 55, 0.4)' : 'rgba(255, 255, 255, 0.12)')};">
+                              <span style="font-size: 0.72rem; font-weight: 700; color: ${s.ml === 50 ? '#6EE7B7' : (s.ml === 100 ? 'var(--gold-light)' : 'var(--text-muted)')};">
+                                ${s.ml === 50 ? '★ 50ml' : `${s.ml}ml`}
+                              </span>
+                              <div style="display: flex; align-items: center; gap: 0.25rem;">
+                                <span style="font-size: 0.7rem; color: var(--text-muted);">₹</span>
+                                <input type="number" class="sovereign-inline-input" style="width: 78px; padding: 0.18rem 0.35rem; font-size: 0.78rem; text-align: right;" 
+                                       value="${s.price || 0}" 
+                                       title="Edit ${s.ml}ml price for ${prod.name}"
+                                       onchange="app.updateProductSizePrice('${prod.id}', ${s.ml}, this.value)" />
+                              </div>
+                            </div>
+                          `).join('')}
+                        </div>
                       </td>
                       <td>
                         <input type="number" class="sovereign-inline-input" value="${prod.price || 0}" onchange="app.updateProductInline('${prod.id}', 'price', this.value)" />
@@ -556,7 +585,8 @@ export const AdminComponents = {
                         </div>
                       </td>
                     </tr>
-                  `).join('')}
+                    `;
+                  }).join('')}
                 </tbody>
               </table>
             </div>
@@ -968,12 +998,26 @@ export const AdminComponents = {
   /* Product Modal (Create / Edit) */
   renderProductModal(prod = null) {
     const isEdit = Boolean(prod && prod.id);
+    const catalogMatch = prod && prod.id ? (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []).find(c => c.id === prod.id) : null;
+    const sizes = (prod && Array.isArray(prod.sizes) && prod.sizes.length > 0)
+      ? prod.sizes
+      : (catalogMatch && Array.isArray(catalogMatch.sizes) ? catalogMatch.sizes : [
+          { ml: 8, price: 899, stock: 50 },
+          { ml: 50, price: 3999, stock: 50 },
+          { ml: 100, price: 5999, stock: 50 }
+        ]);
+
+    const s8 = sizes.find(s => s.ml === 8);
+    const s50 = sizes.find(s => s.ml === 50);
+    const s100 = sizes.find(s => s.ml === 100);
+    const otherSizes = sizes.filter(s => s.ml !== 8 && s.ml !== 50 && s.ml !== 100);
+
     const p = prod || {
       id: '',
       name: '',
       tagline: '',
       collection: 'Signature Men',
-      price: 4999,
+      price: s100 ? s100.price : (s50 ? s50.price : 4999),
       compareAtPrice: 5999,
       stock: 50,
       inStock: true,
@@ -1017,11 +1061,15 @@ export const AdminComponents = {
                 <input type="text" id="prod-collection" class="sovereign-form-input" value="${p.collection || p.subtitle || 'Aromatic · Men'}" />
               </div>
               <div>
-                <label class="sovereign-field-label">Price (₹)</label>
+                <label class="sovereign-field-label">Base Reference Price (₹)</label>
                 <input type="number" id="prod-price" class="sovereign-form-input" value="${p.price || 4999}" min="0" required />
               </div>
               <div>
-                <label class="sovereign-field-label">Stock Quantity</label>
+                <label class="sovereign-field-label">Compare At / MRP (₹)</label>
+                <input type="number" id="prod-compare-price" class="sovereign-form-input" value="${p.compareAtPrice || 5999}" min="0" />
+              </div>
+              <div>
+                <label class="sovereign-field-label">Global Stock Quantity</label>
                 <input type="number" id="prod-stock" class="sovereign-form-input" value="${p.stock !== undefined ? p.stock : 50}" min="0" required />
               </div>
               <div>
@@ -1036,10 +1084,95 @@ export const AdminComponents = {
                 <label class="sovereign-field-label">Maceration Date</label>
                 <input type="text" id="prod-maceration" class="sovereign-form-input" value="${p.macerationDate || 'March 2026'}" />
               </div>
-              <div>
+              <div style="grid-column: 1 / -1;">
                 <label class="sovereign-field-label">Bottle Image URL</label>
                 <input type="text" id="prod-image" class="sovereign-form-input" value="${p.image || 'assets/product/1kingscar.webp'}" required />
               </div>
+            </div>
+
+            <!-- Flacon Editions & Volume Pricing (50ml · 100ml · 8ml) -->
+            <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.45); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.35);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="font-size: 0.78rem; color: #6EE7B7; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">
+                  🏺 Flacon Editions & Volume Pricing (★ 50ml · 100ml · 8ml)
+                </div>
+                <span class="glass-pill" style="font-size: 0.68rem; color: var(--gold-light);">Multi-Size Vault Matrix</span>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 1rem;">
+                Control pricing and inventory specifically for the <strong>50ml Signature Edition</strong>, the <strong>100ml Grand Flacon</strong>, and the <strong>8ml Pocket Extrait</strong>.
+              </p>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                <!-- 50ml Flacon Card (Prominently Highlighted) -->
+                <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.45); border-radius: 8px; padding: 1rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: #6EE7B7; cursor: pointer; margin: 0;">
+                      <input type="checkbox" id="size-enabled-50" ${s50 || !isEdit ? 'checked' : ''} />
+                      <span>★ 50ml Signature Edition</span>
+                    </label>
+                    <span class="glass-pill" style="font-size: 0.65rem; color: #6EE7B7; border-color: rgba(16, 185, 129, 0.3);">Signature</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <div>
+                      <label class="sovereign-field-label" style="font-size: 0.7rem;">50ml Price (₹)</label>
+                      <input type="number" id="size-price-50" class="sovereign-form-input" value="${s50 ? s50.price : 3999}" min="0" />
+                    </div>
+                    <div>
+                      <label class="sovereign-field-label" style="font-size: 0.7rem;">50ml Stock Count</label>
+                      <input type="number" id="size-stock-50" class="sovereign-form-input" value="${s50 && s50.stock !== undefined ? s50.stock : (p.stock !== undefined ? p.stock : 50)}" min="0" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 100ml Grand Flacon Card -->
+                <div style="background: rgba(212, 175, 55, 0.08); border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 8px; padding: 1rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--gold-light); cursor: pointer; margin: 0;">
+                      <input type="checkbox" id="size-enabled-100" ${s100 || !isEdit ? 'checked' : ''} />
+                      <span>100ml Grand Flacon</span>
+                    </label>
+                    <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light); border-color: rgba(212, 175, 55, 0.3);">Grand</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <div>
+                      <label class="sovereign-field-label" style="font-size: 0.7rem;">100ml Price (₹)</label>
+                      <input type="number" id="size-price-100" class="sovereign-form-input" value="${s100 ? s100.price : (p.price || 5999)}" min="0" />
+                    </div>
+                    <div>
+                      <label class="sovereign-field-label" style="font-size: 0.7rem;">100ml Stock Count</label>
+                      <input type="number" id="size-stock-100" class="sovereign-form-input" value="${s100 && s100.stock !== undefined ? s100.stock : (p.stock !== undefined ? p.stock : 50)}" min="0" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 8ml Travel Pocket Extrait Card -->
+                <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; padding: 1rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--text-main); cursor: pointer; margin: 0;">
+                      <input type="checkbox" id="size-enabled-8" ${s8 ? 'checked' : ''} />
+                      <span>8ml Pocket Travel</span>
+                    </label>
+                    <span class="glass-pill" style="font-size: 0.65rem; color: var(--text-muted);">Decant</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <div>
+                      <label class="sovereign-field-label" style="font-size: 0.7rem;">8ml Price (₹)</label>
+                      <input type="number" id="size-price-8" class="sovereign-form-input" value="${s8 ? s8.price : 899}" min="0" />
+                    </div>
+                    <div>
+                      <label class="sovereign-field-label" style="font-size: 0.7rem;">8ml Stock Count</label>
+                      <input type="number" id="size-stock-8" class="sovereign-form-input" value="${s8 && s8.stock !== undefined ? s8.stock : 100}" min="0" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              ${otherSizes.length > 0 ? `
+                <div style="margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid rgba(212, 175, 55, 0.15); font-size: 0.75rem; color: var(--gold-light);">
+                  <span>Custom / Coffret Editions: </span>
+                  ${otherSizes.map(os => `<span class="glass-pill" style="margin-left: 0.4rem;">${os.ml}ml · ₹${os.price}</span>`).join('')}
+                </div>
+              ` : ''}
             </div>
 
             <!-- Notes & Accords -->

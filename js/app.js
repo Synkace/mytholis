@@ -3535,27 +3535,72 @@ class MytholisApp {
       const getNum = id => Number(document.getElementById(id)?.value || 0);
       const getChecked = id => Boolean(document.getElementById(id)?.checked);
 
+      const prodId = getVal('prod-id');
+      if (!prodId) {
+        this.showToast('Please provide a valid product ID/slug.');
+        return;
+      }
+
+      // Read configured sizes (50ml, 100ml, 8ml)
+      const sizes = [];
+      if (getChecked('size-enabled-8')) {
+        sizes.push({ ml: 8, price: getNum('size-price-8') || 899, stock: getNum('size-stock-8') || 50 });
+      }
+      if (getChecked('size-enabled-50')) {
+        sizes.push({ ml: 50, price: getNum('size-price-50') || 3999, stock: getNum('size-stock-50') || 50 });
+      }
+      if (getChecked('size-enabled-100')) {
+        sizes.push({ ml: 100, price: getNum('size-price-100') || 5999, stock: getNum('size-stock-100') || 50 });
+      }
+
+      // Preserve existing custom/coffret sizes if any
+      const existingProd = (this.adminData.products || []).find(p => p.id === prodId) ||
+                           (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG.find(p => p.id === prodId) : null);
+      if (existingProd && Array.isArray(existingProd.sizes)) {
+        existingProd.sizes.forEach(es => {
+          if (es.ml !== 8 && es.ml !== 50 && es.ml !== 100) {
+            sizes.push(es);
+          }
+        });
+      }
+
+      // Sort sizes by ml ascending
+      sizes.sort((a, b) => a.ml - b.ml);
+
+      // Determine primary reference price: input or 100ml or 50ml
+      const basePrice = getNum('prod-price') || (sizes.find(s => s.ml === 100)?.price) || (sizes.find(s => s.ml === 50)?.price) || 4999;
+      const baseStock = getNum('prod-stock') || 50;
+
+      const topNotesRaw = getVal('prod-notes-top');
+      const heartNotesRaw = getVal('prod-notes-heart');
+      const baseNotesRaw = getVal('prod-notes-base');
+      const accordsRaw = getVal('prod-accords');
+
       const prodData = {
-        id: getVal('prod-id'),
+        id: prodId,
         name: getVal('prod-name'),
         tagline: getVal('prod-tagline'),
-        category: getVal('prod-category'),
-        price: getNum('prod-price'),
-        compareAtPrice: getNum('prod-compare-price'),
-        stock: getNum('prod-stock'),
-        inStock: getChecked('prod-instock'),
-        isFeatured: getChecked('prod-featured'),
-        size: getVal('prod-size'),
-        concentration: getVal('prod-concentration'),
+        category: getVal('prod-collection') || getVal('prod-category') || 'Aromatic · Men',
+        collection: getVal('prod-collection') || 'Aromatic · Men',
+        price: basePrice,
+        compareAtPrice: getNum('prod-compare-price') || (basePrice + 1000),
+        stock: baseStock,
+        inStock: true,
+        sizes: sizes.length > 0 ? sizes : (existingProd?.sizes || [
+          { ml: 8, price: 899 },
+          { ml: 50, price: 3999 },
+          { ml: 100, price: basePrice }
+        ]),
+        concentration: getVal('prod-concentration') || 'Extrait de Parfum (40% Concentration)',
         notes: {
-          top: getVal('prod-notes-top'),
-          heart: getVal('prod-notes-heart'),
-          base: getVal('prod-notes-base'),
-          accords: getVal('prod-notes-accords')
+          top: topNotesRaw ? topNotesRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
+          heart: heartNotesRaw ? heartNotesRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
+          base: baseNotesRaw ? baseNotesRaw.split(',').map(s => s.trim()).filter(Boolean) : []
         },
-        batchCode: getVal('prod-batch'),
-        macerationDate: getVal('prod-maceration'),
-        image: getVal('prod-image'),
+        accords: accordsRaw ? accordsRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
+        batchCode: getVal('prod-batch') || 'MYTH-2026-X01',
+        macerationDate: getVal('prod-maceration') || 'March 2026',
+        image: getVal('prod-image') || 'assets/product/1kingscar.webp',
         description: getVal('prod-description')
       };
 
@@ -3571,6 +3616,64 @@ class MytholisApp {
     } catch (err) {
       console.error("[Sovereign Command] saveAdminProduct error:", err);
       this.showToast(`Error saving fragrance: ${err.message}`);
+    }
+  }
+
+  async updateProductSizePrice(productId, ml, newPrice) {
+    try {
+      const priceVal = Number(newPrice);
+      if (isNaN(priceVal) || priceVal < 0) {
+        this.showToast('Please enter a valid price in ₹.');
+        return;
+      }
+
+      const prod = (this.adminData.products || []).find(p => p.id === productId) || 
+                   (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG.find(p => p.id === productId) : null);
+      if (!prod) {
+        this.showToast(`Product ${productId} not found.`);
+        return;
+      }
+
+      if (!Array.isArray(prod.sizes)) {
+        prod.sizes = [
+          { ml: 8, price: 899 },
+          { ml: 50, price: 3999 },
+          { ml: 100, price: prod.price || 5999 }
+        ];
+      }
+
+      const sizeObj = prod.sizes.find(s => s.ml === Number(ml));
+      if (sizeObj) {
+        sizeObj.price = priceVal;
+      } else {
+        prod.sizes.push({ ml: Number(ml), price: priceVal });
+        prod.sizes.sort((a, b) => a.ml - b.ml);
+      }
+
+      // If updating 100ml or default size, keep prod.price in sync
+      if (Number(ml) === 100 || prod.sizes.length === 1) {
+        prod.price = priceVal;
+      }
+
+      const res = await firebaseService.saveProduct({
+        ...prod,
+        sizes: prod.sizes,
+        price: prod.price
+      });
+
+      if (res.success) {
+        this.showToast(`Updated ${prod.name} ${ml}ml edition to ₹${priceVal.toLocaleString('en-IN')}.`);
+        const catProd = (typeof MYTHOLIS_CATALOG !== 'undefined') ? MYTHOLIS_CATALOG.find(p => p.id === productId) : null;
+        if (catProd) {
+          catProd.sizes = prod.sizes;
+          if (prod.price) catProd.price = prod.price;
+        }
+      } else {
+        this.showToast(`Failed to update ${ml}ml price: ${res.error}`);
+      }
+    } catch (err) {
+      console.error("[Sovereign Command] updateProductSizePrice error:", err);
+      this.showToast(`Size price update error: ${err.message}`);
     }
   }
 

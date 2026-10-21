@@ -779,6 +779,11 @@ export class FirebaseService {
         if (!existing.exists()) {
           await setDoc(prodRef, {
             ...prod,
+            sizes: prod.sizes || [
+              { ml: 8, price: 899 },
+              { ml: 50, price: 3999 },
+              { ml: 100, price: 5999 }
+            ],
             stock: prod.stock || 50,
             inStock: prod.inStock !== false,
             isFeatured: prod.isFeatured !== false,
@@ -789,6 +794,19 @@ export class FirebaseService {
             updatedAt: serverTimestamp()
           });
           seededCount++;
+        } else {
+          // Sync sizes to existing Firestore product if missing or incomplete
+          const existingData = existing.data() || {};
+          if (!existingData.sizes || !existingData.sizes.length || !existingData.sizes.some(s => s.ml === 50)) {
+            await setDoc(prodRef, {
+              sizes: prod.sizes || [
+                { ml: 8, price: 899 },
+                { ml: 50, price: 3999 },
+                { ml: 100, price: 5999 }
+              ]
+            }, { merge: true });
+            seededCount++;
+          }
         }
       }
 
