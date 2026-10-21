@@ -78,6 +78,103 @@ const Components = {
     `;
   },
 
+  /* Render Sovereign Notched Card (Exact Match to User Reference Design) */
+  renderProductSliderCard(product) {
+    const isWishlisted = store.isInWishlist(product.id);
+    const cleanTitle = product.name.replace(' Extrait de Parfum', ' Extrait');
+    const badgeText = product.tag || 'Trending';
+
+    // Curated evocative descriptions matching the haute parfumerie reference
+    const curatedDescriptions = {
+      'king-scar': 'Commanding spices, crisp absinthe, and Bulgarian rose anchored in Haitian vetiver at 40% Extrait concentration.',
+      'petralux': 'Luminous Italian bergamot, golden pineapple, and royal amber trapped in stone at 40% Extrait concentration.',
+      'oud-rion': 'Smoky aged Assam oud, molten amber, and dark damask rose macerated at 40% Extrait concentration.',
+      'spark': 'Sunlit Sicilian mandarin, sparkling ginger, and crystalline aquatic woods at 40% Extrait concentration.',
+      'wood-sera': 'Rare Mysore sandalwood, aged bourbon cedarwood, and saddle leather at 40% Extrait concentration.',
+      'ash': 'White birch embers, frankincense tear smoke, and sacred resins macerated at 40% Extrait concentration.'
+    };
+
+    const desc = curatedDescriptions[product.id] || (product.description ? (product.description.length > 115 ? product.description.slice(0, 108).trim() + '...' : product.description) : '');
+
+    return `
+      <div class="sovereign-slider-card" data-id="${product.id}" onclick="app.openProductView('${product.id}')">
+        <!-- Notched Sovereign Gold Border SVG Frame -->
+        <svg class="sovereign-card-svg-frame" viewBox="0 0 320 520" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="sliderCardGrad-${product.id}" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#052418" />
+              <stop offset="100%" stop-color="#020e08" />
+            </linearGradient>
+          </defs>
+          <path d="M 28 1 
+                   L 292 1 
+                   Q 319 1 319 28 
+                   L 319 395 
+                   Q 319 418 297 418 
+                   L 236 418 
+                   Q 216 418 216 438 
+                   L 216 492 
+                   Q 216 519 189 519 
+                   L 28 519 
+                   Q 1 519 1 492 
+                   L 1 28 
+                   Q 1 1 28 1 Z" 
+                fill="url(#sliderCardGrad-${product.id})" 
+                stroke="#D4AF37" 
+                stroke-width="1.5" 
+                vector-effect="non-scaling-stroke" />
+        </svg>
+
+        <!-- Card Interior Content -->
+        <div class="sovereign-card-body">
+          <!-- Top Image Showcase Pedestal -->
+          <div class="notched-card-media">
+            <span class="notched-badge-pill">${badgeText}</span>
+            <div class="notched-media-halo"></div>
+            <img src="${product.image}" alt="${product.name}" class="notched-bottle-img" loading="lazy" />
+            <div class="notched-bottle-shadow"></div>
+          </div>
+
+          <!-- Card Body Info -->
+          <div class="notched-card-info">
+            <!-- Title & Wishlist -->
+            <div class="notched-title-row">
+              <h3 class="notched-product-title">${cleanTitle}</h3>
+              <button class="notched-wishlist-btn ${isWishlisted ? 'active' : ''}" 
+                      onclick="event.stopPropagation(); store.toggleWishlist('${product.id}')"
+                      title="${isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="${isWishlisted ? '#D4AF37' : '#D4AF37'}" stroke="#D4AF37" stroke-width="1.5">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Description -->
+            <p class="notched-product-desc">${desc}</p>
+
+            <!-- Price in bottom left -->
+            <div class="notched-bottom-row">
+              <div class="notched-price-display">
+                ${store.formatPrice(product.price)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Docked Cart Button in Notch -->
+        <button class="notched-docked-cart-btn" 
+                onclick="event.stopPropagation(); app.addProductToCart('${product.id}')"
+                title="Add ${product.name} to Cart">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1" fill="#D4AF37"></circle>
+            <circle cx="20" cy="21" r="1" fill="#D4AF37"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+        </button>
+      </div>
+    `;
+  },
+
   /* Render Home View */
   renderHome() {
     const heroProducts = MYTHOLIS_CATALOG.slice(0, 6);
@@ -221,7 +318,7 @@ const Components = {
               .filter(p => p.id !== 'mytholis-discovery-set')
               .map(p => `
                 <div class="product-slider-item">
-                  ${this.renderProductCard(p)}
+                  ${this.renderProductSliderCard(p)}
                 </div>
               `).join('')}
           </div>

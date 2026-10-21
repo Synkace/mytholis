@@ -5427,8 +5427,8 @@ div#cardsRow {
   overflow-y: visible;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
-  padding-top: 7.5rem;
-  padding-bottom: 2.2rem;
+  padding-top: 1.8rem;
+  padding-bottom: 2.5rem;
   padding-left: 0.5rem;
   padding-right: 2rem;
   scrollbar-width: none;
@@ -5449,11 +5449,234 @@ div#cardsRow {
 }
 
 .product-slider-item {
-  flex: 0 0 clamp(290px, 28vw, 340px);
+  flex: 0 0 320px;
   scroll-snap-align: start;
   scroll-snap-stop: always;
   display: flex;
   flex-direction: column;
+}
+
+/* ==========================================================================
+   SOVEREIGN NOTCHED PRODUCT CARD (SLIDER EDITION)
+   Matches custom luxury cutout contour design with docked cart button
+   ========================================================================== */
+
+.sovereign-slider-card {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  min-height: 520px;
+  height: 520px;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.3s ease;
+  user-select: none;
+}
+
+.sovereign-slider-card:hover {
+  transform: translateY(-6px);
+  filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.7));
+}
+
+.sovereign-card-svg-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  overflow: visible;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.5));
+}
+
+.sovereign-card-body {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
+/* Top Media Pedestal Box */
+.notched-card-media {
+  height: 250px;
+  margin: 16px 16px 0 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: linear-gradient(180deg, #072e1d 0%, #03180f 100%);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.notched-badge-pill {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  border: 1px solid rgba(212, 175, 55, 0.75);
+  background: rgba(3, 20, 13, 0.88);
+  color: #D4AF37;
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  z-index: 3;
+  backdrop-filter: blur(4px);
+}
+
+.notched-media-halo {
+  position: absolute;
+  width: 175px;
+  height: 175px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.18) 0%, rgba(212, 175, 55, 0.04) 55%, transparent 75%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.notched-bottle-img {
+  height: 185px;
+  width: auto;
+  max-width: 85%;
+  object-fit: contain;
+  z-index: 2;
+  filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.6));
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.sovereign-slider-card:hover .notched-bottle-img {
+  transform: translateY(-4px) scale(1.04);
+}
+
+.notched-bottle-shadow {
+  position: absolute;
+  bottom: 22px;
+  width: 130px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.5) 60%, transparent 85%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Middle & Bottom Content */
+.notched-card-info {
+  padding: 16px 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+.notched-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.notched-product-title {
+  margin: 0;
+  font-family: var(--font-serif-title, 'Cinzel', 'Playfair Display', serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.notched-wishlist-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  background: rgba(3, 22, 14, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.25s ease;
+  padding: 0;
+}
+
+.notched-wishlist-btn:hover {
+  border-color: #D4AF37;
+  background: rgba(212, 175, 55, 0.2);
+  transform: scale(1.08);
+}
+
+.notched-wishlist-btn.active svg,
+.notched-wishlist-btn svg {
+  fill: #D4AF37;
+  stroke: #D4AF37;
+}
+
+.notched-product-desc {
+  color: #8da399;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  margin: 0 0 16px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.notched-bottom-row {
+  margin-top: auto;
+  padding-bottom: 6px;
+  max-width: 190px;
+}
+
+.notched-price-display {
+  font-family: var(--font-serif-title, 'Cinzel', 'Playfair Display', serif);
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: #D4AF37;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* Docked Action Cart Button */
+.notched-docked-cart-btn {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 76px;
+  height: 84px;
+  border-radius: 22px;
+  border: 1.5px solid #D4AF37;
+  background: #03180f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  padding: 0;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+}
+
+.notched-docked-cart-btn:hover {
+  background: rgba(212, 175, 55, 0.22);
+  border-color: #ffd700;
+  transform: scale(1.06);
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.35);
+}
+
+.notched-docked-cart-btn:active {
+  transform: scale(0.96);
 }
 
 .product-slider-footer {
