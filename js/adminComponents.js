@@ -466,11 +466,11 @@ export const AdminComponents = {
                           🏷️ Rebrand Label
                         </button>
                         ${paymentMethod === 'COD' ? `
-                          <button class="btn-whatsapp-verify" onclick="app.verifyCodWhatsApp('${orderId}')" title="Send WhatsApp COD Confirmation">
+                          <button class="btn-whatsapp-verify" onclick="app.verifyCodWhatsApp('${orderId}', '${patronPhone}', ${finalPayable})" title="Send WhatsApp COD Confirmation">
                             <span>💬</span> Verify COD
                           </button>
                         ` : ''}
-                        <button class="btn-whatsapp-dispatch" onclick="app.sendDispatchWhatsApp('${orderId}')" title="Send WhatsApp Dispatch Notice">
+                        <button class="btn-whatsapp-dispatch" onclick="app.sendDispatchWhatsApp('${orderId}', '${patronPhone}')" title="Send WhatsApp Dispatch Notice">
                           <span>📦</span> Send Dispatch
                         </button>
                       </div>

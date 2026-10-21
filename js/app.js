@@ -3129,24 +3129,46 @@ class MytholisApp {
     }
   }
 
-  verifyCodWhatsApp(orderId, phone, total) {
-    const cleanPhone = (phone || '').replace(/[^0-9]/g, '');
+  verifyCodWhatsApp(orderId, phoneArg, totalArg) {
+    const order = (this.adminData?.orders || []).find(o => (o.id || o.orderId) === orderId || o.orderId === orderId || o.id === orderId) || {};
+    let rawPhone = phoneArg || order.phone || order.customer?.phone || order.shipping?.phone || order.userPhone || '';
+    if (!rawPhone && order.userId && this.adminData?.users) {
+      const patron = this.adminData.users.find(u => u.uid === order.userId);
+      if (patron) rawPhone = patron.profile?.phone || patron.phone || '';
+    }
+
+    let cleanPhone = (rawPhone || '').replace(/[^0-9]/g, '');
+    if (cleanPhone.length === 10) {
+      cleanPhone = '91' + cleanPhone;
+    }
+
     if (!cleanPhone) {
       this.showToast('No valid WhatsApp phone number found for this patron.');
       return;
     }
+    const total = totalArg || order.finalPayable || order.total || order.subtotal || 0;
     const msg = `Dear Patron,\n\nThis is Mytholis Haute Parfumerie regarding your bespoke fragrance order #${orderId} with Cash on Delivery (Payable: ₹${total}).\n\nTo initiate hand-crafted bottling and obsidian wax sealing of your flacon, please reply *CONFIRM* to this message.\n\nWarmest regards,\nThe Sovereign Sanctum | Mytholis Haute Parfumerie`;
     window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
   }
 
-  sendDispatchWhatsApp(orderId, phone) {
-    const cleanPhone = (phone || '').replace(/[^0-9]/g, '');
+  sendDispatchWhatsApp(orderId, phoneArg) {
+    const order = (this.adminData?.orders || []).find(o => (o.id || o.orderId) === orderId || o.orderId === orderId || o.id === orderId) || {};
+    let rawPhone = phoneArg || order.phone || order.customer?.phone || order.shipping?.phone || order.userPhone || '';
+    if (!rawPhone && order.userId && this.adminData?.users) {
+      const patron = this.adminData.users.find(u => u.uid === order.userId);
+      if (patron) rawPhone = patron.profile?.phone || patron.phone || '';
+    }
+
+    let cleanPhone = (rawPhone || '').replace(/[^0-9]/g, '');
+    if (cleanPhone.length === 10) {
+      cleanPhone = '91' + cleanPhone;
+    }
+
     if (!cleanPhone) {
       this.showToast('No valid WhatsApp phone number found for this patron.');
       return;
     }
 
-    const order = (this.adminData.orders || []).find(o => (o.id || o.orderId) === orderId) || {};
     const courier = order.courierName || 'BlueDart Express';
     const awb = order.trackingNumber || 'Active in Transit';
     const trackingUrl = order.trackingUrl || 'https://mytholis.com/#track-order';
