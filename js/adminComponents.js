@@ -665,7 +665,26 @@ export const AdminComponents = {
                     const isAdmin = u.role === 'admin' || u.isAdmin === true;
                     const spendable = Number(loyalty.spendable_mythos || 0);
                     const bottles = Number(loyalty.full_bottles_purchased || 0);
-                    const currentTierName = prof.tier || 'Level 1: The Observer';
+                    const legacy = Number(loyalty.legacy_mythos || spendable || 0);
+
+                    // Dynamically resolve tier from manual_tier_override or milestones
+                    const tiers = (typeof store !== 'undefined' && store.LOYALTY_TIERS) || (typeof window !== 'undefined' && window.LOYALTY_TIERS) || [];
+                    let tierObj = null;
+                    if (loyalty.manual_tier_override) {
+                      tierObj = tiers.find(t => t.level === Number(loyalty.manual_tier_override));
+                    }
+                    if (!tierObj) {
+                      for (let i = tiers.length - 1; i >= 0; i--) {
+                        const t = tiers[i];
+                        if (legacy >= t.minLegacy && bottles >= t.minBottles) {
+                          tierObj = t;
+                          break;
+                        }
+                      }
+                    }
+                    if (!tierObj && tiers.length > 0) tierObj = tiers[0];
+                    const currentTierName = (tierObj ? `Level ${tierObj.level}: ${tierObj.name}` : null) || prof.tier || 'Level 1: The Observer';
+                    const currentTierLevel = tierObj ? tierObj.level : 1;
 
                     return `
                       <tr class="admin-patron-row" data-name="${name.toLowerCase()}" data-email="${email.toLowerCase()}" data-phone="${phone}" data-uid="${u.uid}">
@@ -705,7 +724,7 @@ export const AdminComponents = {
                             <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.3rem 0.6rem;" onclick="app.openAdjustMythosModal('${u.uid}', '${name.replace(/'/g, "\\'")}', ${spendable})">
                               &plusmn; Adjust M
                             </button>
-                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.3rem 0.6rem;" onclick="app.openOverrideTierModal('${u.uid}', '${name.replace(/'/g, "\\'")}', ${bottles})">
+                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.3rem 0.6rem;" onclick="app.openOverrideTierModal('${u.uid}', '${name.replace(/'/g, "\\'")}', ${bottles}, ${currentTierLevel})">
                               Override Tier
                             </button>
                             <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.3rem 0.6rem; border-color: ${isAdmin ? 'rgba(239, 68, 68, 0.4)' : 'rgba(212, 175, 55, 0.4)'};" onclick="app.togglePatronAdmin('${u.uid}', ${!isAdmin})">
@@ -1143,7 +1162,8 @@ export const AdminComponents = {
   },
 
   /* Override Tier Modal */
-  renderOverrideTierModal(uid, patronName, currentBottles) {
+  renderOverrideTierModal(uid, patronName, currentBottles = 0, currentLevel = 1) {
+    const tierLevel = Number(currentLevel) || 1;
     return `
       <div class="sovereign-modal-backdrop" onclick="if(event.target === this) app.closeAdminModal()">
         <div class="sovereign-modal-box" style="max-width: 520px;">
@@ -1164,17 +1184,17 @@ export const AdminComponents = {
             <div style="margin-bottom: 1.5rem;">
               <label class="sovereign-field-label">Promote to Circle of Legends Standing Tier</label>
               <select id="override-tier-select" class="sovereign-select" style="width: 100%;">
-                <option value="1">Level 1: The Observer (Initiate)</option>
-                <option value="2">Level 2: The Curator (1+ Bottles, 2x Return)</option>
-                <option value="3">Level 3: The Collector (3+ Bottles, 3x Return)</option>
-                <option value="4">Level 4: The Archivist (6+ Bottles, 4x Return)</option>
-                <option value="5">Level 5: The Patron (12+ Bottles, 5x Return)</option>
+                <option value="1" ${tierLevel === 1 ? 'selected' : ''}>Level 1: The Observer (Initiate)</option>
+                <option value="2" ${tierLevel === 2 ? 'selected' : ''}>Level 2: The Curator (1+ Bottles, 2x Return)</option>
+                <option value="3" ${tierLevel === 3 ? 'selected' : ''}>Level 3: The Collector (3+ Bottles, 3x Return)</option>
+                <option value="4" ${tierLevel === 4 ? 'selected' : ''}>Level 4: The Archivist (6+ Bottles, 4x Return)</option>
+                <option value="5" ${tierLevel === 5 ? 'selected' : ''}>Level 5: The Patron (12+ Bottles, 5x Return)</option>
               </select>
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">
               <button type="button" class="btn btn-glass" onclick="app.closeAdminModal()">Cancel</button>
-              <button type="submit" class="btn btn-gold" style="padding: 0.7rem 1.8rem;">Apply Override</button>
+              <button type="button" class="btn btn-gold" style="padding: 0.7rem 1.8rem;" onclick="app.submitOverrideTier(event, '${uid}')">Apply Override</button>
             </div>
           </form>
         </div>

@@ -569,6 +569,12 @@ class MytholisStore {
   }
 
   getCurrentTier() {
+    if (this.loyalty && this.loyalty.manual_tier_override) {
+      const overrideNum = Number(this.loyalty.manual_tier_override);
+      const manualTier = LOYALTY_TIERS.find(t => t.level === overrideNum);
+      if (manualTier) return manualTier;
+    }
+
     const legacy = this.loyalty ? this.loyalty.legacy_mythos : 0;
     const bottles = this.loyalty ? this.loyalty.full_bottles_purchased : 0;
 

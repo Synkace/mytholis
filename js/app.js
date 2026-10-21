@@ -3382,8 +3382,8 @@ class MytholisApp {
     }
   }
 
-  openOverrideTierModal(uid, name, currentLevel, currentBottles) {
-    const modalHtml = AdminComponents.renderOverrideTierModal(uid, name, currentLevel, currentBottles);
+  openOverrideTierModal(uid, name, bottles = 0, currentLevel = 1) {
+    const modalHtml = AdminComponents.renderOverrideTierModal(uid, name, bottles, currentLevel);
     this.injectAdminModal(modalHtml);
   }
 

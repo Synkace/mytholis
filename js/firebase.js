@@ -1100,19 +1100,50 @@ export class FirebaseService {
     try {
       const userDocRef = doc(db, "users", uid);
       const userSnap = await getDoc(userDocRef);
-      if (!userSnap.exists()) return { success: false, error: "Patron not found" };
+      if (!userSnap.exists()) return { success: false, error: "Patron document not found in Firestore." };
 
-      const currentLoyalty = userSnap.data().loyalty || {};
-      const newBottles = fullBottles !== undefined ? Number(fullBottles) : currentLoyalty.full_bottles_purchased;
+      const userData = userSnap.data() || {};
+      const currentLoyalty = userData.loyalty || {};
+      const currentProfile = userData.profile || {};
+      const newBottles = fullBottles !== undefined ? Number(fullBottles) : Number(currentLoyalty.full_bottles_purchased || 0);
+      const targetLevel = levelNum ? Number(levelNum) : 1;
+
+      const tiers = (this.store && this.store.LOYALTY_TIERS) || [
+        { level: 1, name: "The Observer" },
+        { level: 2, name: "The Curator" },
+        { level: 3, name: "The Collector" },
+        { level: 4, name: "The Archivist" },
+        { level: 5, name: "The Patron" }
+      ];
+      const tierObj = tiers.find(t => t.level === targetLevel) || tiers[0];
+      const tierLabel = `Level ${tierObj.level}: ${tierObj.name}`;
 
       await setDoc(userDocRef, {
+        profile: {
+          ...currentProfile,
+          tier: tierLabel
+        },
         loyalty: {
           ...currentLoyalty,
           full_bottles_purchased: newBottles,
-          manual_tier_override: levelNum ? Number(levelNum) : null
+          manual_tier_override: targetLevel
         },
         updatedAt: serverTimestamp()
       }, { merge: true });
+
+      // If updating currently logged in patron, also sync locally
+      if (this.currentUser && this.currentUser.uid === uid && this.store) {
+        if (this.store.loyalty) {
+          this.store.loyalty.full_bottles_purchased = newBottles;
+          this.store.loyalty.manual_tier_override = targetLevel;
+          this.store.saveLocalStorage('mytholis_loyalty', this.store.loyalty);
+        }
+        if (this.store.user) {
+          this.store.user.tier = tierLabel;
+          this.store.saveLocalStorage('mytholis_user', this.store.user);
+        }
+        this.store.notify();
+      }
 
       return { success: true };
     } catch (err) {
