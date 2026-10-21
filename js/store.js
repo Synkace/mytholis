@@ -229,6 +229,7 @@ class MytholisStore {
       address: "",
       pincode: "",
       city: "",
+      state: "",
       role: "patron",
       isAdmin: false,
       tier: "Level 1: The Initiate",

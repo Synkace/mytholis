@@ -2274,9 +2274,24 @@ const Components = {
               </div>
             </div>
 
-            <div style="margin-bottom: 1.5rem;">
-              <label style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.4rem;">Delivery Address</label>
-              <input type="text" id="profile-edit-address" class="engraving-input" value="${u.address || ''}" placeholder="Flat / House, Street, Area, City, State, PIN" />
+            <div style="margin-bottom: 1rem;">
+              <label style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.4rem;">Delivery Address (Flat / House / Street / Landmark)</label>
+              <input type="text" id="profile-edit-address" class="engraving-input" value="${u.address || ''}" placeholder="e.g. Villa 42, The Sovereign Palms, DLF Phase 5" />
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.8rem; margin-bottom: 1.5rem;">
+              <div>
+                <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.35rem;">City</label>
+                <input type="text" id="profile-edit-city" class="engraving-input" value="${u.city || ''}" placeholder="e.g. Gurgaon" />
+              </div>
+              <div>
+                <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.35rem;">State</label>
+                <input type="text" id="profile-edit-state" class="engraving-input" value="${u.state || ''}" placeholder="e.g. Haryana" />
+              </div>
+              <div>
+                <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.35rem;">PIN Code</label>
+                <input type="text" id="profile-edit-pincode" class="engraving-input" value="${u.pincode || ''}" placeholder="e.g. 122002" />
+              </div>
             </div>
 
             <button type="submit" class="btn btn-gold" style="font-size: 0.82rem; padding: 0.6rem 1.4rem;">
@@ -2477,6 +2492,31 @@ const Components = {
                 Open Loyalty
               </button>
             </div>
+          </div>
+
+          <!-- Saved Dispatch Coordinates Overview -->
+          <div class="modal-section-box liquid-glass-card" style="padding: 1.1rem; margin-bottom: 1.2rem;">
+            <div class="modal-section-header" style="margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
+              <h4 class="modal-section-title" style="font-size: 0.85rem;">Saved Dispatch Coordinates</h4>
+              <button type="button" class="glass-pill" style="font-size: 0.65rem; cursor: pointer; color: var(--gold-light);" onclick="app.setDossierTab('edit')">
+                ✎ Edit Coordinates
+              </button>
+            </div>
+            ${(u.address || u.city || u.pincode) ? `
+              <div style="font-size: 0.82rem; color: var(--text-main); line-height: 1.5; background: rgba(0, 0, 0, 0.25); padding: 0.75rem 0.9rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.15);">
+                <div style="font-weight: 600; color: var(--gold-light); margin-bottom: 0.2rem;">${u.name || displayName}</div>
+                <div>${u.address || ''}</div>
+                <div>${[u.city, u.state, u.pincode].filter(Boolean).join(', ')}</div>
+                ${u.phone ? `<div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.3rem;">Tel: ${u.phone}</div>` : ''}
+              </div>
+            ` : `
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(212, 175, 55, 0.05); border: 1px dashed rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 0.75rem 0.9rem;">
+                <span style="font-size: 0.78rem; color: var(--text-muted);">No delivery address saved yet.</span>
+                <button type="button" class="btn btn-gold" style="font-size: 0.72rem; padding: 0.35rem 0.75rem;" onclick="app.setDossierTab('edit')">
+                  + Add Address
+                </button>
+              </div>
+            `}
           </div>
 
           <!-- Store Currency Selector -->
@@ -2931,10 +2971,10 @@ const Components = {
           <div style="display: flex; flex-direction: column; gap: 0.8rem;">
             <input type="text" id="checkout-name" class="engraving-input" placeholder="Full Delivery Name" value="${store.user.name || ''}" />
             <div style="display: flex; gap: 0.6rem;">
-              <input type="tel" id="checkout-phone" class="engraving-input" placeholder="Mobile / WhatsApp Number (+91...)" style="flex: 1;" />
-              <input type="text" id="checkout-pincode" class="engraving-input" placeholder="PIN Code" style="flex: 1;" />
+              <input type="tel" id="checkout-phone" class="engraving-input" placeholder="Mobile / WhatsApp Number (+91...)" value="${store.user.phone || ''}" style="flex: 1;" />
+              <input type="text" id="checkout-pincode" class="engraving-input" placeholder="PIN Code" value="${store.user.pincode || ''}" style="flex: 1;" />
             </div>
-            <input type="text" id="checkout-address" class="engraving-input" placeholder="Flat, Street, Area, Landmark Address" />
+            <input type="text" id="checkout-address" class="engraving-input" placeholder="Flat, Street, Area, Landmark Address" value="${store.user.address || ''}" />
           </div>
         </div>
       </div>

@@ -317,7 +317,7 @@ export class FirebaseService {
     try {
       const user = auth.currentUser || this.currentUser;
       if (!user) {
-        return { success: false, error: 'No active patron session found.' };
+        return { success: true, localOnly: true };
       }
 
       // 1. Update Firebase Auth display name and photoURL if provided
@@ -334,8 +334,18 @@ export class FirebaseService {
 
       // 2. Persist to Cloud Firestore under users/{uid}.profile
       const userDocRef = doc(db, "users", user.uid);
-      const cleanData = { ...profileData, updatedAt: new Date().toISOString() };
-      await setDoc(userDocRef, { profile: cleanData }, { merge: true });
+      const cleanData = {};
+      for (const [key, val] of Object.entries(profileData)) {
+        if (val !== undefined && val !== null) {
+          cleanData[key] = val;
+        }
+      }
+      cleanData.updatedAt = new Date().toISOString();
+
+      await setDoc(userDocRef, {
+        profile: cleanData,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
 
       return { success: true };
     } catch (error) {
@@ -493,11 +503,23 @@ export class FirebaseService {
 
         // Merge cloud profile with store
         if (cloudData.profile) {
+          const mergedAddress = cloudData.profile.address || this.store.user.address || '';
+          const mergedCity = cloudData.profile.city || this.store.user.city || '';
+          const mergedState = cloudData.profile.state || this.store.user.state || '';
+          const mergedPincode = cloudData.profile.pincode || this.store.user.pincode || '';
+          const mergedName = cloudData.profile.name || user.displayName || this.store.user.name || '';
+          const mergedPhone = user.phoneNumber || cloudData.profile.phone || this.store.user.phone || '';
+
           this.store.user = Object.assign({}, this.store.user, cloudData.profile, {
+            name: mergedName,
             email: patronEmail,
-            phone: user.phoneNumber || cloudData.profile.phone || this.store.user.phone || '',
+            phone: mergedPhone,
+            address: mergedAddress,
+            city: mergedCity,
+            state: mergedState,
+            pincode: mergedPincode,
             uid: user.uid,
-            photoURL: user.photoURL || null,
+            photoURL: user.photoURL || cloudData.profile.photoURL || this.store.user.photoURL || null,
             isAdmin: isUserAdmin || cloudData.profile.isAdmin === true || cloudData.isAdmin === true,
             role: isUserAdmin || cloudData.profile.role === 'admin' || cloudData.role === 'admin' ? 'admin' : 'patron'
           });
@@ -530,6 +552,7 @@ export class FirebaseService {
           address: this.store.user.address || '',
           pincode: this.store.user.pincode || '',
           city: this.store.user.city || '',
+          state: this.store.user.state || '',
           role: isUserAdmin ? 'admin' : 'patron',
           isAdmin: isUserAdmin,
           createdAt: serverTimestamp()
@@ -587,16 +610,21 @@ export class FirebaseService {
 
     try {
       const userDocRef = doc(db, "users", this.currentUser.uid);
+      const profileToSave = {
+        name: this.store.user.name || this.currentUser.displayName || '',
+        email: this.currentUser.email || this.store.user.email || '',
+        phone: this.store.user.phone || this.currentUser.phoneNumber || '',
+        address: this.store.user.address || '',
+        pincode: this.store.user.pincode || '',
+        city: this.store.user.city || '',
+        state: this.store.user.state || '',
+        updatedAt: serverTimestamp()
+      };
+      if (this.store.user.photoURL || this.currentUser.photoURL) {
+        profileToSave.photoURL = this.store.user.photoURL || this.currentUser.photoURL;
+      }
       await setDoc(userDocRef, {
-        profile: {
-          name: this.store.user.name || this.currentUser.displayName || '',
-          email: this.currentUser.email,
-          phone: this.store.user.phone || '',
-          address: this.store.user.address || '',
-          pincode: this.store.user.pincode || '',
-          city: this.store.user.city || '',
-          updatedAt: serverTimestamp()
-        },
+        profile: profileToSave,
         loyalty: this.store.loyalty,
         updatedAt: serverTimestamp()
       }, { merge: true });

@@ -1772,9 +1772,30 @@ class MytholisApp {
       date: new Date().toLocaleDateString('en-IN')
     };
 
+    // Auto-persist customer delivery address & contact coordinates to profile for 1-tap checkout
+    if (details.customerAddress) {
+      store.user.address = details.customerAddress;
+    }
+    if (details.customerPhone && (!store.user.phone || store.user.phone.length < 5)) {
+      store.user.phone = details.customerPhone;
+    }
+    if (details.customerPincode) {
+      store.user.pincode = details.customerPincode;
+    }
+    if (details.customerName && (!store.user.name || store.user.name === 'Mytholis Patron')) {
+      store.user.name = details.customerName;
+    }
+    store.saveLocalStorage('mytholis_user', store.user);
+
     // 1. Sync order to Firebase Firestore cloud database
     if (typeof firebaseService !== 'undefined') {
       firebaseService.recordOrderInCloud(orderRecord);
+      firebaseService.updatePatronProfile({
+        name: store.user.name,
+        phone: store.user.phone,
+        address: store.user.address,
+        pincode: store.user.pincode
+      }).catch(() => {});
     }
 
     // 2. Call serverless complete-order endpoint (with silent fallback)
@@ -2144,6 +2165,9 @@ class MytholisApp {
   setDossierTab(tab) {
     this.activeDossierTab = tab;
     this.renderProfileModalContent();
+    if (store.currentView === 'profile' || store.currentView === 'user-profile') {
+      this.renderCurrentView();
+    }
   }
 
   async handleProfilePhotoUpload(event) {
@@ -2241,23 +2265,31 @@ class MytholisApp {
   async handleSaveDossierProfile(event) {
     if (event) event.preventDefault();
 
-    const name = document.getElementById('dossier-name-input')?.value?.trim();
-    const phone = document.getElementById('dossier-phone-input')?.value?.trim();
-    const address = document.getElementById('dossier-address-input')?.value?.trim();
-    const city = document.getElementById('dossier-city-input')?.value?.trim();
-    const state = document.getElementById('dossier-state-input')?.value?.trim();
-    const pincode = document.getElementById('dossier-pincode-input')?.value?.trim();
+    // Look for inputs across both the Dedicated Profile View ('profile-edit-*') and the Modal Tabs ('dossier-*-input')
+    const nameInput = document.getElementById('dossier-name-input') || document.getElementById('profile-edit-name');
+    const phoneInput = document.getElementById('dossier-phone-input') || document.getElementById('profile-edit-phone');
+    const addressInput = document.getElementById('dossier-address-input') || document.getElementById('profile-edit-address');
+    const cityInput = document.getElementById('dossier-city-input') || document.getElementById('profile-edit-city');
+    const stateInput = document.getElementById('dossier-state-input') || document.getElementById('profile-edit-state');
+    const pincodeInput = document.getElementById('dossier-pincode-input') || document.getElementById('profile-edit-pincode');
+
+    const name = nameInput ? nameInput.value.trim() : (store.user.name || '');
+    const phone = phoneInput ? phoneInput.value.trim() : (store.user.phone || '');
+    const address = addressInput ? addressInput.value.trim() : (store.user.address || '');
+    const city = cityInput ? cityInput.value.trim() : (store.user.city || '');
+    const state = stateInput ? stateInput.value.trim() : (store.user.state || '');
+    const pincode = pincodeInput ? pincodeInput.value.trim() : (store.user.pincode || '');
 
     if (name) store.user.name = name;
-    if (phone !== undefined) store.user.phone = phone;
-    if (address !== undefined) store.user.address = address;
-    if (city !== undefined) store.user.city = city;
-    if (state !== undefined) store.user.state = state;
-    if (pincode !== undefined) store.user.pincode = pincode;
+    store.user.phone = phone;
+    store.user.address = address;
+    store.user.city = city;
+    store.user.state = state;
+    store.user.pincode = pincode;
 
     if (store.firebaseUser) {
       if (name) store.firebaseUser.displayName = name;
-      if (phone !== undefined) store.firebaseUser.phone = phone;
+      store.firebaseUser.phone = phone;
     }
 
     store.saveLocalStorage('mytholis_user', store.user);
@@ -2277,6 +2309,7 @@ class MytholisApp {
     this.showToast('Patron coordinates & profile saved.');
     this.updateNavAuth();
     this.setDossierTab('overview');
+    this.renderProfileModalContent();
     if (store.currentView === 'profile' || store.currentView === 'user-profile') {
       this.renderCurrentView();
     }
