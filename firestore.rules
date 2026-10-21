@@ -1,21 +1,33 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && (
+        (request.auth.token.email != null && (
+          request.auth.token.email.matches('.*gunhegarr.*') ||
+          request.auth.token.email in ['gunhegarr@gmail.com', 'admin@mytholis.com', 'alexander@mytholis.com', 'founder@mytholis.com']
+        )) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true))
+      );
+    }
     
-    // 1. Patrons can read & write their own profile and loyalty records
+    // 1. Patrons can read & write their own profile and loyalty records; Admins have sovereign access
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
       
       // Nested user orders or history
       match /{document=**} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
       }
     }
 
     // 2. Orders collection: Any patron/guest can submit an order. Read/Update for authenticated owners or admin.
     match /orders/{orderId} {
       allow create: if true;
-      allow read, update: if request.auth != null;
+      allow read, update, delete: if request.auth != null;
     }
 
     // 3. Settings & Inventory Overrides: Publicly readable so patrons see real-time drops.
@@ -30,7 +42,13 @@ service cloud.firestore {
       allow write: if request.auth != null;
     }
 
-    // 5. Diagnostics Ping:
+    // 5. Editorial / Gazette Posts
+    match /posts/{postId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 6. Diagnostics Ping:
     match /_diagnostics/{doc} {
       allow read, write: if true;
     }

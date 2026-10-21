@@ -1121,6 +1121,7 @@ export const AdminComponents = {
           </div>
 
           <form onsubmit="app.submitAdjustMythos(event, '${uid}')">
+            <input type="hidden" id="adjust-mythos-uid" value="${uid}" />
             <div style="margin-bottom: 1rem;">
               <label class="sovereign-field-label">Coin Adjustment (+ to Grant, - to Deduct)</label>
               <input type="number" id="adjust-mythos-delta" class="sovereign-form-input" placeholder="e.g. +500 or -200" required />
@@ -1154,6 +1155,7 @@ export const AdminComponents = {
           </div>
 
           <form onsubmit="app.submitOverrideTier(event, '${uid}')">
+            <input type="hidden" id="override-tier-uid" value="${uid}" />
             <div style="margin-bottom: 1rem;">
               <label class="sovereign-field-label">Full Flacons Owned Count</label>
               <input type="number" id="override-bottles-input" class="sovereign-form-input" value="${currentBottles}" min="0" required />

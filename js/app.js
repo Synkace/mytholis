@@ -3321,14 +3321,23 @@ class MytholisApp {
     this.injectAdminModal(modalHtml);
   }
 
-  async submitAdjustMythos(event) {
-    event.preventDefault();
+  async submitAdjustMythos(event, argUid = null) {
+    if (event) event.preventDefault();
     try {
-      const uid = document.getElementById('adjust-mythos-uid')?.value;
-      const delta = Number(document.getElementById('adjust-mythos-delta')?.value || 0);
+      const uid = argUid || document.getElementById('adjust-mythos-uid')?.value;
+      const deltaInput = document.getElementById('adjust-mythos-delta');
+      const delta = Number(deltaInput?.value || 0);
       const reason = document.getElementById('adjust-mythos-reason')?.value?.trim() || 'Sovereign adjustment';
 
-      if (!uid) return;
+      if (!uid) {
+        this.showToast('Error: Missing patron UID.');
+        return;
+      }
+      if (!delta && delta !== 0) {
+        this.showToast('Please enter a valid coin adjustment amount.');
+        return;
+      }
+
       this.showToast(`Adjusting Mythos balance (${delta > 0 ? '+' : ''}${delta}M)...`);
       const res = await firebaseService.adjustPatronMythos(uid, delta, reason);
       if (res.success) {
@@ -3349,19 +3358,25 @@ class MytholisApp {
     this.injectAdminModal(modalHtml);
   }
 
-  async submitOverrideTier(event) {
-    event.preventDefault();
+  async submitOverrideTier(event, argUid = null) {
+    if (event) event.preventDefault();
     try {
-      const uid = document.getElementById('override-tier-uid')?.value;
-      const tier = document.getElementById('override-tier-level')?.value;
-      const bottles = Number(document.getElementById('override-tier-bottles')?.value || 0);
+      const uid = argUid || document.getElementById('override-tier-uid')?.value;
+      const tierSelect = document.getElementById('override-tier-select') || document.getElementById('override-tier-level');
+      const tier = tierSelect?.value || '1';
+      const bottlesInput = document.getElementById('override-bottles-input') || document.getElementById('override-tier-bottles');
+      const bottles = Number(bottlesInput?.value || 0);
 
-      if (!uid) return;
-      this.showToast(`Setting patron standing to ${tier}...`);
+      if (!uid) {
+        this.showToast('Error: Missing patron UID.');
+        return;
+      }
+
+      this.showToast(`Setting patron standing to Level ${tier}...`);
       const res = await firebaseService.overridePatronTier(uid, tier, bottles);
       if (res.success) {
         this.closeAdminModal();
-        this.showToast(`Patron standing updated to ${tier}.`);
+        this.showToast(`Patron standing updated to Level ${tier}.`);
         await this.loadAdminDashboard();
       } else {
         this.showToast(`Override failed: ${res.error}`);

@@ -24,6 +24,7 @@ import {
 } from "firebase/auth";
 import { 
   getFirestore, 
+  initializeFirestore,
   doc, 
   setDoc, 
   getDoc, 
@@ -71,7 +72,14 @@ export const firebaseConfig = {
 // Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
-const db = getFirestore(firebaseApp);
+let db;
+try {
+  db = initializeFirestore(firebaseApp, {
+    experimentalAutoDetectLongPolling: true
+  });
+} catch (e) {
+  db = getFirestore(firebaseApp);
+}
 const googleProvider = new GoogleAuthProvider();
 
 export class FirebaseService {
