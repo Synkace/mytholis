@@ -333,8 +333,11 @@ export class FirebaseService {
       if (profileData.name && profileData.name.trim()) {
         authUpdates.displayName = profileData.name.trim();
       }
+      // Firebase Auth updateProfile only accepts valid HTTP/HTTPS URLs under 2048 chars for photoURL
       if (profileData.photoURL !== undefined) {
-        authUpdates.photoURL = profileData.photoURL;
+        if (typeof profileData.photoURL === 'string' && (profileData.photoURL.startsWith('http://') || profileData.photoURL.startsWith('https://'))) {
+          authUpdates.photoURL = profileData.photoURL;
+        }
       }
       if (Object.keys(authUpdates).length > 0) {
         await updateProfile(user, authUpdates).catch(err => console.warn('[Firebase Auth] updateProfile warn:', err.message));
@@ -344,7 +347,7 @@ export class FirebaseService {
       const userDocRef = doc(db, "users", user.uid);
       const cleanData = {};
       for (const [key, val] of Object.entries(profileData)) {
-        if (val !== undefined && val !== null) {
+        if (val !== undefined) {
           cleanData[key] = val;
         }
       }
@@ -470,15 +473,18 @@ export class FirebaseService {
 
     // 1. Immediately establish authenticated session in local store & localStorage
     const isUserAdmin = checkIsAdmin(user, this.store.user);
-    const patronName = user.displayName || this.store.user.name || user.email?.split('@')[0] || (user.phoneNumber ? `Patron (${user.phoneNumber})` : 'Mytholis Patron');
+    const existingCustomName = (this.store.user?.name && this.store.user.name !== 'Mytholis Patron' && !this.store.user.name.startsWith('Patron (')) ? this.store.user.name : null;
+    const patronName = existingCustomName || user.displayName || user.email?.split('@')[0] || (user.phoneNumber ? `Patron (${user.phoneNumber})` : 'Mytholis Patron');
     const patronEmail = user.email || (user.phoneNumber ? `${user.phoneNumber}@phone.mytholis.com` : '');
+    const existingCustomPhoto = this.store.user?.photoURL || null;
+    const patronPhoto = existingCustomPhoto || user.photoURL || null;
 
     this.store.user.isLoggedIn = true;
     this.store.user.uid = user.uid;
     this.store.user.email = patronEmail;
     this.store.user.phone = user.phoneNumber || this.store.user.phone || '';
     this.store.user.name = patronName;
-    this.store.user.photoURL = user.photoURL || null;
+    this.store.user.photoURL = patronPhoto;
     this.store.user.isAdmin = isUserAdmin;
     this.store.user.role = isUserAdmin ? 'admin' : 'patron';
     this.store.saveLocalStorage('mytholis_user', this.store.user);
@@ -488,7 +494,7 @@ export class FirebaseService {
       email: patronEmail,
       phone: this.store.user.phone,
       displayName: patronName,
-      photoURL: user.photoURL || null,
+      photoURL: patronPhoto,
       role: isUserAdmin ? 'admin' : 'patron',
       isAdmin: isUserAdmin
     };
@@ -515,8 +521,9 @@ export class FirebaseService {
           const mergedCity = cloudData.profile.city || this.store.user.city || '';
           const mergedState = cloudData.profile.state || this.store.user.state || '';
           const mergedPincode = cloudData.profile.pincode || this.store.user.pincode || '';
-          const mergedName = cloudData.profile.name || user.displayName || this.store.user.name || '';
+          const mergedName = cloudData.profile.name || existingCustomName || user.displayName || this.store.user.name || 'Mytholis Patron';
           const mergedPhone = user.phoneNumber || cloudData.profile.phone || this.store.user.phone || '';
+          const mergedPhoto = cloudData.profile.photoURL || this.store.user.photoURL || user.photoURL || null;
 
           this.store.user = Object.assign({}, this.store.user, cloudData.profile, {
             name: mergedName,
@@ -527,11 +534,22 @@ export class FirebaseService {
             state: mergedState,
             pincode: mergedPincode,
             uid: user.uid,
-            photoURL: user.photoURL || cloudData.profile.photoURL || this.store.user.photoURL || null,
+            photoURL: mergedPhoto,
             isAdmin: isUserAdmin || cloudData.profile.isAdmin === true || cloudData.isAdmin === true,
             role: isUserAdmin || cloudData.profile.role === 'admin' || cloudData.role === 'admin' ? 'admin' : 'patron'
           });
           this.store.saveLocalStorage('mytholis_user', this.store.user);
+
+          // Keep firebaseUser in sync with custom name and portrait
+          this.store.firebaseUser = {
+            uid: user.uid,
+            email: patronEmail,
+            phone: mergedPhone,
+            displayName: mergedName,
+            photoURL: mergedPhoto,
+            role: this.store.user.role,
+            isAdmin: this.store.user.isAdmin
+          };
         }
 
         // Merge cloud loyalty state with store
@@ -561,6 +579,7 @@ export class FirebaseService {
           pincode: this.store.user.pincode || '',
           city: this.store.user.city || '',
           state: this.store.user.state || '',
+          photoURL: patronPhoto,
           role: isUserAdmin ? 'admin' : 'patron',
           isAdmin: isUserAdmin,
           createdAt: serverTimestamp()

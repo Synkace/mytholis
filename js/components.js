@@ -2094,9 +2094,9 @@ const Components = {
 
     const u = store.user;
     const fbUser = store.firebaseUser;
-    const displayName = (fbUser && fbUser.displayName) || u.name || 'Mytholis Patron';
+    const displayName = u.name || (fbUser && fbUser.displayName) || 'Mytholis Patron';
     const email = (fbUser && fbUser.email) || u.email || '';
-    const photoURL = (fbUser && fbUser.photoURL) || u.photoURL || null;
+    const photoURL = u.photoURL || (fbUser && fbUser.photoURL) || null;
     const initial = displayName.charAt(0).toUpperCase() || 'M';
     const currentTier = store.getCurrentTier();
 
@@ -2117,6 +2117,10 @@ const Components = {
             <div>
               <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
                 <h2 class="profile-welcome-title" style="margin: 0; font-size: clamp(1.4rem, 2.8vw, 2rem);">${displayName}</h2>
+                <button type="button" class="btn-edit-inline-name" onclick="app.promptEditPatronName()" title="Edit Patron Name / Title" style="background: rgba(212, 175, 55, 0.12); border: 1px solid rgba(212, 175, 55, 0.4); color: var(--gold-primary); cursor: pointer; font-size: 0.8rem; padding: 0.22rem 0.55rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.35rem; transition: all 0.2s;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  <span>Edit Name</span>
+                </button>
                 <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-light);">${currentTier.name}</span>
               </div>
               <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">${email} • Circle of Legends Patron</p>
@@ -2279,10 +2283,10 @@ const Components = {
     const tab = activeTab || (typeof app !== 'undefined' && app.activeDossierTab) || 'overview';
     const u = store.user;
     const fbUser = store.firebaseUser;
-    const displayName = (fbUser && fbUser.displayName) || u.name || 'Mytholis Patron';
-    const email = (fbUser && fbUser.email) || u.email || '';
-    const phone = (fbUser && fbUser.phone) || u.phone || '';
-    const photoURL = (fbUser && fbUser.photoURL) || u.photoURL || null;
+    const displayName = u.name || (fbUser && fbUser.displayName) || 'Mytholis Patron';
+    const email = u.email || (fbUser && fbUser.email) || '';
+    const phone = u.phone || (fbUser && fbUser.phone) || '';
+    const photoURL = u.photoURL || (fbUser && fbUser.photoURL) || null;
     const initial = displayName.charAt(0).toUpperCase() || 'M';
     const currentTier = store.getCurrentTier();
     const currencies = [
@@ -2330,6 +2334,10 @@ const Components = {
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap;">
               <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
                 <h4 class="profile-user-name">${displayName}</h4>
+                <button type="button" class="btn-edit-inline-name" onclick="app.promptEditPatronName()" title="Edit Patron Name / Title" style="background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.35); color: var(--gold-primary); cursor: pointer; font-size: 0.72rem; padding: 0.15rem 0.45rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.25rem; transition: all 0.2s;">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  <span>Edit</span>
+                </button>
                 <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">${currentTier.name}</span>
               </div>
               ${photoURL ? `

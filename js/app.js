@@ -2135,13 +2135,13 @@ class MytholisApp {
     if (!slot) return;
 
     const isLogged = store.isUserLoggedIn();
-    const user = store.firebaseUser || store.user || (typeof firebaseService !== 'undefined' && firebaseService?.currentUser);
+    const user = store.user || store.firebaseUser || (typeof firebaseService !== 'undefined' && firebaseService?.currentUser);
     const isAdminUser = store.isAdmin();
 
     if (isLogged && user) {
-      const displayName = user.displayName || user.name || user.email || 'Patron';
+      const displayName = store.user?.name || user.displayName || user.name || user.email || 'Patron';
       const initial = displayName.charAt(0).toUpperCase();
-      const photoURL = user.photoURL || null;
+      const photoURL = store.user?.photoURL || user.photoURL || null;
       const adminCrown = isAdminUser ? `
         <button class="icon-btn sovereign-nav-admin-btn" onclick="app.navigateTo('admin')" title="👑 Open Sovereign Command Desk" style="margin-right: 0.4rem; color: var(--gold-primary); border: 1px solid rgba(212, 175, 55, 0.45); background: rgba(212, 175, 55, 0.15); border-radius: 50%; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;">
           <span style="font-size: 1.05rem;">👑</span>
@@ -2485,6 +2485,35 @@ class MytholisApp {
     if (store.currentView === 'profile' || store.currentView === 'user-profile') {
       this.renderCurrentView();
     }
+  }
+
+  async promptEditPatronName() {
+    const currentName = store.user?.name || store.firebaseUser?.displayName || '';
+    const newName = prompt('Enter your preferred patron name / title:', currentName);
+    if (newName === null) return;
+    const trimmed = newName.trim();
+    if (!trimmed) {
+      this.showToast('Patron name cannot be empty.');
+      return;
+    }
+
+    store.user.name = trimmed;
+    if (store.firebaseUser) {
+      store.firebaseUser.displayName = trimmed;
+    }
+    store.saveLocalStorage('mytholis_user', store.user);
+    store.notify();
+
+    if (typeof firebaseService !== 'undefined') {
+      await firebaseService.updatePatronProfile({ name: trimmed });
+    }
+
+    this.updateNavAuth();
+    this.renderProfileModalContent();
+    if (store.currentView === 'profile' || store.currentView === 'user-profile') {
+      this.renderCurrentView();
+    }
+    this.showToast(`Patron title updated to: ${trimmed}`);
   }
 
   async handleChangePassword(event) {
