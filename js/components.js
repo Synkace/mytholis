@@ -177,7 +177,7 @@ const Components = {
           </p>
           <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
             <button class="btn btn-gold" onclick="app.openProductView('mytholis-discovery-set')">
-              Order Discovery Set (6 × 10ml) • ₹3,999
+              Order Sixth Sense Discovery Set (6 × 8ml) • ₹3,999
             </button>
             <button class="btn btn-glass" onclick="app.navigateTo('know-us')">
               Read Our Heritage
@@ -242,21 +242,21 @@ const Components = {
       <section class="container" style="margin-bottom: 6rem;">
         <div class="discovery-vault-banner liquid-glass-card">
           <div class="discovery-banner-content">
-            <span class="glass-pill" style="margin-bottom: 0.8rem;">Master Discovery Edition</span>
+            <span class="glass-pill" style="margin-bottom: 0.8rem;">The Sixth Sense Edition</span>
             <h2 class="font-title gold-shimmer-text" style="font-size: clamp(1.6rem, 3vw, 2.3rem); margin-bottom: 0.8rem;">
-              The Mytholis Vault Discovery Coffret
+              The Sixth Sense Discovery Coffret (6 × 8ml)
             </h2>
             <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">
-              Cannot decide on your signature extrait? Experience all 6 master creations in deluxe 10ml travel flacons. Includes a <strong>₹1,000 voucher</strong> redeemable against your first full 100ml flacon.
+              Awaken your sixth sense. Experience all 6 master extrait creations in curated 8ml travel flacons. Includes a complimentary <strong>₹1,000 voucher</strong> redeemable against your first full 100ml flacon.
             </p>
             <div class="discovery-banner-perks">
-              <span>6 × 10ml Deluxe Atomizers</span>
+              <span>6 × 8ml Deluxe Atomizers</span>
               <span>All 6 Extraits de Parfum</span>
               <span>Free Pan-India Armored Delivery</span>
             </div>
             <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
               <button class="btn btn-gold" onclick="app.acquireCoffretNow()">
-                Acquire Coffret • ₹3,999
+                Acquire Sixth Sense Coffret • ₹3,999
               </button>
               <button class="btn btn-glass" onclick="app.buyNowWhatsApp('mytholis-discovery-set')">
                 Order via WhatsApp
@@ -264,7 +264,7 @@ const Components = {
             </div>
           </div>
           <div class="discovery-banner-visual bottle-pedestal-glow">
-            <img src="assets/coffret_banner.webp" alt="Mytholis Vault Discovery Coffret" loading="lazy" decoding="async" style="max-height: 280px; width: 100%; max-width: 380px; object-fit: cover; border-radius: 18px; border: 1px solid rgba(212, 175, 55, 0.35); box-shadow: 0 15px 35px rgba(0,0,0,0.8);" />
+            <img src="assets/coffret_banner.webp" alt="The Sixth Sense Discovery Coffret" loading="lazy" decoding="async" style="max-height: 280px; width: 100%; max-width: 380px; object-fit: cover; border-radius: 18px; border: 1px solid rgba(212, 175, 55, 0.35); box-shadow: 0 15px 35px rgba(0,0,0,0.8);" />
           </div>
         </div>
       </section>
@@ -534,7 +534,7 @@ const Components = {
                   <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">The Discovery Guarantee</span>
                   <h4 style="font-size: 1.05rem; color: var(--gold-light); margin: 0.3rem 0 0.2rem;">Try before committing to a full flacon</h4>
                   <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">
-                    Experience this scent alongside all 5 other extraits in the <strong>Vault Discovery Coffret (6 × 10ml)</strong>. Includes a <strong>₹1,000 voucher</strong> redeemable against your first 100ml flacon!
+                    Experience this scent alongside all 5 other extraits in the <strong>Sixth Sense Discovery Coffret (6 × 8ml)</strong>. Includes a <strong>₹1,000 voucher</strong> redeemable against your first 100ml flacon!
                   </p>
                 </div>
                 <div style="font-size: 1.3rem; font-weight: 700; color: var(--gold-primary);">₹3,999</div>
@@ -1032,10 +1032,10 @@ const Components = {
         ${store.cart.length === 0 ? `
           <div class="modal-empty-state liquid-glass-card">
             <h4 class="modal-empty-title">Your Cart is Empty</h4>
-            <p class="modal-empty-desc font-garamond">Explore our signature extraits or order the Vault Discovery Coffret (6 × 10ml).</p>
+            <p class="modal-empty-desc font-garamond">Explore our signature extraits or order the Sixth Sense Discovery Coffret (6 × 8ml).</p>
             <div style="display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem;">
               <button class="btn btn-gold" onclick="app.closeCartModal(); app.openProductView('mytholis-discovery-set');">
-                Discovery Coffret (₹3,999)
+                Sixth Sense Discovery Coffret (₹3,999)
               </button>
               <button class="btn btn-glass" onclick="app.closeCartModal(); app.navigateTo('collections');">
                 Explore Catalog
@@ -1777,7 +1777,7 @@ const Components = {
                 <li>Each <strong>100ml Flacon</strong>: <strong>+500 Legacy Mythos</strong> & +1 Bottle Count</li>
               </ul>
               <p style="font-size: 0.74rem; color: var(--text-muted); margin: 0;">
-                <em>Note:</em> The Discovery Coffret (6 × 10ml) and 8ml sprays earn standard spendable points but do not award bottle milestone points.
+                <em>Note:</em> The Sixth Sense Discovery Coffret (6 × 8ml) and individual 8ml sprays earn standard spendable points but do not award bottle milestone points.
               </p>
             </div>
 

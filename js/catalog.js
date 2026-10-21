@@ -183,29 +183,29 @@ const MYTHOLIS_CATALOG = [
   },
   {
     id: "mytholis-discovery-set",
-    name: "Mytholis Vault Discovery Coffret (6 × 10ml)",
-    subtitle: "Complete Collection Reserve",
-    collection: "Discovery Edition",
-    tagline: "Experience all six legends before choosing your signature.",
+    name: "Sixth Sense Discovery Coffret (6 × 8ml)",
+    subtitle: "The Sixth Sense • Complete Extrait Wardrobe",
+    collection: "Sixth Sense Edition",
+    tagline: "Awaken your Sixth Sense — experience all six master extraits in deluxe 8ml flacons.",
     price: 3999,
     rating: 5.0,
     reviewsCount: 240,
     image: "assets/coffret_banner.webp",
-    tag: "Discovery Set",
+    tag: "Sixth Sense Coffret",
     gender: "Unisex",
     scentFamily: "Complete Olfactory Wardrobe",
-    concentration: "Extrait de Parfum (6 × 10ml Luxury Vials)",
-    longevityHours: 10,
-    sillageRating: 95,
-    accords: ["All 6 Signature Extraits", "10ml Deluxe Sprays", "Vault Coffret Box", "Complimentary Voucher"],
-    description: "The complete Mytholis master collection in one curated luxury vault coffret. Contains deluxe 10ml travel atomizers of King Scar, Petralux, Oud Rion, Spark, Wood Sera, and Ash, plus a ₹1,000 voucher redeemable toward your first full 100ml flacon.",
+    concentration: "Extrait de Parfum (6 × 8ml Deluxe Vials • 40% Concentration)",
+    longevityHours: 12,
+    sillageRating: 96,
+    accords: ["The Sixth Sense Master Set", "All 6 Signature Extraits", "6 × 8ml Deluxe Sprays", "₹1,000 Flacon Voucher"],
+    description: "The complete Mytholis master collection in one curated luxury vault coffret — also named The Sixth Sense. Contains deluxe 8ml travel flacons of King Scar, Petralux, Oud Rion, Spark, Wood Sera, and Ash, plus a complimentary ₹1,000 voucher redeemable toward your first full 100ml flacon.",
     notes: {
-      top: ["King Scar (10ml)", "Petralux (10ml)"],
-      heart: ["Oud Rion (10ml)", "Spark (10ml)"],
-      base: ["Wood Sera (10ml)", "Ash (10ml)"]
+      top: ["King Scar (8ml)", "Petralux (8ml)"],
+      heart: ["Oud Rion (8ml)", "Spark (8ml)"],
+      base: ["Wood Sera (8ml)", "Ash (8ml)"]
     },
     sizes: [
-      { ml: 60, price: 3999 }
+      { ml: 48, price: 3999 }
     ]
   }
 ];

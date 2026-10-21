@@ -311,8 +311,8 @@ class MytholisApp {
       return;
     }
 
-    // Support #coffret / #discovery-set
-    if (rawHash === 'coffret' || rawHash === 'discovery-set') {
+    // Support #coffret / #discovery-set / #sixth-sense
+    if (rawHash === 'coffret' || rawHash === 'discovery-set' || rawHash === 'sixth-sense') {
       this.navigateTo('product', 'mytholis-discovery-set', false);
       return;
     }
@@ -436,7 +436,7 @@ class MytholisApp {
   acquireCoffretNow() {
     const coffret = MYTHOLIS_CATALOG.find(p => p.id === 'mytholis-discovery-set');
     if (coffret) {
-      store.addToCart(coffret.id, 60, '', 1);
+      store.addToCart(coffret.id, 48, '', 1);
       this.openCartModal();
     }
   }
@@ -1648,7 +1648,7 @@ class MytholisApp {
         'spark': { 8: '10041', 50: '10042', 100: '10043', default: '10042' },
         'wood-sera': { 8: '10051', 50: '10052', 100: '10053', default: '10052' },
         'ash': { 8: '10061', 50: '10062', 100: '10063', default: '10062' },
-        'mytholis-discovery-set': { 60: '10071', default: '10071' }
+        'mytholis-discovery-set': { 48: '10071', 60: '10071', default: '10071' }
       };
 
       const fastrrItems = items.map(item => {
