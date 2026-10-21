@@ -31,10 +31,8 @@
   <!-- Razorpay Official Checkout Gateway SDK -->
   <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
   
-  <!-- Fastrr / Shiprocket 1-Click Checkout SDK -->
+  <!-- Fastrr / Shiprocket 1-Click Checkout Stylesheet -->
   <link rel="stylesheet" href="https://checkout-ui.shiprocket.com/assets/styles/shopify.css">
-  <input type="hidden" value="mytholis.com" id="sellerDomain"/>
-  <script src="https://checkout-ui.shiprocket.com/assets/js/channels/shopify.js" defer></script>
   
   <!-- Performance Resource Hints -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -276,6 +274,11 @@
       </div>
     </div>
   </div>
+
+  <!-- Fastrr / Shiprocket 1-Click Checkout Core Container & Scripts -->
+  <input type="hidden" value="mytholis.com" id="sellerDomain" />
+  <div id="fastrr-main-container"></div>
+  <script src="https://checkout-ui.shiprocket.com/assets/js/channels/shopify.js"></script>
 
   <!-- Bundled & Optimized Application Engine (Includes GSAP & Animations) -->
   <script type="module" src="/js/main.js"></script>

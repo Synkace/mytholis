@@ -1483,13 +1483,12 @@ class MytholisApp {
     }
   }
 
-  /* Mobile Sticky Bottom Buy Bar Trigger */
-  stickyBuyAction() {
+  /* Mobile Sticky Bottom Buy Bar Trigger - 1-Click Fastrr Checkout */
+  stickyBuyAction(event) {
     if (store.currentView === 'product' && store.selectedProductId) {
-      this.addProductToCart(store.selectedProductId);
+      return this.buyNowFastrr(store.selectedProductId, event);
     } else {
-      // If on home/collections, quick add the coffret or top featured
-      this.quickAddToCart('mytholis-discovery-set');
+      return this.buyNowFastrr('mytholis-discovery-set', event);
     }
   }
 
@@ -1584,8 +1583,10 @@ class MytholisApp {
             fallbackUrl: res.redirect_url || fallbackUrl
           });
         } else {
-          console.warn('[Fastrr] HeadlessCheckout SDK not ready, redirecting to session...');
-          window.location.href = res.redirect_url || fallbackUrl;
+          // If SDK is not ready or deferred, mount direct Fastrr iframe
+          const sellerDomain = document.getElementById('sellerDomain')?.value || 'mytholis.com';
+          const iframeSrc = `https://checkout.shiprocket.com/?token=${res.token}&sellerDomain=${sellerDomain}&fallbackUrl=${encodeURIComponent(res.redirect_url || fallbackUrl)}`;
+          this.openFastrrIframeModal(iframeSrc, res.redirect_url || fallbackUrl);
         }
       } else {
         console.warn('[Fastrr Checkout API Notice]:', res);
@@ -1600,9 +1601,39 @@ class MytholisApp {
     }
   }
 
-  buyNowRazorpay(productId) {
-    const product = MYTHOLIS_CATALOG.find(p => p.id === productId) || MYTHOLIS_CATALOG[0];
-    this.openRazorpayModal(product);
+  openFastrrIframeModal(iframeSrc, fallbackUrl) {
+    let container = document.getElementById('headless-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'headless-container';
+      container.innerHTML = `
+        <div class="headless-modal" style="position: fixed; inset: 0; z-index: 999999; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center;">
+          <div class="headless-modal-content" style="position: relative; width: 100%; max-width: 480px; height: 90vh; max-height: 850px; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+            <button onclick="document.getElementById('headless-container')?.remove(); document.body.style.overflow='';" style="position: absolute; top: 12px; right: 12px; z-index: 10; background: rgba(0,0,0,0.1); border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 16px;">✕</button>
+            <div class="headless-modal-body" style="width: 100%; height: 100%;">
+              <iframe id="headless-iframe" src="${iframeSrc}" allow="geolocation; clipboard-read; clipboard-write; web-share" style="width: 100%; height: 100%; border: none;"></iframe>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(container);
+      document.body.style.overflow = 'hidden';
+    } else {
+      const iframe = document.getElementById('headless-iframe');
+      if (iframe) iframe.src = iframeSrc;
+    }
+  }
+
+  buyNow(productId, event) {
+    return this.buyNowFastrr(productId, event);
+  }
+
+  buyNowRazorpay(productId, event) {
+    return this.buyNowFastrr(productId, event);
+  }
+
+  checkoutCart(event) {
+    return this.checkoutCartFastrr(event);
   }
 
   openRazorpayModal(productOrCart = null) {

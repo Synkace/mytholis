@@ -866,29 +866,26 @@ const Components = {
               </div>
             </div>
 
-            <!-- Action Buttons: Fastrr 1-Click Buy, Razorpay UPI, WhatsApp Buy, Add to Cart -->
+            <!-- Action Buttons: Fastrr 1-Click Buy, Add to Cart, WhatsApp Concierge -->
             <div class="product-detail-actions-stacked">
               <div class="action-btn-row" style="margin-bottom: 0.6rem;">
-                <button class="btn btn-gold" onclick="app.buyNowFastrr('${product.id}', event)" style="width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #FF6C37 0%, #D84210 100%); color: #ffffff; font-weight: 700; box-shadow: 0 4px 18px rgba(255, 108, 55, 0.35); display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: none; font-size: 0.9rem;">
+                <button class="btn btn-gold" onclick="app.buyNowFastrr('${product.id}', event)" style="width: 100%; padding: 0.95rem; background: linear-gradient(135deg, #FF6C37 0%, #D84210 100%); color: #ffffff; font-weight: 700; box-shadow: 0 4px 18px rgba(255, 108, 55, 0.35); display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: none; font-size: 0.95rem; letter-spacing: 0.03em;">
                   <span>⚡</span> Fastrr 1-Click Checkout (UPI · Cards · COD)
                 </button>
               </div>
 
               <div class="action-btn-row">
-                <button class="btn btn-gold btn-razorpay-buy" onclick="app.buyNowRazorpay('${product.id}')">
-                  Pay via UPI / Razorpay
+                <button class="btn btn-gold" style="flex: 1;" onclick="app.addProductToCart('${product.id}')">
+                  Add to Cart
                 </button>
-                <button class="btn btn-glass btn-whatsapp-buy" onclick="app.buyNowWhatsApp('${product.id}')">
+                <button class="btn btn-glass btn-whatsapp-buy" style="flex: 1;" onclick="app.buyNowWhatsApp('${product.id}')">
                   WhatsApp Concierge
                 </button>
               </div>
 
-              <div class="action-btn-row secondary-actions">
-                <button class="btn btn-glass" style="flex: 2;" onclick="app.addProductToCart('${product.id}')">
-                  Add to Cart
-                </button>
-                <button class="btn btn-glass ${isWishlisted ? 'active' : ''}" style="flex: 1;" onclick="store.toggleWishlist('${product.id}'); app.renderCurrentView();">
-                  ${isWishlisted ? 'Saved to Wishlist' : 'Add to Wishlist'}
+              <div class="action-btn-row secondary-actions" style="margin-top: 0.5rem;">
+                <button class="btn btn-glass ${isWishlisted ? 'active' : ''}" style="width: 100%; font-size: 0.8rem; padding: 0.5rem;" onclick="store.toggleWishlist('${product.id}'); app.renderCurrentView();">
+                  ${isWishlisted ? '★ Saved to Wishlist' : '☆ Add to Wishlist'}
                 </button>
               </div>
             </div>
@@ -1933,13 +1930,10 @@ const Components = {
   },
 
   /* Render Dedicated Luxury Patron Auth Modal (Sign In & Sign Up) */
-  /* Render Dedicated Luxury Patron Auth Modal (Phone OTP, Email & Sign Up) */
-  renderAuthModal(activeTab = 'phone') {
-    const active = activeTab || 'phone';
-    const isPhone = active === 'phone';
+  renderAuthModal(activeTab = 'signin') {
+    const active = activeTab === 'register' ? 'register' : 'signin';
     const isSignIn = active === 'signin';
     const isRegister = active === 'register';
-    const otpSent = Boolean(app.phoneOtpSent);
 
     return `
       <div class="modal-header">
@@ -1955,100 +1949,17 @@ const Components = {
 
       <div class="modal-scroll-body" style="padding: 1.25rem;">
         <!-- Auth Navigation Tabs -->
-        <div class="auth-nav-tabs" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.3rem; margin-bottom: 1.2rem;">
-          <button class="auth-nav-tab-btn ${isPhone ? 'active' : ''}" onclick="app.switchAuthTab('phone')" style="font-size: 0.76rem; padding: 0.6rem 0.4rem;">
-            📱 Phone OTP
+        <div class="auth-nav-tabs" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 1.2rem;">
+          <button class="auth-nav-tab-btn ${isSignIn ? 'active' : ''}" onclick="app.switchAuthTab('signin')" style="font-size: 0.8rem; padding: 0.65rem 0.5rem; font-weight: 600;">
+            ✉️ Sign In
           </button>
-          <button class="auth-nav-tab-btn ${isSignIn ? 'active' : ''}" onclick="app.switchAuthTab('signin')" style="font-size: 0.76rem; padding: 0.6rem 0.4rem;">
-            ✉️ Email Login
-          </button>
-          <button class="auth-nav-tab-btn ${isRegister ? 'active' : ''}" onclick="app.switchAuthTab('register')" style="font-size: 0.76rem; padding: 0.6rem 0.4rem;">
-            ✨ Register
+          <button class="auth-nav-tab-btn ${isRegister ? 'active' : ''}" onclick="app.switchAuthTab('register')" style="font-size: 0.8rem; padding: 0.65rem 0.5rem; font-weight: 600;">
+            ✨ Create Account
           </button>
         </div>
 
-        ${isPhone ? `
-          <!-- TAB 1: PHONE OTP SIGN IN -->
-          <div class="auth-tab-pane">
-            ${!otpSent ? `
-              <div style="background: rgba(4, 24, 18, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px; padding: 0.75rem 0.9rem; margin-bottom: 1.1rem;">
-                <span class="glass-pill" style="font-size: 0.62rem; color: var(--gold-light); margin-bottom: 0.25rem;">INSTANT SMS PASSCODE</span>
-                <p style="font-size: 0.76rem; color: var(--text-muted); line-height: 1.45; margin: 0.2rem 0 0;">
-                  Enter your mobile number to receive a 6-digit authentication passcode directly to your phone.
-                </p>
-              </div>
-
-              <form onsubmit="event.preventDefault(); app.handleSendPhoneOtp();" style="display: flex; flex-direction: column; gap: 0.9rem;">
-                <div>
-                  <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.4rem;">Mobile Phone Number</label>
-                  <div style="display: flex; gap: 0.5rem;">
-                    <select id="auth-country-code" class="engraving-input" style="width: 105px; padding: 0.65rem 0.4rem; font-size: 0.8rem; background: rgba(4, 24, 18, 0.8); color: var(--gold-light);">
-                      <option value="+91" selected>🇮🇳 +91</option>
-                      <option value="+1">🇺🇸 +1</option>
-                      <option value="+44">🇬🇧 +44</option>
-                      <option value="+971">🇦🇪 +971</option>
-                      <option value="+65">🇸🇬 +65</option>
-                      <option value="+61">🇦🇺 +61</option>
-                      <option value="+966">🇸🇦 +966</option>
-                      <option value="+49">🇩🇪 +49</option>
-                      <option value="+33">🇫🇷 +33</option>
-                    </select>
-                    <input type="tel" id="auth-phone-number" class="engraving-input" placeholder="98765 43210" style="flex: 1;" required />
-                  </div>
-                </div>
-
-                <!-- Invisible reCAPTCHA Anchor -->
-                <div id="recaptcha-container"></div>
-
-                <button type="submit" id="btn-send-phone-otp" class="btn btn-gold" style="width: 100%; padding: 0.75rem; font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);">
-                  Request SMS Passcode
-                </button>
-              </form>
-
-              <div class="auth-divider-line">or fast sign-in with</div>
-
-              <button class="btn btn-glass" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.65rem; padding: 0.7rem 1rem; font-size: 0.84rem;" onclick="app.handleGoogleSignIn()">
-                <svg width="18" height="18" viewBox="0 0 24 24">
-                  <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.7 7.4l3.7 2.9C6.3 7.5 8.9 5 12 5z"/>
-                  <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
-                  <path fill="#FBBC05" d="M5.4 14.7c-.2-.7-.4-1.5-.4-2.7 0-1.1.2-1.9.4-2.7L1.7 6.4C.6 8.6 0 10.2 0 12s.6 3.4 1.7 5.6l3.7-2.9z"/>
-                  <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.7-2.1-6.6-4.9L1.7 16.3C3.5 20.1 7.4 23 12 23z"/>
-                </svg>
-                <span>Google VIP Access</span>
-              </button>
-            ` : `
-              <!-- OTP ENTRY SCREEN -->
-              <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1.2rem; text-align: center;">
-                <span class="glass-pill" style="font-size: 0.62rem; color: #10B981; border-color: #10B981; margin-bottom: 0.3rem;">PASSCODE TRANSMITTED</span>
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0.3rem 0 0; line-height: 1.5;">
-                  6-digit SMS verification code dispatched to:<br />
-                  <strong style="color: var(--gold-light); font-size: 0.95rem;">${app.authPhoneNumber}</strong>
-                </p>
-              </div>
-
-              <form onsubmit="event.preventDefault(); app.handleVerifyPhoneOtp();" style="display: flex; flex-direction: column; gap: 1rem;">
-                <div>
-                  <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.4rem; text-align: center;">Enter 6-Digit Passcode</label>
-                  <input type="text" id="auth-phone-otp" class="engraving-input" placeholder="• • • • • •" maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" style="width: 100%; text-align: center; font-size: 1.4rem; letter-spacing: 0.35em; font-weight: 700; color: var(--gold-light);" required />
-                </div>
-
-                <button type="submit" id="btn-verify-phone-otp" class="btn btn-gold" style="width: 100%; padding: 0.75rem; font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);">
-                  Verify & Enter Sanctum
-                </button>
-              </form>
-
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.2rem; font-size: 0.76rem;">
-                <button type="button" style="background: none; border: none; color: var(--gold-light); cursor: pointer; text-decoration: underline; padding: 0;" onclick="app.resendAuthPhoneOtp()">
-                  Resend SMS Code
-                </button>
-                <button type="button" style="background: none; border: none; color: var(--text-muted); cursor: pointer; text-decoration: underline; padding: 0;" onclick="app.changeAuthPhoneNumber()">
-                  Change Number
-                </button>
-              </div>
-            `}
-          </div>
-        ` : isSignIn ? `
-          <!-- TAB 2: EMAIL SIGN IN -->
+        ${isSignIn ? `
+          <!-- TAB 1: EMAIL & GOOGLE SIGN IN -->
           <div class="auth-tab-pane">
             <button class="btn btn-gold" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.65rem; padding: 0.75rem 1rem; font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);" onclick="app.handleGoogleSignIn()">
               <svg width="18" height="18" viewBox="0 0 24 24">
@@ -2060,7 +1971,7 @@ const Components = {
               <span>Continue with Google</span>
             </button>
 
-            <div class="auth-divider-line">or with patron credentials</div>
+            <div class="auth-divider-line">or sign in with email</div>
 
             <form onsubmit="event.preventDefault(); app.handleEmailSignIn();" style="display: flex; flex-direction: column; gap: 0.85rem;">
               <div>
@@ -2070,7 +1981,7 @@ const Components = {
 
               <div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-                  <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; margin: 0;">Secret Key / Password</label>
+                  <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; margin: 0;">Password</label>
                   <button type="button" style="background: none; border: none; color: var(--gold-light); font-size: 0.72rem; cursor: pointer; text-decoration: underline; padding: 0;" onclick="app.handleForgotPassword()">Forgot?</button>
                 </div>
                 <input type="password" id="auth-password-input" class="engraving-input" placeholder="••••••••" style="width: 100%;" required />
@@ -2091,12 +2002,12 @@ const Components = {
             </div>
           </div>
         ` : `
-          <!-- TAB 3: REGISTER ACCOUNT -->
+          <!-- TAB 2: REGISTER ACCOUNT -->
           <div class="auth-tab-pane">
             <div style="background: rgba(4, 24, 18, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px; padding: 0.75rem 0.9rem; margin-bottom: 1rem;">
               <span class="glass-pill" style="font-size: 0.62rem; color: var(--gold-light); margin-bottom: 0.3rem;">Circle of Legends Privilege</span>
               <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.45; margin: 0.2rem 0 0;">
-                Register to instantly unlock Level 1 Initiate, earn 3% cash return on acquisitions, save delivery coordinates, and track flacons across Android and web.
+                Unlock Level 1 Initiate standing, earn 3% cashback on acquisitions, and check out instantly across web and mobile.
               </p>
             </div>
 
@@ -2122,11 +2033,6 @@ const Components = {
               <div>
                 <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.35rem;">Email Address</label>
                 <input type="email" id="signup-email-input" class="engraving-input" placeholder="patron@domain.com" style="width: 100%;" required />
-              </div>
-
-              <div>
-                <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.35rem;">Mobile / WhatsApp Number</label>
-                <input type="tel" id="signup-phone-input" class="engraving-input" placeholder="+91 98765 43210" style="width: 100%;" />
               </div>
 
               <div>
@@ -2906,6 +2812,14 @@ const Components = {
               ` : ''}
             </div>
           ` : ''}
+        </div>
+
+        <!-- Fastrr 1-Click Express Checkout Option -->
+        <div style="margin-bottom: 1.2rem;">
+          <button type="button" class="btn btn-gold" onclick="app.closeRazorpayModal(); ${product ? `app.buyNowFastrr('${product.id}', event)` : 'app.checkoutCartFastrr(event)'}" style="width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #FF6C37 0%, #D84210 100%); color: #ffffff; font-weight: 700; box-shadow: 0 4px 18px rgba(255, 108, 55, 0.35); display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: none; font-size: 0.88rem;">
+            <span>⚡</span> Fastrr 1-Click Express Checkout (Fastest)
+          </button>
+          <div class="auth-divider-line" style="margin: 0.9rem 0 0.5rem;">or continue with manual gateway</div>
         </div>
 
         <!-- Payment Method Tabs -->
