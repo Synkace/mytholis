@@ -447,7 +447,7 @@ export const AdminComponents = {
                       </div>
 
                       <!-- Payment Status Toggle -->
-                      <button class="btn btn-glass" style="font-size: 0.75rem; padding: 0.45rem 0.8rem; border-color: ${isPaid ? '#10B981' : '#F59E0B'}; color: ${isPaid ? '#6EE7B7' : '#FCD34D'};" onclick="app.toggleAdminPaymentStatus('${orderId}')">
+                      <button class="btn btn-glass" style="font-size: 0.75rem; padding: 0.45rem 0.8rem; border-color: ${isPaid ? '#10B981' : '#F59E0B'}; color: ${isPaid ? '#6EE7B7' : '#FCD34D'};" onclick="app.toggleAdminPaymentStatus('${orderId}', '${isPaid ? 'Paid' : 'Pending'}')">
                         ${isPaid ? '✓ Marked Paid (Click to Unpay)' : '⚠ Unpaid (Mark as Paid)'}
                       </button>
 

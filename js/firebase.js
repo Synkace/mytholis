@@ -866,26 +866,49 @@ export class FirebaseService {
   }
 
   // Order & COD Command
+  // Update Live Order Status & Tracking (supports both doc ID and friendly orderId)
   async updateOrderStatus(orderId, updateFields = {}) {
     if (!orderId) return { success: false, error: "Missing order ID" };
 
     try {
-      const orderRef = doc(db, "orders", orderId);
+      // 1. First try direct document lookup by doc ID
+      let orderRef = doc(db, "orders", orderId);
+      let orderSnap = await getDoc(orderRef).catch(() => null);
+
+      // 2. If not found by doc ID, search by orderId (e.g. "MYTH-53567")
+      if (!orderSnap || !orderSnap.exists()) {
+        const q1 = query(collection(db, "orders"), where("orderId", "==", orderId), limit(1));
+        const qSnap1 = await getDocs(q1).catch(() => null);
+        if (qSnap1 && !qSnap1.empty) {
+          orderSnap = qSnap1.docs[0];
+          orderRef = orderSnap.ref;
+        } else {
+          // Fallback: search by id field inside document data
+          const q2 = query(collection(db, "orders"), where("id", "==", orderId), limit(1));
+          const qSnap2 = await getDocs(q2).catch(() => null);
+          if (qSnap2 && !qSnap2.empty) {
+            orderSnap = qSnap2.docs[0];
+            orderRef = orderSnap.ref;
+          }
+        }
+      }
+
+      if (!orderSnap || !orderSnap.exists()) {
+        return { success: false, error: `No document found in cloud database for: ${orderId}` };
+      }
+
       await updateDoc(orderRef, {
         ...updateFields,
         updatedAt: serverTimestamp()
       });
 
       // If marked Delivered and Paid, check if COD loyalty needs settlement
-      const orderSnap = await getDoc(orderRef);
-      if (orderSnap.exists()) {
-        const orderData = orderSnap.data();
-        const isDelivered = (orderData.status || '').toLowerCase() === 'delivered';
-        const isPaid = (orderData.paymentStatus || '').toLowerCase() === 'paid';
-        
-        if (isDelivered && isPaid && !orderData.rewardsCredited) {
-          await this.settleCodOrderLoyalty(orderId, orderData);
-        }
+      const orderData = { ...orderSnap.data(), ...updateFields };
+      const isDelivered = (orderData.status || '').toLowerCase() === 'delivered';
+      const isPaid = (orderData.paymentStatus || '').toLowerCase() === 'paid';
+      
+      if (isDelivered && isPaid && !orderData.rewardsCredited) {
+        await this.settleCodOrderLoyalty(orderRef.id, orderData);
       }
 
       return { success: true };
@@ -914,11 +937,19 @@ export class FirebaseService {
   // Settle COD order rewards with duplicate protection
   async settleCodOrderLoyalty(orderId, orderData = null) {
     try {
-      const orderRef = doc(db, "orders", orderId);
+      let orderRef = doc(db, "orders", orderId);
       let data = orderData;
       if (!data) {
-        const snap = await getDoc(orderRef);
-        if (!snap.exists()) return { success: false, error: "Order not found" };
+        let snap = await getDoc(orderRef).catch(() => null);
+        if (!snap || !snap.exists()) {
+          const q = query(collection(db, "orders"), where("orderId", "==", orderId), limit(1));
+          const qSnap = await getDocs(q).catch(() => null);
+          if (qSnap && !qSnap.empty) {
+            snap = qSnap.docs[0];
+            orderRef = snap.ref;
+          }
+        }
+        if (!snap || !snap.exists()) return { success: false, error: "Order not found" };
         data = snap.data();
       }
 
