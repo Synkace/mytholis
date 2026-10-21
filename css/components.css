@@ -5355,3 +5355,152 @@ div#cardsRow {
   border-radius: 8px;
   background: #ffffff;
 }
+
+/* ==========================================================================
+   PRODUCT CARDS HORIZONTAL SLIDER
+   Smooth scrolling, drag-to-scroll, 3D bottle overflow support
+   ========================================================================== */
+.product-slider-section {
+  position: relative;
+  overflow: visible;
+}
+
+.product-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.slider-nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.slider-nav-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(4, 28, 21, 0.7);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  color: var(--gold-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.slider-nav-btn:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: var(--gold-primary);
+  color: #ffffff;
+  transform: scale(1.08);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+}
+
+.slider-nav-btn:active {
+  transform: scale(0.95);
+}
+
+.slider-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.product-slider-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: visible;
+}
+
+.product-slider-track {
+  display: flex;
+  gap: 2.2rem;
+  overflow-x: auto;
+  overflow-y: visible;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding-top: 7.5rem;
+  padding-bottom: 2.2rem;
+  padding-left: 0.5rem;
+  padding-right: 2rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+.product-slider-track.dragging {
+  cursor: grabbing;
+  scroll-behavior: auto;
+  scroll-snap-type: none;
+}
+
+.product-slider-track::-webkit-scrollbar {
+  display: none;
+}
+
+.product-slider-item {
+  flex: 0 0 clamp(290px, 28vw, 340px);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-slider-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 1.5rem;
+}
+
+.slider-progress-track {
+  width: 100%;
+  max-width: 240px;
+  height: 3px;
+  background: rgba(212, 175, 55, 0.15);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.slider-progress-bar {
+  height: 100%;
+  width: 25%;
+  background: linear-gradient(90deg, var(--gold-light), var(--gold-primary));
+  border-radius: 4px;
+  transition: width 0.15s ease-out, transform 0.15s ease-out;
+}
+
+.slider-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+@media (max-width: 768px) {
+  .product-slider-track {
+    gap: 1.4rem;
+    padding-top: 6.5rem;
+    padding-bottom: 1.5rem;
+  }
+  .product-slider-item {
+    flex: 0 0 80vw;
+  }
+  .slider-nav-controls {
+    display: none;
+  }
+}
+

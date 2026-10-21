@@ -239,6 +239,7 @@ class MytholisApp {
     this.initTiltEffects();
     this.initHeroCardsScroll();
     this.initHeroCardBackgroundSwitch();
+    this.initProductSliderDrag();
 
     // Initial Route & Badges Setup
     this.handleHashRoute();
@@ -539,6 +540,7 @@ class MytholisApp {
       this.initFanHero();
       this.initHeroSwipeGestures();
       this.initHeroCardBackgroundSwitch();
+      this.initProductSliderDrag();
       if (this.activateCenterCard) {
         setTimeout(() => this.activateCenterCard(), 50);
       }
@@ -3091,6 +3093,85 @@ class MytholisApp {
       const img = new Image();
       img.src = src;
     });
+  }
+
+  /* --------------------------------------------------------------------------
+     MASTER EXTRAIT HORIZONTAL PRODUCT SLIDER CONTROLLER
+     -------------------------------------------------------------------------- */
+  scrollProductSlider(direction) {
+    const track = document.getElementById('productSliderTrack');
+    if (!track) return;
+    const card = track.querySelector('.product-slider-item');
+    const scrollAmount = card ? (card.offsetWidth + 35) : (track.clientWidth * 0.75);
+    track.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+  }
+
+  initProductSliderDrag() {
+    const track = document.getElementById('productSliderTrack');
+    if (!track) return;
+
+    let isDown = false;
+    let startX = 0;
+    let scrollLeft = 0;
+    let hasDragged = false;
+
+    const updateSliderUI = () => {
+      const maxScroll = track.scrollWidth - track.clientWidth;
+      const progress = maxScroll > 0 ? (track.scrollLeft / maxScroll) : 0;
+      const progressBar = document.getElementById('productSliderProgress');
+      if (progressBar) {
+        progressBar.style.width = `${Math.max(16, Math.min(100, (progress * 84) + 16))}%`;
+      }
+      const prevBtn = document.querySelector('.slider-prev-btn');
+      const nextBtn = document.querySelector('.slider-next-btn');
+      if (prevBtn) prevBtn.disabled = track.scrollLeft <= 5;
+      if (nextBtn) nextBtn.disabled = track.scrollLeft >= maxScroll - 5;
+    };
+
+    track.addEventListener('scroll', updateSliderUI, { passive: true });
+    setTimeout(updateSliderUI, 80);
+
+    track.addEventListener('mousedown', (e) => {
+      if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.card-size-pill')) return;
+      isDown = true;
+      hasDragged = false;
+      track.classList.add('dragging');
+      startX = e.pageX - track.offsetLeft;
+      scrollLeft = track.scrollLeft;
+    });
+
+    window.addEventListener('mouseleave', () => {
+      if (isDown) {
+        isDown = false;
+        track.classList.remove('dragging');
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isDown) {
+        isDown = false;
+        track.classList.remove('dragging');
+      }
+    });
+
+    track.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      const x = e.pageX - track.offsetLeft;
+      const walk = (x - startX) * 1.4;
+      if (Math.abs(walk) > 5) {
+        hasDragged = true;
+      }
+      track.scrollLeft = scrollLeft - walk;
+    });
+
+    // Prevent accidental clicks when dragging
+    track.addEventListener('click', (e) => {
+      if (hasDragged) {
+        e.preventDefault();
+        e.stopPropagation();
+        hasDragged = false;
+      }
+    }, true);
   }
 
   /* Currency Controller Methods */
