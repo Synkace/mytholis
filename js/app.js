@@ -3791,18 +3791,60 @@ class MytholisApp {
   // --- Module E: Patrons, Mythos & Tiers Handlers ---
   filterAdminPatrons() {
     const input = document.getElementById('admin-patron-search');
+    const filterSelect = document.getElementById('admin-patron-filter-type');
     const query = (input?.value || '').toLowerCase().trim();
-    const rows = document.querySelectorAll('.sovereign-patron-card');
+    const filterType = (filterSelect?.value || 'ALL').toUpperCase();
+
+    const rows = document.querySelectorAll('.admin-patron-row, .sovereign-patron-card');
     rows.forEach(row => {
       const name = (row.getAttribute('data-name') || '').toLowerCase();
       const email = (row.getAttribute('data-email') || '').toLowerCase();
       const phone = (row.getAttribute('data-phone') || '').toLowerCase();
-      if (!query || name.includes(query) || email.includes(query) || phone.includes(query)) {
+      const address = (row.getAttribute('data-address') || '').toLowerCase();
+      const city = (row.getAttribute('data-city') || '').toLowerCase();
+      const state = (row.getAttribute('data-state') || '').toLowerCase();
+      const pincode = (row.getAttribute('data-pincode') || '').toLowerCase();
+      const uid = (row.getAttribute('data-uid') || '').toLowerCase();
+
+      const hasPhone = row.getAttribute('data-hasphone') === 'true';
+      const hasAddress = row.getAttribute('data-hasaddress') === 'true';
+      const hasOrders = row.getAttribute('data-hasorders') === 'true';
+      const isAdmin = row.getAttribute('data-isadmin') === 'true';
+
+      const matchesQuery = !query ||
+        name.includes(query) ||
+        email.includes(query) ||
+        phone.includes(query) ||
+        address.includes(query) ||
+        city.includes(query) ||
+        state.includes(query) ||
+        pincode.includes(query) ||
+        uid.includes(query);
+
+      let matchesFilter = true;
+      if (filterType === 'HAS_PHONE') matchesFilter = hasPhone;
+      else if (filterType === 'HAS_ADDRESS') matchesFilter = hasAddress;
+      else if (filterType === 'HAS_ORDERS') matchesFilter = hasOrders;
+      else if (filterType === 'ADMINS') matchesFilter = isAdmin;
+
+      if (matchesQuery && matchesFilter) {
         row.style.display = '';
       } else {
         row.style.display = 'none';
       }
     });
+  }
+
+  openPatronDossier(uid) {
+    if (!uid) return;
+    const patron = (this.adminData?.users || []).find(u => u.uid === uid || u.id === uid) ||
+                   (this.adminData?.users || []).find(u => (u.profile?.email && u.profile.email.toLowerCase() === uid.toLowerCase()) || (u.email && u.email.toLowerCase() === uid.toLowerCase()));
+    if (!patron) {
+      this.showToast('Patron dossier not found in live cloud registry.');
+      return;
+    }
+    const modalHtml = AdminComponents.renderPatronDossierModal(patron);
+    this.injectAdminModal(modalHtml);
   }
 
   openAdjustMythosModal(uid, name, currentPoints) {

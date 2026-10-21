@@ -711,7 +711,7 @@ export class FirebaseService {
         console.warn("[Mytholis Admin] Could not fetch orders:", err.message);
       }
 
-      // 2. Users
+      // 2. Users & Patron Enrichment
       try {
         const usersSnap = await getDocs(collection(db, "users"));
         usersSnap.forEach(d => {
@@ -719,6 +719,208 @@ export class FirebaseService {
         });
       } catch (err) {
         console.warn("[Mytholis Admin] Could not fetch users:", err.message);
+      }
+
+      // Cross-reference & enrich Patrons with real order coordinates, shipping addresses, phone numbers, and LTV
+      try {
+        const cleanDigits = (p) => (p || '').toString().replace(/[^0-9]/g, '');
+        const normEmail = (e) => (e || '').toString().trim().toLowerCase();
+
+        // Helper to format any address object or string into a clean printable string
+        const formatAddress = (addr, city, state, pin) => {
+          if (typeof addr === 'string' && addr.trim()) {
+            let res = addr.trim();
+            if (city && !res.toLowerCase().includes(city.toLowerCase())) res += `, ${city}`;
+            if (state && !res.toLowerCase().includes(state.toLowerCase())) res += `, ${state}`;
+            if (pin && !res.includes(pin)) res += ` - ${pin}`;
+            return res;
+          }
+          if (addr && typeof addr === 'object') {
+            const parts = [
+              addr.address || addr.line1 || addr.street || addr.address1 || '',
+              addr.line2 || addr.landmark || addr.address2 || '',
+              addr.city || city || '',
+              addr.state || state || '',
+              addr.pincode || addr.postalCode || addr.zip || pin || ''
+            ].map(s => String(s || '').trim()).filter(Boolean);
+            if (parts.length) return parts.join(', ');
+          }
+          const fallbackParts = [city, state, pin].map(s => String(s || '').trim()).filter(Boolean);
+          return fallbackParts.length ? fallbackParts.join(', ') : '';
+        };
+
+        const enrichedUsers = [];
+        const seenUserKeys = new Set();
+
+        data.users.forEach(u => {
+          const prof = u.profile || {};
+          let uEmail = normEmail(prof.email || u.email);
+          let uPhone = cleanDigits(prof.phone || prof.phoneNumber || u.phone || u.phoneNumber || u.mobile || u.contact);
+          let uName = prof.name || u.displayName || u.name || '';
+          let uAddress = prof.address || u.address || u.street || '';
+          let uCity = prof.city || u.city || '';
+          let uState = prof.state || u.state || '';
+          let uPincode = prof.pincode || prof.postalCode || u.pincode || u.postalCode || '';
+
+          // Find all orders linked to this registered user
+          const userOrders = data.orders.filter(ord => {
+            if (u.uid && (ord.userId === u.uid || ord.uid === u.uid || ord.customer?.uid === u.uid)) return true;
+            const ordEmail = normEmail(ord.userEmail || ord.email || ord.customer?.email || ord.shipping?.email || ord.billingAddress?.email);
+            if (uEmail && ordEmail && ordEmail === uEmail) return true;
+            const ordPhone = cleanDigits(ord.phone || ord.customerPhone || ord.shippingPhone || ord.customer?.phone || ord.shipping?.phone || ord.shippingAddress?.phone);
+            if (uPhone && ordPhone && (ordPhone === uPhone || ordPhone.endsWith(uPhone) || uPhone.endsWith(ordPhone))) return true;
+            return false;
+          });
+
+          // Extract best available coordinates from orders if missing on user profile
+          userOrders.forEach(ord => {
+            if (!uPhone) {
+              const ordPhone = cleanDigits(ord.phone || ord.customerPhone || ord.shippingPhone || ord.customer?.phone || ord.shipping?.phone || ord.shippingAddress?.phone);
+              if (ordPhone) uPhone = ordPhone;
+            }
+            if (!uName || uName === 'Patron') {
+              const ordName = ord.userName || ord.customerName || ord.name || ord.customer?.name || ord.shipping?.name;
+              if (ordName && ordName !== 'Patron') uName = ordName;
+            }
+            if (!uAddress) {
+              const rawAddr = ord.address || ord.shippingAddress || ord.shipping?.address || ord.customerAddress || ord.customer?.address || ord.billingAddress;
+              if (rawAddr) {
+                uAddress = typeof rawAddr === 'object' ? (rawAddr.address || rawAddr.line1 || rawAddr.street || '') : rawAddr;
+              }
+            }
+            if (!uCity) {
+              uCity = ord.city || ord.shippingAddress?.city || ord.shipping?.city || ord.customer?.city || '';
+            }
+            if (!uState) {
+              uState = ord.state || ord.shippingAddress?.state || ord.shipping?.state || ord.customer?.state || '';
+            }
+            if (!uPincode) {
+              uPincode = ord.pincode || ord.postalCode || ord.shippingAddress?.pincode || ord.shippingAddress?.postalCode || ord.shipping?.pincode || ord.customer?.pincode || '';
+            }
+          });
+
+          const formattedFullAddress = formatAddress(uAddress, uCity, uState, uPincode);
+
+          // Calculate commerce metrics
+          const lifetimeSpend = userOrders.reduce((sum, ord) => sum + Number(ord.finalPayable || ord.total || ord.subtotal || 0), 0);
+          let fullFlaconsOrdered = 0;
+          userOrders.forEach(ord => {
+            const items = Array.isArray(ord.items) ? ord.items : [];
+            items.forEach(it => {
+              if (Number(it.size || 50) >= 50) {
+                fullFlaconsOrdered += Number(it.quantity || 1);
+              }
+            });
+          });
+
+          // Sync back into user structure
+          u.profile = {
+            ...prof,
+            name: uName || prof.name || 'Patron',
+            email: uEmail || prof.email || 'N/A',
+            phone: uPhone || prof.phone || '',
+            address: uAddress || prof.address || '',
+            city: uCity || prof.city || '',
+            state: uState || prof.state || '',
+            pincode: uPincode || prof.pincode || '',
+            fullAddress: formattedFullAddress,
+            role: prof.role || u.role || 'patron',
+            isAdmin: Boolean(prof.isAdmin || u.isAdmin || u.role === 'admin')
+          };
+          u.phone = uPhone;
+          u.address = uAddress;
+          u.city = uCity;
+          u.state = uState;
+          u.pincode = uPincode;
+          u.fullAddress = formattedFullAddress;
+          u.ordersCount = userOrders.length;
+          u.lifetimeSpend = lifetimeSpend;
+          u.orders = userOrders;
+          u.fullFlaconsOrdered = fullFlaconsOrdered;
+          if (userOrders.length > 0) {
+            u.lastOrder = userOrders[0];
+          }
+
+          if (u.uid) seenUserKeys.add(u.uid);
+          if (uEmail) seenUserKeys.add(uEmail);
+          if (uPhone) seenUserKeys.add(uPhone);
+
+          enrichedUsers.push(u);
+        });
+
+        // Also detect guest orders / patrons who ordered but don't have a users doc yet
+        const guestOrdersByCustomer = new Map();
+        data.orders.forEach(ord => {
+          const ordEmail = normEmail(ord.userEmail || ord.email || ord.customer?.email || ord.shipping?.email);
+          const ordPhone = cleanDigits(ord.phone || ord.customerPhone || ord.shippingPhone || ord.customer?.phone || ord.shipping?.phone || ord.shippingAddress?.phone);
+          const ordUid = ord.userId;
+
+          const isKnown = (ordUid && seenUserKeys.has(ordUid)) || (ordEmail && seenUserKeys.has(ordEmail)) || (ordPhone && seenUserKeys.has(ordPhone));
+          if (!isKnown) {
+            const groupKey = ordEmail || ordPhone || ord.id;
+            if (!guestOrdersByCustomer.has(groupKey)) {
+              guestOrdersByCustomer.set(groupKey, []);
+            }
+            guestOrdersByCustomer.get(groupKey).push(ord);
+          }
+        });
+
+        guestOrdersByCustomer.forEach((ordList, key) => {
+          const latestOrd = ordList[0];
+          const ordName = latestOrd.userName || latestOrd.customerName || latestOrd.name || latestOrd.customer?.name || latestOrd.shipping?.name || 'Patron';
+          const ordEmail = normEmail(latestOrd.userEmail || latestOrd.email || latestOrd.customer?.email || latestOrd.shipping?.email) || 'N/A';
+          const ordPhone = cleanDigits(latestOrd.phone || latestOrd.customerPhone || latestOrd.shippingPhone || latestOrd.customer?.phone || latestOrd.shipping?.phone || latestOrd.shippingAddress?.phone);
+          const rawAddr = latestOrd.address || latestOrd.shippingAddress || latestOrd.shipping?.address || latestOrd.customerAddress || latestOrd.billingAddress;
+          const ordCity = latestOrd.city || latestOrd.shippingAddress?.city || latestOrd.shipping?.city || '';
+          const ordState = latestOrd.state || latestOrd.shippingAddress?.state || latestOrd.shipping?.state || '';
+          const ordPin = latestOrd.pincode || latestOrd.postalCode || latestOrd.shippingAddress?.pincode || latestOrd.shippingAddress?.postalCode || '';
+          const fullAddr = formatAddress(rawAddr, ordCity, ordState, ordPin);
+          const spend = ordList.reduce((sum, o) => sum + Number(o.finalPayable || o.total || o.subtotal || 0), 0);
+
+          let fullFlacons = 0;
+          ordList.forEach(o => {
+            (Array.isArray(o.items) ? o.items : []).forEach(it => {
+              if (Number(it.size || 50) >= 50) fullFlacons += Number(it.quantity || 1);
+            });
+          });
+
+          enrichedUsers.push({
+            uid: latestOrd.userId || `guest_${ordPhone || ordEmail.replace(/[^a-z0-9]/g, '_') || latestOrd.id}`,
+            isGuestOrder: true,
+            profile: {
+              name: ordName,
+              email: ordEmail,
+              phone: ordPhone,
+              address: typeof rawAddr === 'string' ? rawAddr : (rawAddr?.address || rawAddr?.line1 || ''),
+              city: ordCity,
+              state: ordState,
+              pincode: ordPin,
+              fullAddress: fullAddr,
+              role: 'patron',
+              isAdmin: false
+            },
+            loyalty: {
+              spendable_mythos: Math.round(spend * 0.03),
+              legacy_mythos: Math.round(spend * 0.03),
+              full_bottles_purchased: fullFlacons
+            },
+            phone: ordPhone,
+            address: typeof rawAddr === 'string' ? rawAddr : (rawAddr?.address || rawAddr?.line1 || ''),
+            city: ordCity,
+            state: ordState,
+            pincode: ordPin,
+            fullAddress: fullAddr,
+            ordersCount: ordList.length,
+            lifetimeSpend: spend,
+            orders: ordList,
+            fullFlaconsOrdered: fullFlacons,
+            lastOrder: latestOrd
+          });
+        });
+
+        data.users = enrichedUsers;
+      } catch (enrichErr) {
+        console.warn("[Mytholis Admin] Error enriching patron data:", enrichErr);
       }
 
       // 3. Products

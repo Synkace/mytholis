@@ -657,10 +657,54 @@ export const AdminComponents = {
              ==================================================================== -->
         ${activeTab === 'patrons' ? `
           <div class="sovereign-tab-content">
-            <div class="sovereign-filter-bar">
-              <input type="text" id="admin-patron-search" class="sovereign-search-input" placeholder="Search patrons by name, email, WhatsApp, or UID..." oninput="app.filterAdminPatrons(this.value)" />
+            <!-- Patron Intelligence KPI Strip -->
+            <div class="sovereign-kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 1.5rem;">
+              <div class="sovereign-kpi-card">
+                <div class="sovereign-kpi-header">
+                  <span class="sovereign-kpi-title">Total Patrons & Customers</span>
+                  <span class="sovereign-kpi-icon">👑</span>
+                </div>
+                <div class="sovereign-kpi-value gold-shimmer-text">${usersList.length}</div>
+                <div class="sovereign-kpi-hint">Registered Profiles + Order Patrons</div>
+              </div>
+              <div class="sovereign-kpi-card">
+                <div class="sovereign-kpi-header">
+                  <span class="sovereign-kpi-title">Verified Contact Phones</span>
+                  <span class="sovereign-kpi-icon">📱</span>
+                </div>
+                <div class="sovereign-kpi-value" style="color: #25D366;">${usersList.filter(u => Boolean(u.phone || u.profile?.phone)).length}</div>
+                <div class="sovereign-kpi-hint">Direct WhatsApp Reachable</div>
+              </div>
+              <div class="sovereign-kpi-card">
+                <div class="sovereign-kpi-header">
+                  <span class="sovereign-kpi-title">Delivery Coordinates Saved</span>
+                  <span class="sovereign-kpi-icon">📍</span>
+                </div>
+                <div class="sovereign-kpi-value" style="color: var(--gold-light);">${usersList.filter(u => Boolean(u.fullAddress || u.address || u.profile?.address)).length}</div>
+                <div class="sovereign-kpi-hint">Full Shipping Address on File</div>
+              </div>
+              <div class="sovereign-kpi-card">
+                <div class="sovereign-kpi-header">
+                  <span class="sovereign-kpi-title">Patron Lifetime Spend (LTV)</span>
+                  <span class="sovereign-kpi-icon">💰</span>
+                </div>
+                <div class="sovereign-kpi-value gold-shimmer-text">₹${Math.round(usersList.reduce((s, u) => s + Number(u.lifetimeSpend || 0), 0)).toLocaleString('en-IN')}</div>
+                <div class="sovereign-kpi-hint">Total Gross Patron Commerce</div>
+              </div>
+            </div>
+
+            <!-- Filter & Search Bar -->
+            <div class="sovereign-filter-bar" style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+              <input type="text" id="admin-patron-search" class="sovereign-search-input" style="flex: 2; min-width: 260px;" placeholder="Search patrons by Name, Email, Phone / WhatsApp, Address, City, State, or UID..." oninput="app.filterAdminPatrons()" />
+              <select id="admin-patron-filter-type" class="sovereign-select" onchange="app.filterAdminPatrons()" style="flex: 1; min-width: 170px;">
+                <option value="ALL">Filter: All Patrons (${usersList.length})</option>
+                <option value="HAS_PHONE">Has Phone / WhatsApp</option>
+                <option value="HAS_ADDRESS">Has Delivery Address</option>
+                <option value="HAS_ORDERS">Has Placed Orders</option>
+                <option value="ADMINS">Admins Only</option>
+              </select>
               <button class="btn btn-glass" onclick="app.refreshAdminDashboard()">
-                ↻ Reload Patrons
+                ↻ Synchronize Patrons
               </button>
             </div>
 
@@ -669,13 +713,13 @@ export const AdminComponents = {
               <table class="sovereign-table">
                 <thead>
                   <tr>
-                    <th>Patron</th>
-                    <th>Email & Phone</th>
-                    <th style="min-width: 105px;">Role</th>
-                    <th>Mythos Balance</th>
-                    <th>Full Flacons</th>
-                    <th>Standing Tier</th>
-                    <th>Admin Actions</th>
+                    <th style="min-width: 180px;">Patron & Identity</th>
+                    <th style="min-width: 190px;">Contact & WhatsApp</th>
+                    <th style="min-width: 250px;">Shipping & Delivery Address</th>
+                    <th style="min-width: 130px;">Orders & LTV</th>
+                    <th style="min-width: 130px;">Standing & Tier</th>
+                    <th style="min-width: 120px;">Mythos Balance</th>
+                    <th style="min-width: 200px;">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="admin-patrons-table-body">
@@ -688,14 +732,28 @@ export const AdminComponents = {
                   ` : usersList.map(u => {
                     const prof = u.profile || {};
                     const loyalty = u.loyalty || {};
-                    const name = prof.name || 'Patron';
-                    const email = prof.email || 'N/A';
-                    const phone = prof.phone || 'N/A';
+                    const name = prof.name || u.name || 'Patron';
+                    const email = prof.email || u.email || 'N/A';
+                    const rawPhone = prof.phone || u.phone || '';
+                    const cleanPhone = (rawPhone || '').replace(/[^0-9]/g, '');
+                    const displayPhone = cleanPhone ? (cleanPhone.length === 10 ? `+91 ${cleanPhone}` : `+${cleanPhone}`) : (rawPhone || '');
                     const initial = name.charAt(0).toUpperCase();
-                    const isAdmin = u.role === 'admin' || u.isAdmin === true;
+                    const isAdmin = u.role === 'admin' || u.isAdmin === true || prof.role === 'admin' || prof.isAdmin === true;
                     const spendable = Number(loyalty.spendable_mythos || 0);
-                    const bottles = Number(loyalty.full_bottles_purchased || 0);
+                    const bottles = Number(loyalty.full_bottles_purchased || u.fullFlaconsOrdered || 0);
                     const legacy = Number(loyalty.legacy_mythos || spendable || 0);
+                    const ordersCount = Number(u.ordersCount !== undefined ? u.ordersCount : (Array.isArray(u.orders) ? u.orders.length : 0));
+                    const lifetimeSpend = Number(u.lifetimeSpend || 0);
+                    const lastOrder = u.lastOrder || (Array.isArray(u.orders) && u.orders[0]) || null;
+                    const lastOrderId = lastOrder ? (lastOrder.orderId || lastOrder.id || '') : '';
+
+                    const rawAddr = u.fullAddress || prof.fullAddress || u.address || prof.address || '';
+                    const city = u.city || prof.city || '';
+                    const state = u.state || prof.state || '';
+                    const pincode = u.pincode || prof.pincode || '';
+                    const hasAddr = Boolean(rawAddr || city || state || pincode);
+                    const cityStatePin = [city, state, pincode ? `(${pincode})` : ''].filter(Boolean).join(', ');
+                    const copyAddrText = [name, displayPhone, rawAddr, city, state, pincode].filter(Boolean).join(', ').replace(/'/g, "\\'");
 
                     // Dynamically resolve tier from manual_tier_override or milestones
                     const tiers = (typeof store !== 'undefined' && store.LOYALTY_TIERS) || (typeof window !== 'undefined' && window.LOYALTY_TIERS) || [];
@@ -717,49 +775,113 @@ export const AdminComponents = {
                     const currentTierLevel = tierObj ? tierObj.level : 1;
 
                     return `
-                      <tr class="admin-patron-row" data-name="${name.toLowerCase()}" data-email="${email.toLowerCase()}" data-phone="${phone}" data-uid="${u.uid}">
+                      <tr class="admin-patron-row" 
+                          data-name="${name.toLowerCase()}" 
+                          data-email="${email.toLowerCase()}" 
+                          data-phone="${cleanPhone}" 
+                          data-address="${rawAddr.toLowerCase()}" 
+                          data-city="${city.toLowerCase()}" 
+                          data-state="${state.toLowerCase()}" 
+                          data-pincode="${pincode}" 
+                          data-uid="${u.uid || ''}"
+                          data-hasphone="${Boolean(cleanPhone)}"
+                          data-hasaddress="${hasAddr}"
+                          data-hasorders="${ordersCount > 0}"
+                          data-isadmin="${isAdmin}">
                         <td>
                           <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(212, 175, 55, 0.15); border: 1px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--gold-light);">
+                            <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(212, 175, 55, 0.15); border: 1px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--gold-light); font-size: 0.95rem;">
                               ${initial}
                             </div>
                             <div>
-                              <strong style="color: var(--gold-light); font-size: 0.9rem;">${name}</strong>
-                              <div style="font-size: 0.7rem; color: var(--text-muted); font-family: monospace;">UID: ${u.uid ? u.uid.slice(0, 10) + '...' : ''}</div>
+                              <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                                <strong style="color: var(--gold-light); font-size: 0.92rem;">${name}</strong>
+                                ${isAdmin ? '<span class="sovereign-pill" style="font-size: 0.65rem; padding: 1px 5px; background: rgba(212, 175, 55, 0.2); border: 1px solid var(--gold-primary); color: var(--gold-light);">👑 Admin</span>' : ''}
+                                ${u.isGuestOrder ? '<span class="glass-pill" style="font-size: 0.65rem; color: #6EE7B7; padding: 1px 5px;">Consignment</span>' : ''}
+                              </div>
+                              <div style="font-size: 0.7rem; color: var(--text-muted); font-family: monospace; display: flex; align-items: center; gap: 4px; margin-top: 2px;">
+                                <span>UID: ${u.uid ? u.uid.slice(0, 10) + '...' : 'Guest'}</span>
+                                ${u.uid ? `<button type="button" class="btn btn-glass" style="font-size: 0.6rem; padding: 0 4px; line-height: 1.2;" onclick="navigator.clipboard.writeText('${u.uid}'); app.showToast('Copied UID');" title="Copy UID">📋</button>` : ''}
+                              </div>
                             </div>
                           </div>
                         </td>
                         <td>
-                          <div style="font-size: 0.82rem; color: var(--text-main);">${email}</div>
-                          <div style="font-size: 0.75rem; color: var(--text-muted);">${phone}</div>
-                        </td>
-                        <td style="white-space: nowrap;">
-                          <span class="sovereign-pill" style="${isAdmin ? 'background: rgba(212, 175, 55, 0.2); border: 1px solid var(--gold-primary); color: var(--gold-light); box-shadow: 0 0 10px rgba(212, 175, 55, 0.15);' : 'background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text-muted);'}">
-                            ${isAdmin ? '<span style="font-size: 0.85rem; line-height: 1;">👑</span> Admin' : 'Patron'}
-                          </span>
+                          <div style="margin-bottom: 0.2rem;">
+                            ${displayPhone ? `
+                              <strong style="color: var(--text-main); font-size: 0.85rem; letter-spacing: 0.02em;">${displayPhone}</strong>
+                              <div style="display: flex; gap: 0.4rem; margin-top: 0.3rem; flex-wrap: wrap;">
+                                <a href="https://wa.me/91${cleanPhone}?text=${encodeURIComponent(`Hello ${name}, greetings from House of Mytholis!`)}" target="_blank" class="sovereign-pill" style="background: rgba(37, 211, 102, 0.15); border: 1px solid rgba(37, 211, 102, 0.4); color: #25D366; text-decoration: none; display: inline-flex; align-items: center; gap: 3px; font-size: 0.72rem; padding: 2px 7px;">
+                                  <span>💬</span> WhatsApp
+                                </a>
+                                <a href="tel:+91${cleanPhone}" class="sovereign-pill" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 3px; font-size: 0.72rem; padding: 2px 6px;">
+                                  <span>📞</span> Call
+                                </a>
+                              </div>
+                            ` : `
+                              <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">No Phone Provided</span>
+                            `}
+                          </div>
+                          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                            ${email && email !== 'N/A' ? `<a href="mailto:${email}" style="color: var(--text-muted); text-decoration: none;">${email}</a>` : 'No Email'}
+                          </div>
                         </td>
                         <td>
-                          <strong class="gold-shimmer-text" style="font-size: 1rem;">${spendable.toLocaleString()} M</strong>
-                          <div style="font-size: 0.7rem; color: var(--text-muted);">${loyalty.legacy_mythos || spendable} Legacy M</div>
+                          ${hasAddr ? `
+                            <div style="font-size: 0.8rem; line-height: 1.4; color: var(--text-main); max-width: 280px; word-break: break-word;">
+                              ${rawAddr}
+                            </div>
+                            ${cityStatePin ? `
+                              <div style="font-size: 0.73rem; color: var(--gold-light); margin-top: 0.25rem; display: flex; align-items: center; gap: 4px;">
+                                <span>📍</span> ${cityStatePin}
+                              </div>
+                            ` : ''}
+                            <button type="button" class="btn btn-glass" style="font-size: 0.65rem; padding: 1px 6px; margin-top: 0.35rem; display: inline-flex; align-items: center; gap: 3px;" onclick="navigator.clipboard.writeText('${copyAddrText}'); app.showToast('Copied full shipping address');">
+                              📋 Copy Address
+                            </button>
+                          ` : `
+                            <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">No shipping address on file</span>
+                          `}
                         </td>
                         <td>
-                          <strong style="font-size: 0.95rem; color: var(--text-main);">${bottles}</strong>
-                          <span style="font-size: 0.72rem; color: var(--text-muted);">flacons</span>
+                          <div style="font-weight: 700; color: var(--gold-light); font-size: 0.92rem;">
+                            ₹${lifetimeSpend.toLocaleString('en-IN')}
+                          </div>
+                          <div style="font-size: 0.75rem; color: var(--text-main); margin-top: 2px;">
+                            ${ordersCount} ${ordersCount === 1 ? 'order' : 'orders'}
+                          </div>
+                          ${lastOrderId ? `
+                            <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">
+                              Last: #${lastOrderId}
+                            </div>
+                          ` : ''}
                         </td>
                         <td>
                           <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-light);">${currentTierName}</span>
+                          <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem;">
+                            <strong style="color: var(--text-main);">${bottles}</strong> flacons
+                          </div>
                         </td>
                         <td>
-                          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
-                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.3rem 0.6rem;" onclick="app.openAdjustMythosModal('${u.uid}', '${name.replace(/'/g, "\\'")}', ${spendable})">
+                          <strong class="gold-shimmer-text" style="font-size: 0.95rem;">${spendable.toLocaleString()} M</strong>
+                          <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">${loyalty.legacy_mythos || spendable} Legacy M</div>
+                        </td>
+                        <td>
+                          <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+                            <button class="btn btn-gold" style="font-size: 0.7rem; padding: 0.25rem 0.55rem;" onclick="app.openPatronDossier('${u.uid}')" title="View Full Patron Coordinates & Consignment Ledger">
+                              🔍 Dossier
+                            </button>
+                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem;" onclick="app.openAdjustMythosModal('${u.uid}', '${name.replace(/'/g, "\\'")}', ${spendable})">
                               &plusmn; Adjust M
                             </button>
-                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.3rem 0.6rem;" onclick="app.openOverrideTierModal('${u.uid}', '${name.replace(/'/g, "\\'")}', ${bottles}, ${currentTierLevel})">
-                              Override Tier
+                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem;" onclick="app.openOverrideTierModal('${u.uid}', '${name.replace(/'/g, "\\'")}', ${bottles}, ${currentTierLevel})">
+                              Tier
                             </button>
-                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.3rem 0.6rem; border-color: ${isAdmin ? 'rgba(239, 68, 68, 0.4)' : 'rgba(212, 175, 55, 0.4)'};" onclick="app.togglePatronAdmin('${u.uid}', ${!isAdmin})">
-                              ${isAdmin ? 'Demote' : 'Make Admin'}
-                            </button>
+                            ${!u.isGuestOrder ? `
+                              <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem; border-color: ${isAdmin ? 'rgba(239, 68, 68, 0.4)' : 'rgba(212, 175, 55, 0.4)'};" onclick="app.togglePatronAdmin('${u.uid}', ${!isAdmin})">
+                                ${isAdmin ? 'Demote' : 'Admin'}
+                              </button>
+                            ` : ''}
                           </div>
                         </td>
                       </tr>
@@ -1420,6 +1542,226 @@ export const AdminComponents = {
               <button type="submit" class="btn btn-gold" style="padding: 0.7rem 1.8rem;">Mint & Activate Key</button>
             </div>
           </form>
+        </div>
+      </div>
+    `;
+  },
+
+  /* ==========================================================================
+     PATRON DOSSIER MODAL: COMPLETE COORDINATES, PHONE & CONSIGNMENT LEDGER
+     ========================================================================== */
+  renderPatronDossierModal(patron) {
+    const prof = patron.profile || {};
+    const loyalty = patron.loyalty || {};
+    const name = prof.name || patron.name || 'Patron';
+    const email = prof.email || patron.email || 'N/A';
+    const rawPhone = prof.phone || patron.phone || '';
+    const cleanPhone = (rawPhone || '').replace(/[^0-9]/g, '');
+    const displayPhone = cleanPhone ? (cleanPhone.length === 10 ? `+91 ${cleanPhone}` : `+${cleanPhone}`) : (rawPhone || 'Not Provided');
+    const initial = name.charAt(0).toUpperCase();
+    const isAdmin = patron.role === 'admin' || patron.isAdmin === true || prof.role === 'admin' || prof.isAdmin === true;
+    const spendable = Number(loyalty.spendable_mythos || 0);
+    const bottles = Number(loyalty.full_bottles_purchased || patron.fullFlaconsOrdered || 0);
+    const legacy = Number(loyalty.legacy_mythos || spendable || 0);
+    const orders = Array.isArray(patron.orders) ? patron.orders : [];
+    const lifetimeSpend = Number(patron.lifetimeSpend || 0);
+    const address = patron.fullAddress || prof.fullAddress || patron.address || prof.address || '';
+    const city = patron.city || prof.city || '';
+    const state = patron.state || prof.state || '';
+    const pincode = patron.pincode || prof.pincode || '';
+    const addressCopyText = [name, displayPhone, address, city, state, pincode].filter(Boolean).join('\n');
+
+    const tiers = (typeof store !== 'undefined' && store.LOYALTY_TIERS) || (typeof window !== 'undefined' && window.LOYALTY_TIERS) || [];
+    let tierObj = null;
+    if (loyalty.manual_tier_override) {
+      tierObj = tiers.find(t => t.level === Number(loyalty.manual_tier_override));
+    }
+    if (!tierObj) {
+      for (let i = tiers.length - 1; i >= 0; i--) {
+        const t = tiers[i];
+        if (legacy >= t.minLegacy && bottles >= t.minBottles) {
+          tierObj = t;
+          break;
+        }
+      }
+    }
+    if (!tierObj && tiers.length > 0) tierObj = tiers[0];
+    const currentTierName = (tierObj ? `Level ${tierObj.level}: ${tierObj.name}` : null) || prof.tier || 'Level 1: The Observer';
+    const currentTierLevel = tierObj ? tierObj.level : 1;
+
+    return `
+      <div class="sovereign-modal-backdrop" onclick="if(event.target === this) app.closeAdminModal()">
+        <div class="sovereign-modal-box" style="max-width: 820px; max-height: 90vh; overflow-y: auto;">
+          <!-- Header -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.8rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(212, 175, 55, 0.15); border: 2px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.4rem; color: var(--gold-light);">
+                ${initial}
+              </div>
+              <div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                  <h3 class="font-title gold-shimmer-text" style="margin: 0; font-size: 1.35rem;">${name}</h3>
+                  <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-light);">${currentTierName}</span>
+                  ${isAdmin ? '<span class="sovereign-pill" style="background: rgba(212, 175, 55, 0.2); border: 1px solid var(--gold-primary); color: var(--gold-light); font-size: 0.7rem;">👑 Admin</span>' : ''}
+                  ${patron.isGuestOrder ? '<span class="glass-pill" style="font-size: 0.68rem; color: #6EE7B7;">Consignment Customer</span>' : ''}
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace; margin-top: 0.2rem; display: flex; align-items: center; gap: 6px;">
+                  <span>Patron UID: ${patron.uid || 'N/A'}</span>
+                  ${patron.uid ? `<button type="button" class="btn btn-glass" style="font-size: 0.65rem; padding: 1px 5px;" onclick="navigator.clipboard.writeText('${patron.uid || ''}'); app.showToast('Copied UID');">📋 Copy</button>` : ''}
+                </div>
+              </div>
+            </div>
+            <button class="icon-btn" onclick="app.closeAdminModal()" style="font-size: 1.3rem; color: var(--gold-light);">✕</button>
+          </div>
+
+          <!-- Quick Action Contact Bar -->
+          <div style="display: flex; gap: 0.6rem; margin-bottom: 1.5rem; flex-wrap: wrap; background: rgba(0, 0, 0, 0.35); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.15); align-items: center;">
+            ${cleanPhone ? `
+              <a href="https://wa.me/91${cleanPhone}?text=${encodeURIComponent(`Hello ${name}, greetings from House of Mytholis!`)}" target="_blank" class="btn btn-glass" style="background: rgba(37, 211, 102, 0.15); border-color: rgba(37, 211, 102, 0.5); color: #25D366; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+                <span>💬</span> Chat on WhatsApp (${displayPhone})
+              </a>
+              <a href="tel:+91${cleanPhone}" class="btn btn-glass" style="font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+                <span>📞</span> Direct Call
+              </a>
+            ` : `
+              <span style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px;">⚠️ No phone number registered</span>
+            `}
+            ${email && email !== 'N/A' ? `
+              <a href="mailto:${email}" class="btn btn-glass" style="font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+                <span>✉️</span> Email Patron
+              </a>
+            ` : ''}
+            <button type="button" class="btn btn-glass" style="font-size: 0.78rem; margin-left: auto;" onclick="navigator.clipboard.writeText('${addressCopyText.replace(/'/g, "\\'")}'); app.showToast('Copied full shipping label coordinates!');">
+              📋 Copy Delivery Label Data
+            </button>
+          </div>
+
+          <!-- 2-Column Info Grid -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.2rem; margin-bottom: 1.5rem;">
+            <!-- Delivery & Address Coordinates -->
+            <div class="sovereign-subpanel">
+              <div class="sovereign-subpanel-title" style="color: var(--gold-light); display: flex; justify-content: space-between; align-items: center;">
+                <span>📍 Shipping & Delivery Coordinates</span>
+                <span class="glass-pill" style="font-size: 0.65rem;">Primary Destination</span>
+              </div>
+              <div style="margin-bottom: 0.8rem;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.2rem;">Full Address:</div>
+                <div style="font-size: 0.88rem; line-height: 1.5; color: var(--text-main); background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); word-break: break-word;">
+                  ${address || '<span style="color: var(--text-muted); font-style: italic;">No shipping address recorded yet.</span>'}
+                </div>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; font-size: 0.78rem;">
+                <div>
+                  <div style="color: var(--text-muted); font-size: 0.7rem;">City</div>
+                  <strong style="color: var(--gold-light);">${city || 'N/A'}</strong>
+                </div>
+                <div>
+                  <div style="color: var(--text-muted); font-size: 0.7rem;">State</div>
+                  <strong style="color: var(--gold-light);">${state || 'N/A'}</strong>
+                </div>
+                <div>
+                  <div style="color: var(--text-muted); font-size: 0.7rem;">Pincode</div>
+                  <strong style="color: var(--gold-light);">${pincode || 'N/A'}</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Economy, Flacons & Tier Standing -->
+            <div class="sovereign-subpanel">
+              <div class="sovereign-subpanel-title" style="color: var(--gold-light); display: flex; justify-content: space-between; align-items: center;">
+                <span>🪙 Patron Economy & Circle of Legends</span>
+                <span class="glass-pill" style="font-size: 0.65rem;">VIP Privileges</span>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; margin-bottom: 0.8rem;">
+                <div style="background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px;">
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Lifetime Spend (LTV)</div>
+                  <div class="gold-shimmer-text" style="font-size: 1.15rem; font-weight: 700;">₹${lifetimeSpend.toLocaleString('en-IN')}</div>
+                </div>
+                <div style="background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px;">
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Total Consignments</div>
+                  <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);">${orders.length} Orders</div>
+                </div>
+                <div style="background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px;">
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Spendable Mythos</div>
+                  <div style="font-size: 1.15rem; font-weight: 700; color: var(--gold-light);">${spendable.toLocaleString()} M</div>
+                </div>
+                <div style="background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px;">
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Full Flacons (≥50ml)</div>
+                  <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);">${bottles} Flacons</div>
+                </div>
+              </div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">
+                Referral Code: <strong style="color: var(--gold-light);">${prof.referralCode || patron.referralCode || 'None generated'}</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Consignments / Orders History Ledger -->
+          <div class="sovereign-subpanel" style="margin-bottom: 1.5rem;">
+            <div class="sovereign-subpanel-title" style="color: var(--gold-light); display: flex; justify-content: space-between; align-items: center;">
+              <span>📦 Consignment Ledger & Order History (${orders.length})</span>
+            </div>
+            ${orders.length === 0 ? `
+              <div style="text-align: center; color: var(--text-muted); padding: 1.5rem; font-size: 0.85rem;">
+                No orders placed by this patron yet.
+              </div>
+            ` : `
+              <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                ${orders.map(ord => {
+                  const ordId = ord.orderId || ord.id || 'MYTH-0000';
+                  const ordStatus = ord.status || 'Pending';
+                  const ordPay = (ord.paymentMethod || 'Prepaid').toUpperCase();
+                  const ordAmount = Number(ord.finalPayable || ord.total || ord.subtotal || 0);
+                  const ordDate = ord.timestamp?.toMillis ? new Date(ord.timestamp.toMillis()).toLocaleString('en-IN') : (ord.date || ord.createdAt ? new Date(ord.date || ord.createdAt).toLocaleString('en-IN') : 'Recent');
+                  const items = Array.isArray(ord.items) ? ord.items : [];
+                  const courier = ord.courierName || '';
+                  const awb = ord.trackingNumber || '';
+
+                  return `
+                    <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(212, 175, 55, 0.15); border-radius: 8px; padding: 0.8rem;">
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; flex-wrap: wrap; gap: 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.6rem;">
+                          <strong style="color: var(--gold-light); font-size: 0.95rem;">Order #${ordId}</strong>
+                          <span class="sovereign-pill status-${ordStatus.toLowerCase()}">${ordStatus}</span>
+                          <span class="sovereign-pill payment-${ordPay.toLowerCase()}">${ordPay}</span>
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted);">
+                          ${ordDate}
+                        </div>
+                      </div>
+                      <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.4rem;">
+                        Items: ${items.map(it => `<span style="color: var(--text-main); font-weight: 600;">${it.name || it.id} (${it.size || 50}ml &times; ${it.quantity || 1})</span>`).join(', ') || 'No items listed'}
+                      </div>
+                      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.4rem; font-size: 0.8rem;">
+                        <div>
+                          ${courier || awb ? `<span style="color: var(--gold-primary);">🚚 ${courier} AWB: ${awb}</span>` : '<span style="color: var(--text-muted);">Dispatch Pending</span>'}
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                          <strong class="gold-shimmer-text" style="font-size: 0.95rem;">₹${ordAmount.toLocaleString('en-IN')}</strong>
+                          <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;" onclick="app.closeAdminModal(); app.openLabelRebranderForOrder('${ordId}')">
+                            🏷️ Label Studio
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `}
+          </div>
+
+          <!-- Footer Actions -->
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(212, 175, 55, 0.2); padding-top: 0.8rem;">
+            <div style="display: flex; gap: 0.5rem;">
+              <button type="button" class="btn btn-glass" style="font-size: 0.75rem;" onclick="app.closeAdminModal(); app.openAdjustMythosModal('${patron.uid}', '${name.replace(/'/g, "\\'")}', ${spendable})">
+                &plusmn; Adjust Mythos
+              </button>
+              <button type="button" class="btn btn-glass" style="font-size: 0.75rem;" onclick="app.closeAdminModal(); app.openOverrideTierModal('${patron.uid}', '${name.replace(/'/g, "\\'")}', ${bottles}, ${currentTierLevel})">
+                Override Tier
+              </button>
+            </div>
+            <button type="button" class="btn btn-gold" style="font-size: 0.78rem; padding: 0.6rem 1.4rem;" onclick="app.closeAdminModal()">Close Dossier</button>
+          </div>
         </div>
       </div>
     `;
