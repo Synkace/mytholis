@@ -10,4 +10,5 @@ scratch/
 android/.idea/
 .agents/
 skills-lock.json
+*.apk
 
