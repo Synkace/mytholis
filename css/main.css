@@ -324,3 +324,25 @@ h1, h2, h3, h4, .font-title {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* Fastrr / Shiprocket Transparent Click-Blockage Prevention */
+#fastrr-main-container {
+  pointer-events: none !important;
+}
+
+#fastrr-main-container:empty {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+#fastrr-main-container:not(:empty) {
+  display: block !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+#fastrr-main-container * {
+  pointer-events: auto;
+}
+
