@@ -800,7 +800,23 @@ const Components = {
 
   /* Render Single Product Detailed View */
   renderProductDetail(productId) {
-    const product = MYTHOLIS_CATALOG.find(p => p.id === productId) || MYTHOLIS_CATALOG[0];
+    const catalog = (typeof store !== 'undefined' && store.getProducts) ? store.getProducts() : MYTHOLIS_CATALOG;
+    let product = catalog.find(p => p.id === productId) || MYTHOLIS_CATALOG.find(p => p.id === productId) || MYTHOLIS_CATALOG[0];
+    const isCoffret = product.id === 'mytholis-discovery-set' || product.id.includes('coffret') || product.id.includes('discovery');
+
+    // If discovery coffret, ensure clean 6 x 8ml specs
+    if (isCoffret) {
+      const defaultCoffret = MYTHOLIS_CATALOG.find(p => p.id === 'mytholis-discovery-set') || product;
+      product = {
+        ...defaultCoffret,
+        ...product,
+        name: "Sixth Sense Discovery Coffret (6 × 8ml)",
+        subtitle: "The Sixth Sense • Complete Extrait Wardrobe",
+        concentration: "Extrait de Parfum (6 × 8ml Deluxe Vials • 40% Concentration)",
+        sizes: [{ ml: 48, price: 3999 }]
+      };
+    }
+
     const isWishlisted = store.isInWishlist(product.id);
     
     // Determine active size and price for this product
@@ -861,7 +877,7 @@ const Components = {
               ${product.description}
             </p>
 
-            <!-- Size Selector (50ml and 100ml only, no 200ml) -->
+            <!-- Size Selector -->
             <div style="margin-bottom: 1.5rem;">
               <label style="font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-light); display: block; margin-bottom: 0.6rem;">
                 Select Volume:
@@ -871,7 +887,7 @@ const Components = {
                   <button class="btn ${s.ml === currentMl ? 'btn-gold' : 'btn-glass'} size-btn" 
                           data-ml="${s.ml}" data-price="${s.price}"
                           onclick="app.selectProductSize(${s.ml}, ${s.price})">
-                    ${s.ml} ml — ${store.formatPrice(s.price)}
+                    ${isCoffret ? `6 × 8ml (48ml Coffret) — ${store.formatPrice(s.price)}` : `${s.ml} ml — ${store.formatPrice(s.price)}`}
                   </button>
                 `).join('')}
               </div>
@@ -931,11 +947,11 @@ const Components = {
               <div class="legal-metrology-grid">
                 <div class="legal-metrology-item">
                   <span class="metrology-label">Generic Name:</span>
-                  <span class="metrology-val">Extrait de Parfum (Fine Fragrance)</span>
+                  <span class="metrology-val">${isCoffret ? 'Extrait de Parfum Discovery Wardrobe (6 × 8ml Deluxe Vials)' : 'Extrait de Parfum (Fine Fragrance)'}</span>
                 </div>
                 <div class="legal-metrology-item">
                   <span class="metrology-label">Net Content:</span>
-                  <span class="metrology-val" id="metrology-net-qty">${currentMl} ml / ${ (currentMl * 0.0338).toFixed(1) } fl. oz.</span>
+                  <span class="metrology-val" id="metrology-net-qty">${isCoffret ? '6 × 8 ml (48 ml Total) / 1.62 fl. oz.' : `${currentMl} ml / ${ (currentMl * 0.0338).toFixed(1) } fl. oz.`}</span>
                 </div>
                 <div class="legal-metrology-item">
                   <span class="metrology-label">MRP (Incl. all taxes):</span>
@@ -970,29 +986,139 @@ const Components = {
           </div>
         </div>
 
-        <!-- Detailed Notes Pyramid -->
-        <div style="margin-top: 5rem;">
-          <div class="section-header">
-            <span class="tagline">Olfactory Architecture</span>
-            <h2>Fragrance Notes Hierarchy</h2>
-            <div class="divider"></div>
-          </div>
+        <!-- Olfactory Architecture: Discovery Wardrobe vs Scent Pyramid -->
+        ${isCoffret ? `
+          <div style="margin-top: 5rem;">
+            <div class="section-header">
+              <span class="tagline">The Sixth Sense Olfactory Wardrobe</span>
+              <h2>All Six Master Extraits Included</h2>
+              <div class="divider"></div>
+              <p style="max-width: 680px; margin: 1rem auto 0; color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+                Six independent olfactory signatures crafted at 40% Extrait de Parfum concentration. Each master formulation is presented in a deluxe 8ml precision atomizer (48ml total extrait volume).
+              </p>
+            </div>
 
-          <div class="scent-pyramid-container">
-            <div class="pyramid-node liquid-glass-card">
-              <h5>TOP NOTES</h5>
-              <p>${product.notes.top.join('<br/>')}</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 3rem;">
+              ${[
+                {
+                  id: "king-scar",
+                  name: "King Scar",
+                  vol: "8ml Deluxe Flacon",
+                  family: "Aromatic Spicy · Masculine",
+                  accords: "Spices · Lavender · Absinthe · Haitian Vetiver",
+                  desc: "Commanding, sharp and regal with pink pepper, peppermint, absinthe, and Haitian vetiver.",
+                  image: "assets/product/1kingscar.webp"
+                },
+                {
+                  id: "petralux",
+                  name: "Petralux",
+                  vol: "8ml Deluxe Flacon",
+                  family: "Fruity Chypre · Unisex",
+                  accords: "Italian Bergamot · Golden Pineapple · Amber",
+                  desc: "Luminous luxury and royal fruit trapped in stone with crisp bergamot, apple, and golden amber.",
+                  image: "assets/product/2petralux.webp"
+                },
+                {
+                  id: "oud-rion",
+                  name: "Oud Rion",
+                  vol: "8ml Deluxe Flacon",
+                  family: "Resinous Amber · Unisex",
+                  accords: "Smoked Saffron · Cambodian Agarwood · Bulgarian Rose",
+                  desc: "Opulent Arabian majesty with warm cardamom, smoked saffron, rich agarwood, and honeyed rose.",
+                  image: "assets/product/3oudrion.webp"
+                },
+                {
+                  id: "spark",
+                  name: "Spark",
+                  vol: "8ml Deluxe Flacon",
+                  family: "Zesty Fresh Luxe · Unisex",
+                  accords: "Sicilian Mandarin · Sparkling Ginger · Driftwood",
+                  desc: "Electric vitality with sun-drenched mandarin, ginger, crystalline amber, and aquatic woods.",
+                  image: "assets/product/4spark.webp"
+                },
+                {
+                  id: "wood-sera",
+                  name: "Wood Sera",
+                  vol: "8ml Deluxe Flacon",
+                  family: "Woody Leather · Masculine",
+                  accords: "Mysore Sandalwood · Bourbon Cedar · Saddle Leather",
+                  desc: "Aristocratic strength forged in rare sandalwood, aged bourbon cedar, violet leaf, and saddle leather.",
+                  image: "assets/product/5woodsera.webp"
+                },
+                {
+                  id: "ash",
+                  name: "Ash",
+                  vol: "8ml Deluxe Flacon",
+                  family: "Smoky Incense · Masculine",
+                  accords: "Birch Embers · Frankincense · Sacred Resins",
+                  desc: "Hypnotic smoldering warmth with white birch embers, frankincense tear smoke, and dark tonka bean.",
+                  image: "assets/product/6ash.webp"
+                }
+              ].map(item => `
+                <div class="liquid-glass-card" style="padding: 1.4rem; display: flex; gap: 1.2rem; align-items: center; border: 1px solid rgba(212, 175, 55, 0.25); background: linear-gradient(135deg, rgba(2, 14, 10, 0.8) 0%, rgba(4, 24, 18, 0.5) 100%); border-radius: 12px; transition: transform 0.25s ease, border-color 0.25s ease;">
+                  <img src="${item.image}" alt="${item.name}" style="width: 78px; height: 78px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(212, 175, 55, 0.35); background: rgba(0, 0, 0, 0.5); flex-shrink: 0;" />
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.2rem; flex-wrap: wrap; gap: 0.3rem;">
+                      <h4 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.05rem;">${item.name}</h4>
+                      <span class="glass-pill" style="font-size: 0.65rem; color: #10B981; border-color: rgba(16, 185, 129, 0.4); font-weight: 700; padding: 0.15rem 0.5rem;">${item.vol}</span>
+                    </div>
+                    <div style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.35rem; font-weight: 600;">
+                      ${item.family}
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0 0 0.4rem; line-height: 1.4;">${item.desc}</p>
+                    <div style="font-size: 0.72rem; color: var(--gold-light); opacity: 0.85;">
+                      <strong style="color: var(--gold-primary);">Accords:</strong> ${item.accords}
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
             </div>
-            <div class="pyramid-node liquid-glass-card">
-              <h5>HEART NOTES</h5>
-              <p>${product.notes.heart.join('<br/>')}</p>
-            </div>
-            <div class="pyramid-node liquid-glass-card">
-              <h5>BASE NOTES</h5>
-              <p>${product.notes.base.join('<br/>')}</p>
+
+            <!-- Privilege Voucher Callout Card -->
+            <div class="liquid-glass-card" style="margin-top: 2.2rem; padding: 1.6rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.2rem; border: 1px solid rgba(212, 175, 55, 0.45); background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(2, 14, 10, 0.8) 100%); border-radius: 12px;">
+              <div style="display: flex; align-items: center; gap: 1.2rem;">
+                <div style="font-size: 2.2rem; width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; background: rgba(212, 175, 55, 0.15); border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 50%;">
+                  👑
+                </div>
+                <div>
+                  <h4 class="font-title" style="color: var(--gold-light); margin: 0 0 0.25rem; font-size: 1.15rem;">
+                    Includes ₹1,000 Sovereign Flacon Credit
+                  </h4>
+                  <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0; line-height: 1.5;">
+                    Your discovery coffret purchase includes a guaranteed ₹1,000 redemption voucher toward your first full-size 50ml or 100ml flacon.
+                  </p>
+                </div>
+              </div>
+              <button class="btn btn-gold" style="font-size: 0.85rem; padding: 0.8rem 1.8rem; font-weight: 700;" onclick="app.addProductToCart('${product.id}')">
+                Acquire Sixth Sense Coffret • ₹3,999
+              </button>
             </div>
           </div>
-        </div>
+        ` : `
+          <!-- Detailed Notes Pyramid for Individual Extraits -->
+          <div style="margin-top: 5rem;">
+            <div class="section-header">
+              <span class="tagline">Olfactory Architecture</span>
+              <h2>Fragrance Notes Hierarchy</h2>
+              <div class="divider"></div>
+            </div>
+
+            <div class="scent-pyramid-container">
+              <div class="pyramid-node liquid-glass-card">
+                <h5>TOP NOTES</h5>
+                <p>${product.notes && Array.isArray(product.notes.top) ? product.notes.top.join('<br/>') : ''}</p>
+              </div>
+              <div class="pyramid-node liquid-glass-card">
+                <h5>HEART NOTES</h5>
+                <p>${product.notes && Array.isArray(product.notes.heart) ? product.notes.heart.join('<br/>') : ''}</p>
+              </div>
+              <div class="pyramid-node liquid-glass-card">
+                <h5>BASE NOTES</h5>
+                <p>${product.notes && Array.isArray(product.notes.base) ? product.notes.base.join('<br/>') : ''}</p>
+              </div>
+            </div>
+          </div>
+        `}
       </div>
     `;
   },

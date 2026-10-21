@@ -795,16 +795,30 @@ export class FirebaseService {
           });
           seededCount++;
         } else {
-          // Sync sizes to existing Firestore product if missing or incomplete
+          // Sync sizes and metadata to existing Firestore product if missing or incomplete
           const existingData = existing.data() || {};
-          if (!existingData.sizes || !existingData.sizes.length || !existingData.sizes.some(s => s.ml === 50)) {
-            await setDoc(prodRef, {
-              sizes: prod.sizes || [
-                { ml: 8, price: 899 },
-                { ml: 50, price: 3999 },
-                { ml: 100, price: 5999 }
-              ]
-            }, { merge: true });
+          const updates = {};
+
+          if (prod.id === 'mytholis-discovery-set') {
+            updates.name = prod.name;
+            updates.subtitle = prod.subtitle;
+            updates.collection = prod.collection;
+            updates.concentration = prod.concentration;
+            updates.notes = prod.notes;
+            updates.sizes = prod.sizes || [{ ml: 48, price: 3999 }];
+            updates.tagline = prod.tagline;
+            updates.accords = prod.accords;
+            updates.description = prod.description;
+          } else if (!existingData.sizes || !existingData.sizes.length || !existingData.sizes.some(s => s.ml === 50)) {
+            updates.sizes = prod.sizes || [
+              { ml: 8, price: 899 },
+              { ml: 50, price: 3999 },
+              { ml: 100, price: 5999 }
+            ];
+          }
+
+          if (Object.keys(updates).length > 0) {
+            await setDoc(prodRef, updates, { merge: true });
             seededCount++;
           }
         }
@@ -872,7 +886,23 @@ export class FirebaseService {
     try {
       const snap = await getDocs(collection(db, "products"));
       const list = [];
-      snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+      snap.forEach(d => {
+        const item = { id: d.id, ...d.data() };
+        // Auto-heal discovery set if stale 10ml exists in Firestore
+        if (item.id === 'mytholis-discovery-set') {
+          item.name = "Sixth Sense Discovery Coffret (6 × 8ml)";
+          item.subtitle = "The Sixth Sense • Complete Extrait Wardrobe";
+          item.sizes = [{ ml: 48, price: 3999 }];
+          if (item.notes) {
+            ['top', 'heart', 'base'].forEach(tier => {
+              if (Array.isArray(item.notes[tier])) {
+                item.notes[tier] = item.notes[tier].map(s => typeof s === 'string' ? s.replace(/10ml/g, '8ml') : s);
+              }
+            });
+          }
+        }
+        list.push(item);
+      });
       if (list.length && this.store) {
         this.store.setProducts(list);
       }
