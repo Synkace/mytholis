@@ -825,14 +825,6 @@ const Components = {
               </div>
             </div>
 
-            <!-- Engraving Option -->
-            <div class="engraving-box">
-              <label style="font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-primary);">
-                Complimentary Gold Initials Engraving:
-              </label>
-              <input type="text" id="engraving-text" class="engraving-input" placeholder="e.g. A.V. 2026" maxlength="12" />
-            </div>
-
             <!-- Performance Gauges & Quick-Glance Wear Indicators -->
             <div class="product-wear-summary-strip liquid-glass-card" style="margin-bottom: 1.5rem; padding: 0.9rem 1.2rem; display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
               <div class="wear-indicator-item">
@@ -866,26 +858,14 @@ const Components = {
               </div>
             </div>
 
-            <!-- Action Buttons: Fastrr 1-Click Buy, Add to Cart, WhatsApp Concierge -->
-            <div class="product-detail-actions-stacked">
-              <div class="action-btn-row" style="margin-bottom: 0.6rem;">
-                <button class="btn btn-gold" onclick="app.buyNowFastrr('${product.id}', event)" style="width: 100%; padding: 0.95rem; background: linear-gradient(135deg, #FF6C37 0%, #D84210 100%); color: #ffffff; font-weight: 700; box-shadow: 0 4px 18px rgba(255, 108, 55, 0.35); display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: none; font-size: 0.95rem; letter-spacing: 0.03em;">
-                  <span>⚡</span> Fastrr 1-Click Checkout (UPI · Cards · COD)
-                </button>
-              </div>
-
-              <div class="action-btn-row">
-                <button class="btn btn-gold" style="flex: 1;" onclick="app.addProductToCart('${product.id}')">
+            <!-- Action Buttons: Add to Cart and Buy Now (Fastrr Checkout) -->
+            <div class="product-detail-actions-stacked" style="margin-top: 1.8rem;">
+              <div class="action-btn-row" style="display: flex; gap: 0.9rem;">
+                <button class="btn btn-glass" style="flex: 1; padding: 1rem 1.2rem; font-size: 0.92rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border-color: var(--gold-primary); color: var(--gold-light);" onclick="app.addProductToCart('${product.id}')">
                   Add to Cart
                 </button>
-                <button class="btn btn-glass btn-whatsapp-buy" style="flex: 1;" onclick="app.buyNowWhatsApp('${product.id}')">
-                  WhatsApp Concierge
-                </button>
-              </div>
-
-              <div class="action-btn-row secondary-actions" style="margin-top: 0.5rem;">
-                <button class="btn btn-glass ${isWishlisted ? 'active' : ''}" style="width: 100%; font-size: 0.8rem; padding: 0.5rem;" onclick="store.toggleWishlist('${product.id}'); app.renderCurrentView();">
-                  ${isWishlisted ? '★ Saved to Wishlist' : '☆ Add to Wishlist'}
+                <button class="btn btn-gold" style="flex: 1; padding: 1rem 1.2rem; font-size: 0.92rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;" onclick="app.buyNowFastrr('${product.id}', event)">
+                  Buy Now
                 </button>
               </div>
             </div>
