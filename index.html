@@ -28,9 +28,6 @@
   <meta name="twitter:description" content="Artisanal extraits de parfum formulated in Mayfair, London and distilled in India. 40% pure oil concentration.">
   <meta name="twitter:image" content="https://mytholis.com/assets/coffret_banner.webp">
 
-  <!-- Razorpay Official Checkout Gateway SDK -->
-  <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
-  
   <!-- Fastrr / Shiprocket 1-Click Checkout Stylesheet -->
   <link rel="stylesheet" href="https://checkout-ui.shiprocket.com/assets/styles/shopify.css">
   
@@ -155,9 +152,9 @@
     <div class="modal-card glass-panel" id="policy-modal-body"></div>
   </div>
 
-  <!-- 5. Razorpay / UPI Instant Checkout Modal Overlay -->
-  <div class="modal-overlay" id="razorpay-modal-overlay" onclick="if(event.target === this) app.closeRazorpayModal()">
-    <div class="modal-card glass-panel" id="razorpay-modal-body"></div>
+  <!-- 5. PayU / UPI Instant Checkout Modal Overlay -->
+  <div class="modal-overlay" id="payu-modal-overlay" onclick="if(event.target === this) app.closePayUModal()">
+    <div class="modal-card glass-panel" id="payu-modal-body"></div>
   </div>
 
   <!-- Toast Notification Container -->
@@ -234,7 +231,7 @@
         <span><strong>Mfg Lic No:</strong> GC/1428-A (Nava Naroda, Ahmedabad)</span>
       </div>
       <div class="footer-bottom-trust">
-        <span class="trust-pill">256-Bit SSL Razorpay Secured</span>
+        <span class="trust-pill">256-Bit SSL PayU Secured</span>
         <span class="trust-pill">UPI • Cards • NetBanking • COD</span>
         <span class="trust-pill">Complimentary Express BlueDart Delivery</span>
       </div>

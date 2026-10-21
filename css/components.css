@@ -3489,7 +3489,8 @@ div#cardsRow {
   justify-content: center;
 }
 
-/* Razorpay Modal Payment Pills */
+/* PayU & Gateway Modal Payment Pills */
+.payu-method-pill,
 .razorpay-method-pill {
   display: flex;
   flex-direction: column;
@@ -3507,6 +3508,8 @@ div#cardsRow {
   transition: all 0.3s ease;
 }
 
+.payu-method-pill:hover,
+.payu-method-pill.active,
 .razorpay-method-pill:hover,
 .razorpay-method-pill.active {
   background: rgba(212, 175, 55, 0.15);

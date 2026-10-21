@@ -821,32 +821,75 @@ export const AdminComponents = {
                   </div>
                 </div>
 
-                <!-- Razorpay & UPI Payment Gateway Configuration -->
+                <!-- PayU Hosted & UPI Payment Gateway Configuration -->
                 <div class="liquid-glass-card" style="padding: 1.5rem; grid-column: 1 / -1;">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem;">
-                    <h4 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.1rem;">
-                      💳 Razorpay & UPI Payment Gateway
+                    <h4 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+                      <span>💳</span> PayU Hosted & UPI Payment Gateway
                     </h4>
                     <div>
-                      ${(globalSettings.razorpayKeyId || '').trim() ? `
+                      ${(globalSettings.payuMerchantKey || '').trim() ? `
                         <span class="glass-pill" style="font-size: 0.72rem; color: #10B981; border-color: #10B981; background: rgba(16, 185, 129, 0.1);">
-                          ● Gateway Active (${(globalSettings.razorpayKeyId || '').startsWith('rzp_test') ? 'Test Mode' : 'Live Mode'})
+                          ● PayU Gateway Active (${(globalSettings.payuEnv === 'live') ? 'Production Live' : 'Test Sandbox'})
                         </span>
                       ` : `
                         <span class="glass-pill" style="font-size: 0.72rem; color: #F59E0B; border-color: #F59E0B; background: rgba(245, 158, 11, 0.1);">
-                          ⚠️ Key Missing (Prepaid Orders Mocked / Fallback)
+                          ⚠️ PayU Key Incomplete
                         </span>
                       `}
                     </div>
                   </div>
-                  <div style="display: flex; flex-direction: column; gap: 1rem;">
+
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem;">
                     <div>
-                      <label class="sovereign-field-label">Razorpay Key ID (API Key)</label>
-                      <input type="text" id="setting-razorpay-key-id" class="sovereign-form-input" style="font-family: monospace;" placeholder="rzp_live_xxxxxxxxxxxxxx or rzp_test_xxxxxxxxxxxxxx" value="${globalSettings.razorpayKeyId || ''}" />
-                      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">
-                        Get your API Key from <a href="https://dashboard.razorpay.com/app/keys" target="_blank" style="color: var(--gold-primary); text-decoration: underline;">Razorpay Dashboard → Settings → API Keys</a>. Paste it here to enable genuine UPI (GPay, PhonePe, Paytm, BHIM, QR), Debit/Credit Cards, and NetBanking on the checkout window.
+                      <label class="sovereign-field-label">PayU Merchant Key</label>
+                      <input type="text" id="setting-payu-merchant-key" class="sovereign-form-input" style="font-family: monospace;" placeholder="e.g. LqPsyW" value="${globalSettings.payuMerchantKey || 'LqPsyW'}" />
+                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
+                        Found in your PayU Dashboard &gt; Developer API credentials.
                       </div>
                     </div>
+
+                    <div>
+                      <label class="sovereign-field-label">Gateway Environment</label>
+                      <select id="setting-payu-env" class="sovereign-form-input">
+                        <option value="test" ${globalSettings.payuEnv !== 'live' ? 'selected' : ''}>Test Sandbox (test.payu.in)</option>
+                        <option value="live" ${globalSettings.payuEnv === 'live' ? 'selected' : ''}>Production Live (secure.payu.in)</option>
+                      </select>
+                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
+                        Select Sandbox for test payments or Live for actual patron transactions.
+                      </div>
+                    </div>
+
+                    <div style="grid-column: 1 / -1;">
+                      <label class="sovereign-field-label">PayU Merchant Salt</label>
+                      <div style="display: flex; gap: 0.5rem;">
+                        <input type="password" id="setting-payu-merchant-salt" class="sovereign-form-input" style="font-family: monospace; flex: 1;" placeholder="Enter complete PayU Salt from dashboard" value="${globalSettings.payuMerchantSalt || ''}" />
+                        <button type="button" class="btn btn-glass" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;" onclick="
+                          const saltInput = document.getElementById('setting-payu-merchant-salt');
+                          if (saltInput) {
+                            saltInput.type = saltInput.type === 'password' ? 'text' : 'password';
+                            this.textContent = saltInput.type === 'password' ? 'Reveal' : 'Hide';
+                          }
+                        ">Reveal</button>
+                      </div>
+                      <div style="font-size: 0.72rem; color: ${globalSettings.payuMerchantSalt ? 'var(--text-muted)' : '#F59E0B'}; margin-top: 0.35rem;">
+                        ${globalSettings.payuMerchantSalt ? 'Salt is saved. Used to compute SHA-512 transaction hashes.' : '⚠️ Action Required: Copy your full Merchant Salt from PayU Merchant Dashboard &gt; Developer API and paste here.'}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="sovereign-field-label">PayU Client ID (OAuth / Webhook)</label>
+                      <input type="text" id="setting-payu-client-id" class="sovereign-form-input" style="font-family: monospace; font-size: 0.75rem;" placeholder="e.g. b2b6ab2e737de82833c843320ddbceb9b5d34eca503c59af5dacc3d3b3604eeb" value="${globalSettings.payuClientId || 'b2b6ab2e737de82833c843320ddbceb9b5d34eca503c59af5dacc3d3b3604eeb'}" />
+                    </div>
+
+                    <div>
+                      <label class="sovereign-field-label">PayU Client Secret</label>
+                      <input type="password" id="setting-payu-client-secret" class="sovereign-form-input" style="font-family: monospace; font-size: 0.75rem;" placeholder="e.g. 3ea892b02b0122bcdd4dcea354f0d617658aadb98a78642b17dc2809500c646a" value="${globalSettings.payuClientSecret || '3ea892b02b0122bcdd4dcea354f0d617658aadb98a78642b17dc2809500c646a'}" />
+                    </div>
+                  </div>
+
+                  <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: rgba(212, 175, 55, 0.05); border: 1px dashed rgba(212, 175, 55, 0.2); border-radius: 6px; font-size: 0.75rem; color: var(--text-muted); line-height: 1.5;">
+                    💡 <strong>PayU Hosted Checkout:</strong> Patrons clicking "Pay with PayU" will be redirected to PayU's secure prebuilt payment interface supporting Cards, UPI (GPay, PhonePe, Paytm, BHIM), NetBanking, and Wallets. Documentation: <a href="https://docs.payu.in/docs/prebuilt-checkout-payu-hosted" target="_blank" style="color: var(--gold-primary); text-decoration: underline;">PayU Hosted Docs</a> &bull; <a href="https://payu.in/business/developer/api" target="_blank" style="color: var(--gold-primary); text-decoration: underline;">PayU API Portal</a>.
                   </div>
                 </div>
               </div>

@@ -243,7 +243,7 @@ class MytholisStore {
     this.products = (typeof MYTHOLIS_CATALOG !== 'undefined') ? [...MYTHOLIS_CATALOG] : [];
 
     // Global Economy & Store Settings synced to Firestore settings/global
-    this.globalSettings = this.loadLocalStorage('mytholis_global_settings', {
+    const defaultGlobalSettings = {
       mythosEarnPct: 3,
       redemptionRatio: 1,
       maxMythosRedemptionPct: 30,
@@ -253,11 +253,22 @@ class MytholisStore {
       maxCodAmount: 15000,
       freeShippingThreshold: 3000,
       standardShippingFee: 150,
+      payuMerchantKey: 'LqPsyW',
+      payuMerchantSalt: '',
+      payuEnv: 'test',
+      payuClientId: 'b2b6ab2e737de82833c843320ddbceb9b5d34eca503c59af5dacc3d3b3604eeb',
+      payuClientSecret: '3ea892b02b0122bcdd4dcea354f0d617658aadb98a78642b17dc2809500c646a',
       promoCodes: [
         { code: 'LEGEND10', discountType: 'percent', value: 10, minOrder: 1999, active: true },
         { code: 'ROYAL500', discountType: 'flat', value: 500, minOrder: 3999, active: true }
       ]
-    });
+    };
+    const loadedSettings = this.loadLocalStorage('mytholis_global_settings', defaultGlobalSettings);
+    this.globalSettings = Object.assign({}, defaultGlobalSettings, loadedSettings);
+    // If legacy razorpayKeyId is present, ensure payuMerchantKey is also set
+    if (!this.globalSettings.payuMerchantKey) {
+      this.globalSettings.payuMerchantKey = 'LqPsyW';
+    }
 
     // Auto-purge any legacy mock "Lord Alexander" data from existing client localStorage
     if (this.user.email === 'alexander@mytholis.com' || this.user.name === 'Lord Alexander') {

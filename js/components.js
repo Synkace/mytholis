@@ -1105,8 +1105,8 @@ const Components = {
               <span>⚡</span> Fastrr 1-Click Checkout (UPI · Cards · COD)
             </button>
             <div style="display: flex; gap: 0.6rem; width: 100%;">
-              <button class="btn btn-glass" style="flex: 1;" onclick="app.openRazorpayModal()">
-                UPI / Razorpay
+              <button class="btn btn-glass" style="flex: 1;" onclick="app.openPayUModal()">
+                Pay with PayU (UPI · Cards)
               </button>
               <button class="btn btn-glass" style="flex: 1;" onclick="app.checkoutCartWhatsApp()">
                 Order via WhatsApp
@@ -2657,7 +2657,7 @@ const Components = {
         </p>
         <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">2. Pricing & Payments</h4>
         <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.2rem;">
-          All prices displayed are Maximum Retail Prices (MRP) inclusive of Goods and Services Tax (GST) and all applicable taxes in India. Payments are processed securely through RBI-compliant payment gateways including Razorpay, UPI, credit/debit cards, and NetBanking.
+          All prices displayed are Maximum Retail Prices (MRP) inclusive of Goods and Services Tax (GST) and all applicable taxes in India. Payments are processed securely through RBI-compliant payment gateways including PayU, UPI, credit/debit cards, and NetBanking.
         </p>
         <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">3. Intellectual Property</h4>
         <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">
@@ -2673,7 +2673,7 @@ const Components = {
         </p>
         <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">2. Payment Security</h4>
         <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.2rem;">
-          We do not store complete credit card or debit card numbers on our servers. All financial transactions are securely handled by 256-bit SSL encrypted PCI-DSS Level 1 compliant gateway partners (Razorpay / UPI).
+          We do not store complete credit card or debit card numbers on our servers. All financial transactions are securely handled by 256-bit SSL encrypted PCI-DSS Level 1 compliant gateway partners (PayU / UPI).
         </p>
         <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">3. Data Protection & Grievance</h4>
         <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">
@@ -2744,8 +2744,8 @@ const Components = {
     `;
   },
 
-  /* Render Razorpay / UPI Instant Checkout Modal */
-  renderRazorpayModal(productOrCart) {
+  /* Render PayU / Hosted Gateway Instant Checkout Modal */
+  renderPayUModal(productOrCart) {
     const isSingleProduct = !!productOrCart.id;
     const baseSubtotal = isSingleProduct ? (app.selectedPrice || productOrCart.price) : store.getCartTotal();
     const appliedReward = isSingleProduct ? null : store.getAppliedReward();
@@ -2753,6 +2753,10 @@ const Components = {
     const discount = isSingleProduct ? 0 : store.getDiscountAmount(baseSubtotal);
     const finalAmount = Math.max(0, baseSubtotal - discount);
     const title = isSingleProduct ? productOrCart.name : `Vault Cart (${store.getCartCount()} items)`;
+
+    const payuKey = (store.globalSettings && store.globalSettings.payuMerchantKey && store.globalSettings.payuMerchantKey.trim()) || 'LqPsyW';
+    const payuSalt = (store.globalSettings && store.globalSettings.payuMerchantSalt && store.globalSettings.payuMerchantSalt.trim()) || '';
+    const isLive = (store.globalSettings && store.globalSettings.payuEnv === 'live');
 
     return `
       <div class="modal-header">
@@ -2764,11 +2768,11 @@ const Components = {
             </svg>
           </div>
           <div>
-            <h3 class="modal-title font-title">Razorpay Express Checkout</h3>
+            <h3 class="modal-title font-title">PayU Hosted Checkout</h3>
             <p class="modal-subtitle">256-Bit SSL Encrypted Instant Payment</p>
           </div>
         </div>
-        <button class="icon-btn modal-close-btn" onclick="app.closeRazorpayModal()" title="Close Checkout">✕</button>
+        <button class="icon-btn modal-close-btn" onclick="app.closePayUModal()" title="Close Checkout">✕</button>
       </div>
 
       <div class="modal-scroll-body" style="padding: 1.2rem;">
@@ -2804,10 +2808,10 @@ const Components = {
 
         <!-- Fastrr 1-Click Express Checkout Option -->
         <div style="margin-bottom: 1.2rem;">
-          <button type="button" class="btn btn-gold" onclick="app.closeRazorpayModal(); ${isSingleProduct ? `app.buyNowFastrr('${productOrCart.id}', event)` : 'app.checkoutCartFastrr(event)'}" style="width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #FF6C37 0%, #D84210 100%); color: #ffffff; font-weight: 700; box-shadow: 0 4px 18px rgba(255, 108, 55, 0.35); display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: none; font-size: 0.88rem;">
+          <button type="button" class="btn btn-gold" onclick="app.closePayUModal(); ${isSingleProduct ? `app.buyNowFastrr('${productOrCart.id}', event)` : 'app.checkoutCartFastrr(event)'}" style="width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #FF6C37 0%, #D84210 100%); color: #ffffff; font-weight: 700; box-shadow: 0 4px 18px rgba(255, 108, 55, 0.35); display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: none; font-size: 0.88rem;">
             <span>⚡</span> Fastrr 1-Click Express Checkout (Fastest)
           </button>
-          <div class="auth-divider-line" style="margin: 0.9rem 0 0.5rem;">or continue with manual gateway</div>
+          <div class="auth-divider-line" style="margin: 0.9rem 0 0.5rem;">or continue with PayU Gateway</div>
         </div>
 
         <!-- Payment Method Tabs -->
@@ -2851,19 +2855,25 @@ const Components = {
 
           <!-- Gateway Status Notice -->
           ${(() => {
-            const hasRzpKey = Boolean((store.globalSettings && store.globalSettings.razorpayKeyId && store.globalSettings.razorpayKeyId.trim()) || (import.meta.env && import.meta.env.VITE_RAZORPAY_KEY_ID));
-            if (hasRzpKey) {
+            if (payuKey && payuSalt) {
               return `
                 <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem; background: rgba(4, 24, 18, 0.6); border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(212, 175, 55, 0.15);">
                   <svg width="14" height="14" fill="none" stroke="var(--gold-primary)" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                  <span style="font-size: 0.72rem; color: var(--gold-light);">Razorpay 256-Bit SSL Instant Gateway Active (GPay, PhonePe, Paytm, Cards, NetBanking).</span>
+                  <span style="font-size: 0.72rem; color: var(--gold-light);">PayU 256-Bit SSL Hosted Gateway Active (${isLive ? 'Production Live' : 'Test Sandbox'}). Cards, UPI, NetBanking supported.</span>
+                </div>
+              `;
+            } else if (payuKey && !payuSalt) {
+              return `
+                <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem; background: rgba(245, 158, 11, 0.1); border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(245, 158, 11, 0.3);">
+                  <span style="font-size: 0.85rem;">⚠️</span>
+                  <span style="font-size: 0.72rem; color: #FCD34D;">PayU Merchant Salt pending in Sovereign Admin Settings. Please configure Salt to generate secure transaction signatures.</span>
                 </div>
               `;
             } else {
               return `
                 <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem; background: rgba(245, 158, 11, 0.1); border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(245, 158, 11, 0.3);">
                   <span style="font-size: 0.85rem;">⚠️</span>
-                  <span style="font-size: 0.72rem; color: #FCD34D;">Prepaid Gateway Key pending setup in Sovereign Admin Settings. Cash on Delivery (COD) is available.</span>
+                  <span style="font-size: 0.72rem; color: #FCD34D;">PayU Gateway pending setup in Sovereign Admin Settings. Cash on Delivery (COD) is available.</span>
                 </div>
               `;
             }
@@ -2882,11 +2892,16 @@ const Components = {
       </div>
 
       <div class="modal-footer" style="display: flex; gap: 0.8rem;">
-        <button class="btn btn-gold" style="flex: 1;" onclick="app.completeRazorpayPayment(${finalAmount})">
-          Authorize & Pay ${store.formatPrice(finalAmount)}
+        <button class="btn btn-gold" style="flex: 1;" onclick="app.launchPayUCheckout(${finalAmount})">
+          Proceed to PayU Gateway • ${store.formatPrice(finalAmount)}
         </button>
       </div>
     `;
+  },
+
+  /* Backward Compatibility Alias */
+  renderRazorpayModal(productOrCart) {
+    return this.renderPayUModal(productOrCart);
   },
 
   /* ==========================================================================
