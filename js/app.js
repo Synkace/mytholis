@@ -1559,44 +1559,135 @@ class MytholisApp {
     await this.initiateFastrrCheckout(items, event, window.location.origin + '/#track-order');
   }
 
+  async generateFastrrTokenClient(items, redirectUrl) {
+    try {
+      const VARIANT_MAP = {
+        'king-scar': { 8: '10011', 50: '10012', 100: '10013' },
+        'petralux': { 8: '10021', 50: '10022', 100: '10023' },
+        'oud-rion': { 8: '10031', 50: '10032', 100: '10033' },
+        'spark': { 8: '10041', 50: '10042', 100: '10043' },
+        'wood-sera': { 8: '10051', 50: '10052', 100: '10053' },
+        'ash': { 8: '10061', 50: '10062', 100: '10063' },
+        'mytholis-discovery-set': { 60: '10071', default: '10071' }
+      };
+
+      const fastrrItems = items.map(item => {
+        let variantId = item.variant_id;
+        if (!variantId && item.productId) {
+          const sizeMap = VARIANT_MAP[item.productId] || {};
+          variantId = sizeMap[item.size] || sizeMap.default || '10022';
+        }
+        return {
+          variant_id: String(variantId || '10022'),
+          quantity: parseInt(item.quantity) || 1
+        };
+      });
+
+      const payload = {
+        cart_data: { items: fastrrItems },
+        redirect_url: redirectUrl,
+        timestamp: new Date().toISOString()
+      };
+
+      const rawBody = JSON.stringify(payload);
+      const secret = 'bgHG23KYS9CZi8Pvo2UgmuyBWlacgKqo';
+      const apiKey = 'GkmYB8JVVgvPFLiN';
+
+      const enc = new TextEncoder();
+      const key = await window.crypto.subtle.importKey(
+        'raw',
+        enc.encode(secret),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      );
+      const sig = await window.crypto.subtle.sign('HMAC', key, enc.encode(rawBody));
+      const hmacBase64 = btoa(String.fromCharCode(...new Uint8Array(sig)));
+
+      const resp = await fetch('https://checkout-api.shiprocket.com/api/v1/access-token/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Api-Key': apiKey,
+          'X-Api-HMAC-SHA256': hmacBase64
+        },
+        body: rawBody
+      });
+
+      const resJson = await resp.json().catch(() => ({}));
+      if (resJson.ok && resJson.result?.token) {
+        return {
+          success: true,
+          token: resJson.result.token,
+          order_id: resJson.result?.data?.order_id,
+          redirect_url: redirectUrl
+        };
+      }
+      return { success: false, error: resJson.error?.message || 'Token generation failed' };
+    } catch (err) {
+      console.warn('[Fastrr Direct Token Generation]:', err);
+      return { success: false, error: err.message };
+    }
+  }
+
   async initiateFastrrCheckout(items, event, fallbackUrl = window.location.origin + '/#track-order') {
     this.showToast('Connecting to Fastrr 1-Click Checkout...');
 
     try {
-      const response = await fetch('/api/fastrr/create-checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items,
-          redirect_url: fallbackUrl
-        })
-      });
+      let res = null;
 
-      const res = await response.json().catch(() => ({}));
+      // 1. Try local or remote API endpoint
+      try {
+        const response = await fetch('/api/fastrr/create-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items,
+            redirect_url: fallbackUrl
+          })
+        });
 
-      if (res.success && res.token) {
+        if (response.ok) {
+          res = await response.json().catch(() => null);
+        }
+      } catch (netErr) {
+        console.warn('[Fastrr] Server endpoint fetch failed, falling back to direct token generator...');
+      }
+
+      // 2. Client-side direct fallback if server endpoint is 404/unavailable (e.g. preview mode or local testing)
+      if (!res || !res.token) {
+        res = await this.generateFastrrTokenClient(items, fallbackUrl);
+      }
+
+      if (res && res.success && res.token) {
         this.closeAllModals(false);
         this.showToast('Launching Fastrr 1-Click Checkout...');
 
         if (typeof window.HeadlessCheckout !== 'undefined' && typeof window.HeadlessCheckout.addToCart === 'function') {
-          window.HeadlessCheckout.addToCart(event, res.token, {
-            fallbackUrl: res.redirect_url || fallbackUrl
-          });
+          try {
+            window.HeadlessCheckout.addToCart(event, res.token, {
+              fallbackUrl: res.redirect_url || fallbackUrl
+            });
+          } catch (sdkErr) {
+            console.warn('[Fastrr Headless SDK notice]:', sdkErr);
+            const sellerDomain = document.getElementById('sellerDomain')?.value || 'mytholis.com';
+            const iframeSrc = `https://checkout.shiprocket.com/?token=${res.token}&sellerDomain=${sellerDomain}&fallbackUrl=${encodeURIComponent(res.redirect_url || fallbackUrl)}`;
+            this.openFastrrIframeModal(iframeSrc, res.redirect_url || fallbackUrl);
+          }
         } else {
-          // If SDK is not ready or deferred, mount direct Fastrr iframe
+          // If SDK is not ready, blocked by client ad-blocker, or on native WebView, mount direct Fastrr iframe
           const sellerDomain = document.getElementById('sellerDomain')?.value || 'mytholis.com';
           const iframeSrc = `https://checkout.shiprocket.com/?token=${res.token}&sellerDomain=${sellerDomain}&fallbackUrl=${encodeURIComponent(res.redirect_url || fallbackUrl)}`;
           this.openFastrrIframeModal(iframeSrc, res.redirect_url || fallbackUrl);
         }
       } else {
         console.warn('[Fastrr Checkout API Notice]:', res);
-        this.showToast('Fastrr session initialized! Opening payment desk...');
-        // Seamless fallback to our Razorpay / UPI flow so checkout is never interrupted
+        this.showToast('Opening payment desk...');
         this.openRazorpayModal();
       }
     } catch (err) {
       console.error('[Fastrr Checkout Error]:', err);
-      this.showToast('Proceeding with UPI / Razorpay Checkout...');
+      this.showToast('Opening payment desk...');
       this.openRazorpayModal();
     }
   }

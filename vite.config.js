@@ -1,6 +1,87 @@
 import { defineConfig } from 'vite';
+import crypto from 'crypto';
+
+const fastrrApiMiddleware = (req, res, next) => {
+  if (req.url && req.url.startsWith('/api/fastrr/create-checkout') && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', async () => {
+      try {
+        const data = JSON.parse(body || '{}');
+        const items = data.items || [];
+        const VARIANT_MAP = {
+          'king-scar': { 8: '10011', 50: '10012', 100: '10013' },
+          'petralux': { 8: '10021', 50: '10022', 100: '10023' },
+          'oud-rion': { 8: '10031', 50: '10032', 100: '10033' },
+          'spark': { 8: '10041', 50: '10042', 100: '10043' },
+          'wood-sera': { 8: '10051', 50: '10052', 100: '10053' },
+          'ash': { 8: '10061', 50: '10062', 100: '10063' },
+          'mytholis-discovery-set': { 60: '10071', default: '10071' }
+        };
+        const fastrrItems = items.map(item => {
+          let variantId = item.variant_id;
+          if (!variantId && item.productId) {
+            const sizeMap = VARIANT_MAP[item.productId] || {};
+            variantId = sizeMap[item.size] || sizeMap.default || '10022';
+          }
+          return { variant_id: String(variantId || '10022'), quantity: parseInt(item.quantity) || 1 };
+        });
+
+        const payload = {
+          cart_data: { items: fastrrItems },
+          redirect_url: data.redirect_url || 'https://mytholis.com/#track-order',
+          timestamp: new Date().toISOString()
+        };
+
+        const rawBody = JSON.stringify(payload);
+        const secret = 'bgHG23KYS9CZi8Pvo2UgmuyBWlacgKqo';
+        const apiKey = 'GkmYB8JVVgvPFLiN';
+        const hmac = crypto.createHmac('sha256', secret).update(rawBody).digest('base64');
+
+        const resp = await fetch('https://checkout-api.shiprocket.com/api/v1/access-token/checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Api-Key': apiKey,
+            'X-Api-HMAC-SHA256': hmac
+          },
+          body: rawBody
+        });
+
+        const resJson = await resp.json().catch(() => ({}));
+        res.setHeader('Content-Type', 'application/json');
+        if (resJson.ok && resJson.result?.token) {
+          res.end(JSON.stringify({
+            success: true,
+            token: resJson.result.token,
+            order_id: resJson.result?.data?.order_id,
+            redirect_url: data.redirect_url
+          }));
+        } else {
+          res.end(JSON.stringify({ success: false, error: resJson.error?.message || 'Fastrr catalog notice' }));
+        }
+      } catch (e) {
+        res.statusCode = 500;
+        res.end(JSON.stringify({ success: false, error: e.message }));
+      }
+    });
+  } else {
+    next();
+  }
+};
+
+const fastrrPlugin = () => ({
+  name: 'fastrr-local-api',
+  configureServer(server) {
+    server.middlewares.use(fastrrApiMiddleware);
+  },
+  configurePreviewServer(server) {
+    server.middlewares.use(fastrrApiMiddleware);
+  }
+});
 
 export default defineConfig({
+  plugins: [fastrrPlugin()],
   build: {
     outDir: 'dist',
     target: 'es2022',

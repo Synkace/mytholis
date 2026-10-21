@@ -2816,7 +2816,7 @@ const Components = {
 
         <!-- Fastrr 1-Click Express Checkout Option -->
         <div style="margin-bottom: 1.2rem;">
-          <button type="button" class="btn btn-gold" onclick="app.closeRazorpayModal(); ${product ? `app.buyNowFastrr('${product.id}', event)` : 'app.checkoutCartFastrr(event)'}" style="width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #FF6C37 0%, #D84210 100%); color: #ffffff; font-weight: 700; box-shadow: 0 4px 18px rgba(255, 108, 55, 0.35); display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: none; font-size: 0.88rem;">
+          <button type="button" class="btn btn-gold" onclick="app.closeRazorpayModal(); ${isSingleProduct ? `app.buyNowFastrr('${productOrCart.id}', event)` : 'app.checkoutCartFastrr(event)'}" style="width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #FF6C37 0%, #D84210 100%); color: #ffffff; font-weight: 700; box-shadow: 0 4px 18px rgba(255, 108, 55, 0.35); display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: none; font-size: 0.88rem;">
             <span>⚡</span> Fastrr 1-Click Express Checkout (Fastest)
           </button>
           <div class="auth-divider-line" style="margin: 0.9rem 0 0.5rem;">or continue with manual gateway</div>
