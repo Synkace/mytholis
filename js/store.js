@@ -980,6 +980,20 @@ class MytholisStore {
     };
   }
 
+  /* Calculate Spendable Mythos Coins Earned for a given Product Price */
+  calculateProductMythos(price) {
+    const tier = this.getCurrentTier ? this.getCurrentTier() : { multiplier: 1, cashbackPct: 3 };
+    const pct = Number(tier.cashbackPct || (this.globalSettings?.mythosEarnPct || 3));
+    const numPrice = Number(price) || 0;
+    const coins = Math.round(numPrice * (pct / 100));
+    return {
+      coins,
+      pct,
+      tierName: tier.name || 'The Observer',
+      tierLevel: tier.level || 1
+    };
+  }
+
   getEstimatedOrderLoyalty(subtotalBaseINR = 0, items = []) {
     const currentTier = this.getCurrentTier();
     const subtotal = subtotalBaseINR || this.getCartTotal();

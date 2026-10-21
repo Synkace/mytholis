@@ -5652,6 +5652,64 @@ div#cardsRow {
   line-height: 1;
 }
 
+.notched-mythos-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  color: #FCD34D;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.notched-mythos-badge strong {
+  color: #FFE082;
+  font-weight: 700;
+}
+
+.card-mythos-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  margin-bottom: 2px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  color: #FCD34D;
+  font-size: 0.68rem;
+  font-weight: 500;
+}
+
+.card-mythos-badge strong {
+  color: #FFE082;
+  font-weight: 700;
+}
+
+.detail-mythos-earn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  color: #FCD34D;
+  font-size: 0.78rem;
+}
+
+.detail-mythos-earn-pill strong {
+  color: #FFE082;
+  font-weight: 700;
+}
+
 /* Docked Action Cart Button - Precisely Flush in Bottom-Right Notch */
 .notched-docked-cart-btn {
   position: absolute;

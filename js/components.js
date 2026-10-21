@@ -14,6 +14,7 @@ const Components = {
     const occasionLabel = product.scentFamily.includes("Royal") || product.scentFamily.includes("Resinous") || product.scentFamily.includes("Smoky")
       ? "Evening Gala"
       : "Signature Wear";
+    const mythosInfo = store.calculateProductMythos(defaultSize.price);
 
     return `
       <div class="product-card" data-id="${product.id}" onclick="app.openProductView('${product.id}')">
@@ -59,6 +60,9 @@ const Components = {
           <div class="product-card-footer">
             <div>
               <span class="product-price" id="card-price-${product.id}">${store.formatPrice(defaultSize.price)}</span>
+              <div class="card-mythos-badge" id="card-mythos-${product.id}" title="Loyalty Reward: 1 Mythos Coin = ₹1 Concession">
+                <span>🪙</span> Earn <strong>+${mythosInfo.coins} Mythos</strong>
+              </div>
               <span class="product-tax-note">MRP (Incl. taxes)</span>
             </div>
             <div class="product-card-actions">
@@ -83,6 +87,7 @@ const Components = {
     const isWishlisted = store.isInWishlist(product.id);
     const cleanTitle = product.name.replace(' Extrait de Parfum', ' Extrait');
     const badgeText = product.tag || 'Trending';
+    const mythosInfo = store.calculateProductMythos(product.price);
 
     // Curated evocative descriptions matching the haute parfumerie reference
     const curatedDescriptions = {
@@ -156,6 +161,10 @@ const Components = {
             <div class="notched-bottom-row">
               <div class="notched-price-display">
                 ${store.formatPrice(product.price)}
+              </div>
+              <div class="notched-mythos-badge" title="Loyalty Privilege: 1 Mythos Coin = ₹1 Concession">
+                <span class="mythos-coin-icon">🪙</span>
+                <span>Earn <strong>+${mythosInfo.coins} Mythos</strong></span>
               </div>
             </div>
           </div>
@@ -926,6 +935,7 @@ const Components = {
     app.selectedSize = currentMl;
     app.selectedPrice = currentPrice;
     const unitPricePerMl = (currentPrice / currentMl).toFixed(2);
+    const detailMythosInfo = store.calculateProductMythos(currentPrice);
 
     return `
       <div class="container">
@@ -963,6 +973,9 @@ const Components = {
               <div>
                 <span class="product-price" id="detail-product-price" style="font-size: 2.2rem;">${store.formatPrice(currentPrice)}</span>
                 <span class="mrp-tax-tag" id="detail-mrp-tag">MRP (Incl. of all taxes) • ₹${unitPricePerMl}/ml</span>
+                <div class="detail-mythos-earn-pill" id="detail-mythos-pill">
+                  <span>🪙</span> Circle of Legends Privilege: Earn <strong>+${detailMythosInfo.coins} Mythos Coins</strong> (${detailMythosInfo.pct}% Return)
+                </div>
               </div>
               <span style="color: var(--gold-primary); font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px;">
                 <svg width="12" height="12" fill="var(--gold-primary)" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>

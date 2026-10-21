@@ -1496,6 +1496,12 @@ class MytholisApp {
     if (metrologyMrpEl) {
       metrologyMrpEl.innerText = `${store.formatPrice(price)} (₹${unitPrice}/ml)`;
     }
+
+    const mythosEl = document.getElementById('detail-mythos-pill');
+    if (mythosEl && store.calculateProductMythos) {
+      const mythosInfo = store.calculateProductMythos(price);
+      mythosEl.innerHTML = `<span>🪙</span> Circle of Legends Privilege: Earn <strong>+${mythosInfo.coins} Mythos Coins</strong> (${mythosInfo.pct}% Return)`;
+    }
   }
 
   /* Cart & Toast */
@@ -1541,6 +1547,11 @@ class MytholisApp {
       const priceEl = document.getElementById(`card-price-${productId}`);
       if (priceEl) {
         priceEl.innerText = store.formatPrice(price);
+      }
+      const cardMythosEl = document.getElementById(`card-mythos-${productId}`);
+      if (cardMythosEl && store.calculateProductMythos) {
+        const mInfo = store.calculateProductMythos(price);
+        cardMythosEl.innerHTML = `<span>🪙</span> Earn <strong>+${mInfo.coins} Mythos</strong>`;
       }
       const buyBtn = document.getElementById(`card-buy-btn-${productId}`);
       if (buyBtn) {
