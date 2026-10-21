@@ -82,6 +82,28 @@ class MytholisApp {
     window.addEventListener('hashchange', () => this.handleHashRoute());
     window.addEventListener('popstate', () => this.handleHashRoute());
 
+    // Fastrr / Shiprocket 1-Click Checkout Event Bridge & Safety Listeners
+    window.addEventListener('message', (event) => {
+      const data = event.data;
+      if (!data) return;
+
+      // When Fastrr sends hide-pre-loader, immediately reveal iframe and enable interactions
+      if (data.trigger === 'hide-pre-loader') {
+        const preloader = document.getElementById('fastrr-pre-loader');
+        if (preloader) preloader.style.display = 'none';
+        const mainContainer = document.getElementById('fastrr-main-container');
+        if (mainContainer) mainContainer.style.pointerEvents = 'auto';
+      }
+
+      // Fastrr modal close triggers from user clicking ✕ inside iframe
+      if (data.trigger === 'headless-close' || data.trigger === 'headlessClose' || data.action === 'headlessClose') {
+        document.getElementById('headless-container')?.remove();
+        document.getElementById('fastrr-main-container')?.remove();
+        document.getElementById('fastrr-pre-loader')?.remove();
+        document.body.style.overflow = 'auto';
+      }
+    });
+
     // Scroll Header effect & Mobile Sticky Buy Bar updater (cached & RAF throttled)
     const header = document.querySelector('.header-nav');
     const stickyBuyBar = document.getElementById('mobile-sticky-buy-bar');
@@ -1559,15 +1581,29 @@ class MytholisApp {
     await this.initiateFastrrCheckout(items, event, window.location.origin + '/#track-order');
   }
 
+  buildFastrrWidgetUrl(token, fallbackUrl) {
+    const sellerDomain = document.getElementById('sellerDomain')?.value || 'mytholis.com';
+    const checkoutBuyer = window.checkoutBuyer || 'https://fastrr-boost-ui.pickrr.com/';
+    const channel = btoa(encodeURIComponent(JSON.stringify({
+      shop_name: 'company-logo',
+      shop_url: sellerDomain,
+      redirectUrl: fallbackUrl,
+      credInstalled: false,
+      gpayInstalled: false
+    })));
+    const cartBase64 = btoa(encodeURIComponent(JSON.stringify([])));
+    return `${checkoutBuyer}?platform=CUSTOM&customCheckoutToken=${token}&type=cart&channel=${channel}#cart=${cartBase64}`;
+  }
+
   async generateFastrrTokenClient(items, redirectUrl) {
     try {
       const VARIANT_MAP = {
-        'king-scar': { 8: '10011', 50: '10012', 100: '10013' },
-        'petralux': { 8: '10021', 50: '10022', 100: '10023' },
-        'oud-rion': { 8: '10031', 50: '10032', 100: '10033' },
-        'spark': { 8: '10041', 50: '10042', 100: '10043' },
-        'wood-sera': { 8: '10051', 50: '10052', 100: '10053' },
-        'ash': { 8: '10061', 50: '10062', 100: '10063' },
+        'king-scar': { 8: '10011', 50: '10012', 100: '10013', default: '10012' },
+        'petralux': { 8: '10021', 50: '10022', 100: '10023', default: '10022' },
+        'oud-rion': { 8: '10031', 50: '10032', 100: '10033', default: '10032' },
+        'spark': { 8: '10041', 50: '10042', 100: '10043', default: '10042' },
+        'wood-sera': { 8: '10051', 50: '10052', 100: '10053', default: '10052' },
+        'ash': { 8: '10061', 50: '10062', 100: '10063', default: '10062' },
         'mytholis-discovery-set': { 60: '10071', default: '10071' }
       };
 
@@ -1575,11 +1611,12 @@ class MytholisApp {
         let variantId = item.variant_id;
         if (!variantId && item.productId) {
           const sizeMap = VARIANT_MAP[item.productId] || {};
-          variantId = sizeMap[item.size] || sizeMap.default || '10022';
+          const parsedSize = parseInt(item.size, 10);
+          variantId = sizeMap[item.size] || sizeMap[parsedSize] || sizeMap[50] || sizeMap.default || '10022';
         }
         return {
           variant_id: String(variantId || '10022'),
-          quantity: parseInt(item.quantity) || 1
+          quantity: parseInt(item.quantity, 10) || 1
         };
       });
 
@@ -1633,6 +1670,11 @@ class MytholisApp {
   async initiateFastrrCheckout(items, event, fallbackUrl = window.location.origin + '/#track-order') {
     this.showToast('Connecting to Fastrr 1-Click Checkout...');
 
+    // Clear any previous Fastrr containers to prevent CHECKOUT_ALREADY_INIT collision
+    document.getElementById('fastrr-main-container')?.remove();
+    document.getElementById('headless-container')?.remove();
+    document.getElementById('fastrr-pre-loader')?.remove();
+
     try {
       let res = null;
 
@@ -1663,22 +1705,28 @@ class MytholisApp {
         this.closeAllModals(false);
         this.showToast('Launching Fastrr 1-Click Checkout...');
 
+        const widgetUrl = this.buildFastrrWidgetUrl(res.token, res.redirect_url || fallbackUrl);
+
         if (typeof window.HeadlessCheckout !== 'undefined' && typeof window.HeadlessCheckout.addToCart === 'function') {
           try {
             window.HeadlessCheckout.addToCart(event, res.token, {
               fallbackUrl: res.redirect_url || fallbackUrl
             });
+
+            // Watchdog: If preloader doesn't hide within 3.5s, auto-hide preloader and make container interactive
+            setTimeout(() => {
+              const preloader = document.getElementById('fastrr-pre-loader');
+              if (preloader) preloader.style.display = 'none';
+              const mainContainer = document.getElementById('fastrr-main-container');
+              if (mainContainer) mainContainer.style.pointerEvents = 'auto';
+            }, 3500);
           } catch (sdkErr) {
             console.warn('[Fastrr Headless SDK notice]:', sdkErr);
-            const sellerDomain = document.getElementById('sellerDomain')?.value || 'mytholis.com';
-            const iframeSrc = `https://checkout.shiprocket.com/?token=${res.token}&sellerDomain=${sellerDomain}&fallbackUrl=${encodeURIComponent(res.redirect_url || fallbackUrl)}`;
-            this.openFastrrIframeModal(iframeSrc, res.redirect_url || fallbackUrl);
+            this.openFastrrIframeModal(widgetUrl, res.redirect_url || fallbackUrl);
           }
         } else {
           // If SDK is not ready, blocked by client ad-blocker, or on native WebView, mount direct Fastrr iframe
-          const sellerDomain = document.getElementById('sellerDomain')?.value || 'mytholis.com';
-          const iframeSrc = `https://checkout.shiprocket.com/?token=${res.token}&sellerDomain=${sellerDomain}&fallbackUrl=${encodeURIComponent(res.redirect_url || fallbackUrl)}`;
-          this.openFastrrIframeModal(iframeSrc, res.redirect_url || fallbackUrl);
+          this.openFastrrIframeModal(widgetUrl, res.redirect_url || fallbackUrl);
         }
       } else {
         console.warn('[Fastrr Checkout API Notice]:', res);
@@ -1698,9 +1746,9 @@ class MytholisApp {
       container = document.createElement('div');
       container.id = 'headless-container';
       container.innerHTML = `
-        <div class="headless-modal" style="position: fixed; inset: 0; z-index: 999999; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center;">
-          <div class="headless-modal-content" style="position: relative; width: 100%; max-width: 480px; height: 90vh; max-height: 850px; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
-            <button onclick="document.getElementById('headless-container')?.remove(); document.body.style.overflow='';" style="position: absolute; top: 12px; right: 12px; z-index: 10; background: rgba(0,0,0,0.1); border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 16px;">✕</button>
+        <div class="headless-modal" style="position: fixed; inset: 0; z-index: 2147483647; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+          <div class="headless-modal-content" style="position: relative; width: 100%; max-width: 480px; height: 92vh; max-height: 850px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 80px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1);">
+            <button id="headless-close-btn" onclick="document.getElementById('headless-container')?.remove(); document.body.style.overflow='auto';" style="position: absolute; top: 12px; right: 12px; z-index: 100000; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; width: 34px; height: 34px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">✕</button>
             <div class="headless-modal-body" style="width: 100%; height: 100%;">
               <iframe id="headless-iframe" src="${iframeSrc}" allow="geolocation; clipboard-read; clipboard-write; web-share" style="width: 100%; height: 100%; border: none;"></iframe>
             </div>
@@ -1712,6 +1760,8 @@ class MytholisApp {
     } else {
       const iframe = document.getElementById('headless-iframe');
       if (iframe) iframe.src = iframeSrc;
+      container.style.display = 'block';
+      document.body.style.overflow = 'hidden';
     }
   }
 

@@ -10,21 +10,22 @@ const fastrrApiMiddleware = (req, res, next) => {
         const data = JSON.parse(body || '{}');
         const items = data.items || [];
         const VARIANT_MAP = {
-          'king-scar': { 8: '10011', 50: '10012', 100: '10013' },
-          'petralux': { 8: '10021', 50: '10022', 100: '10023' },
-          'oud-rion': { 8: '10031', 50: '10032', 100: '10033' },
-          'spark': { 8: '10041', 50: '10042', 100: '10043' },
-          'wood-sera': { 8: '10051', 50: '10052', 100: '10053' },
-          'ash': { 8: '10061', 50: '10062', 100: '10063' },
+          'king-scar': { 8: '10011', 50: '10012', 100: '10013', default: '10012' },
+          'petralux': { 8: '10021', 50: '10022', 100: '10023', default: '10022' },
+          'oud-rion': { 8: '10031', 50: '10032', 100: '10033', default: '10032' },
+          'spark': { 8: '10041', 50: '10042', 100: '10043', default: '10042' },
+          'wood-sera': { 8: '10051', 50: '10052', 100: '10053', default: '10052' },
+          'ash': { 8: '10061', 50: '10062', 100: '10063', default: '10062' },
           'mytholis-discovery-set': { 60: '10071', default: '10071' }
         };
         const fastrrItems = items.map(item => {
           let variantId = item.variant_id;
           if (!variantId && item.productId) {
             const sizeMap = VARIANT_MAP[item.productId] || {};
-            variantId = sizeMap[item.size] || sizeMap.default || '10022';
+            const parsedSize = parseInt(item.size, 10);
+            variantId = sizeMap[item.size] || sizeMap[parsedSize] || sizeMap[50] || sizeMap.default || '10022';
           }
-          return { variant_id: String(variantId || '10022'), quantity: parseInt(item.quantity) || 1 };
+          return { variant_id: String(variantId || '10022'), quantity: parseInt(item.quantity, 10) || 1 };
         });
 
         const payload = {
