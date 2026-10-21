@@ -641,7 +641,7 @@ export const AdminComponents = {
                   <tr>
                     <th>Patron</th>
                     <th>Email & Phone</th>
-                    <th>Role</th>
+                    <th style="min-width: 105px;">Role</th>
                     <th>Mythos Balance</th>
                     <th>Full Flacons</th>
                     <th>Standing Tier</th>
@@ -684,9 +684,9 @@ export const AdminComponents = {
                           <div style="font-size: 0.82rem; color: var(--text-main);">${email}</div>
                           <div style="font-size: 0.75rem; color: var(--text-muted);">${phone}</div>
                         </td>
-                        <td>
-                          <span class="sovereign-pill" style="${isAdmin ? 'background: rgba(212, 175, 55, 0.25); border: 1px solid var(--gold-primary); color: var(--gold-light);' : 'background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text-muted);'}">
-                            ${isAdmin ? '👑 Admin' : 'Patron'}
+                        <td style="white-space: nowrap;">
+                          <span class="sovereign-pill" style="${isAdmin ? 'background: rgba(212, 175, 55, 0.2); border: 1px solid var(--gold-primary); color: var(--gold-light); box-shadow: 0 0 10px rgba(212, 175, 55, 0.15);' : 'background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text-muted);'}">
+                            ${isAdmin ? '<span style="font-size: 0.85rem; line-height: 1;">👑</span> Admin' : 'Patron'}
                           </span>
                         </td>
                         <td>

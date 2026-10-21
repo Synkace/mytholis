@@ -5038,12 +5038,18 @@ div#cardsRow {
 }
 
 .sovereign-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
   padding: 0.25rem 0.65rem;
   border-radius: 999px;
   font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  white-space: nowrap;
+  line-height: 1.2;
 }
 
 .sovereign-pill.status-pending { background: rgba(245, 158, 11, 0.2); border: 1px solid #F59E0B; color: #FCD34D; }
