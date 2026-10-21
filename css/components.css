@@ -5450,6 +5450,7 @@ div#cardsRow {
 
 .product-slider-item {
   flex: 0 0 320px;
+  width: 320px;
   scroll-snap-align: start;
   scroll-snap-stop: always;
   display: flex;
@@ -5463,10 +5464,12 @@ div#cardsRow {
 
 .sovereign-slider-card {
   position: relative;
-  width: 100%;
+  width: 320px;
+  min-width: 320px;
   max-width: 320px;
-  min-height: 520px;
   height: 520px;
+  min-height: 520px;
+  max-height: 520px;
   display: flex;
   flex-direction: column;
   cursor: pointer;
@@ -5483,8 +5486,8 @@ div#cardsRow {
 .sovereign-card-svg-frame {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
+  width: 320px;
+  height: 520px;
   z-index: 1;
   pointer-events: none;
   overflow: visible;
@@ -5494,7 +5497,8 @@ div#cardsRow {
 .sovereign-card-body {
   position: relative;
   z-index: 2;
-  height: 100%;
+  width: 320px;
+  height: 520px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -5635,8 +5639,8 @@ div#cardsRow {
 
 .notched-bottom-row {
   margin-top: auto;
-  padding-bottom: 6px;
-  max-width: 190px;
+  padding-bottom: 4px;
+  max-width: 200px;
 }
 
 .notched-price-display {
@@ -5648,14 +5652,14 @@ div#cardsRow {
   line-height: 1;
 }
 
-/* Docked Action Cart Button */
+/* Docked Action Cart Button - Precisely Flush in Bottom-Right Notch */
 .notched-docked-cart-btn {
   position: absolute;
-  right: 12px;
-  bottom: 12px;
-  width: 76px;
-  height: 84px;
-  border-radius: 22px;
+  right: 0;
+  bottom: 0;
+  width: 78px;
+  height: 104px;
+  border-radius: 24px;
   border: 1.5px solid #D4AF37;
   background: #03180f;
   display: flex;
@@ -5665,18 +5669,19 @@ div#cardsRow {
   z-index: 5;
   transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
   padding: 0;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+  box-sizing: border-box;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
 .notched-docked-cart-btn:hover {
   background: rgba(212, 175, 55, 0.22);
   border-color: #ffd700;
-  transform: scale(1.06);
+  transform: scale(1.05);
   box-shadow: 0 8px 24px rgba(212, 175, 55, 0.35);
 }
 
 .notched-docked-cart-btn:active {
-  transform: scale(0.96);
+  transform: scale(0.97);
 }
 
 .product-slider-footer {
