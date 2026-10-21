@@ -157,6 +157,11 @@
     <div class="modal-card glass-panel" id="payu-modal-body"></div>
   </div>
 
+  <!-- 6. Patron Referral & Invitation Sanctum Modal Overlay -->
+  <div class="modal-overlay" id="referral-modal-overlay" onclick="if(event.target === this) app.closeReferralModal()">
+    <div class="modal-card glass-panel" id="referral-modal-body"></div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toast-container"></div>
 
@@ -187,6 +192,7 @@
           <li><a href="#know-us" onclick="app.navigateTo('know-us')">Heritage & Craft</a></li>
           <li><a href="#quiz" onclick="app.navigateTo('find-scent')">Scent Finder Quiz</a></li>
           <li><a href="#circle-of-legends" onclick="app.navigateTo('circle-of-legends')">The Circle of Legends</a></li>
+          <li><a onclick="app.openReferralModal()">Invite Connoisseurs (Refer & Earn)</a></li>
           <li><a href="#circle-of-legends-rules" onclick="app.navigateTo('circle-of-legends-rules')">Loyalty Program Rules & Bylaws</a></li>
           <li><a href="#dossier" onclick="app.navigateTo('profile')">Client Account & Orders</a></li>
           <li><a href="#track-order" onclick="app.navigateTo('track-order')">Track Consignment</a></li>

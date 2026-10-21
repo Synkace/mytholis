@@ -5504,3 +5504,46 @@ div#cardsRow {
   }
 }
 
+/* ==========================================================================
+   PATRON REFERRAL SANCTUM & SHARING PANEL STYLES
+   ========================================================================== */
+.referral-panel-card {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.referral-box {
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.referral-box:hover {
+  border-color: var(--gold-primary) !important;
+  transform: translateY(-2px);
+}
+
+.btn-referral-wa {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-referral-wa:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.45) !important;
+}
+
+@media (max-width: 640px) {
+  .referral-share-buttons {
+    flex-direction: column;
+  }
+  .referral-share-buttons button {
+    width: 100%;
+    justify-content: center;
+  }
+  .dossier-nav-tabs {
+    flex-wrap: wrap;
+  }
+  .dossier-tab-btn {
+    flex: 1 1 45%;
+  }
+}
+
+

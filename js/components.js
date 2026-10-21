@@ -1481,7 +1481,10 @@ const Components = {
         </div>
       </div>
 
-      <!-- 4. Tier Perks Comparative Table -->
+      <!-- 4. Patron Referral Sanctum -->
+      ${this.renderReferralPanel(isModal)}
+
+      <!-- 5. Tier Perks Comparative Table -->
       <div class="modal-section-box liquid-glass-card">
         <div class="modal-section-header">
           <h4 class="modal-section-title">The Circle of Legends Hierarchy</h4>
@@ -1943,6 +1946,180 @@ const Components = {
     `;
   },
 
+  /* Render Dedicated Referral & Privilege Sharing Panel */
+  renderReferralPanel(isModal = false) {
+    const isLoggedIn = store.isUserLoggedIn();
+    const referralCode = store.getUserReferralCode();
+    const referralLink = store.getUserReferralLink();
+    const loyalty = store.loyalty || {};
+    const referralsCount = loyalty.referrals_count || 0;
+    const earnedMythos = loyalty.referrals_earned_mythos || (referralsCount * 250);
+
+    return `
+      <div class="referral-panel-card liquid-glass-card" style="border: 1px solid rgba(212, 175, 55, 0.35); padding: ${isModal ? '1.25rem' : '2rem'}; margin-bottom: 2rem; position: relative; overflow: hidden; background: radial-gradient(circle at 10% 20%, rgba(212, 175, 55, 0.12) 0%, rgba(4, 24, 18, 0.7) 100%);">
+        
+        <!-- Header Pill & Title -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.2rem;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem;">
+              <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light); border-color: var(--gold-primary);">
+                ⚜️ The Circle of Legends
+              </span>
+              <span class="glass-pill" style="font-size: 0.65rem; color: #10B981; border-color: #10B981; background: rgba(16, 185, 129, 0.1);">
+                Dual-Way Luxury Bounty
+              </span>
+            </div>
+            <h3 class="font-title" style="color: var(--gold-light); font-size: ${isModal ? '1.25rem' : '1.65rem'}; margin: 0.3rem 0 0.4rem;">
+              Patron Referral Sanctum
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; margin: 0; max-width: 620px;">
+              Invite discerning patrons to House Mytholis. Your invited guests receive <strong style="color: var(--gold-light);">₹500 off</strong> their first master extrait acquisition, and <strong style="color: var(--gold-light);">+250 Spendable Mythos &amp; +150 Legacy Mythos</strong> are credited to your vault.
+            </p>
+          </div>
+          ${!isModal ? `
+            <div style="text-align: right;">
+              <button class="btn btn-glass" style="font-size: 0.75rem; padding: 0.45rem 0.9rem;" onclick="app.openReferralModal()">
+                Open Share Desk ↗
+              </button>
+            </div>
+          ` : ''}
+        </div>
+
+        <!-- Referral Code & Link Box -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <!-- 1. Unique Referral Code -->
+          <div class="referral-box liquid-glass-card" style="padding: 1.1rem; background: rgba(4, 24, 18, 0.6); border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 12px;">
+            <span style="display: block; font-size: 0.7rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.4rem;">
+              Your Private Referral Key
+            </span>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; background: rgba(0,0,0,0.4); padding: 0.55rem 0.85rem; border-radius: 8px; border: 1px dashed rgba(212, 175, 55, 0.4);">
+              <span id="patron-referral-code-display" style="font-family: monospace; font-size: 1.15rem; font-weight: 700; color: var(--gold-light); letter-spacing: 0.08em;">
+                ${referralCode}
+              </span>
+              <button type="button" class="btn btn-gold" style="font-size: 0.72rem; padding: 0.35rem 0.75rem;" onclick="app.copyReferralCode()">
+                Copy Key
+              </button>
+            </div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.45rem;">
+              Redeemable at checkout voucher prompt for ₹500 discount.
+            </div>
+          </div>
+
+          <!-- 2. Unique Referral Link -->
+          <div class="referral-box liquid-glass-card" style="padding: 1.1rem; background: rgba(4, 24, 18, 0.6); border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 12px;">
+            <span style="display: block; font-size: 0.7rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.4rem;">
+              Direct Invitation URL
+            </span>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; background: rgba(0,0,0,0.4); padding: 0.45rem 0.65rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.2);">
+              <input type="text" readonly id="patron-referral-link-input" value="${referralLink}" style="background: none; border: none; color: var(--text-muted); font-size: 0.76rem; width: 100%; outline: none; font-family: monospace;" onclick="this.select()" />
+              <button type="button" class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.75rem; white-space: nowrap;" onclick="app.copyReferralLink()">
+                Copy Link
+              </button>
+            </div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.45rem;">
+              Automatically activates ₹500 welcome concession for visitors.
+            </div>
+          </div>
+        </div>
+
+        <!-- 1-Click Multi-Channel Share Buttons -->
+        <div style="margin-bottom: 1.5rem;">
+          <span style="display: block; font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.6rem;">
+            Instant Share Options
+          </span>
+          <div class="referral-share-buttons" style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <!-- WhatsApp Share -->
+            <button type="button" class="btn btn-referral-wa" style="background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); color: #ffffff; border: none; font-weight: 700; font-size: 0.8rem; padding: 0.65rem 1.2rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3); cursor: pointer;" onclick="app.shareReferralWhatsApp()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.694.044-1.925-.465-1.503-.623-2.464-2.146-2.539-2.246-.075-.101-.606-.807-.606-1.542 0-.736.386-1.096.523-1.244.137-.149.301-.187.402-.187.101 0 .202.001.29.006.094.005.218-.035.34.258.127.306.435 1.06.473 1.137.038.077.063.167.013.267-.051.101-.077.163-.153.253-.076.089-.16.199-.228.267-.076.076-.156.16-.067.313.089.152.395.651.848 1.054.582.518 1.074.678 1.226.754.152.076.241.063.33-.038.089-.101.381-.444.482-.596.101-.152.203-.127.341-.076.139.051.886.418 1.038.494.153.076.254.114.292.177.038.064.038.368-.106.773z"/>
+              </svg>
+              <span>Share to WhatsApp</span>
+            </button>
+
+            <!-- Native Device Share Sheet -->
+            <button type="button" class="btn btn-gold" style="font-size: 0.8rem; padding: 0.65rem 1.2rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem;" onclick="app.shareReferralLink()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+              <span>Share via App / Messages</span>
+            </button>
+
+            <!-- Email Share -->
+            <button type="button" class="btn btn-glass" style="font-size: 0.8rem; padding: 0.65rem 1.1rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.45rem;" onclick="app.shareReferralEmail()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              <span>Email Invitation</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Referral Stats & Live Bounties -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.8rem; margin-bottom: 1.5rem;">
+          <div style="padding: 0.8rem; border-radius: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(212, 175, 55, 0.15); text-align: center;">
+            <div style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase;">Guests Invited</div>
+            <div style="font-size: 1.35rem; font-weight: 700; color: var(--gold-light); font-family: var(--font-serif-title);">${referralsCount}</div>
+          </div>
+          <div style="padding: 0.8rem; border-radius: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(212, 175, 55, 0.15); text-align: center;">
+            <div style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase;">Mythos Bounty</div>
+            <div style="font-size: 1.35rem; font-weight: 700; color: var(--gold-primary); font-family: var(--font-serif-title);">${earnedMythos} M</div>
+          </div>
+          <div style="padding: 0.8rem; border-radius: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(212, 175, 55, 0.15); text-align: center;">
+            <div style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase;">Friend Saves</div>
+            <div style="font-size: 1.35rem; font-weight: 700; color: #10B981; font-family: var(--font-serif-title);">₹500 Off</div>
+          </div>
+          <div style="padding: 0.8rem; border-radius: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(212, 175, 55, 0.15); text-align: center;">
+            <div style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase;">Tier Elevate</div>
+            <div style="font-size: 1.35rem; font-weight: 700; color: var(--gold-light); font-family: var(--font-serif-title);">+150 M</div>
+          </div>
+        </div>
+
+        <!-- 3-Step Protocol Walkthrough -->
+        <div style="padding-top: 1rem; border-top: 1px solid rgba(212, 175, 55, 0.2);">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;">
+            <div>
+              <strong style="color: var(--gold-light); display: block; margin-bottom: 0.2rem;">1. Transmit Private Key</strong>
+              Send your personal invitation code or link to fellow fragrance collectors.
+            </div>
+            <div>
+              <strong style="color: var(--gold-light); display: block; margin-bottom: 0.2rem;">2. Guest Acquires Extrait</strong>
+              Your guest saves ₹500 instantly on their first flacon or discovery coffret order.
+            </div>
+            <div>
+              <strong style="color: var(--gold-light); display: block; margin-bottom: 0.2rem;">3. Receive Vault Bounty</strong>
+              House Mytholis automatically deposits +250 Spendable &amp; +150 Legacy Mythos into your vault.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    `;
+  },
+
+  /* Render Dedicated Referral Modal Wrapper */
+  renderReferralModal() {
+    return `
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="modal-crest-icon" style="width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(212, 175, 55, 0.15); border: 1px solid var(--gold-primary); font-family: var(--font-serif-title); font-size: 1rem; color: var(--gold-light);">
+            ⚜️
+          </div>
+          <div>
+            <h3 class="modal-title font-title">Referral Sanctum</h3>
+            <p class="modal-subtitle">House Mytholis • Circle of Legends</p>
+          </div>
+        </div>
+        <button class="icon-btn modal-close-btn" onclick="app.closeReferralModal()" title="Close Referral Desk">✕</button>
+      </div>
+
+      <div class="modal-scroll-body" style="padding: 1.25rem;">
+        ${this.renderReferralPanel(true)}
+      </div>
+    `;
+  },
+
   /* Render Dedicated Circle of Legends Loyalty & Vault Page */
   renderCircleOfLegends() {
     return `
@@ -2164,7 +2341,10 @@ const Components = {
                 👑 Sovereign Admin Desk
               </button>
             ` : ''}
-            <button class="btn btn-gold" onclick="app.navigateTo('circle-of-legends')">
+            <button class="btn btn-gold" onclick="app.openReferralModal()">
+              Invite & Earn (₹500 / 250M)
+            </button>
+            <button class="btn btn-glass" onclick="app.navigateTo('circle-of-legends')">
               Circle of Legends Rewards
             </button>
             <button class="btn btn-glass" onclick="app.logoutUser()">
@@ -2196,6 +2376,9 @@ const Components = {
             <div class="loyalty-stat-hint">${currentTier.cashbackPct || ((currentTier.multiplier || 1) * 3)}% Extrait Return</div>
           </div>
         </div>
+
+        <!-- Patron Referral Sanctum Panel -->
+        ${this.renderReferralPanel(false)}
 
         <!-- Account Settings & Saved Dispatch Coordinates Form -->
         <div class="liquid-glass-card" style="padding: 2rem; margin-bottom: 2.5rem;">
@@ -2394,6 +2577,9 @@ const Components = {
           <button type="button" class="dossier-tab-btn ${tab === 'overview' ? 'active' : ''}" onclick="app.setDossierTab('overview')">
             Overview & Status
           </button>
+          <button type="button" class="dossier-tab-btn ${tab === 'referral' ? 'active' : ''}" onclick="app.setDossierTab('referral')">
+            Refer & Earn
+          </button>
           <button type="button" class="dossier-tab-btn ${tab === 'edit' ? 'active' : ''}" onclick="app.setDossierTab('edit')">
             Edit Coordinates
           </button>
@@ -2507,6 +2693,11 @@ const Components = {
               <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">No previous consignments on file.</p>
             `}
           </div>
+        ` : ''}
+
+        ${tab === 'referral' ? `
+          <!-- TAB 2: REFERRAL SANCTUM & SHARE -->
+          ${this.renderReferralPanel(true)}
         ` : ''}
 
         ${tab === 'edit' ? `

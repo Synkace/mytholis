@@ -234,6 +234,8 @@ class MytholisStore {
       isAdmin: false,
       tier: "Level 1: The Initiate",
       points: 0,
+      referralCode: "",
+      referredBy: "",
       orders: []
     };
 
@@ -323,6 +325,30 @@ class MytholisStore {
 
   getProducts() {
     return (this.products && this.products.length) ? this.products : (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []);
+  }
+
+  /* Patron Referral Architecture */
+  getUserReferralCode() {
+    if (this.user && this.user.referralCode && this.user.referralCode.trim()) {
+      return this.user.referralCode.trim().toUpperCase();
+    }
+    const rawName = (this.user && this.user.name) || (this.user && this.user.email) || 'LEGEND';
+    const cleanPrefix = rawName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 5).toUpperCase() || 'MYTH';
+    const num = Math.floor(100 + Math.random() * 900);
+    const code = `MYTH-${cleanPrefix}${num}`;
+    if (!this.user) this.user = {};
+    this.user.referralCode = code;
+    this.saveLocalStorage('mytholis_user', this.user);
+    if (typeof firebaseService !== 'undefined' && firebaseService.currentUser && firebaseService.updateUserProfile) {
+      firebaseService.updateUserProfile({ referralCode: code }).catch(() => {});
+    }
+    return code;
+  }
+
+  getUserReferralLink() {
+    const code = this.getUserReferralCode();
+    const origin = (typeof window !== 'undefined' && window.location.origin) ? window.location.origin : 'https://mytholis.com';
+    return `${origin}/?ref=${encodeURIComponent(code)}`;
   }
 
   setGlobalSettings(settings) {
@@ -546,6 +572,8 @@ class MytholisStore {
       city: "",
       tier: "Level 1: The Initiate",
       points: 0,
+      referralCode: "",
+      referredBy: "",
       orders: []
     };
     this.saveLocalStorage('mytholis_user', this.user);
@@ -832,6 +860,23 @@ class MytholisStore {
           used: false
         };
       }
+    }
+
+    // Check if it's a valid patron referral invitation key (e.g. MYTH-...)
+    if (!existing && codeStr.startsWith('MYTH-')) {
+      const myCode = this.getUserReferralCode();
+      if (myCode && myCode.toUpperCase() === codeStr) {
+        return { success: false, error: "You cannot redeem your own personal referral invitation key." };
+      }
+      existing = {
+        code: codeStr,
+        title: "Patron Referral Invitation Privilege",
+        type: 'discount',
+        amount: 500,
+        minOrder: 1999,
+        isReferral: true,
+        used: false
+      };
     }
 
     if (!existing) {

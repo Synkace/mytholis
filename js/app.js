@@ -271,6 +271,24 @@ class MytholisApp {
         window.history.replaceState({}, document.title, window.location.pathname + '#cart');
         return;
       }
+
+      // Check for incoming referral code ?ref=... or ?referral=...
+      const refCode = searchParams.get('ref') || searchParams.get('referral');
+      if (refCode && refCode.toUpperCase().startsWith('MYTH-')) {
+        const cleanRef = refCode.trim().toUpperCase();
+        store.user.referredBy = cleanRef;
+        store.saveLocalStorage('mytholis_referred_by', cleanRef);
+        store.saveLocalStorage('mytholis_user', store.user);
+        this.showToast(`👑 Private Invitation Activated! Key ${cleanRef} applied for ₹500 off.`);
+        store.applyRewardCode(cleanRef);
+      }
+    }
+
+    // Support #referral / #invite
+    if (rawHash === 'referral' || rawHash === 'invite') {
+      this.navigateTo('home', null, false);
+      this.openReferralModal();
+      return;
     }
 
     if (!rawHash || rawHash === 'home') {
@@ -2079,8 +2097,9 @@ class MytholisApp {
       phone: details.customerPhone,
       address: details.customerAddress,
       pincode: details.customerPincode,
-      paymentMethod: details.paymentMethod || 'Razorpay',
+      paymentMethod: details.paymentMethod || 'PayU Hosted',
       paymentId: details.paymentId || '',
+      referredBy: store.user.referredBy || (store.getAppliedReward()?.isReferral ? store.getAppliedReward()?.code : '') || '',
       date: new Date().toLocaleDateString('en-IN')
     };
 
@@ -2396,6 +2415,92 @@ class MytholisApp {
         modalBody.innerHTML = Components.renderProfileModal();
       }
     }
+  }
+
+  /* ==========================================================================
+     PATRON REFERRAL SANCTUM & SHARING CONTROLLER
+     ========================================================================== */
+  openReferralModal() {
+    this.closeAllModals(false);
+    const modalBody = document.getElementById('referral-modal-body');
+    if (modalBody) {
+      modalBody.innerHTML = Components.renderReferralModal();
+    }
+    const overlay = document.getElementById('referral-modal-overlay');
+    if (overlay) {
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  closeReferralModal() {
+    const overlay = document.getElementById('referral-modal-overlay');
+    if (overlay) {
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  }
+
+  copyReferralCode() {
+    const code = store.getUserReferralCode();
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(code).then(() => {
+        this.showToast(`Referral key [${code}] copied to clipboard.`);
+      }).catch(() => {
+        this.showToast(`Referral key: ${code}`);
+      });
+    } else {
+      this.showToast(`Referral key: ${code}`);
+    }
+  }
+
+  copyReferralLink() {
+    const link = store.getUserReferralLink();
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(link).then(() => {
+        this.showToast('Referral invitation link copied to clipboard.');
+      }).catch(() => {
+        this.showToast(`Link: ${link}`);
+      });
+    } else {
+      this.showToast(`Link: ${link}`);
+    }
+  }
+
+  shareReferralWhatsApp() {
+    const code = store.getUserReferralCode();
+    const link = store.getUserReferralLink();
+    const text = `Step into House Mytholis Haute Parfumerie. Use my private invitation key *${code}* to claim ₹500 off your first handcrafted extrait de parfum flacon:\n\n${link}`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+  }
+
+  async shareReferralLink() {
+    const code = store.getUserReferralCode();
+    const link = store.getUserReferralLink();
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Mytholis Haute Parfumerie — Exclusive Invitation',
+          text: `Step into House Mytholis Haute Parfumerie. Use my private invitation key [${code}] for ₹500 off your first artisanal extrait de parfum:`,
+          url: link
+        });
+        this.showToast('Invitation shared successfully.');
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          this.copyReferralLink();
+        }
+      }
+    } else {
+      this.copyReferralLink();
+    }
+  }
+
+  shareReferralEmail() {
+    const code = store.getUserReferralCode();
+    const link = store.getUserReferralLink();
+    const subject = 'Exclusive Invitation to House Mytholis Haute Parfumerie';
+    const body = `Greetings,\n\nI invite you to experience House Mytholis Haute Parfumerie — artisanal extraits de parfum formulated in Mayfair, London and distilled in India at 40% pure concentration.\n\nUse my private invitation key [${code}] to claim ₹500 off your first order:\n${link}\n\nWear Your Legend.`;
+    window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
   }
 
   /* Close All Modals */
