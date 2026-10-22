@@ -2319,21 +2319,15 @@ class MytholisApp {
       ` : '';
 
       slot.innerHTML = `
-        <div class="nav-user-auth-group" style="display: flex; align-items: center; gap: 0.45rem;">
+        <div style="display: flex; align-items: center;">
           ${adminCrown}
-          <button class="icon-btn vip-profile-btn" onclick="app.openProfileModal()" title="Client Profile (${displayName})" style="padding: 0; overflow: hidden; width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--gold-primary);">
+          <button class="icon-btn vip-profile-btn" onclick="app.openProfileModal()" title="Client Profile (${displayName})" style="padding: 0; overflow: hidden; width: 38px; height: 38px; border-radius: 50%;">
             ${photoURL ? `
               <img src="${photoURL}" alt="${displayName}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;" />
             ` : `
               <span class="nav-avatar-initial">${initial}</span>
             `}
             <span class="vip-dot"></span>
-          </button>
-          <button class="btn-nav-logout" onclick="app.logoutUser()" title="Sign Out (${displayName})">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
-            </svg>
-            <span class="nav-logout-text">Sign Out</span>
           </button>
         </div>
       `;
@@ -2361,15 +2355,6 @@ class MytholisApp {
       } else {
         mobileAccountLink.textContent = "Sign In / Register";
         mobileAccountLink.setAttribute("onclick", "app.openAuthModal('signin'); app.closeMobileMenu();");
-      }
-    }
-
-    const mobileLogoutItem = document.getElementById('mobile-nav-logout-item');
-    if (mobileLogoutItem) {
-      if (isLogged) {
-        mobileLogoutItem.style.display = 'block';
-      } else {
-        mobileLogoutItem.style.display = 'none';
       }
     }
   }

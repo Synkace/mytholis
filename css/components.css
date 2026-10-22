@@ -226,49 +226,6 @@
   box-shadow: 0 0 18px rgba(212, 175, 55, 0.4);
 }
 
-.btn-nav-logout {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: var(--text-muted);
-  font-family: var(--font-sans);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  padding: 0.38rem 0.7rem;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  white-space: nowrap;
-}
-
-.btn-nav-logout:hover {
-  background: rgba(239, 68, 68, 0.16);
-  border-color: rgba(239, 68, 68, 0.45);
-  color: #FCA5A5;
-  transform: translateY(-1px);
-  box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
-}
-
-.btn-nav-logout:active {
-  transform: scale(0.96);
-}
-
-@media (max-width: 600px) {
-  .btn-nav-logout .nav-logout-text {
-    display: none;
-  }
-  .btn-nav-logout {
-    padding: 0.38rem;
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    justify-content: center;
-  }
-}
-
 /* Auth Modal Tabs & Elements */
 .auth-nav-tabs {
   display: flex;
