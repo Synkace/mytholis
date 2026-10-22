@@ -2583,8 +2583,9 @@ const Components = {
             <button class="btn btn-glass" onclick="app.navigateTo('circle-of-legends')">
               Circle of Legends Rewards
             </button>
-            <button class="btn btn-glass" onclick="app.logoutUser()">
-              Sign Out
+            <button class="btn btn-glass" style="border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5; display: inline-flex; align-items: center; gap: 0.4rem;" onclick="app.logoutUser()">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+              <span>Sign Out</span>
             </button>
           </div>
         </div>
@@ -2721,6 +2722,18 @@ const Components = {
             </div>
           `}
         </div>
+
+        <!-- Session Status & Sign Out -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 1.5rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; margin-top: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <div style="font-size: 0.85rem; font-weight: 600; color: var(--gold-light);">Active Patron Session</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Authenticated as <strong style="color: var(--text-main);">${email}</strong></div>
+          </div>
+          <button type="button" class="btn btn-glass" style="border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1.1rem; font-size: 0.8rem;" onclick="app.logoutUser()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+            <span>Log Out of Session</span>
+          </button>
+        </div>
       </div>
     `;
   },
@@ -2764,7 +2777,13 @@ const Components = {
             <p class="modal-subtitle">House Mytholis • ${currentTier.name}</p>
           </div>
         </div>
-        <button class="icon-btn modal-close-btn" onclick="app.closeProfileModal()" title="Close Profile">✕</button>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <button type="button" class="btn btn-glass" style="font-size: 0.72rem; padding: 0.28rem 0.65rem; color: #FCA5A5; border-color: rgba(239, 68, 68, 0.4); display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer;" onclick="app.logoutUser()" title="Sign Out of Session">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+            <span>Log Out</span>
+          </button>
+          <button class="icon-btn modal-close-btn" onclick="app.closeProfileModal()" title="Close Profile">✕</button>
+        </div>
       </div>
 
       <div class="modal-scroll-body">
@@ -2791,15 +2810,20 @@ const Components = {
                 </button>
                 <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">${currentTier.name}</span>
               </div>
-              ${photoURL ? `
-                <button type="button" onclick="app.handleRemoveProfilePhoto()" style="background:none; border:none; color: #EF4444; font-size: 0.68rem; cursor:pointer; text-decoration: underline; padding: 0;">
-                  Remove photo
+              <div style="display: flex; align-items: center; gap: 0.6rem;">
+                ${photoURL ? `
+                  <button type="button" onclick="app.handleRemoveProfilePhoto()" style="background:none; border:none; color: #EF4444; font-size: 0.68rem; cursor:pointer; text-decoration: underline; padding: 0;">
+                    Remove photo
+                  </button>
+                ` : `
+                  <label for="patron-avatar-upload" style="color: var(--gold-primary); font-size: 0.68rem; cursor:pointer; text-decoration: underline;">
+                    + Add portrait
+                  </label>
+                `}
+                <button type="button" onclick="app.logoutUser()" style="background:none; border:none; color: #F87171; font-size: 0.68rem; cursor:pointer; text-decoration: underline; padding: 0; display: inline-flex; align-items: center; gap: 0.2rem;">
+                  Sign Out
                 </button>
-              ` : `
-                <label for="patron-avatar-upload" style="color: var(--gold-primary); font-size: 0.68rem; cursor:pointer; text-decoration: underline;">
-                  + Add portrait
-                </label>
-              `}
+              </div>
             </div>
             <p class="profile-user-email">${isPhoneUser ? `Mobile Patron (${phone || email.replace('@phone.mytholis.com','')})` : email}</p>
             <div class="profile-points-pill">
@@ -3106,16 +3130,34 @@ const Components = {
               </div>
             ` : ''}
 
+            <!-- Session Termination & Sign Out Box -->
+            <div style="background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; padding: 1rem 1.1rem; margin-top: 1.2rem; display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
+              <div>
+                <h5 style="color: #FCA5A5; margin: 0 0 0.2rem; font-size: 0.85rem; font-weight: 600;">Sign Out of Account</h5>
+                <p style="color: var(--text-muted); font-size: 0.74rem; margin: 0; line-height: 1.4;">
+                  Terminates your active patron session on this device.
+                </p>
+              </div>
+              <button type="button" class="btn btn-glass" style="font-size: 0.75rem; padding: 0.45rem 1rem; border-color: rgba(239, 68, 68, 0.45); color: #F87171; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer;" onclick="app.logoutUser()">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                <span>Sign Out</span>
+              </button>
+            </div>
+
           </div>
         ` : ''}
 
       </div>
 
-      <div class="modal-footer" style="display: flex; gap: 0.8rem;">
-        <button class="btn btn-glass" style="flex: 1; font-size: 0.78rem; padding: 0.6rem 1rem;" onclick="app.closeProfileModal()">
+      <div class="modal-footer" style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+        <button type="button" class="btn btn-glass" style="flex: 1; min-width: 105px; font-size: 0.78rem; padding: 0.6rem 0.8rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; cursor: pointer;" onclick="app.logoutUser()" title="Sign Out of Account">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          <span>Sign Out</span>
+        </button>
+        <button type="button" class="btn btn-glass" style="flex: 1; min-width: 90px; font-size: 0.78rem; padding: 0.6rem 0.8rem;" onclick="app.closeProfileModal()">
           Close
         </button>
-        <button class="btn btn-gold" style="flex: 1; font-size: 0.78rem; padding: 0.6rem 1rem;" onclick="app.closeProfileModal(); app.navigateTo('circle-of-legends');">
+        <button type="button" class="btn btn-gold" style="flex: 1.2; min-width: 135px; font-size: 0.78rem; padding: 0.6rem 0.8rem;" onclick="app.closeProfileModal(); app.navigateTo('circle-of-legends');">
           Circle of Legends
         </button>
       </div>
