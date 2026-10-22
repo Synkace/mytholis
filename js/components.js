@@ -2777,13 +2777,7 @@ const Components = {
             <p class="modal-subtitle">House Mytholis • ${currentTier.name}</p>
           </div>
         </div>
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <button type="button" class="btn btn-glass" style="font-size: 0.72rem; padding: 0.28rem 0.65rem; color: #FCA5A5; border-color: rgba(239, 68, 68, 0.4); display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer;" onclick="app.logoutUser()" title="Sign Out of Session">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-            <span>Log Out</span>
-          </button>
-          <button class="icon-btn modal-close-btn" onclick="app.closeProfileModal()" title="Close Profile">✕</button>
-        </div>
+        <button class="icon-btn modal-close-btn" onclick="app.closeProfileModal()" title="Close Profile">✕</button>
       </div>
 
       <div class="modal-scroll-body">
@@ -2810,20 +2804,15 @@ const Components = {
                 </button>
                 <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">${currentTier.name}</span>
               </div>
-              <div style="display: flex; align-items: center; gap: 0.6rem;">
-                ${photoURL ? `
-                  <button type="button" onclick="app.handleRemoveProfilePhoto()" style="background:none; border:none; color: #EF4444; font-size: 0.68rem; cursor:pointer; text-decoration: underline; padding: 0;">
-                    Remove photo
-                  </button>
-                ` : `
-                  <label for="patron-avatar-upload" style="color: var(--gold-primary); font-size: 0.68rem; cursor:pointer; text-decoration: underline;">
-                    + Add portrait
-                  </label>
-                `}
-                <button type="button" onclick="app.logoutUser()" style="background:none; border:none; color: #F87171; font-size: 0.68rem; cursor:pointer; text-decoration: underline; padding: 0; display: inline-flex; align-items: center; gap: 0.2rem;">
-                  Sign Out
+              ${photoURL ? `
+                <button type="button" onclick="app.handleRemoveProfilePhoto()" style="background:none; border:none; color: #EF4444; font-size: 0.68rem; cursor:pointer; text-decoration: underline; padding: 0;">
+                  Remove photo
                 </button>
-              </div>
+              ` : `
+                <label for="patron-avatar-upload" style="color: var(--gold-primary); font-size: 0.68rem; cursor:pointer; text-decoration: underline;">
+                  + Add portrait
+                </label>
+              `}
             </div>
             <p class="profile-user-email">${isPhoneUser ? `Mobile Patron (${phone || email.replace('@phone.mytholis.com','')})` : email}</p>
             <div class="profile-points-pill">
@@ -2867,9 +2856,6 @@ const Components = {
                 <p style="font-size: 0.78rem; color: var(--gold-light); margin: 0.15rem 0 0;">${email}</p>
               </div>
             </div>
-            <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.75rem;" onclick="app.logoutUser()">
-              Sign Out
-            </button>
           </div>
 
           <!-- Direct Action Hub to Dedicated Loyalty Page -->
@@ -3129,20 +3115,6 @@ const Components = {
                 </button>
               </div>
             ` : ''}
-
-            <!-- Session Termination & Sign Out Box -->
-            <div style="background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; padding: 1rem 1.1rem; margin-top: 1.2rem; display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
-              <div>
-                <h5 style="color: #FCA5A5; margin: 0 0 0.2rem; font-size: 0.85rem; font-weight: 600;">Sign Out of Account</h5>
-                <p style="color: var(--text-muted); font-size: 0.74rem; margin: 0; line-height: 1.4;">
-                  Terminates your active patron session on this device.
-                </p>
-              </div>
-              <button type="button" class="btn btn-glass" style="font-size: 0.75rem; padding: 0.45rem 1rem; border-color: rgba(239, 68, 68, 0.45); color: #F87171; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer;" onclick="app.logoutUser()">
-                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-                <span>Sign Out</span>
-              </button>
-            </div>
 
           </div>
         ` : ''}
