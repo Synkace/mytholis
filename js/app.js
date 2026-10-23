@@ -69,6 +69,10 @@ class MytholisApp {
       document.documentElement.classList.add('is-android');
     }
 
+    // Initialize Offer Ribbon & Dynamic Navbar Offset
+    this.initAnnouncementBar();
+    window.addEventListener('resize', () => this.updateAnnouncementBarHeight(), { passive: true });
+
     // Initialize Canvas Background
     this.bgAnimation = new MytholisBackground('bg-canvas');
 
@@ -411,6 +415,9 @@ class MytholisApp {
 
     // Close any open modals when navigating
     this.closeAllModals();
+
+    // Re-surface offer ribbon on page change / navigation
+    this.restoreAnnouncementBar();
 
     // Close mobile menu if open
     const links = document.getElementById('main-nav-links');
@@ -2233,6 +2240,45 @@ class MytholisApp {
       this.renderCartModalContent();
     } else {
       this.showToast(res.error || `Could not apply code ${code}`);
+    }
+  }
+
+  initAnnouncementBar() {
+    this.restoreAnnouncementBar();
+  }
+
+  restoreAnnouncementBar() {
+    const bar = document.getElementById('mytholis-announcement-bar');
+    if (bar) {
+      bar.style.display = 'flex';
+      bar.style.transform = 'translateY(0)';
+      bar.style.opacity = '1';
+      this.updateAnnouncementBarHeight();
+    }
+  }
+
+  updateAnnouncementBarHeight() {
+    const bar = document.getElementById('mytholis-announcement-bar');
+    if (!bar || bar.style.display === 'none') {
+      document.documentElement.classList.remove('has-announcement-bar');
+      document.documentElement.style.setProperty('--announcement-height', '0px');
+      return;
+    }
+    const h = bar.offsetHeight || 38;
+    document.documentElement.style.setProperty('--announcement-height', `${h}px`);
+    document.documentElement.classList.add('has-announcement-bar');
+  }
+
+  dismissAnnouncementBar() {
+    const bar = document.getElementById('mytholis-announcement-bar');
+    if (bar) {
+      bar.style.transform = 'translateY(-100%)';
+      bar.style.opacity = '0';
+      setTimeout(() => {
+        bar.style.display = 'none';
+        document.documentElement.classList.remove('has-announcement-bar');
+        document.documentElement.style.setProperty('--announcement-height', '0px');
+      }, 350);
     }
   }
 

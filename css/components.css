@@ -6175,3 +6175,150 @@ div#cardsRow {
   border-radius: 8px;
 }
 
+/* ==========================================================================
+   FIRST-TIME BUYER PRIVILEGE: 20% OFF ANNOUNCEMENT BAR & DYNAMIC NAVBAR ADJUSTMENT
+   ========================================================================== */
+:root {
+  --announcement-height: 38px;
+}
+
+.mytholis-announcement-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--announcement-height, 38px);
+  background: linear-gradient(90deg, #020f0b 0%, #06281e 50%, #020f0b 100%);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.35);
+  color: var(--gold-light);
+  font-size: 0.76rem;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1005;
+  letter-spacing: 0.04em;
+  box-sizing: border-box;
+  transition: transform 0.35s ease, opacity 0.35s ease;
+}
+
+.mytholis-announcement-bar .announcement-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  flex: 1;
+}
+
+.mytholis-announcement-bar .announcement-text-mobile {
+  display: none;
+}
+
+.mytholis-announcement-bar .announcement-dismiss-btn {
+  background: transparent;
+  border: none;
+  color: var(--gold-light);
+  opacity: 0.6;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  line-height: 1;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  margin-left: auto;
+}
+
+.mytholis-announcement-bar .announcement-dismiss-btn:hover {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+.mytholis-announcement-pill {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.3), rgba(212, 175, 55, 0.12));
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  border-radius: 999px;
+  padding: 0.16rem 0.65rem;
+  font-weight: 700;
+  color: #F6E0A4;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.mytholis-announcement-pill:hover {
+  background: rgba(212, 175, 55, 0.45);
+  transform: translateY(-1px);
+}
+
+/* --- DYNAMIC NAVBAR & VIEW ADJUSTMENT WHEN OFFER RIBBON IS ACTIVE --- */
+.has-announcement-bar .header-nav {
+  top: var(--announcement-height, 38px) !important;
+}
+
+.has-announcement-bar .view-section {
+  padding-top: calc(120px + var(--announcement-height, 38px)) !important;
+}
+
+.has-announcement-bar .hero,
+.has-announcement-bar #hero-section {
+  padding-top: calc(110px + var(--announcement-height, 38px)) !important;
+}
+
+/* Tablet & Mobile Layout for Announcement Bar & Navbar */
+@media (max-width: 992px) {
+  :root {
+    --announcement-height: 36px;
+  }
+
+  .mytholis-announcement-bar {
+    padding: 0 0.6rem;
+  }
+
+  .mytholis-announcement-bar .announcement-text-desktop {
+    display: none;
+  }
+
+  .mytholis-announcement-bar .announcement-text-mobile {
+    display: inline-block;
+    font-size: 0.72rem;
+  }
+
+  .mytholis-announcement-pill {
+    padding: 0.12rem 0.5rem;
+    font-size: 0.68rem;
+  }
+
+  .has-announcement-bar .header-nav {
+    top: var(--announcement-height, 36px) !important;
+  }
+
+  .has-announcement-bar .view-section {
+    padding-top: calc(max(92px, calc(env(safe-area-inset-top, 0px) + 80px)) + var(--announcement-height, 36px)) !important;
+  }
+
+  .has-announcement-bar .hero,
+  .has-announcement-bar #hero-section {
+    padding-top: calc(max(100px, calc(env(safe-area-inset-top, 0px) + 90px)) + var(--announcement-height, 36px)) !important;
+  }
+}
+
+/* Android Safe Area Integration */
+.is-android.has-announcement-bar .mytholis-announcement-bar,
+.platform-android.has-announcement-bar .mytholis-announcement-bar {
+  padding-top: max(24px, calc(env(safe-area-inset-top, 0px) + 4px)) !important;
+  height: calc(var(--announcement-height, 36px) + max(24px, calc(env(safe-area-inset-top, 0px) + 4px))) !important;
+}
+
+.is-android.has-announcement-bar .header-nav,
+.platform-android.has-announcement-bar .header-nav {
+  top: calc(var(--announcement-height, 36px) + max(24px, calc(env(safe-area-inset-top, 0px) + 4px))) !important;
+}
+
+.is-android.has-announcement-bar .view-section,
+.platform-android.has-announcement-bar .view-section {
+  padding-top: calc(max(96px, calc(env(safe-area-inset-top, 0px) + 86px)) + var(--announcement-height, 36px) + 24px) !important;
+}
+
+
+
+
