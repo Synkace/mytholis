@@ -1,5 +1,31 @@
 import { defineConfig } from 'vite';
 import crypto from 'crypto';
+import shiprocketSyncProductsHandler from './api/shiprocket-sync-products.js';
+
+const shiprocketSyncMiddleware = (req, res, next) => {
+  if (req.url && (req.url.startsWith('/api/shiprocket-sync-products') || req.url.startsWith('/api/shiprocket-sync-products/'))) {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', async () => {
+      try {
+        req.body = body ? JSON.parse(body) : {};
+      } catch (_) {
+        req.body = {};
+      }
+      res.status = (code) => {
+        res.statusCode = code;
+        return res;
+      };
+      res.json = (data) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(data));
+      };
+      await shiprocketSyncProductsHandler(req, res);
+    });
+  } else {
+    next();
+  }
+};
 
 const fastrrApiMiddleware = (req, res, next) => {
   if (req.url && req.url.startsWith('/api/fastrr/create-checkout') && req.method === 'POST') {
@@ -74,9 +100,11 @@ const fastrrApiMiddleware = (req, res, next) => {
 const fastrrPlugin = () => ({
   name: 'fastrr-local-api',
   configureServer(server) {
+    server.middlewares.use(shiprocketSyncMiddleware);
     server.middlewares.use(fastrrApiMiddleware);
   },
   configurePreviewServer(server) {
+    server.middlewares.use(shiprocketSyncMiddleware);
     server.middlewares.use(fastrrApiMiddleware);
   }
 });

@@ -324,7 +324,24 @@ class MytholisStore {
   }
 
   getProducts() {
-    return (this.products && this.products.length) ? this.products : (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []);
+    const raw = (this.products && this.products.length) ? this.products : (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []);
+    return raw.map(p => {
+      let name = p.name;
+      if (p.id === 'mytholis-discovery-set') {
+        name = 'Sixth Sense';
+      } else if (name) {
+        const rawBase = name.replace(/<[^>]*>/g, '').replace(/Extrait\s*de\s*Parfum/gi, '').trim();
+        name = `${rawBase} <br><span class="product-concentration-sub">Extrait de Parfum</span>`;
+      }
+      if (p.id !== 'mytholis-discovery-set' && Array.isArray(p.sizes)) {
+        return {
+          ...p,
+          name,
+          sizes: p.sizes.filter(s => s.ml !== 8)
+        };
+      }
+      return { ...p, name };
+    });
   }
 
   /* Patron Referral Architecture */

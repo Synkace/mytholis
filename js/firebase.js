@@ -1002,21 +1002,27 @@ export class FirebaseService {
           const updates = {};
 
           if (prod.id === 'mytholis-discovery-set') {
-            updates.name = prod.name;
-            updates.subtitle = prod.subtitle;
-            updates.collection = prod.collection;
+            updates.name = "Sixth Sense";
+            updates.subtitle = "Sixth Sense";
+            updates.collection = "Sixth Sense";
             updates.concentration = prod.concentration;
             updates.notes = prod.notes;
             updates.sizes = prod.sizes || [{ ml: 48, price: 3999 }];
             updates.tagline = prod.tagline;
             updates.accords = prod.accords;
             updates.description = prod.description;
-          } else if (!existingData.sizes || !existingData.sizes.length || !existingData.sizes.some(s => s.ml === 50)) {
-            updates.sizes = prod.sizes || [
-              { ml: 8, price: 899 },
-              { ml: 50, price: 3999 },
-              { ml: 100, price: 5999 }
-            ];
+          } else {
+            if (prod.name && prod.name.includes('<br>')) {
+              updates.name = prod.name;
+            }
+            if (existingData.sizes && existingData.sizes.some(s => s.ml === 8)) {
+              updates.sizes = existingData.sizes.filter(s => s.ml !== 8);
+            } else if (!existingData.sizes || !existingData.sizes.length || !existingData.sizes.some(s => s.ml === 50)) {
+              updates.sizes = prod.sizes || [
+                { ml: 50, price: 3999 },
+                { ml: 100, price: 5999 }
+              ];
+            }
           }
 
           if (Object.keys(updates).length > 0) {
@@ -1090,10 +1096,10 @@ export class FirebaseService {
       const list = [];
       snap.forEach(d => {
         const item = { id: d.id, ...d.data() };
-        // Auto-heal discovery set if stale 10ml exists in Firestore
+        // Auto-heal discovery set / Sixth Sense if stale data exists in Firestore
         if (item.id === 'mytholis-discovery-set') {
-          item.name = "Sixth Sense Discovery Coffret (6 × 8ml)";
-          item.subtitle = "The Sixth Sense • Complete Extrait Wardrobe";
+          item.name = "Sixth Sense";
+          item.subtitle = "Sixth Sense";
           item.sizes = [{ ml: 48, price: 3999 }];
           if (item.notes) {
             ['top', 'heart', 'base'].forEach(tier => {
@@ -1101,6 +1107,16 @@ export class FirebaseService {
                 item.notes[tier] = item.notes[tier].map(s => typeof s === 'string' ? s.replace(/10ml/g, '8ml') : s);
               }
             });
+          }
+        } else {
+          // Format product name as: NAME <br><span class="product-concentration-sub">Extrait de Parfum</span>
+          if (item.name) {
+            const rawBase = item.name.replace(/<[^>]*>/g, '').replace(/Extrait\s*de\s*Parfum/gi, '').trim();
+            item.name = `${rawBase} <br><span class="product-concentration-sub">Extrait de Parfum</span>`;
+          }
+          if (Array.isArray(item.sizes)) {
+            // 8ml is not for sale individually, only 50ml and 100ml
+            item.sizes = item.sizes.filter(s => s.ml !== 8);
           }
         }
         list.push(item);

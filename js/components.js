@@ -85,7 +85,7 @@ const Components = {
   /* Render Sovereign Notched Card (Exact Match to User Reference Design) */
   renderProductSliderCard(product) {
     const isWishlisted = store.isInWishlist(product.id);
-    const cleanTitle = product.name.replace(' Extrait de Parfum', ' Extrait');
+    const cleanTitle = product.name;
     const badgeText = product.tag || 'Trending';
     const mythosInfo = store.calculateProductMythos(product.price);
 
@@ -174,7 +174,7 @@ const Components = {
         <button class="notched-docked-cart-btn" 
                 onclick="event.stopPropagation(); app.addProductToCart('${product.id}')"
                 title="Add ${product.name} to Cart">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="9" cy="21" r="1" fill="#D4AF37"></circle>
             <circle cx="20" cy="21" r="1" fill="#D4AF37"></circle>
             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
@@ -283,7 +283,7 @@ const Components = {
           </p>
           <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
             <button class="btn btn-gold" onclick="app.openProductView('mytholis-discovery-set')">
-              Order Sixth Sense Discovery Set (6 × 8ml) • ₹3,999
+              Order Sixth Sense • ₹3,999
             </button>
             <button class="btn btn-glass" onclick="app.navigateTo('know-us')">
               Read Our Heritage
@@ -344,13 +344,13 @@ const Components = {
         </div>
       </section>
 
-      <!-- Discovery Coffret Spotlight Banner -->
+      <!-- Sixth Sense Spotlight Banner -->
       <section class="container" style="margin-bottom: 6rem;">
         <div class="discovery-vault-banner liquid-glass-card">
           <div class="discovery-banner-content">
-            <span class="glass-pill" style="margin-bottom: 0.8rem;">The Sixth Sense Edition</span>
+            <span class="glass-pill" style="margin-bottom: 0.8rem;">Sixth Sense Edition</span>
             <h2 class="font-title gold-shimmer-text" style="font-size: clamp(1.6rem, 3vw, 2.3rem); margin-bottom: 0.8rem;">
-              The Sixth Sense Discovery Coffret (6 × 8ml)
+              Sixth Sense
             </h2>
             <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">
               Awaken your sixth sense. Experience all 6 master extrait creations in curated 8ml travel flacons. Includes a complimentary <strong>₹1,000 voucher</strong> redeemable against your first full 100ml flacon.
@@ -362,7 +362,7 @@ const Components = {
             </div>
             <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
               <button class="btn btn-gold" onclick="app.acquireCoffretNow()">
-                Acquire Sixth Sense Coffret • ₹3,999
+                Acquire Sixth Sense • ₹3,999
               </button>
               <button class="btn btn-glass" onclick="app.buyNowWhatsApp('mytholis-discovery-set')">
                 Order via WhatsApp
@@ -370,7 +370,7 @@ const Components = {
             </div>
           </div>
           <div class="discovery-banner-visual bottle-pedestal-glow">
-            <img src="assets/coffret_banner.webp" alt="The Sixth Sense Discovery Coffret" loading="lazy" decoding="async" style="max-height: 280px; width: 100%; max-width: 380px; object-fit: cover; border-radius: 18px; border: 1px solid rgba(212, 175, 55, 0.35); box-shadow: 0 15px 35px rgba(0,0,0,0.8);" />
+            <img src="assets/coffret_banner.webp" alt="Sixth Sense" loading="lazy" decoding="async" style="max-height: 280px; width: 100%; max-width: 380px; object-fit: cover; border-radius: 18px; border: 1px solid rgba(212, 175, 55, 0.35); box-shadow: 0 15px 35px rgba(0,0,0,0.8);" />
           </div>
         </div>
       </section>
@@ -633,14 +633,14 @@ const Components = {
             </div>
             <h3 style="font-size: 1.8rem; margin-bottom: 0.5rem;">${matchedProduct.name}</h3>
             <p class="subtitle" style="margin-bottom: 1.5rem;">${matchedProduct.subtitle}</p>
-            <!-- Discovery Coffret Guarantee & Upgrade Hook -->
+            <!-- Sixth Sense Guarantee & Upgrade Hook -->
             <div class="coffret-upgrade-card liquid-glass-card" style="margin-bottom: 2rem; padding: 1.2rem; border: 1px solid rgba(212, 175, 55, 0.4); text-align: left;">
               <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
                 <div>
-                  <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">The Discovery Guarantee</span>
+                  <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">Sixth Sense Guarantee</span>
                   <h4 style="font-size: 1.05rem; color: var(--gold-light); margin: 0.3rem 0 0.2rem;">Try before committing to a full flacon</h4>
                   <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">
-                    Experience this scent alongside all 5 other extraits in the <strong>Sixth Sense Discovery Coffret (6 × 8ml)</strong>. Includes a <strong>₹1,000 voucher</strong> redeemable against your first 100ml flacon!
+                    Experience this scent alongside all 5 other extraits in <strong>Sixth Sense</strong>. Includes a <strong>₹1,000 voucher</strong> redeemable against your first 100ml flacon!
                   </p>
                 </div>
                 <div style="font-size: 1.3rem; font-weight: 700; color: var(--gold-primary);">₹3,999</div>
@@ -652,7 +652,7 @@ const Components = {
                 Acquire Matched Flacon (${store.formatPrice(matchedProduct.price)})
               </button>
               <button class="btn btn-gold" style="flex: 1; background: linear-gradient(135deg, #10B981 0%, #047857 100%); border: 1px solid #34D399;" onclick="app.quickAddToCart('mytholis-discovery-set')">
-                Try in Discovery Coffret (₹3,999)
+                Try in Sixth Sense (₹3,999)
               </button>
             </div>
             <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.2rem;">
@@ -910,14 +910,14 @@ const Components = {
     let product = catalog.find(p => p.id === productId) || MYTHOLIS_CATALOG.find(p => p.id === productId) || MYTHOLIS_CATALOG[0];
     const isCoffret = product.id === 'mytholis-discovery-set' || product.id.includes('coffret') || product.id.includes('discovery');
 
-    // If discovery coffret, ensure clean 6 x 8ml specs
+    // If discovery coffret / Sixth Sense, ensure clean 6 x 8ml specs
     if (isCoffret) {
       const defaultCoffret = MYTHOLIS_CATALOG.find(p => p.id === 'mytholis-discovery-set') || product;
       product = {
         ...defaultCoffret,
         ...product,
-        name: "Sixth Sense Discovery Coffret (6 × 8ml)",
-        subtitle: "The Sixth Sense • Complete Extrait Wardrobe",
+        name: "Sixth Sense",
+        subtitle: "Sixth Sense",
         concentration: "Extrait de Parfum (6 × 8ml Deluxe Vials • 40% Concentration)",
         sizes: [{ ml: 48, price: 3999 }]
       };
@@ -1100,7 +1100,7 @@ const Components = {
         ${isCoffret ? `
           <div style="margin-top: 5rem;">
             <div class="section-header">
-              <span class="tagline">The Sixth Sense Olfactory Wardrobe</span>
+              <span class="tagline">Sixth Sense Olfactory Wardrobe</span>
               <h2>All Six Master Extraits Included</h2>
               <div class="divider"></div>
               <p style="max-width: 680px; margin: 1rem auto 0; color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
@@ -1268,10 +1268,10 @@ const Components = {
         ${store.cart.length === 0 ? `
           <div class="modal-empty-state liquid-glass-card">
             <h4 class="modal-empty-title">Your Cart is Empty</h4>
-            <p class="modal-empty-desc font-garamond">Explore our signature extraits or order the Sixth Sense Discovery Coffret (6 × 8ml).</p>
+            <p class="modal-empty-desc font-garamond">Explore our signature extraits or order Sixth Sense.</p>
             <div style="display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem;">
               <button class="btn btn-gold" onclick="app.closeCartModal(); app.openProductView('mytholis-discovery-set');">
-                Sixth Sense Discovery Coffret (₹3,999)
+                Sixth Sense (₹3,999)
               </button>
               <button class="btn btn-glass" onclick="app.closeCartModal(); app.navigateTo('collections');">
                 Explore Catalog
@@ -1298,11 +1298,11 @@ const Components = {
             `).join('')}
           </div>
 
-          <!-- Discovery Coffret Guarantee Callout Banner (if Coffret in cart) -->
+          <!-- Sixth Sense Guarantee Callout Banner (if Sixth Sense in cart) -->
           ${store.cart.some(i => i.id === 'mytholis-discovery-set') ? `
             <div class="coffret-guarantee-cart-alert liquid-glass-card" style="margin-top: 0.9rem; padding: 0.85rem 1rem; border: 1px solid var(--gold-primary); background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(4, 24, 18, 0.7) 100%);">
               <div style="display: flex; align-items: center; gap: 0.6rem; color: var(--gold-light); font-weight: 700; font-size: 0.84rem;">
-                Discovery Guarantee Activated
+                Sixth Sense Guarantee Activated
               </div>
               <p style="font-size: 0.76rem; color: var(--text-muted); margin: 0.3rem 0 0; line-height: 1.5;">
                 Includes a <strong>₹1,000 voucher</strong> redeemable against your first full 100ml flacon!
@@ -2013,7 +2013,7 @@ const Components = {
                 <li>Each <strong>100ml Flacon</strong>: <strong>+500 Legacy Mythos</strong> & +1 Bottle Count</li>
               </ul>
               <p style="font-size: 0.74rem; color: var(--text-muted); margin: 0;">
-                <em>Note:</em> The Sixth Sense Discovery Coffret (6 × 8ml) and individual 8ml sprays earn standard spendable points but do not award bottle milestone points.
+                <em>Note:</em> Sixth Sense earns standard spendable points but does not award bottle milestone points.
               </p>
             </div>
 
@@ -2065,7 +2065,7 @@ const Components = {
               The maximum discount concession permitted through Mythos vouchers on any single order is hard-capped at <strong>30% of the cart subtotal (in base INR) or ₹2,500, whichever is lower</strong>.
             </p>
             <div style="background: rgba(4, 24, 18, 0.5); padding: 0.8rem 1rem; border-radius: 8px; font-size: 0.8rem; color: var(--gold-light);">
-              • On a ₹3,999 Discovery Set order, the maximum concession allowable is 30% = <strong>₹1,199</strong>.<br/>
+              • On a ₹3,999 Sixth Sense order, the maximum concession allowable is 30% = <strong>₹1,199</strong>.<br/>
               • On a ₹6,999 Oud Rion order, a ₹2,500 voucher is utilized up to the ₹2,099 cap (30%). To utilize the full ₹2,500 voucher in a single order, the cart subtotal must be ₹8,334 or greater.
             </div>
           </div>
@@ -2321,7 +2321,7 @@ const Components = {
             </div>
             <div>
               <strong style="color: var(--gold-light); display: block; margin-bottom: 0.2rem;">2. Guest Acquires Extrait</strong>
-              Your guest saves ₹500 instantly on their first flacon or discovery coffret order.
+              Your guest saves ₹500 instantly on their first flacon or Sixth Sense order.
             </div>
             <div>
               <strong style="color: var(--gold-light); display: block; margin-bottom: 0.2rem;">3. Receive Vault Bounty</strong>
@@ -3341,9 +3341,9 @@ const Components = {
             </div>
           </div>
 
-          <!-- COD Notice / Guardrail (Only allowed for Discovery Coffret or requires OTP confirmation) -->
+          <!-- COD Notice / Guardrail (Only allowed for Sixth Sense or requires OTP confirmation) -->
           <div id="cod-guardrail-notice" class="cod-guardrail-box" style="display: none; padding: 0.75rem 1rem; border-radius: 8px; background: rgba(245, 158, 11, 0.12); border: 1px solid #F59E0B; font-size: 0.75rem; color: #FCD34D; margin-bottom: 1rem;">
-            <strong>COD Policy:</strong> Cash on Delivery is available for the Discovery Coffret (₹3,999). For full flacons (50ml/100ml), an automated WhatsApp dispatch confirmation OTP is required, or switch to UPI to save ₹200 instantly.
+            <strong>COD Policy:</strong> Cash on Delivery is available for Sixth Sense (₹3,999). For full flacons (50ml/100ml), an automated WhatsApp dispatch confirmation OTP is required, or switch to UPI to save ₹200 instantly.
           </div>
 
           <!-- Gateway Status Notice -->
@@ -3793,7 +3793,7 @@ const Components = {
           <div class="admin-tab-pane">
             <div style="margin-bottom: 1.5rem;">
               <h3 style="font-size: 1.3rem; color: var(--gold-light); margin: 0 0 0.2rem;">Inventory & Drop Switchboard</h3>
-              <p style="color: var(--text-muted); font-size: 0.82rem; margin: 0;">Manage real-time availability across all 6 Extraits (8ml, 50ml, 100ml) and the Discovery Coffret. Override stock states with 1-click toggles.</p>
+              <p style="color: var(--text-muted); font-size: 0.82rem; margin: 0;">Manage real-time availability across all 6 Extraits (50ml, 100ml) and Sixth Sense. Override stock states with 1-click toggles.</p>
             </div>
 
             <div class="admin-card-grid">

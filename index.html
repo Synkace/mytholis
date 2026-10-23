@@ -73,7 +73,7 @@
         <ul class="nav-links" id="main-nav-links">
           <li><a class="nav-link active" data-view="home" href="#home" onclick="app.navigateTo('home')">Home</a></li>
           <li><a class="nav-link" data-view="collections" href="#collections" onclick="app.navigateTo('collections')">Shop Extraits</a></li>
-          <li><a class="nav-link nav-highlight-pill" href="#coffret" onclick="app.openProductView('mytholis-discovery-set')">Sixth Sense Discovery Coffret (6 × 8ml)</a></li>
+          <li><a class="nav-link nav-highlight-pill" href="#coffret" onclick="app.openProductView('mytholis-discovery-set')">Sixth Sense</a></li>
           <li><a class="nav-link" data-view="circle-of-legends" href="#circle-of-legends" onclick="app.navigateTo('circle-of-legends')">Circle of Legends</a></li>
           <li><a class="nav-link" data-view="find-scent" href="#quiz" onclick="app.navigateTo('find-scent')">Scent Quiz</a></li>
           <!-- Mobile Menu Expanded Links -->
@@ -188,7 +188,7 @@
         <ul class="footer-links">
           <li><a href="#home" onclick="app.navigateTo('home')">Home</a></li>
           <li><a href="#collections" onclick="app.navigateTo('collections')">Collections</a></li>
-          <li><a href="#coffret" onclick="app.openProductView('mytholis-discovery-set')">Sixth Sense Discovery Coffret (6 × 8ml • ₹3,999)</a></li>
+          <li><a href="#coffret" onclick="app.openProductView('mytholis-discovery-set')">Sixth Sense (₹3,999)</a></li>
           <li><a href="#know-us" onclick="app.navigateTo('know-us')">Heritage & Craft</a></li>
           <li><a href="#quiz" onclick="app.navigateTo('find-scent')">Scent Finder Quiz</a></li>
           <li><a href="#circle-of-legends" onclick="app.navigateTo('circle-of-legends')">The Circle of Legends</a></li>
@@ -276,6 +276,63 @@
       </div>
     </div>
   </div>
+
+  <!-- Mobile App Bottom Navigation Bar -->
+  <nav class="mobile-app-bottom-nav" id="mobile-app-bottom-nav" aria-label="Mobile Navigation">
+    <button type="button" class="mobile-nav-item active" data-nav="home" onclick="app.navigateTo('home')" aria-label="Home">
+      <div class="mobile-nav-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+      </div>
+      <span class="mobile-nav-label">Home</span>
+      <span class="mobile-nav-indicator"></span>
+    </button>
+
+    <button type="button" class="mobile-nav-item" data-nav="collections" onclick="app.navigateTo('collections')" aria-label="Extraits">
+      <div class="mobile-nav-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="6" y="8" width="12" height="13" rx="2"></rect>
+          <rect x="9" y="3" width="6" height="4" rx="1"></rect>
+          <line x1="6" y1="13" x2="18" y2="13"></line>
+          <circle cx="12" cy="16.5" r="1.5" fill="currentColor"></circle>
+        </svg>
+      </div>
+      <span class="mobile-nav-label">Extraits</span>
+      <span class="mobile-nav-indicator"></span>
+    </button>
+
+    <button type="button" class="mobile-nav-item mobile-nav-center-item" data-nav="sixth-sense" onclick="app.openProductView('mytholis-discovery-set')" aria-label="Sixth Sense">
+      <div class="mobile-nav-center-bubble">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2l2.4 6.6L21 11l-5.6 4.4L17.2 22 12 18.2 6.8 22l1.8-6.6L3 11l6.6-2.4L12 2z"/>
+        </svg>
+      </div>
+      <span class="mobile-nav-label">Sixth Sense</span>
+    </button>
+
+    <button type="button" class="mobile-nav-item" data-nav="circle-of-legends" onclick="app.navigateTo('circle-of-legends')" aria-label="Legends">
+      <div class="mobile-nav-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 19h20M4 19l2-12 5 6 1-9 1 9 5-6 2 12H4z"></path>
+        </svg>
+      </div>
+      <span class="mobile-nav-label">Legends</span>
+      <span class="mobile-nav-indicator"></span>
+    </button>
+
+    <button type="button" class="mobile-nav-item" data-nav="profile" onclick="app.handleMobileAccountClick()" aria-label="Dossier">
+      <div class="mobile-nav-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+      <span class="mobile-nav-label">Dossier</span>
+      <span class="mobile-nav-indicator"></span>
+    </button>
+  </nav>
 
   <!-- Fastrr / Shiprocket 1-Click Checkout Core Container & Scripts -->
   <input type="hidden" value="mytholis.com" id="sellerDomain" />

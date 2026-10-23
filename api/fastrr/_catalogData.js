@@ -400,24 +400,24 @@ export const FASTRR_PRODUCTS = [
   {
     id: 1007,
     handle: "mytholis-discovery-set",
-    title: "The Pantheon Discovery Coffret (7x5ml)",
-    body_html: "<p>Experience the entire olfactory pantheon of House Mytholis. Features all seven extraits presented in a bespoke black lacquer presentation box with tasting blotters.</p>",
+    title: "Sixth Sense",
+    body_html: "<p>The complete Mytholis master collection in one curated luxury vault — Sixth Sense. Features all six master extraits in deluxe 8ml flacons plus a complimentary ₹1,000 voucher.</p>",
     vendor: "Mytholis Luxury Parfums",
-    product_type: "Discovery Set",
+    product_type: "Sixth Sense",
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-01-01T00:00:00Z",
-    tags: "Discovery Set, Samples, Coffret, Luxury Gift",
+    tags: "Sixth Sense, 6x8ml, Coffret, Luxury Gift",
     status: "active",
     collection_id: 103,
     image: {
-      src: "https://mytholis.com/assets/product/coffret.webp"
+      src: "https://mytholis.com/assets/coffret_banner.webp"
     },
     variants: [
       {
         id: 10071,
-        title: "7 x 5ml Coffret Box",
-        price: "1499.00",
-        sku: "MYTH-COFFRET-7X5",
+        title: "Sixth Sense",
+        price: "3999.00",
+        sku: "MYTH-SIXTH-SENSE-6X8",
         quantity: 250,
         taxable: true,
         grams: 300,

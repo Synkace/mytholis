@@ -496,6 +496,9 @@ export const AdminComponents = {
                 <button class="btn btn-glass" onclick="app.seedCatalogToFirestore()">
                   ↻ Sync Local Catalog to Firestore
                 </button>
+                <button class="btn btn-gold" id="btn-sync-shiprocket" onclick="app.syncProductsToShiprocket()" style="background: linear-gradient(135deg, rgba(212,175,55,0.25), rgba(124,58,237,0.35)); border-color: rgba(212,175,55,0.5);">
+                  🚀 Sync Products to Shiprocket
+                </button>
                 <button class="btn btn-gold" onclick="app.openProductEditorModal()">
                   + Inscribe New Fragrance Extrait
                 </button>
@@ -510,7 +513,7 @@ export const AdminComponents = {
                     <th>Flacon</th>
                     <th>Name & Concentration</th>
                     <th>Category</th>
-                    <th style="min-width: 210px;">Flacon Editions & Sizes (★ 50ml · 100ml · 8ml)</th>
+                    <th style="min-width: 210px;">Flacon Editions & Sizes (50ml · 100ml)</th>
                     <th>Base Price (₹)</th>
                     <th>Stock Count</th>
                     <th>In Stock</th>
@@ -521,13 +524,14 @@ export const AdminComponents = {
                 <tbody>
                   ${productsList.map(prod => {
                     const catalogMatch = (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []).find(c => c.id === prod.id);
-                    const prodSizes = (Array.isArray(prod.sizes) && prod.sizes.length > 0)
+                    const isCoffret = prod.id === 'mytholis-discovery-set';
+                    const rawSizes = (Array.isArray(prod.sizes) && prod.sizes.length > 0)
                       ? prod.sizes
                       : (catalogMatch && Array.isArray(catalogMatch.sizes) ? catalogMatch.sizes : [
-                          { ml: 8, price: 899 },
                           { ml: 50, price: 3999 },
                           { ml: 100, price: prod.price || 5999 }
                         ]);
+                    const prodSizes = isCoffret ? rawSizes : rawSizes.filter(s => s.ml !== 8);
 
                     return `
                     <tr>
@@ -544,9 +548,9 @@ export const AdminComponents = {
                       <td>
                         <div style="display: flex; flex-direction: column; gap: 0.35rem; min-width: 200px;">
                           ${prodSizes.map(s => `
-                            <div style="display: flex; align-items: center; justify-content: space-between; background: ${s.ml === 50 ? 'rgba(16, 185, 129, 0.12)' : 'rgba(0, 0, 0, 0.35)'}; padding: 0.22rem 0.5rem; border-radius: 6px; border: 1px solid ${s.ml === 50 ? 'rgba(16, 185, 129, 0.5)' : (s.ml === 100 ? 'rgba(212, 175, 55, 0.4)' : 'rgba(255, 255, 255, 0.12)')};">
-                              <span style="font-size: 0.72rem; font-weight: 700; color: ${s.ml === 50 ? '#6EE7B7' : (s.ml === 100 ? 'var(--gold-light)' : 'var(--text-muted)')};">
-                                ${s.ml === 50 ? '★ 50ml' : `${s.ml}ml`}
+                            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0, 0, 0, 0.35); padding: 0.22rem 0.5rem; border-radius: 6px; border: 1px solid ${s.ml === 100 ? 'rgba(212, 175, 55, 0.4)' : 'rgba(255, 255, 255, 0.12)'};">
+                              <span style="font-size: 0.72rem; font-weight: 700; color: ${s.ml === 100 ? 'var(--gold-light)' : 'var(--text-main)'};">
+                                ${s.ml === 48 ? '6 × 8ml' : `${s.ml}ml`}
                               </span>
                               <div style="display: flex; align-items: center; gap: 0.25rem;">
                                 <span style="font-size: 0.7rem; color: var(--text-muted);">₹</span>
@@ -1212,27 +1216,27 @@ export const AdminComponents = {
               </div>
             </div>
 
-            <!-- Flacon Editions & Volume Pricing (50ml · 100ml · 8ml) -->
-            <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.45); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.35);">
+            <!-- Flacon Editions & Volume Pricing (50ml · 100ml) -->
+            <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.45); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.25);">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
-                <div style="font-size: 0.78rem; color: #6EE7B7; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">
-                  🏺 Flacon Editions & Volume Pricing (★ 50ml · 100ml · 8ml)
+                <div style="font-size: 0.78rem; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">
+                  🏺 Flacon Editions & Volume Pricing (50ml · 100ml)
                 </div>
                 <span class="glass-pill" style="font-size: 0.68rem; color: var(--gold-light);">Multi-Size Vault Matrix</span>
               </div>
               <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 1rem;">
-                Control pricing and inventory specifically for the <strong>50ml Signature Edition</strong>, the <strong>100ml Grand Flacon</strong>, and the <strong>8ml Pocket Extrait</strong>.
+                Control pricing and inventory specifically for the <strong>50ml Signature Flacon</strong> and the <strong>100ml Grand Flacon</strong>. (Note: 8ml is exclusively available in the Sixth Sense vault set).
               </p>
 
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
-                <!-- 50ml Flacon Card (Prominently Highlighted) -->
-                <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.45); border-radius: 8px; padding: 1rem;">
+                <!-- 50ml Flacon Card -->
+                <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; padding: 1rem;">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
-                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: #6EE7B7; cursor: pointer; margin: 0;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--gold-light); cursor: pointer; margin: 0;">
                       <input type="checkbox" id="size-enabled-50" ${s50 || !isEdit ? 'checked' : ''} />
-                      <span>★ 50ml Signature Edition</span>
+                      <span>50ml Flacon</span>
                     </label>
-                    <span class="glass-pill" style="font-size: 0.65rem; color: #6EE7B7; border-color: rgba(16, 185, 129, 0.3);">Signature</span>
+                    <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light); border-color: rgba(212, 175, 55, 0.3);">50ml</span>
                   </div>
                   <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                     <div>
@@ -1263,27 +1267,6 @@ export const AdminComponents = {
                     <div>
                       <label class="sovereign-field-label" style="font-size: 0.7rem;">100ml Stock Count</label>
                       <input type="number" id="size-stock-100" class="sovereign-form-input" value="${s100 && s100.stock !== undefined ? s100.stock : (p.stock !== undefined ? p.stock : 50)}" min="0" />
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 8ml Travel Pocket Extrait Card -->
-                <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; padding: 1rem;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
-                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--text-main); cursor: pointer; margin: 0;">
-                      <input type="checkbox" id="size-enabled-8" ${s8 ? 'checked' : ''} />
-                      <span>8ml Pocket Travel</span>
-                    </label>
-                    <span class="glass-pill" style="font-size: 0.65rem; color: var(--text-muted);">Decant</span>
-                  </div>
-                  <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                    <div>
-                      <label class="sovereign-field-label" style="font-size: 0.7rem;">8ml Price (₹)</label>
-                      <input type="number" id="size-price-8" class="sovereign-form-input" value="${s8 ? s8.price : 899}" min="0" />
-                    </div>
-                    <div>
-                      <label class="sovereign-field-label" style="font-size: 0.7rem;">8ml Stock Count</label>
-                      <input type="number" id="size-stock-8" class="sovereign-form-input" value="${s8 && s8.stock !== undefined ? s8.stock : 100}" min="0" />
                     </div>
                   </div>
                 </div>
@@ -1446,7 +1429,7 @@ export const AdminComponents = {
 
             <div style="margin-bottom: 1.5rem;">
               <label class="sovereign-field-label">Audit Reason / Justification</label>
-              <input type="text" id="adjust-mythos-reason" class="sovereign-form-input" placeholder="e.g. VIP Concierge Courtesy, Discovery set credit" required />
+              <input type="text" id="adjust-mythos-reason" class="sovereign-form-input" placeholder="e.g. VIP Concierge Courtesy, Sixth Sense credit" required />
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">

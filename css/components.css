@@ -1321,6 +1321,28 @@ div#cardsRow {
   line-height: 1.3;
 }
 
+.product-concentration-sub,
+.product-card-title .product-concentration-sub,
+.product-card-title span,
+.notched-product-title .product-concentration-sub,
+.notched-product-title span,
+.product-detail-title .product-concentration-sub,
+.product-detail-title span,
+.modal-product-item-name .product-concentration-sub,
+.modal-product-item-name span,
+.sovereign-table .product-concentration-sub,
+.sovereign-table strong span {
+  display: inline-block;
+  font-size: 0.58em;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-light, #d4af37);
+  opacity: 0.88;
+  margin-top: 0.25rem;
+  line-height: 1.25;
+}
+
 .product-card-accord {
   font-size: 0.78rem;
   color: var(--text-muted);
@@ -2108,9 +2130,8 @@ div#cardsRow {
   font-size: 0.95rem;
   color: var(--text-main);
   margin: 0 0 0.2rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  line-height: 1.25;
 }
 
 .modal-product-item-meta {
@@ -5449,8 +5470,8 @@ div#cardsRow {
 }
 
 .product-slider-item {
-  flex: 0 0 320px;
-  width: 320px;
+  flex: 0 0 280px;
+  width: 280px;
   scroll-snap-align: start;
   scroll-snap-stop: always;
   display: flex;
@@ -5464,12 +5485,12 @@ div#cardsRow {
 
 .sovereign-slider-card {
   position: relative;
-  width: 320px;
-  min-width: 320px;
-  max-width: 320px;
-  height: 520px;
-  min-height: 520px;
-  max-height: 520px;
+  width: 280px;
+  min-width: 280px;
+  max-width: 280px;
+  height: 455px;
+  min-height: 455px;
+  max-height: 455px;
   display: flex;
   flex-direction: column;
   cursor: pointer;
@@ -5486,8 +5507,8 @@ div#cardsRow {
 .sovereign-card-svg-frame {
   position: absolute;
   inset: 0;
-  width: 320px;
-  height: 520px;
+  width: 280px;
+  height: 455px;
   z-index: 1;
   pointer-events: none;
   overflow: visible;
@@ -5497,8 +5518,8 @@ div#cardsRow {
 .sovereign-card-body {
   position: relative;
   z-index: 2;
-  width: 320px;
-  height: 520px;
+  width: 280px;
+  height: 455px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -5507,9 +5528,9 @@ div#cardsRow {
 
 /* Top Media Pedestal Box */
 .notched-card-media {
-  height: 250px;
-  margin: 16px 16px 0 16px;
-  border-radius: 20px;
+  height: 220px;
+  margin: 14px 14px 0 14px;
+  border-radius: 18px;
   border: 1px solid rgba(212, 175, 55, 0.35);
   background: linear-gradient(180deg, #072e1d 0%, #03180f 100%);
   position: relative;
@@ -5521,14 +5542,14 @@ div#cardsRow {
 
 .notched-badge-pill {
   position: absolute;
-  top: 14px;
-  left: 14px;
+  top: 12px;
+  left: 12px;
   border: 1px solid rgba(212, 175, 55, 0.75);
   background: rgba(3, 20, 13, 0.88);
   color: #D4AF37;
-  padding: 5px 14px;
+  padding: 4px 12px;
   border-radius: 999px;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.05em;
   z-index: 3;
@@ -5537,33 +5558,35 @@ div#cardsRow {
 
 .notched-media-halo {
   position: absolute;
-  width: 175px;
-  height: 175px;
+  width: 210px;
+  height: 210px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(212, 175, 55, 0.18) 0%, rgba(212, 175, 55, 0.04) 55%, transparent 75%);
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.25) 0%, rgba(212, 175, 55, 0.06) 55%, transparent 75%);
   z-index: 1;
   pointer-events: none;
 }
 
 .notched-bottle-img {
-  height: 185px;
+  height: 200px;
   width: auto;
-  max-width: 85%;
+  max-width: 95%;
   object-fit: contain;
   z-index: 2;
-  filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.6));
+  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.75));
+  transform: scale(1.42);
+  transform-origin: center 56%;
   transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .sovereign-slider-card:hover .notched-bottle-img {
-  transform: translateY(-4px) scale(1.04);
+  transform: translateY(-4px) scale(1.48);
 }
 
 .notched-bottle-shadow {
   position: absolute;
-  bottom: 22px;
-  width: 130px;
-  height: 14px;
+  bottom: 14px;
+  width: 140px;
+  height: 16px;
   border-radius: 50%;
   background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.5) 60%, transparent 85%);
   z-index: 1;
@@ -5572,7 +5595,7 @@ div#cardsRow {
 
 /* Middle & Bottom Content */
 .notched-card-info {
-  padding: 16px 20px 20px 20px;
+  padding: 12px 16px 16px 16px;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -5584,24 +5607,24 @@ div#cardsRow {
 .notched-title-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 6px;
 }
 
 .notched-product-title {
   margin: 0;
   font-family: var(--font-serif-title, 'Cinzel', 'Playfair Display', serif);
-  font-size: 1.35rem;
+  font-size: 1.18rem;
   font-weight: 700;
   color: #ffffff;
   letter-spacing: -0.01em;
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
 .notched-wishlist-btn {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: 1px solid rgba(212, 175, 55, 0.45);
   background: rgba(3, 22, 14, 0.9);
@@ -5628,24 +5651,24 @@ div#cardsRow {
 
 .notched-product-desc {
   color: #8da399;
-  font-size: 0.82rem;
-  line-height: 1.45;
-  margin: 0 0 16px 0;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  margin: 0 0 10px 0;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
 .notched-bottom-row {
   margin-top: auto;
-  padding-bottom: 4px;
-  max-width: 200px;
+  padding-bottom: 2px;
+  max-width: 175px;
 }
 
 .notched-price-display {
   font-family: var(--font-serif-title, 'Cinzel', 'Playfair Display', serif);
-  font-size: 1.85rem;
+  font-size: 1.62rem;
   font-weight: 700;
   color: #D4AF37;
   letter-spacing: -0.02em;
@@ -5655,14 +5678,14 @@ div#cardsRow {
 .notched-mythos-badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  margin-top: 6px;
-  padding: 3px 8px;
-  border-radius: 6px;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 2px 7px;
+  border-radius: 5px;
   background: rgba(212, 175, 55, 0.12);
   border: 1px solid rgba(212, 175, 55, 0.35);
   color: #FCD34D;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   letter-spacing: 0.02em;
   line-height: 1.2;
 }
@@ -5715,9 +5738,9 @@ div#cardsRow {
   position: absolute;
   right: 0;
   bottom: 0;
-  width: 78px;
-  height: 104px;
-  border-radius: 24px;
+  width: 68px;
+  height: 91px;
+  border-radius: 21px;
   border: 1.5px solid #D4AF37;
   background: #03180f;
   display: flex;
@@ -5783,7 +5806,8 @@ div#cardsRow {
     padding-bottom: 1.5rem;
   }
   .product-slider-item {
-    flex: 0 0 80vw;
+    flex: 0 0 280px;
+    width: 280px;
   }
   .slider-nav-controls {
     display: none;
@@ -5831,5 +5855,173 @@ div#cardsRow {
     flex: 1 1 45%;
   }
 }
+
+/* ==========================================================================
+   MOBILE & ANDROID APP BOTTOM NAVIGATION BAR (SOVEREIGN APP DOCK)
+   ========================================================================== */
+.mobile-app-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  body {
+    padding-bottom: calc(66px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .mobile-app-bottom-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    padding: 0 0.4rem env(safe-area-inset-bottom, 0px) 0.4rem;
+    background: rgba(3, 18, 12, 0.96);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-top: 1px solid rgba(212, 175, 55, 0.32);
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.75), 0 -1px 0 rgba(255, 255, 255, 0.04);
+    z-index: 1000;
+    user-select: none;
+  }
+
+  .mobile-nav-item {
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 4px 6px 3px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+    color: #8da399;
+    text-decoration: none;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+  }
+
+  .mobile-nav-item:active {
+    transform: scale(0.92);
+  }
+
+  .mobile-nav-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+
+  .mobile-nav-icon svg {
+    display: block;
+    transition: transform 0.2s ease;
+  }
+
+  .mobile-nav-label {
+    font-family: var(--font-sans-body, 'Montserrat', sans-serif);
+    font-size: 0.62rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    margin-top: 2px;
+    line-height: 1;
+    white-space: nowrap;
+    transition: color 0.2s ease, font-weight 0.2s ease;
+  }
+
+  .mobile-nav-indicator {
+    display: block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #d4af37;
+    margin-top: 3px;
+    opacity: 0;
+    transform: scale(0.3);
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Active State */
+  .mobile-nav-item.active {
+    color: #d4af37;
+  }
+
+  .mobile-nav-item.active .mobile-nav-label {
+    color: #d4af37;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.45);
+  }
+
+  .mobile-nav-item.active .mobile-nav-indicator {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 8px #d4af37;
+  }
+
+  /* Center Elevated Sixth Sense Bubble */
+  .mobile-nav-center-item {
+    position: relative;
+    top: -12px;
+    padding-top: 0;
+  }
+
+  .mobile-nav-center-bubble {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1b3d2f 0%, #061910 100%);
+    border: 1.5px solid #d4af37;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7), 0 0 14px rgba(212, 175, 55, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fce494;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+
+  .mobile-nav-center-bubble svg {
+    filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.6));
+  }
+
+  .mobile-nav-center-item.active .mobile-nav-center-bubble,
+  .mobile-nav-center-item:active .mobile-nav-center-bubble {
+    border-color: #fce494;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 24px rgba(212, 175, 55, 0.5), 0 0 18px rgba(212, 175, 55, 0.4);
+  }
+
+  .mobile-nav-center-item .mobile-nav-label {
+    margin-top: 4px;
+    color: #d4af37;
+    font-weight: 600;
+  }
+
+  /* Adjustments for Floating WhatsApp button with Bottom Nav */
+  .floating-whatsapp-btn {
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+    right: 16px !important;
+    z-index: 999;
+  }
+
+  /* Sticky Buy Bar sits cleanly right above the bottom nav */
+  .mobile-sticky-buy-bar {
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: 0.65rem !important;
+    z-index: 998;
+  }
+
+  /* When sticky buy bar is visible, raise the floating whatsapp */
+  .mobile-sticky-buy-bar.visible ~ .floating-whatsapp-btn,
+  body:has(.mobile-sticky-buy-bar.visible) .floating-whatsapp-btn {
+    bottom: calc(134px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
 
 

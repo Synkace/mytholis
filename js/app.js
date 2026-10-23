@@ -244,6 +244,7 @@ class MytholisApp {
     // Initial Route & Badges Setup
     this.handleHashRoute();
     this.updateBadges();
+    this.updateMobileBottomNav(store.currentView, store.selectedProductId);
   }
 
   /* Routing Handler with Deep-Linking & Browser Back Support */
@@ -417,8 +418,40 @@ class MytholisApp {
       }
     });
 
+    this.updateMobileBottomNav(viewName, paramId);
     this.renderCurrentView();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* Update Mobile Bottom Nav Active Tab */
+  updateMobileBottomNav(viewName, paramId = null) {
+    const bottomNav = document.getElementById('mobile-app-bottom-nav');
+    if (!bottomNav) return;
+
+    const navItems = bottomNav.querySelectorAll('.mobile-nav-item');
+    navItems.forEach(item => item.classList.remove('active'));
+
+    const effectiveProdId = paramId || store.selectedProductId;
+
+    if (viewName === 'home') {
+      const el = bottomNav.querySelector('[data-nav="home"]');
+      if (el) el.classList.add('active');
+    } else if (viewName === 'collections') {
+      const el = bottomNav.querySelector('[data-nav="collections"]');
+      if (el) el.classList.add('active');
+    } else if (viewName === 'product' && effectiveProdId === 'mytholis-discovery-set') {
+      const el = bottomNav.querySelector('[data-nav="sixth-sense"]');
+      if (el) el.classList.add('active');
+    } else if (viewName === 'product') {
+      const el = bottomNav.querySelector('[data-nav="collections"]');
+      if (el) el.classList.add('active');
+    } else if (viewName === 'circle-of-legends' || viewName === 'circle-of-legends-rules') {
+      const el = bottomNav.querySelector('[data-nav="circle-of-legends"]');
+      if (el) el.classList.add('active');
+    } else if (viewName === 'profile' || viewName === 'dossier' || viewName === 'admin' || viewName === 'track-order') {
+      const el = bottomNav.querySelector('[data-nav="profile"]');
+      if (el) el.classList.add('active');
+    }
   }
 
   /* Brand Logo Click Handler (Replays Intro Falling Animation) */
@@ -432,7 +465,7 @@ class MytholisApp {
     }
   }
 
-  /* Instant Discovery Coffret Purchase Action */
+  /* Instant Sixth Sense Purchase Action */
   acquireCoffretNow() {
     const coffret = MYTHOLIS_CATALOG.find(p => p.id === 'mytholis-discovery-set');
     if (coffret) {
@@ -447,7 +480,7 @@ class MytholisApp {
     const scent = MYTHOLIS_CATALOG.find(p => p.id === scentId);
     if (!scent) return;
 
-    const shortName = scent.name.replace(' Extrait de Parfum', '').trim();
+    const shortName = scent.name.replace(/<[^>]*>/g, ' ').replace(/Extrait\s*de\s*Parfum/gi, '').trim();
 
     // Update active tab button styles
     document.querySelectorAll('.pyramid-tab-btn').forEach(btn => {
@@ -573,7 +606,7 @@ class MytholisApp {
       const stickyName = document.getElementById('sticky-buy-name');
       const stickyPrice = document.getElementById('sticky-buy-price');
       if (stickyImg) stickyImg.src = prod.image;
-      if (stickyName) stickyName.innerText = prod.name;
+      if (stickyName) stickyName.innerHTML = prod.name;
       if (stickyPrice) stickyPrice.innerText = store.formatPrice(this.selectedPrice || prod.price);
     }
   }
@@ -1108,7 +1141,7 @@ class MytholisApp {
 
     if (badgeEl) badgeEl.innerHTML = `${product.subtitle}`;
     if (editionEl) editionEl.innerHTML = `No. 0${this.heroIndex + 1} of 06`;
-    if (fragNameEl) fragNameEl.innerText = product.name;
+    if (fragNameEl) fragNameEl.innerHTML = product.name;
     if (descEl) descEl.innerText = `"${product.tagline}" ${product.description}`;
 
     if (accordsEl) {
@@ -1116,7 +1149,8 @@ class MytholisApp {
     }
 
     if (ctaBtn) {
-      ctaBtn.innerText = `Discover ${product.name.replace(' Extrait de Parfum', '')}`;
+      const cleanScentName = product.name.replace(/<[^>]*>/g, ' ').replace(/Extrait\s*de\s*Parfum/gi, '').trim();
+      ctaBtn.innerText = `Discover ${cleanScentName}`;
       ctaBtn.onclick = () => this.openProductView(product.id);
     }
 
@@ -1581,7 +1615,8 @@ class MytholisApp {
     const engravingEl = document.getElementById('engraving-text');
     const engraving = engravingEl ? engravingEl.value.trim() : '';
 
-    const text = `Hello Mytholis Fragrance Concierge,\n\nI would like to order:\n*${product.name}*\nVolume: ${size}ml\nTotal Price: ${store.formatPrice(price)} (Incl. all taxes)\n${engraving ? `Complimentary Engraving: "${engraving}"\n` : ''}Shipping: Pan-India Express Armored Delivery\n\nPlease share payment details (UPI / Bank Transfer) to confirm my order.`;
+    const cleanOrderProdName = (product.name || '').replace(/<br\s*\/?>/gi, ' - ').replace(/<[^>]*>/g, '').trim();
+    const text = `Hello Mytholis Fragrance Concierge,\n\nI would like to order:\n*${cleanOrderProdName}*\nVolume: ${size}ml\nTotal Price: ${store.formatPrice(price)} (Incl. all taxes)\n${engraving ? `Complimentary Engraving: "${engraving}"\n` : ''}Shipping: Pan-India Express Armored Delivery\n\nPlease share payment details (UPI / Bank Transfer) to confirm my order.`;
 
     window.open(`https://wa.me/917770009170?text=${encodeURIComponent(text)}`, '_blank');
   }
@@ -1593,7 +1628,10 @@ class MytholisApp {
     const finalAmount = Math.max(0, baseSubtotal - discount);
     const appliedReward = store.getAppliedReward();
 
-    const itemsList = store.cart.map(i => `• ${i.name} (${i.size}ml × ${i.quantity}) ${i.engraving ? `[Engraved: "${i.engraving}"]` : ''} - ${store.formatPrice(i.price * i.quantity)}`).join('\n');
+    const itemsList = store.cart.map(i => {
+      const cleanItemName = (i.name || '').replace(/<br\s*\/?>/gi, ' - ').replace(/<[^>]*>/g, '').trim();
+      return `• ${cleanItemName} (${i.size}ml × ${i.quantity}) ${i.engraving ? `[Engraved: "${i.engraving}"]` : ''} - ${store.formatPrice(i.price * i.quantity)}`;
+    }).join('\n');
 
     let rewardLine = '';
     if (appliedReward) {
@@ -3537,6 +3575,49 @@ class MytholisApp {
     }
   }
 
+  async syncProductsToShiprocket() {
+    const btn = document.getElementById('btn-sync-shiprocket');
+    const originalText = btn ? btn.innerHTML : '🚀 Sync Products to Shiprocket';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Syncing Catalog to Shiprocket...';
+      btn.style.opacity = '0.75';
+    }
+
+    this.showToast('Connecting to Shiprocket Master Product Catalog...');
+
+    try {
+      const catalog = (this.adminData && this.adminData.products && this.adminData.products.length)
+        ? this.adminData.products
+        : store.getProducts();
+
+      const response = await fetch('/api/shiprocket-sync-products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ products: catalog })
+      });
+
+      const resJson = await response.json().catch(() => null);
+
+      if (response.ok && resJson && resJson.success) {
+        const count = resJson.syncedCount || resJson.totalCount || 6;
+        this.showToast(`✨ Successfully synced ${count} products to Shiprocket's Master Catalog!`);
+      } else {
+        const errMsg = resJson?.error || `HTTP ${response.status}`;
+        this.showToast(`Shiprocket sync notice: ${errMsg}`);
+      }
+    } catch (err) {
+      console.error('[Shiprocket Sync Error]:', err);
+      this.showToast(`Shiprocket sync failed: ${err.message || 'Network error'}`);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        btn.style.opacity = '1';
+      }
+    }
+  }
+
   openProductEditorModal(productId = null) {
     let prod = null;
     if (productId) {
@@ -3559,11 +3640,8 @@ class MytholisApp {
         return;
       }
 
-      // Read configured sizes (50ml, 100ml, 8ml)
+      // Read configured sizes (50ml, 100ml)
       const sizes = [];
-      if (getChecked('size-enabled-8')) {
-        sizes.push({ ml: 8, price: getNum('size-price-8') || 899, stock: getNum('size-stock-8') || 50 });
-      }
       if (getChecked('size-enabled-50')) {
         sizes.push({ ml: 50, price: getNum('size-price-50') || 3999, stock: getNum('size-stock-50') || 50 });
       }
@@ -3571,7 +3649,7 @@ class MytholisApp {
         sizes.push({ ml: 100, price: getNum('size-price-100') || 5999, stock: getNum('size-stock-100') || 50 });
       }
 
-      // Preserve existing custom/coffret sizes if any
+      // Preserve existing custom/coffret sizes if any (e.g. 48ml for Sixth Sense)
       const existingProd = (this.adminData.products || []).find(p => p.id === prodId) ||
                            (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG.find(p => p.id === prodId) : null);
       if (existingProd && Array.isArray(existingProd.sizes)) {

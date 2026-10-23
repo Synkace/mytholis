@@ -1,6 +1,6 @@
 /* ==========================================================================
    MYTHOLIS LUXURY PERFUME - CATALOG DATA
-   Sequence: 1. King Scar, 2. Petralux, 3. Oud Rion, 4. Spark, 5. Wood Sera, 6. Ash, 7. Discovery Coffret
+   Sequence: 1. King Scar, 2. Petralux, 3. Oud Rion, 4. Spark, 5. Wood Sera, 6. Ash, 7. The Sixth Sense
    Brand tagline: "Wear Your Legend."
    Collection line: "Six elements. Six legends. One house."
    Formulated in Mayfair, London UK · Handcrafted & Bottled in Ahmedabad, India
@@ -9,7 +9,7 @@
 const MYTHOLIS_CATALOG = [
   {
     id: "king-scar",
-    name: "King Scar Extrait de Parfum",
+    name: "King Scar <br><span class=\"product-concentration-sub\">Extrait de Parfum</span>",
     subtitle: "Aromatic · Men",
     collection: "Aromatic · Men",
     tagline: "A commanding presence forged in spices and absinthe.",
@@ -31,14 +31,13 @@ const MYTHOLIS_CATALOG = [
       base: ["Vetiver", "Cedar", "White Musk", "Tonka Bean"]
     },
     sizes: [
-      { ml: 8, price: 899 },
       { ml: 50, price: 3999 },
       { ml: 100, price: 5999 }
     ]
   },
   {
     id: "petralux",
-    name: "Petralux Extrait de Parfum",
+    name: "Petralux <br><span class=\"product-concentration-sub\">Extrait de Parfum</span>",
     subtitle: "Fruity · Unisex",
     collection: "Fruity · Unisex",
     tagline: "Luminous luxury and royal fruit trapped in stone.",
@@ -60,14 +59,13 @@ const MYTHOLIS_CATALOG = [
       base: ["Birch", "Musk", "Oakmoss", "Cedarwood", "Amber"]
     },
     sizes: [
-      { ml: 8, price: 799 },
       { ml: 50, price: 3299 },
       { ml: 100, price: 4999 }
     ]
   },
   {
     id: "oud-rion",
-    name: "Oud Rion Extrait de Parfum",
+    name: "Oud Rion <br><span class=\"product-concentration-sub\">Extrait de Parfum</span>",
     subtitle: "Woody · Men",
     collection: "Woody · Men",
     tagline: "The king of woods, crowned in gold and smoke.",
@@ -89,14 +87,13 @@ const MYTHOLIS_CATALOG = [
       base: ["Raspberry", "Birch & Geranium", "Amberwood"]
     },
     sizes: [
-      { ml: 8, price: 999 },
       { ml: 50, price: 4599 },
       { ml: 100, price: 6999 }
     ]
   },
   {
     id: "spark",
-    name: "Spark Extrait de Parfum",
+    name: "Spark <br><span class=\"product-concentration-sub\">Extrait de Parfum</span>",
     subtitle: "Aromatic · Unisex",
     collection: "Aromatic · Unisex",
     tagline: "The electrifying flash of clarity and fire.",
@@ -118,14 +115,13 @@ const MYTHOLIS_CATALOG = [
       base: ["Vetiver", "Oakmoss", "Iris", "Leather", "Agarwood (Oud)"]
     },
     sizes: [
-      { ml: 8, price: 849 },
       { ml: 50, price: 3699 },
       { ml: 100, price: 5499 }
     ]
   },
   {
     id: "wood-sera",
-    name: "Wood Sera Extrait de Parfum",
+    name: "Wood Sera <br><span class=\"product-concentration-sub\">Extrait de Parfum</span>",
     subtitle: "Woody · Unisex",
     collection: "Woody · Unisex",
     tagline: "The forest at golden hour, draped in velvet and oud.",
@@ -147,14 +143,13 @@ const MYTHOLIS_CATALOG = [
       base: ["Praline Accord", "Vanilla", "Guaiac Wood", "Copahu Balm (Copaiba)"]
     },
     sizes: [
-      { ml: 8, price: 799 },
       { ml: 50, price: 3299 },
       { ml: 100, price: 4999 }
     ]
   },
   {
     id: "ash",
-    name: "Ash Extrait de Parfum",
+    name: "Ash <br><span class=\"product-concentration-sub\">Extrait de Parfum</span>",
     subtitle: "Woody · Unisex",
     collection: "Woody · Unisex",
     tagline: "Smouldering embers and sacred woods born from the fire.",
@@ -176,29 +171,28 @@ const MYTHOLIS_CATALOG = [
       base: ["Amber", "Vanilla", "Musk"]
     },
     sizes: [
-      { ml: 8, price: 899 },
       { ml: 50, price: 3999 },
       { ml: 100, price: 5999 }
     ]
   },
   {
     id: "mytholis-discovery-set",
-    name: "Sixth Sense Discovery Coffret (6 × 8ml)",
-    subtitle: "The Sixth Sense • Complete Extrait Wardrobe",
-    collection: "Sixth Sense Edition",
+    name: "Sixth Sense",
+    subtitle: "Sixth Sense",
+    collection: "Sixth Sense",
     tagline: "Awaken your Sixth Sense — experience all six master extraits in deluxe 8ml flacons.",
     price: 3999,
     rating: 5.0,
     reviewsCount: 240,
     image: "assets/coffret_banner.webp",
-    tag: "Sixth Sense Coffret",
+    tag: "Sixth Sense",
     gender: "Unisex",
     scentFamily: "Complete Olfactory Wardrobe",
     concentration: "Extrait de Parfum (6 × 8ml Deluxe Vials • 40% Concentration)",
     longevityHours: 12,
     sillageRating: 96,
-    accords: ["The Sixth Sense Master Set", "All 6 Signature Extraits", "6 × 8ml Deluxe Sprays", "₹1,000 Flacon Voucher"],
-    description: "The complete Mytholis master collection in one curated luxury vault coffret — also named The Sixth Sense. Contains deluxe 8ml travel flacons of King Scar, Petralux, Oud Rion, Spark, Wood Sera, and Ash, plus a complimentary ₹1,000 voucher redeemable toward your first full 100ml flacon.",
+    accords: ["Sixth Sense Master Set", "All 6 Signature Extraits", "6 × 8ml Deluxe Sprays", "₹1,000 Flacon Voucher"],
+    description: "The complete Mytholis master collection in one curated luxury vault — Sixth Sense. Contains deluxe 8ml travel flacons of King Scar, Petralux, Oud Rion, Spark, Wood Sera, and Ash, plus a complimentary ₹1,000 voucher redeemable toward your first full 100ml flacon.",
     notes: {
       top: ["Aromatic Spices & Absinthe (King Scar 8ml)", "Italian Bergamot & Black Currant (Petralux 8ml)"],
       heart: ["Smoked Saffron & Cambodian Agarwood (Oud Rion 8ml)", "Sicilian Mandarin & Sparkling Ginger (Spark 8ml)"],
