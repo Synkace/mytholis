@@ -4294,85 +4294,10 @@ div#cardsRow {
   }
 }
 
-/* 5. Mobile Sticky Bottom Buy Bar */
-.mobile-sticky-buy-bar {
-  display: none;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  z-index: 998;
-  background: rgba(2, 14, 10, 0.96);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(212, 175, 55, 0.3);
-  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.7);
-  padding: 0.65rem 1rem calc(0.65rem + env(safe-area-inset-bottom, 0px));
-  transform: translateY(100%);
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.mobile-sticky-buy-bar.visible {
-  transform: translateY(0);
-}
-
-.sticky-buy-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.8rem;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.sticky-buy-thumb {
-  width: 38px;
-  height: 38px;
-  object-fit: contain;
-  border-radius: 6px;
-  background: rgba(4, 24, 18, 0.8);
-  border: 1px solid rgba(212, 175, 55, 0.2);
-  flex-shrink: 0;
-}
-
-.sticky-buy-details {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  overflow: hidden;
-}
-
-.sticky-buy-name {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text-main);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.sticky-buy-price {
-  font-size: 0.88rem;
-  font-weight: 700;
-}
-
-.sticky-buy-action {
-  flex-shrink: 0;
-}
-
-.sticky-buy-btn {
-  padding: 0.55rem 1.1rem !important;
-  font-size: 0.76rem !important;
-  white-space: nowrap;
-}
-
-/* Adjust floating WhatsApp position on mobile when sticky bar is present */
+/* Adjust floating WhatsApp position on mobile */
 @media (max-width: 768px) {
-  .mobile-sticky-buy-bar {
-    display: block;
-  }
   .floating-whatsapp-btn {
-    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
     right: 16px;
     padding: 0.55rem 0.85rem;
   }
@@ -6007,19 +5932,6 @@ div#cardsRow {
     bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
     right: 16px !important;
     z-index: 999;
-  }
-
-  /* Sticky Buy Bar sits cleanly right above the bottom nav */
-  .mobile-sticky-buy-bar {
-    bottom: calc(60px + env(safe-area-inset-bottom, 0px)) !important;
-    padding-bottom: 0.65rem !important;
-    z-index: 998;
-  }
-
-  /* When sticky buy bar is visible, raise the floating whatsapp */
-  .mobile-sticky-buy-bar.visible ~ .floating-whatsapp-btn,
-  body:has(.mobile-sticky-buy-bar.visible) .floating-whatsapp-btn {
-    bottom: calc(134px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
 

@@ -104,9 +104,8 @@ class MytholisApp {
       }
     });
 
-    // Scroll Header effect & Mobile Sticky Buy Bar updater (cached & RAF throttled)
+    // Scroll Header effect (cached & RAF throttled)
     const header = document.querySelector('.header-nav');
-    const stickyBuyBar = document.getElementById('mobile-sticky-buy-bar');
     let scrollTicking = false;
     window.addEventListener('scroll', () => {
       if (!scrollTicking) {
@@ -116,14 +115,6 @@ class MytholisApp {
               header.classList.add('scrolled');
             } else {
               header.classList.remove('scrolled');
-            }
-          }
-          // Update mobile sticky buy bar visibility
-          if (stickyBuyBar) {
-            if (window.scrollY > 400 && window.innerWidth <= 768) {
-              stickyBuyBar.classList.add('visible');
-            } else {
-              stickyBuyBar.classList.remove('visible');
             }
           }
           scrollTicking = false;
@@ -597,17 +588,6 @@ class MytholisApp {
       }
     } else {
       mainContainer.classList.remove('home-view');
-    }
-
-    // Update sticky buy bar metadata if on product view
-    if (store.currentView === 'product') {
-      const prod = MYTHOLIS_CATALOG.find(p => p.id === store.selectedProductId) || MYTHOLIS_CATALOG[0];
-      const stickyImg = document.getElementById('sticky-buy-img');
-      const stickyName = document.getElementById('sticky-buy-name');
-      const stickyPrice = document.getElementById('sticky-buy-price');
-      if (stickyImg) stickyImg.src = prod.image;
-      if (stickyName) stickyName.innerHTML = prod.name;
-      if (stickyPrice) stickyPrice.innerText = store.formatPrice(this.selectedPrice || prod.price);
     }
   }
 
@@ -1591,15 +1571,6 @@ class MytholisApp {
       if (buyBtn) {
         buyBtn.setAttribute('onclick', `event.stopPropagation(); app.quickAddToCart('${productId}', ${ml}, ${price})`);
       }
-    }
-  }
-
-  /* Mobile Sticky Bottom Buy Bar Trigger - 1-Click Fastrr Checkout */
-  stickyBuyAction(event) {
-    if (store.currentView === 'product' && store.selectedProductId) {
-      return this.buyNowFastrr(store.selectedProductId, event);
-    } else {
-      return this.buyNowFastrr('mytholis-discovery-set', event);
     }
   }
 
