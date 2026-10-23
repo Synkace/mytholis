@@ -359,6 +359,11 @@ class MytholisApp {
     if (links) links.classList.toggle('mobile-open');
   }
 
+  closeMobileMenu() {
+    const links = document.getElementById('main-nav-links');
+    if (links) links.classList.remove('mobile-open');
+  }
+
   navigateTo(viewName, paramId = null, pushHash = true) {
 
     if (pushHash) {
@@ -2364,11 +2369,7 @@ class MytholisApp {
 
   handleMobileAccountClick() {
     this.closeMobileMenu();
-    if (store.isUserLoggedIn()) {
-      this.navigateTo('profile');
-    } else {
-      this.openAuthModal('signin');
-    }
+    this.openProfileModal();
   }
 
   /* Dedicated Auth Modal (Sign In / Register) */
@@ -2424,7 +2425,7 @@ class MytholisApp {
     const modalBody = document.getElementById('profile-modal-body');
     if (modalBody) {
       if (!store.isUserLoggedIn()) {
-        modalBody.innerHTML = Components.renderAuthModal(this.activeAuthTab || 'phone');
+        modalBody.innerHTML = Components.renderAuthModal(this.activeAuthTab || 'signin');
       } else {
         modalBody.innerHTML = Components.renderProfileModal();
       }
