@@ -3026,10 +3026,10 @@ class MytholisApp {
     }
   }
 
-  async handleGoogleSignIn() {
+  async handleGoogleSignIn(idToken = null) {
     if (typeof firebaseService === 'undefined') return;
     this.showToast('Connecting to Google VIP Sign-In...');
-    const result = await firebaseService.signInWithGoogle();
+    const result = await firebaseService.signInWithGoogle(idToken);
     if (result.success) {
       this.showToast(`Welcome to House Mytholis, ${result.user.displayName || result.user.email}!`);
       this.updateNavAuth();

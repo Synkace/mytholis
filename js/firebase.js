@@ -9,6 +9,7 @@ import {
   getAuth, 
   signInWithPopup, 
   GoogleAuthProvider, 
+  signInWithCredential,
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signOut as firebaseSignOut, 
@@ -58,10 +59,16 @@ export function checkIsAdmin(user, profile = {}) {
   return false;
 }
 
+// Auto-resolve custom auth domain: if on mytholis.com, use custom domain for white-label Google Sign-In
+const resolvedAuthDomain = (import.meta.env && import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) ||
+  (typeof window !== 'undefined' && (window.location.hostname === 'mytholis.com' || window.location.hostname === 'www.mytholis.com')
+    ? 'mytholis.com'
+    : 'mytholis-1.firebaseapp.com');
+
 // Your web app's Firebase configuration with Vite environment variable support
 export const firebaseConfig = {
   apiKey: (import.meta.env && import.meta.env.VITE_FIREBASE_API_KEY) || "AIzaSyBc2aJMywhHkOTLLZKj8jFcYivZ3tJE-Qg",
-  authDomain: (import.meta.env && import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) || "mytholis-1.firebaseapp.com",
+  authDomain: resolvedAuthDomain,
   projectId: (import.meta.env && import.meta.env.VITE_FIREBASE_PROJECT_ID) || "mytholis-1",
   storageBucket: (import.meta.env && import.meta.env.VITE_FIREBASE_STORAGE_BUCKET) || "mytholis-1.firebasestorage.app",
   messagingSenderId: (import.meta.env && import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID) || "227633160778",
@@ -80,7 +87,14 @@ try {
 } catch (e) {
   db = getFirestore(firebaseApp);
 }
+
+// Google OAuth Provider with prompt=select_account for immediate account transition
 const googleProvider = new GoogleAuthProvider();
+googleProvider.addScope('email');
+googleProvider.addScope('profile');
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
 
 export class FirebaseService {
   constructor() {
@@ -133,9 +147,35 @@ export class FirebaseService {
     }
   }
 
-  // Google 1-Tap Sign-In / Popup
-  async signInWithGoogle() {
+  // Sign in with Google Identity Services credential (ID Token / GoogleAuthProvider.credential)
+  async signInWithGoogleCredential(idToken, accessToken = null) {
     try {
+      const credential = GoogleAuthProvider.credential(idToken, accessToken);
+      const result = await signInWithCredential(auth, credential);
+      if (result && result.user) {
+        await this.syncUserDataOnLogin(result.user);
+      }
+      return { success: true, user: result.user };
+    } catch (error) {
+      console.error("[Mytholis Firebase] Google Credential Sign-In Error:", error);
+      const friendly = this.formatAuthError(error.code);
+      return { success: false, error: friendly || error.message };
+    }
+  }
+
+  // Google 1-Tap / Identity Services / Popup Sign-In
+  async signInWithGoogle(idToken = null) {
+    try {
+      // If an ID Token is provided from Google Identity Services, authenticate directly via credential
+      if (idToken) {
+        return await this.signInWithGoogleCredential(idToken);
+      }
+
+      // Ensure select_account prompt is set so the flow transitions immediately without hanging
+      googleProvider.setCustomParameters({
+        prompt: 'select_account'
+      });
+
       const result = await signInWithPopup(auth, googleProvider);
       if (result && result.user) {
         await this.syncUserDataOnLogin(result.user);

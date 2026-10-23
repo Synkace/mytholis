@@ -129,6 +129,23 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: true
+    open: true,
+    proxy: {
+      '/__/auth': {
+        target: 'https://mytholis-1.firebaseapp.com',
+        changeOrigin: true,
+        secure: true
+      }
+    }
+  },
+  preview: {
+    port: 3000,
+    proxy: {
+      '/__/auth': {
+        target: 'https://mytholis-1.firebaseapp.com',
+        changeOrigin: true,
+        secure: true
+      }
+    }
   }
 });

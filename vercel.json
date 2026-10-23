@@ -3,6 +3,7 @@
   "outputDirectory": "dist",
   "cleanUrls": true,
   "rewrites": [
+    { "source": "/__/auth/:path*", "destination": "https://mytholis-1.firebaseapp.com/__/auth/:path*" },
     { "source": "/api/(.*)", "destination": "/api/$1" }
   ],
   "headers": [
