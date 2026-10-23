@@ -524,14 +524,16 @@ export const AdminComponents = {
                 <tbody>
                   ${productsList.map(prod => {
                     const catalogMatch = (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []).find(c => c.id === prod.id);
-                    const isCoffret = prod.id === 'mytholis-discovery-set';
+                    const isCoffret = prod.id === 'mytholis-discovery-set' || (prod.collection && prod.collection.toLowerCase().includes('sixth sense')) || (prod.name && prod.name.toLowerCase().includes('sixth sense'));
                     const rawSizes = (Array.isArray(prod.sizes) && prod.sizes.length > 0)
                       ? prod.sizes
                       : (catalogMatch && Array.isArray(catalogMatch.sizes) ? catalogMatch.sizes : [
                           { ml: 50, price: 3999 },
                           { ml: 100, price: prod.price || 5999 }
                         ]);
-                    const prodSizes = isCoffret ? rawSizes : rawSizes.filter(s => s.ml !== 8);
+                    const prodSizes = isCoffret 
+                      ? [{ ml: 48, price: prod.price || 3999 }] 
+                      : rawSizes.filter(s => s.ml !== 8 && s.ml !== 48 && s.ml !== 60);
 
                     return `
                     <tr>
@@ -539,8 +541,8 @@ export const AdminComponents = {
                         <img src="${prod.image || 'assets/product/1kingscar.webp'}" class="sovereign-table-img" alt="${(prod.name || '').replace(/<[^>]*>/g, ' ').replace(/"/g, '&quot;').trim()}" />
                       </td>
                       <td>
-                        <strong style="color: var(--gold-light); font-size: 0.95rem;">${prod.name}</strong>
-                        <div style="font-size: 0.75rem; color: var(--gold-primary);">${prod.concentration || 'Extrait de Parfum (40%)'}</div>
+                        <strong style="color: var(--gold-light); font-size: 0.95rem;">${isCoffret ? 'Sixth Sense' : prod.name}</strong>
+                        <div style="font-size: 0.75rem; color: var(--gold-primary);">${isCoffret ? 'Extrait de Parfum (6 × 8ml Deluxe Vials)' : (prod.concentration || 'Extrait de Parfum (40%)')}</div>
                       </td>
                       <td>
                         <span class="glass-pill" style="font-size: 0.7rem; color: var(--text-muted);">${prod.collection || prod.subtitle || 'Signature'}</span>
@@ -548,16 +550,16 @@ export const AdminComponents = {
                       <td>
                         <div style="display: flex; flex-direction: column; gap: 0.35rem; min-width: 200px;">
                           ${prodSizes.map(s => `
-                            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0, 0, 0, 0.35); padding: 0.22rem 0.5rem; border-radius: 6px; border: 1px solid ${s.ml === 100 ? 'rgba(212, 175, 55, 0.4)' : 'rgba(255, 255, 255, 0.12)'};">
-                              <span style="font-size: 0.72rem; font-weight: 700; color: ${s.ml === 100 ? 'var(--gold-light)' : 'var(--text-main)'};">
-                                ${s.ml === 48 ? '6 × 8ml' : `${s.ml}ml`}
+                            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0, 0, 0, 0.35); padding: 0.22rem 0.5rem; border-radius: 6px; border: 1px solid ${s.ml === 100 || isCoffret ? 'rgba(212, 175, 55, 0.4)' : 'rgba(255, 255, 255, 0.12)'};">
+                              <span style="font-size: 0.72rem; font-weight: 700; color: ${s.ml === 100 || isCoffret ? 'var(--gold-light)' : 'var(--text-main)'};">
+                                ${isCoffret || s.ml === 48 || s.ml === 60 ? '6 × 8ml (48ml)' : `${s.ml}ml`}
                               </span>
                               <div style="display: flex; align-items: center; gap: 0.25rem;">
                                 <span style="font-size: 0.7rem; color: var(--text-muted);">₹</span>
                                 <input type="number" class="sovereign-inline-input" style="width: 78px; padding: 0.18rem 0.35rem; font-size: 0.78rem; text-align: right;" 
                                        value="${s.price || 0}" 
                                        title="Edit ${s.ml}ml price for ${(prod.name || '').replace(/<[^>]*>/g, ' ').replace(/"/g, '&quot;').trim()}"
-                                       onchange="app.updateProductSizePrice('${prod.id}', ${s.ml}, this.value)" />
+                                       onchange="app.updateProductSizePrice('${prod.id}', ${isCoffret ? 48 : s.ml}, this.value)" />
                               </div>
                             </div>
                           `).join('')}
@@ -1125,18 +1127,23 @@ export const AdminComponents = {
   renderProductModal(prod = null) {
     const isEdit = Boolean(prod && prod.id);
     const catalogMatch = prod && prod.id ? (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []).find(c => c.id === prod.id) : null;
-    const sizes = (prod && Array.isArray(prod.sizes) && prod.sizes.length > 0)
-      ? prod.sizes
-      : (catalogMatch && Array.isArray(catalogMatch.sizes) ? catalogMatch.sizes : [
-          { ml: 8, price: 899, stock: 50 },
-          { ml: 50, price: 3999, stock: 50 },
-          { ml: 100, price: 5999, stock: 50 }
-        ]);
+    const isCoffret = (prod && prod.id === 'mytholis-discovery-set') || 
+                      (prod && (prod.collection?.toLowerCase().includes('sixth sense') || prod.name?.toLowerCase().includes('sixth sense') || prod.id?.includes('coffret') || prod.id?.includes('discovery')));
+
+    const sizes = isCoffret 
+      ? [{ ml: 48, price: prod?.price || 3999, stock: prod?.stock !== undefined ? prod.stock : 50 }]
+      : ((prod && Array.isArray(prod.sizes) && prod.sizes.length > 0)
+        ? prod.sizes
+        : (catalogMatch && Array.isArray(catalogMatch.sizes) ? catalogMatch.sizes : [
+            { ml: 8, price: 899, stock: 50 },
+            { ml: 50, price: 3999, stock: 50 },
+            { ml: 100, price: 5999, stock: 50 }
+          ]));
 
     const s8 = sizes.find(s => s.ml === 8);
     const s50 = sizes.find(s => s.ml === 50);
     const s100 = sizes.find(s => s.ml === 100);
-    const otherSizes = sizes.filter(s => s.ml !== 8 && s.ml !== 50 && s.ml !== 100);
+    const otherSizes = isCoffret ? [] : sizes.filter(s => s.ml !== 8 && s.ml !== 50 && s.ml !== 100 && s.ml !== 48 && s.ml !== 60);
 
     const p = prod || {
       id: '',
@@ -1216,69 +1223,100 @@ export const AdminComponents = {
               </div>
             </div>
 
-            <!-- Flacon Editions & Volume Pricing (50ml · 100ml) -->
-            <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.45); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.25);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
-                <div style="font-size: 0.78rem; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">
-                  🏺 Flacon Editions & Volume Pricing (50ml · 100ml)
+            <!-- Flacon Editions or Discovery Coffret Volume Pricing -->
+            ${isCoffret ? `
+              <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.45); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.35);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
+                  <div style="font-size: 0.78rem; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">
+                    📦 Discovery Coffret Master Set (6 × 8ml Deluxe Vials)
+                  </div>
+                  <span class="glass-pill" style="font-size: 0.68rem; color: var(--gold-light); border-color: rgba(212, 175, 55, 0.4);">48ml Total Wardrobe</span>
                 </div>
-                <span class="glass-pill" style="font-size: 0.68rem; color: var(--gold-light);">Multi-Size Vault Matrix</span>
-              </div>
-              <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 1rem;">
-                Control pricing and inventory specifically for the <strong>50ml Signature Flacon</strong> and the <strong>100ml Grand Flacon</strong>. (Note: 8ml is exclusively available in the Sixth Sense vault set).
-              </p>
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 1rem; line-height: 1.5;">
+                  The Sixth Sense is an exclusive vault discovery set featuring all 6 extraits in deluxe 8ml atomizers plus a complimentary ₹1,000 voucher. Individual 50ml or 100ml flacons do not exist for this discovery coffret.
+                </p>
 
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
-                <!-- 50ml Flacon Card -->
-                <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; padding: 1rem;">
+                <div style="background: rgba(212, 175, 55, 0.08); border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 8px; padding: 1rem; max-width: 320px;">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
-                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--gold-light); cursor: pointer; margin: 0;">
-                      <input type="checkbox" id="size-enabled-50" ${s50 || !isEdit ? 'checked' : ''} />
-                      <span>50ml Flacon</span>
-                    </label>
-                    <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light); border-color: rgba(212, 175, 55, 0.3);">50ml</span>
+                    <span style="font-weight: 700; color: var(--gold-light); font-size: 0.88rem;">6 × 8ml Discovery Set</span>
+                    <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light); border-color: rgba(212, 175, 55, 0.3);">48ml Total</span>
                   </div>
                   <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                     <div>
-                      <label class="sovereign-field-label" style="font-size: 0.7rem;">50ml Price (₹)</label>
-                      <input type="number" id="size-price-50" class="sovereign-form-input" value="${s50 ? s50.price : 3999}" min="0" />
+                      <label class="sovereign-field-label" style="font-size: 0.7rem;">Coffret Price (₹)</label>
+                      <input type="number" id="coffret-price" class="sovereign-form-input" value="${p.price || 3999}" min="0" />
                     </div>
                     <div>
-                      <label class="sovereign-field-label" style="font-size: 0.7rem;">50ml Stock Count</label>
-                      <input type="number" id="size-stock-50" class="sovereign-form-input" value="${s50 && s50.stock !== undefined ? s50.stock : (p.stock !== undefined ? p.stock : 50)}" min="0" />
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 100ml Grand Flacon Card -->
-                <div style="background: rgba(212, 175, 55, 0.08); border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 8px; padding: 1rem;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
-                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--gold-light); cursor: pointer; margin: 0;">
-                      <input type="checkbox" id="size-enabled-100" ${s100 || !isEdit ? 'checked' : ''} />
-                      <span>100ml Grand Flacon</span>
-                    </label>
-                    <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light); border-color: rgba(212, 175, 55, 0.3);">Grand</span>
-                  </div>
-                  <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                    <div>
-                      <label class="sovereign-field-label" style="font-size: 0.7rem;">100ml Price (₹)</label>
-                      <input type="number" id="size-price-100" class="sovereign-form-input" value="${s100 ? s100.price : (p.price || 5999)}" min="0" />
-                    </div>
-                    <div>
-                      <label class="sovereign-field-label" style="font-size: 0.7rem;">100ml Stock Count</label>
-                      <input type="number" id="size-stock-100" class="sovereign-form-input" value="${s100 && s100.stock !== undefined ? s100.stock : (p.stock !== undefined ? p.stock : 50)}" min="0" />
+                      <label class="sovereign-field-label" style="font-size: 0.7rem;">Vault Stock Count</label>
+                      <input type="number" id="coffret-stock" class="sovereign-form-input" value="${p.stock !== undefined ? p.stock : 50}" min="0" />
                     </div>
                   </div>
                 </div>
               </div>
-
-              ${otherSizes.length > 0 ? `
-                <div style="margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid rgba(212, 175, 55, 0.15); font-size: 0.75rem; color: var(--gold-light);">
-                  <span>Custom / Coffret Editions: </span>
-                  ${otherSizes.map(os => `<span class="glass-pill" style="margin-left: 0.4rem;">${os.ml}ml · ₹${os.price}</span>`).join('')}
+            ` : `
+              <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.45); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.25);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
+                  <div style="font-size: 0.78rem; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">
+                    🏺 Flacon Editions & Volume Pricing (50ml · 100ml)
+                  </div>
+                  <span class="glass-pill" style="font-size: 0.68rem; color: var(--gold-light);">Multi-Size Vault Matrix</span>
                 </div>
-              ` : ''}
-            </div>
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 1rem;">
+                  Control pricing and inventory specifically for the <strong>50ml Signature Flacon</strong> and the <strong>100ml Grand Flacon</strong>. (Note: 8ml is exclusively available in the Sixth Sense vault set).
+                </p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                  <!-- 50ml Flacon Card -->
+                  <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; padding: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                      <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--gold-light); cursor: pointer; margin: 0;">
+                        <input type="checkbox" id="size-enabled-50" ${s50 || !isEdit ? 'checked' : ''} />
+                        <span>50ml Flacon</span>
+                      </label>
+                      <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light); border-color: rgba(212, 175, 55, 0.3);">50ml</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                      <div>
+                        <label class="sovereign-field-label" style="font-size: 0.7rem;">50ml Price (₹)</label>
+                        <input type="number" id="size-price-50" class="sovereign-form-input" value="${s50 ? s50.price : 3999}" min="0" />
+                      </div>
+                      <div>
+                        <label class="sovereign-field-label" style="font-size: 0.7rem;">50ml Stock Count</label>
+                        <input type="number" id="size-stock-50" class="sovereign-form-input" value="${s50 && s50.stock !== undefined ? s50.stock : (p.stock !== undefined ? p.stock : 50)}" min="0" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 100ml Grand Flacon Card -->
+                  <div style="background: rgba(212, 175, 55, 0.08); border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 8px; padding: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                      <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--gold-light); cursor: pointer; margin: 0;">
+                        <input type="checkbox" id="size-enabled-100" ${s100 || !isEdit ? 'checked' : ''} />
+                        <span>100ml Grand Flacon</span>
+                      </label>
+                      <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light); border-color: rgba(212, 175, 55, 0.3);">Grand</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                      <div>
+                        <label class="sovereign-field-label" style="font-size: 0.7rem;">100ml Price (₹)</label>
+                        <input type="number" id="size-price-100" class="sovereign-form-input" value="${s100 ? s100.price : (p.price || 5999)}" min="0" />
+                      </div>
+                      <div>
+                        <label class="sovereign-field-label" style="font-size: 0.7rem;">100ml Stock Count</label>
+                        <input type="number" id="size-stock-100" class="sovereign-form-input" value="${s100 && s100.stock !== undefined ? s100.stock : (p.stock !== undefined ? p.stock : 50)}" min="0" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                ${otherSizes.length > 0 ? `
+                  <div style="margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid rgba(212, 175, 55, 0.15); font-size: 0.75rem; color: var(--gold-light);">
+                    <span>Custom / Coffret Editions: </span>
+                    ${otherSizes.map(os => `<span class="glass-pill" style="margin-left: 0.4rem;">${os.ml}ml · ₹${os.price}</span>`).join('')}
+                  </div>
+                ` : ''}
+              </div>
+            `}
 
             <!-- Notes & Accords -->
             <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.4); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.2);">

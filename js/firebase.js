@@ -967,7 +967,23 @@ export class FirebaseService {
       try {
         const prodSnap = await getDocs(collection(db, "products"));
         prodSnap.forEach(d => {
-          data.products.push({ id: d.id, ...d.data() });
+          const item = { id: d.id, ...d.data() };
+          // Auto-heal discovery set / Sixth Sense if stale data exists in Firestore
+          if (item.id === 'mytholis-discovery-set') {
+            item.name = "Sixth Sense";
+            item.subtitle = "Sixth Sense";
+            item.collection = "Sixth Sense";
+            item.concentration = "Extrait de Parfum (6 × 8ml Deluxe Vials • 40% Concentration)";
+            item.sizes = [{ ml: 48, price: item.price || 3999, stock: item.stock !== undefined ? item.stock : 50 }];
+            if (item.notes) {
+              ['top', 'heart', 'base'].forEach(tier => {
+                if (Array.isArray(item.notes[tier])) {
+                  item.notes[tier] = item.notes[tier].map(s => typeof s === 'string' ? s.replace(/10ml/g, '8ml') : s);
+                }
+              });
+            }
+          }
+          data.products.push(item);
         });
         if (data.products.length > 0 && this.store) {
           this.store.setProducts(data.products);

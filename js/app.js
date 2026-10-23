@@ -3635,32 +3635,42 @@ class MytholisApp {
         return;
       }
 
-      // Read configured sizes (50ml, 100ml)
+      // Read configured sizes (50ml, 100ml or Discovery Coffret)
+      const isCoffret = prodId === 'mytholis-discovery-set' || prodId.includes('coffret') || prodId.includes('discovery') || getVal('prod-name').toLowerCase().includes('sixth sense');
       const sizes = [];
-      if (getChecked('size-enabled-50')) {
-        sizes.push({ ml: 50, price: getNum('size-price-50') || 3999, stock: getNum('size-stock-50') || 50 });
-      }
-      if (getChecked('size-enabled-100')) {
-        sizes.push({ ml: 100, price: getNum('size-price-100') || 5999, stock: getNum('size-stock-100') || 50 });
-      }
 
-      // Preserve existing custom/coffret sizes if any (e.g. 48ml for Sixth Sense)
-      const existingProd = (this.adminData.products || []).find(p => p.id === prodId) ||
-                           (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG.find(p => p.id === prodId) : null);
-      if (existingProd && Array.isArray(existingProd.sizes)) {
-        existingProd.sizes.forEach(es => {
-          if (es.ml !== 8 && es.ml !== 50 && es.ml !== 100) {
-            sizes.push(es);
-          }
-        });
+      if (isCoffret) {
+        const coffretPrice = getNum('coffret-price') || getNum('prod-price') || 3999;
+        const coffretStock = getNum('coffret-stock') || getNum('prod-stock') || 50;
+        sizes.push({ ml: 48, price: coffretPrice, stock: coffretStock });
+      } else {
+        if (getChecked('size-enabled-50')) {
+          sizes.push({ ml: 50, price: getNum('size-price-50') || 3999, stock: getNum('size-stock-50') || 50 });
+        }
+        if (getChecked('size-enabled-100')) {
+          sizes.push({ ml: 100, price: getNum('size-price-100') || 5999, stock: getNum('size-stock-100') || 50 });
+        }
+
+        // Preserve existing custom sizes if any
+        const existingProd = (this.adminData.products || []).find(p => p.id === prodId) ||
+                             (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG.find(p => p.id === prodId) : null);
+        if (existingProd && Array.isArray(existingProd.sizes)) {
+          existingProd.sizes.forEach(es => {
+            if (es.ml !== 8 && es.ml !== 48 && es.ml !== 50 && es.ml !== 60 && es.ml !== 100) {
+              sizes.push(es);
+            }
+          });
+        }
       }
 
       // Sort sizes by ml ascending
       sizes.sort((a, b) => a.ml - b.ml);
 
-      // Determine primary reference price: input or 100ml or 50ml
-      const basePrice = getNum('prod-price') || (sizes.find(s => s.ml === 100)?.price) || (sizes.find(s => s.ml === 50)?.price) || 4999;
-      const baseStock = getNum('prod-stock') || 50;
+      // Determine primary reference price: input or 100ml or 50ml or coffret
+      const basePrice = isCoffret 
+        ? (sizes[0]?.price || 3999) 
+        : (getNum('prod-price') || (sizes.find(s => s.ml === 100)?.price) || (sizes.find(s => s.ml === 50)?.price) || 4999);
+      const baseStock = isCoffret ? (sizes[0]?.stock || 50) : (getNum('prod-stock') || 50);
 
       const topNotesRaw = getVal('prod-notes-top');
       const heartNotesRaw = getVal('prod-notes-heart');
@@ -3669,20 +3679,18 @@ class MytholisApp {
 
       const prodData = {
         id: prodId,
-        name: getVal('prod-name'),
+        name: isCoffret ? 'Sixth Sense' : getVal('prod-name'),
         tagline: getVal('prod-tagline'),
         category: getVal('prod-collection') || getVal('prod-category') || 'Aromatic · Men',
-        collection: getVal('prod-collection') || 'Aromatic · Men',
+        collection: isCoffret ? 'Sixth Sense' : (getVal('prod-collection') || 'Aromatic · Men'),
         price: basePrice,
         compareAtPrice: getNum('prod-compare-price') || (basePrice + 1000),
         stock: baseStock,
         inStock: true,
-        sizes: sizes.length > 0 ? sizes : (existingProd?.sizes || [
-          { ml: 8, price: 899 },
-          { ml: 50, price: 3999 },
-          { ml: 100, price: basePrice }
-        ]),
-        concentration: getVal('prod-concentration') || 'Extrait de Parfum (40% Concentration)',
+        sizes: sizes,
+        concentration: isCoffret 
+          ? 'Extrait de Parfum (6 × 8ml Deluxe Vials • 40% Concentration)' 
+          : (getVal('prod-concentration') || 'Extrait de Parfum (40% Concentration)'),
         notes: {
           top: topNotesRaw ? topNotesRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
           heart: heartNotesRaw ? heartNotesRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
@@ -3725,25 +3733,32 @@ class MytholisApp {
         return;
       }
 
-      if (!Array.isArray(prod.sizes)) {
-        prod.sizes = [
-          { ml: 8, price: 899 },
-          { ml: 50, price: 3999 },
-          { ml: 100, price: prod.price || 5999 }
-        ];
-      }
+      const isCoffret = productId === 'mytholis-discovery-set';
 
-      const sizeObj = prod.sizes.find(s => s.ml === Number(ml));
-      if (sizeObj) {
-        sizeObj.price = priceVal;
-      } else {
-        prod.sizes.push({ ml: Number(ml), price: priceVal });
-        prod.sizes.sort((a, b) => a.ml - b.ml);
-      }
-
-      // If updating 100ml or default size, keep prod.price in sync
-      if (Number(ml) === 100 || prod.sizes.length === 1) {
+      if (isCoffret) {
+        prod.sizes = [{ ml: 48, price: priceVal }];
         prod.price = priceVal;
+      } else {
+        if (!Array.isArray(prod.sizes)) {
+          prod.sizes = [
+            { ml: 8, price: 899 },
+            { ml: 50, price: 3999 },
+            { ml: 100, price: prod.price || 5999 }
+          ];
+        }
+
+        const sizeObj = prod.sizes.find(s => s.ml === Number(ml));
+        if (sizeObj) {
+          sizeObj.price = priceVal;
+        } else {
+          prod.sizes.push({ ml: Number(ml), price: priceVal });
+          prod.sizes.sort((a, b) => a.ml - b.ml);
+        }
+
+        // If updating 100ml or default size, keep prod.price in sync
+        if (Number(ml) === 100 || prod.sizes.length === 1) {
+          prod.price = priceVal;
+        }
       }
 
       const res = await firebaseService.saveProduct({
