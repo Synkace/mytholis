@@ -64,8 +64,8 @@ class MytholisApp {
       document.documentElement.classList.add('is-native-app');
     }
 
-    // Enforce Android status bar clearance detection
-    if (/Android/i.test(navigator.userAgent) || window.Capacitor?.getPlatform?.() === 'android') {
+    // Enforce Android status bar clearance detection (Native App only)
+    if (isNative && (/Android/i.test(navigator.userAgent) || window.Capacitor?.getPlatform?.() === 'android')) {
       document.documentElement.classList.add('is-android');
     }
 
@@ -2264,7 +2264,8 @@ class MytholisApp {
       document.documentElement.style.setProperty('--announcement-height', '0px');
       return;
     }
-    const h = bar.offsetHeight || 38;
+    const rect = bar.getBoundingClientRect();
+    const h = Math.round(rect.height) || 28;
     document.documentElement.style.setProperty('--announcement-height', `${h}px`);
     document.documentElement.classList.add('has-announcement-bar');
   }

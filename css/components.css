@@ -5986,48 +5986,19 @@ div#cardsRow {
   }
 }
 
-/* Dedicated Android & Native Webview Safe-Area Clearance Overrides (when announcement bar is dismissed) */
-:not(.has-announcement-bar).is-android .header-nav,
-:not(.has-announcement-bar).platform-android .header-nav,
+/* Dedicated Native App Safe-Area Clearance Overrides (when announcement bar is dismissed) */
 :not(.has-announcement-bar).is-native-app .header-nav {
-  padding-top: max(28px, calc(env(safe-area-inset-top, 0px) + 8px)) !important;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 8px) !important;
 }
 
-:not(.has-announcement-bar).is-android .view-section,
-:not(.has-announcement-bar).platform-android .view-section,
 :not(.has-announcement-bar).is-native-app .view-section {
-  padding-top: max(78px, calc(env(safe-area-inset-top, 0px) + 64px)) !important;
-  padding-bottom: calc(100px + max(22px, calc(env(safe-area-inset-bottom, 0px) + 10px))) !important;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 60px) !important;
+  padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px)) !important;
 }
 
-.is-android body,
-.platform-android body {
-  padding-bottom: calc(105px + max(26px, calc(env(safe-area-inset-bottom, 0px) + 14px))) !important;
-}
-
-.is-android .mobile-app-bottom-nav,
-.platform-android .mobile-app-bottom-nav {
-  height: calc(58px + max(26px, calc(env(safe-area-inset-bottom, 0px) + 14px))) !important;
-  padding-bottom: max(26px, calc(env(safe-area-inset-bottom, 0px) + 14px)) !important;
-}
-
-.is-android .products-grid,
-.platform-android .products-grid {
-  padding-bottom: 3.5rem !important;
-}
-
-.is-android .floating-whatsapp-btn,
-.platform-android .floating-whatsapp-btn {
-  bottom: calc(96px + max(26px, calc(env(safe-area-inset-bottom, 0px) + 14px))) !important;
-}
-
-:not(.has-announcement-bar).is-android .hero,
-:not(.has-announcement-bar).is-android #hero-section,
-:not(.has-announcement-bar).platform-android .hero,
-:not(.has-announcement-bar).platform-android #hero-section,
 :not(.has-announcement-bar).is-native-app .hero,
 :not(.has-announcement-bar).is-native-app #hero-section {
-  padding-top: max(82px, calc(env(safe-area-inset-top, 0px) + 68px)) !important;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 64px) !important;
 }
 
 /* ==========================================================================
@@ -6191,7 +6162,7 @@ div#cardsRow {
   top: 0;
   left: 0;
   width: 100%;
-  height: var(--announcement-height, 32px);
+  height: 32px;
   background: linear-gradient(90deg, #020f0b 0%, #06281e 50%, #020f0b 100%);
   border-bottom: 1px solid rgba(212, 175, 55, 0.35);
   color: var(--gold-light);
@@ -6271,12 +6242,12 @@ div#cardsRow {
 }
 
 .has-announcement-bar .view-section {
-  padding-top: calc(90px + var(--announcement-height, 32px)) !important;
+  padding-top: calc(85px + var(--announcement-height, 32px)) !important;
 }
 
 .has-announcement-bar .hero,
 .has-announcement-bar #hero-section {
-  padding-top: calc(85px + var(--announcement-height, 32px)) !important;
+  padding-top: calc(80px + var(--announcement-height, 32px)) !important;
 }
 
 /* Tablet & Mobile Layout for Announcement Bar & Navbar */
@@ -6286,7 +6257,7 @@ div#cardsRow {
   }
 
   .mytholis-announcement-bar {
-    height: var(--announcement-height, 28px);
+    height: 28px;
     padding: 0 0.5rem;
     font-size: 0.68rem;
   }
@@ -6322,46 +6293,19 @@ div#cardsRow {
   }
 
   .has-announcement-bar .view-section {
-    padding-top: calc(var(--announcement-height, 28px) + 54px) !important;
+    padding-top: calc(var(--announcement-height, 28px) + 52px) !important;
   }
 
   .has-announcement-bar .hero,
   .has-announcement-bar #hero-section {
-    padding-top: calc(var(--announcement-height, 28px) + 50px) !important;
+    padding-top: calc(var(--announcement-height, 28px) + 48px) !important;
   }
 }
 
-/* Android & Native App Safe Area Integration */
-.is-android.has-announcement-bar .mytholis-announcement-bar,
-.platform-android.has-announcement-bar .mytholis-announcement-bar,
+/* Standalone / Native App Hardware Notch Support */
 .is-native-app.has-announcement-bar .mytholis-announcement-bar {
-  padding-top: max(22px, env(safe-area-inset-top, 0px)) !important;
-  height: calc(var(--announcement-height, 28px) + max(22px, env(safe-area-inset-top, 0px))) !important;
-  align-items: flex-end !important;
-  padding-bottom: 3px !important;
-}
-
-.is-android.has-announcement-bar .header-nav,
-.platform-android.has-announcement-bar .header-nav,
-.is-native-app.has-announcement-bar .header-nav {
-  top: var(--announcement-height, 28px) !important;
-  padding-top: 6px !important;
-  padding-bottom: 6px !important;
-}
-
-.is-android.has-announcement-bar .view-section,
-.platform-android.has-announcement-bar .view-section,
-.is-native-app.has-announcement-bar .view-section {
-  padding-top: calc(var(--announcement-height, 28px) + 54px) !important;
-}
-
-.is-android.has-announcement-bar .hero,
-.is-android.has-announcement-bar #hero-section,
-.platform-android.has-announcement-bar .hero,
-.platform-android.has-announcement-bar #hero-section,
-.is-native-app.has-announcement-bar .hero,
-.is-native-app.has-announcement-bar #hero-section {
-  padding-top: calc(var(--announcement-height, 28px) + 50px) !important;
+  padding-top: env(safe-area-inset-top, 0px) !important;
+  height: calc(28px + env(safe-area-inset-top, 0px)) !important;
 }
 
 
