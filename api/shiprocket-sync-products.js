@@ -46,57 +46,28 @@ export default async function handler(req, res) {
       'mytholis-discovery-set': { 48: '10071', 60: '10071', default: '10071' }
     };
 
-    // Default Catalog Extraits + Discovery Coffret
+    // Default Catalog Extraits (50ml & 100ml) + Discovery Coffret
     const DEFAULT_CATALOG = [
-      {
-        id: 'ash',
-        name: 'Ash - Extrait de Parfum 50ml',
-        sku: '10062',
-        price: 3999,
-        stock: 100
-      },
-      {
-        id: 'king-scar',
-        name: 'King Scar - Extrait de Parfum 50ml',
-        sku: '10012',
-        price: 3999,
-        stock: 150
-      },
-      {
-        id: 'petralux',
-        name: 'Petralux - Extrait de Parfum 50ml',
-        sku: '10022',
-        price: 3999,
-        stock: 200
-      },
-      {
-        id: 'spark',
-        name: 'Spark - Extrait de Parfum 50ml',
-        sku: '10042',
-        price: 3999,
-        stock: 110
-      },
-      {
-        id: 'oud-rion',
-        name: 'Oud Rion - Extrait de Parfum 50ml',
-        sku: '10032',
-        price: 3999,
-        stock: 130
-      },
-      {
-        id: 'wood-sera',
-        name: 'Wood Sera - Extrait de Parfum 50ml',
-        sku: '10052',
-        price: 3999,
-        stock: 90
-      },
-      {
-        id: 'mytholis-discovery-set',
-        name: 'Sixth Sense',
-        sku: '10071',
-        price: 3999,
-        stock: 250
-      }
+      // Ash
+      { id: 'ash', name: 'Ash - Extrait de Parfum 50ml', sku: '10062', price: 3999, stock: 100, weight: 0.35, height: 15 },
+      { id: 'ash', name: 'Ash - Extrait de Parfum 100ml', sku: '10063', price: 4999, stock: 60, weight: 0.55, height: 18 },
+      // King Scar
+      { id: 'king-scar', name: 'King Scar - Extrait de Parfum 50ml', sku: '10012', price: 3999, stock: 150, weight: 0.35, height: 15 },
+      { id: 'king-scar', name: 'King Scar - Extrait de Parfum 100ml', sku: '10013', price: 5999, stock: 100, weight: 0.55, height: 18 },
+      // Petralux
+      { id: 'petralux', name: 'Petralux - Extrait de Parfum 50ml', sku: '10022', price: 3999, stock: 200, weight: 0.35, height: 15 },
+      { id: 'petralux', name: 'Petralux - Extrait de Parfum 100ml', sku: '10023', price: 5999, stock: 100, weight: 0.55, height: 18 },
+      // Spark
+      { id: 'spark', name: 'Spark - Extrait de Parfum 50ml', sku: '10042', price: 3999, stock: 110, weight: 0.35, height: 15 },
+      { id: 'spark', name: 'Spark - Extrait de Parfum 100ml', sku: '10043', price: 5499, stock: 75, weight: 0.55, height: 18 },
+      // Oud Rion
+      { id: 'oud-rion', name: 'Oud Rion - Extrait de Parfum 50ml', sku: '10032', price: 3999, stock: 130, weight: 0.35, height: 15 },
+      { id: 'oud-rion', name: 'Oud Rion - Extrait de Parfum 100ml', sku: '10033', price: 5499, stock: 75, weight: 0.55, height: 18 },
+      // Wood Sera
+      { id: 'wood-sera', name: 'Wood Sera - Extrait de Parfum 50ml', sku: '10052', price: 3999, stock: 90, weight: 0.35, height: 15 },
+      { id: 'wood-sera', name: 'Wood Sera - Extrait de Parfum 100ml', sku: '10053', price: 5499, stock: 60, weight: 0.55, height: 18 },
+      // Sixth Sense Discovery Coffret
+      { id: 'mytholis-discovery-set', name: 'Sixth Sense Discovery Coffret (6x8ml)', sku: '10071', price: 3999, stock: 250, weight: 0.45, height: 6 }
     ];
 
     let itemsToSync = [];
@@ -116,30 +87,62 @@ export default async function handler(req, res) {
     }
 
     if (customItems && customItems.length > 0) {
-      itemsToSync = customItems.map(p => {
+      customItems.forEach(p => {
         const id = p.id || p.handle || '';
-        const defaultSku = VARIANT_MAP[id]?.default || VARIANT_MAP[id]?.[50] || p.sku || String(p.id);
-        let rawName = (p.name || p.title || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-        if (id === 'mytholis-discovery-set') {
-          rawName = 'Sixth Sense';
-        } else if (!rawName.includes('50ml')) {
-          rawName = `${rawName} 50ml`;
+        const isCoffret = id === 'mytholis-discovery-set' || (p.name && p.name.toLowerCase().includes('sixth sense'));
+        const cleanBaseName = (p.name || p.title || '')
+          .replace(/<[^>]*>/g, ' ')
+          .replace(/Extrait\s*de\s*Parfum/gi, '')
+          .replace(/50ml|100ml|60ml|8ml|\(.*?\)/gi, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+        if (isCoffret) {
+          itemsToSync.push({
+            sku: '10071',
+            name: 'Sixth Sense Discovery Coffret (6x8ml)',
+            type: 'Single',
+            category_code: 'default',
+            hsn: '33030040',
+            mrp: Number(p.price || 3999),
+            weight: 0.45,
+            length: 18,
+            breadth: 14,
+            height: 6,
+            qty: Number(p.stock || p.quantity || 250)
+          });
+        } else {
+          // Generate both 50ml and 100ml variant products for Shiprocket
+          const sizes = Array.isArray(p.sizes) && p.sizes.length > 0 
+            ? p.sizes.filter(s => s.ml === 50 || s.ml === 100) 
+            : [{ ml: 50, price: 3999, stock: 100 }, { ml: 100, price: p.price || 5999, stock: 75 }];
+
+          // If product only had one size object or none, ensure both 50ml and 100ml exist
+          if (!sizes.some(s => s.ml === 50)) {
+            sizes.push({ ml: 50, price: 3999, stock: Number(p.stock || 100) });
+          }
+          if (!sizes.some(s => s.ml === 100)) {
+            sizes.push({ ml: 100, price: Number(p.price || 5499), stock: Number(p.stock || 75) });
+          }
+
+          sizes.forEach(s => {
+            const ml = Number(s.ml);
+            const sku = VARIANT_MAP[id]?.[ml] || `${id}-${ml}`;
+            itemsToSync.push({
+              sku: String(sku),
+              name: `${cleanBaseName} - Extrait de Parfum ${ml}ml`,
+              type: 'Single',
+              category_code: 'default',
+              hsn: '33030040',
+              mrp: Number(s.price || (ml === 100 ? (p.price || 5499) : 3999)),
+              weight: ml === 100 ? 0.55 : 0.35,
+              length: 12,
+              breadth: 12,
+              height: ml === 100 ? 18 : 15,
+              qty: Number(s.stock !== undefined ? s.stock : (p.stock || 100))
+            });
+          });
         }
-        const price = Number(p.price || (p.sizes && p.sizes.find(s => s.ml === 50)?.price) || 3999);
-        const stock = Number(p.stock || p.quantity || 100);
-        return {
-          sku: String(p.sku || defaultSku),
-          name: rawName,
-          type: 'Single',
-          category_code: 'default',
-          hsn: '33030040',
-          mrp: price,
-          weight: 0.35,
-          length: 12,
-          breadth: 12,
-          height: 15,
-          qty: stock
-        };
       });
     } else {
       itemsToSync = DEFAULT_CATALOG.map(p => ({
@@ -149,10 +152,10 @@ export default async function handler(req, res) {
         category_code: 'default',
         hsn: '33030040',
         mrp: p.price,
-        weight: 0.35,
+        weight: p.weight || 0.35,
         length: 12,
         breadth: 12,
-        height: 15,
+        height: p.height || 15,
         qty: p.stock
       }));
     }
