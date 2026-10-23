@@ -53,6 +53,11 @@ class MytholisApp {
   }
 
   init() {
+    // Enforce Android status bar clearance detection
+    if (/Android/i.test(navigator.userAgent) || window.Capacitor?.getPlatform?.() === 'android') {
+      document.documentElement.classList.add('is-android');
+    }
+
     // Initialize Canvas Background
     this.bgAnimation = new MytholisBackground('bg-canvas');
 
@@ -422,18 +427,7 @@ class MytholisApp {
     const navItems = bottomNav.querySelectorAll('.mobile-nav-item');
     navItems.forEach(item => item.classList.remove('active'));
 
-    const effectiveProdId = paramId || store.selectedProductId;
-
-    if (viewName === 'home') {
-      const el = bottomNav.querySelector('[data-nav="home"]');
-      if (el) el.classList.add('active');
-    } else if (viewName === 'collections') {
-      const el = bottomNav.querySelector('[data-nav="collections"]');
-      if (el) el.classList.add('active');
-    } else if (viewName === 'product' && effectiveProdId === 'mytholis-discovery-set') {
-      const el = bottomNav.querySelector('[data-nav="sixth-sense"]');
-      if (el) el.classList.add('active');
-    } else if (viewName === 'product') {
+    if (viewName === 'collections' || viewName === 'product') {
       const el = bottomNav.querySelector('[data-nav="collections"]');
       if (el) el.classList.add('active');
     } else if (viewName === 'circle-of-legends' || viewName === 'circle-of-legends-rules') {
@@ -2537,11 +2531,29 @@ class MytholisApp {
   renderCartDrawerContent() { this.renderCartModalContent(); }
 
   updateBadges() {
+    const cartCount = store.getCartCount();
     const cartBadge = document.getElementById('cart-count-badge');
-    if (cartBadge) cartBadge.innerText = store.getCartCount();
+    if (cartBadge) {
+      cartBadge.innerText = cartCount;
+      cartBadge.style.display = cartCount > 0 ? 'flex' : 'none';
+    }
+    const cartBadgeMobile = document.getElementById('cart-count-badge-mobile');
+    if (cartBadgeMobile) {
+      cartBadgeMobile.innerText = cartCount;
+      cartBadgeMobile.style.display = cartCount > 0 ? 'flex' : 'none';
+    }
 
+    const wishlistCount = store.wishlist ? store.wishlist.length : 0;
     const wishlistBadge = document.getElementById('wishlist-count-badge');
-    if (wishlistBadge) wishlistBadge.innerText = store.wishlist.length;
+    if (wishlistBadge) {
+      wishlistBadge.innerText = wishlistCount;
+      wishlistBadge.style.display = wishlistCount > 0 ? 'flex' : 'none';
+    }
+    const wishlistBadgeMobile = document.getElementById('wishlist-count-badge-mobile');
+    if (wishlistBadgeMobile) {
+      wishlistBadgeMobile.innerText = wishlistCount;
+      wishlistBadgeMobile.style.display = wishlistCount > 0 ? 'flex' : 'none';
+    }
   }
 
   showToast(message) {
