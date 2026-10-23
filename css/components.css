@@ -6026,5 +6026,49 @@ div#cardsRow {
   padding-top: max(100px, calc(env(safe-area-inset-top, 0px) + 90px)) !important;
 }
 
+/* ==========================================================================
+   CAPACITOR NATIVE ANDROID APP - FOOTER SUPPRESSION & CLEAN BOTTOM PADDING
+   (Keeps full footer on Desktop/Mobile Web for PayU/Razorpay KYC compliance)
+   ========================================================================== */
+.is-native-app footer,
+.is-native-app .site-footer,
+.is-native-app .luxury-footer,
+.is-native-app #footer {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+.is-native-app body {
+  padding-bottom: calc(75px + max(26px, calc(env(safe-area-inset-bottom, 0px) + 14px))) !important;
+}
+
+.is-native-app .view-section {
+  padding-bottom: calc(85px + max(26px, calc(env(safe-area-inset-bottom, 0px) + 14px))) !important;
+}
+
+.is-native-app .products-grid {
+  padding-bottom: 2.5rem !important;
+}
+
+/* Compact Collapsible Policies Accordion (Android & Google Play Compliance) */
+.profile-policies-accordion {
+  transition: border-color 0.3s ease;
+}
+
+.profile-policies-accordion details summary::-webkit-details-marker {
+  display: none;
+}
+
+.profile-policies-accordion details[open] summary {
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
 
 

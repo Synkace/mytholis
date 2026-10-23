@@ -53,6 +53,17 @@ class MytholisApp {
   }
 
   init() {
+    // Detect Capacitor Native App (Android / iOS) vs Web Browser
+    const isNative = (typeof window.Capacitor !== 'undefined' && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) ||
+      window.location.protocol === 'capacitor:' ||
+      window.location.protocol === 'ionic:' ||
+      /wv|WebView|Capacitor/i.test(navigator.userAgent) ||
+      (window.Capacitor && window.Capacitor.getPlatform && window.Capacitor.getPlatform() === 'android');
+
+    if (isNative) {
+      document.documentElement.classList.add('is-native-app');
+    }
+
     // Enforce Android status bar clearance detection
     if (/Android/i.test(navigator.userAgent) || window.Capacitor?.getPlatform?.() === 'android') {
       document.documentElement.classList.add('is-android');

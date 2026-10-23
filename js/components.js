@@ -2516,6 +2516,49 @@ const Components = {
     `;
   },
 
+  /* Compact Collapsible Policies & Support Accordion for Android App & Compliance */
+  renderPoliciesAccordion() {
+    return `
+      <div class="profile-policies-accordion liquid-glass-card" style="margin-top: 1.5rem; border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 10px; overflow: hidden; text-align: left;">
+        <details style="cursor: pointer;">
+          <summary style="padding: 0.9rem 1.2rem; font-size: 0.85rem; font-weight: 600; color: var(--gold-light); display: flex; align-items: center; justify-content: space-between; user-select: none; list-style: none;">
+            <span style="display: flex; align-items: center; gap: 0.55rem;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>Policies & Concierge Support</span>
+            </span>
+            <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">View ▾</span>
+          </summary>
+          <div style="padding: 1rem 1.2rem; border-top: 1px solid rgba(212, 175, 55, 0.15); background: rgba(0, 0, 0, 0.25);">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; margin-bottom: 0.9rem;">
+              <button type="button" class="btn btn-glass" style="font-size: 0.74rem; padding: 0.5rem 0.7rem; text-align: left; justify-content: flex-start; gap: 0.35rem;" onclick="app.openPolicyModal('privacy')">
+                <span>🔒</span> Privacy Policy
+              </button>
+              <button type="button" class="btn btn-glass" style="font-size: 0.74rem; padding: 0.5rem 0.7rem; text-align: left; justify-content: flex-start; gap: 0.35rem;" onclick="app.openPolicyModal('terms')">
+                <span>📜</span> Terms of Service
+              </button>
+              <button type="button" class="btn btn-glass" style="font-size: 0.74rem; padding: 0.5rem 0.7rem; text-align: left; justify-content: flex-start; gap: 0.35rem;" onclick="app.openPolicyModal('shipping')">
+                <span>🚚</span> Shipping Policy
+              </button>
+              <button type="button" class="btn btn-glass" style="font-size: 0.74rem; padding: 0.5rem 0.7rem; text-align: left; justify-content: flex-start; gap: 0.35rem;" onclick="app.openPolicyModal('refund')">
+                <span>🔄</span> Returns & Refunds
+              </button>
+              <button type="button" class="btn btn-glass" style="font-size: 0.74rem; padding: 0.5rem 0.7rem; text-align: left; justify-content: flex-start; gap: 0.35rem;" onclick="app.navigateTo('circle-of-legends-rules')">
+                <span>👑</span> Loyalty Charter
+              </button>
+              <button type="button" class="btn btn-glass" style="font-size: 0.74rem; padding: 0.5rem 0.7rem; text-align: left; justify-content: flex-start; gap: 0.35rem;" onclick="window.open('https://wa.me/917770009170', '_blank')">
+                <span>💬</span> WhatsApp Concierge
+              </button>
+            </div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.5; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 0.7rem;">
+              <strong>Mytholis Luxury Fragrances Pvt. Ltd.</strong> · GC/1428-A · GSTIN: 24AAECM4821P1ZT<br/>
+              Mayfair, London UK · Ahmedabad, Gujarat 382330 India · Concierge: +91 777000 9170
+            </div>
+          </div>
+        </details>
+      </div>
+    `;
+  },
+
   /* Render Dedicated User Profile Page View */
   renderProfile() {
     if (!store.isUserLoggedIn()) {
@@ -2539,6 +2582,7 @@ const Components = {
               </button>
             </div>
           </div>
+          ${this.renderPoliciesAccordion()}
         </div>
       `;
     }
@@ -2740,6 +2784,9 @@ const Components = {
             <span>Log Out of Session</span>
           </button>
         </div>
+
+        <!-- Collapsible Policies & Support Row for Android App & Compliance -->
+        ${this.renderPoliciesAccordion()}
       </div>
     `;
   },
@@ -3125,6 +3172,7 @@ const Components = {
           </div>
         ` : ''}
 
+        ${this.renderPoliciesAccordion()}
       </div>
 
       <div class="modal-footer" style="display: flex; gap: 0.6rem; flex-wrap: wrap;">

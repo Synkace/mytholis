@@ -11,4 +11,8 @@ android/.idea/
 .agents/
 skills-lock.json
 *.apk
+android/*.xml
+android/.descriptions.xml
+android/.xml
+
 
