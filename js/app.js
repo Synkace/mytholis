@@ -2574,7 +2574,7 @@ class MytholisApp {
   shareReferralWhatsApp() {
     const code = store.getUserReferralCode();
     const link = store.getUserReferralLink();
-    const text = `Step into House Mytholis Haute Parfumerie. Use my private invitation key *${code}* to claim ₹500 off your first handcrafted extrait de parfum flacon:\n\n${link}`;
+    const text = `Step into House Mytholis Haute Parfumerie. Use my private invitation key *${code}* to claim ₹500 off your first extrait de parfum flacon:\n\n${link}`;
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
   }
 

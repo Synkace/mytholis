@@ -957,7 +957,7 @@ const Components = {
               <img src="${product.image}" alt="${this.cleanText(product.name)}" class="main-bottle-view-img tilt-element" id="transparent-bottle-img" />
             </div>
             <div class="subtitle" style="margin-top: 2rem; font-size: 1rem;">
-              Handcrafted Crystal Flacon
+              Crystal Flacon
             </div>
             <div style="margin-top: 0.5rem;">
               <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-primary);">${product.concentration}</span>

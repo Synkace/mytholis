@@ -146,7 +146,7 @@ const LOYALTY_REWARDS = [
   {
     id: "FREE_15ML",
     title: "Exclusive 15ml Vault Flacon",
-    desc: "Handcrafted miniature flacon with gold seal wax cap.",
+    desc: "Miniature crystal flacon with gold seal wax cap.",
     minLevel: 3,
     cost: 1100,
     type: "gift",
