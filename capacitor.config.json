@@ -5,6 +5,6 @@
   "backgroundColor": "#020C08",
   "android": {
     "backgroundColor": "#020C08",
-    "allowMixedContent": true
+    "allowMixedContent": false
   }
 }

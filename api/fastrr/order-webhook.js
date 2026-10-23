@@ -27,14 +27,19 @@ export default async function handler(req, res) {
     const payload = req.body || {};
     console.log('[Fastrr Order Webhook] Received event:', JSON.stringify(payload).slice(0, 500));
 
-    // Optional HMAC validation
+    // Enforce HMAC validation
     const hmacHeader = req.headers['x-api-hmac-sha256'];
-    if (hmacHeader && FASTRR_SECRET_KEY) {
+    if (FASTRR_SECRET_KEY) {
+      if (!hmacHeader) {
+        console.warn('[Fastrr Order Webhook] Missing X-Api-HMAC-SHA256 signature.');
+        return res.status(401).json({ success: false, error: 'Unauthorized: Missing HMAC signature' });
+      }
       const calculatedHmac = crypto.createHmac('sha256', FASTRR_SECRET_KEY)
         .update(typeof req.body === 'string' ? req.body : JSON.stringify(req.body))
         .digest('base64');
       if (calculatedHmac !== hmacHeader) {
-        console.warn('[Fastrr Order Webhook] HMAC mismatch, processing in permissive mode.');
+        console.warn('[Fastrr Order Webhook] HMAC mismatch! Rejecting request.');
+        return res.status(401).json({ success: false, error: 'Unauthorized: Invalid HMAC signature' });
       }
     }
 

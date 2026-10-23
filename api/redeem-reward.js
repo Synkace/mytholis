@@ -1,5 +1,15 @@
 import { adminAuth, adminDb } from './_firebaseAdmin.js';
 
+// Authoritative Server-Side Loyalty Reward Table
+const SERVER_REWARDS = {
+  "FREE_8ML": { cost: 500, amount: 0, type: "gift", title: "Free 8ml Deluxe Travel Spray" },
+  "DISC_800": { cost: 800, amount: 800, type: "discount", title: "₹800 Off Voucher" },
+  "FREE_15ML": { cost: 1100, amount: 0, type: "gift", title: "Exclusive 15ml Vault Flacon" },
+  "DISC_2500": { cost: 2500, amount: 2500, type: "discount", title: "₹2,500 Off Voucher" },
+  "FREE_50ML": { cost: 3500, amount: 0, type: "gift", title: "Free 50ml Extrait Bottle" },
+  "FREE_100ML": { cost: 5000, amount: 0, type: "gift", title: "Free 100ml Extrait Bottle" }
+};
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -27,10 +37,12 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Invalid authentication token' });
   }
 
-  const { rewardId, cost, rewardTitle, rewardType, amount, minOrder } = req.body || {};
-  if (!rewardId) {
-    return res.status(400).json({ error: 'Missing rewardId' });
+  const { rewardId } = req.body || {};
+  if (!rewardId || !SERVER_REWARDS[rewardId]) {
+    return res.status(400).json({ error: 'Invalid or unsupported rewardId' });
   }
+
+  const rewardConfig = SERVER_REWARDS[rewardId];
 
   try {
     const userRef = adminDb.collection('users').doc(decoded.uid);
@@ -39,7 +51,7 @@ export default async function handler(req, res) {
     const loyalty = userData.loyalty || {};
 
     const currentPoints = loyalty.spendable_mythos || 0;
-    const requiredCost = Number(cost) || 0;
+    const requiredCost = rewardConfig.cost;
 
     if (currentPoints < requiredCost) {
       return res.status(400).json({ error: 'Insufficient Spendable Mythos' });
@@ -50,10 +62,10 @@ export default async function handler(req, res) {
     const newReward = {
       code: uniqueCode,
       id: rewardId,
-      title: rewardTitle || 'Vault Concession',
-      type: rewardType || 'discount',
-      amount: Number(amount) || 0,
-      minOrder: Number(minOrder) || 0,
+      title: rewardConfig.title,
+      type: rewardConfig.type,
+      amount: rewardConfig.amount,
+      minOrder: 0,
       used: false,
       createdAt: new Date().toISOString()
     };

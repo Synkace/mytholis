@@ -31,18 +31,23 @@ export default async function handler(req, res) {
 
     const merchantSalt = (process.env.PAYU_MERCHANT_SALT || '').trim();
 
-    // Verify reverse hash if salt is present
-    let isHashValid = true;
-    if (merchantSalt && hash) {
+    // Verify reverse hash (strictly fail-closed: must have merchantSalt, hash, and matching calculation)
+    let isHashValid = false;
+    if (merchantSalt && hash && key) {
       let reverseSequence = `${merchantSalt}|${status}||||||${udf5}|${udf4}|${udf3}|${udf2}|${udf1}|${email}|${firstname}|${productinfo}|${amount}|${txnid}|${key}`;
       if (additionalCharges) {
         reverseSequence = `${additionalCharges}|` + reverseSequence;
       }
       const expectedHash = crypto.createHash('sha512').update(reverseSequence).digest('hex').toLowerCase();
-      if (expectedHash !== String(hash).toLowerCase()) {
+      if (expectedHash === String(hash).toLowerCase()) {
+        isHashValid = true;
+      } else {
         console.warn('[PayU Callback] Hash mismatch! Expected:', expectedHash, 'Received:', hash);
         isHashValid = false;
       }
+    } else {
+      console.warn('[PayU Callback] Rejecting unauthenticated or unsigned callback payload.');
+      isHashValid = false;
     }
 
     const isSuccess = (status === 'success' || status === 'captured') && isHashValid;
