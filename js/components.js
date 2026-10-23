@@ -5,6 +5,12 @@
    ========================================================================== */
 
 const Components = {
+  /* Helper to strip HTML tags and quotes from attribute values */
+  cleanText(str) {
+    if (!str) return '';
+    return String(str).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').replace(/"/g, '&quot;').trim();
+  },
+
   /* Render Product Card with 3D Pop-out Overlap, Wear Metrics & Instant Quick Add */
   renderProductCard(product) {
     const isWishlisted = store.isInWishlist(product.id);
@@ -30,7 +36,7 @@ const Components = {
           </svg>
         </button>
         <div class="product-card-img-wrap bottle-pedestal-glow">
-          <img src="${product.image}" alt="${product.name}" class="product-card-img" loading="lazy" decoding="async" />
+          <img src="${product.image}" alt="${this.cleanText(product.name)}" class="product-card-img" loading="lazy" decoding="async" />
         </div>
         <div class="product-card-info">
           <span class="product-card-collection">${product.collection}</span>
@@ -136,7 +142,7 @@ const Components = {
           <div class="notched-card-media">
             <span class="notched-badge-pill">${badgeText}</span>
             <div class="notched-media-halo"></div>
-            <img src="${product.image}" alt="${product.name}" class="notched-bottle-img" loading="lazy" />
+            <img src="${product.image}" alt="${this.cleanText(product.name)}" class="notched-bottle-img" loading="lazy" />
             <div class="notched-bottle-shadow"></div>
           </div>
 
@@ -173,7 +179,7 @@ const Components = {
         <!-- Docked Cart Button in Notch -->
         <button class="notched-docked-cart-btn" 
                 onclick="event.stopPropagation(); app.addProductToCart('${product.id}')"
-                title="Add ${product.name} to Cart">
+                title="Add ${this.cleanText(product.name)} to Cart">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="9" cy="21" r="1" fill="#D4AF37"></circle>
             <circle cx="20" cy="21" r="1" fill="#D4AF37"></circle>
@@ -948,7 +954,7 @@ const Components = {
           <div class="product-showcase-glass liquid-glass-card bottle-pedestal-glow">
             <span class="glass-pill product-card-badge" style="top: 20px; left: 20px;">${product.tag}</span>
             <div class="transparent-bottle-frame">
-              <img src="${product.image}" alt="${product.name}" class="main-bottle-view-img tilt-element" id="transparent-bottle-img" />
+              <img src="${product.image}" alt="${this.cleanText(product.name)}" class="main-bottle-view-img tilt-element" id="transparent-bottle-img" />
             </div>
             <div class="subtitle" style="margin-top: 2rem; font-size: 1rem;">
               Handcrafted Crystal Flacon
@@ -1444,7 +1450,7 @@ const Components = {
           <div class="modal-items-list">
             ${items.map(p => `
               <div class="modal-product-item-card liquid-glass-card">
-                <img src="${p.image}" alt="${p.name}" class="modal-product-item-img" />
+                <img src="${p.image}" alt="${this.cleanText(p.name)}" class="modal-product-item-img" />
                 <div class="modal-product-item-info">
                   <span class="glass-pill" style="font-size: 0.62rem; padding: 0.15rem 0.5rem; margin-bottom: 0.2rem; display: inline-block;">${p.subtitle}</span>
                   <h5 class="modal-product-item-name">${p.name}</h5>
@@ -1619,7 +1625,7 @@ const Components = {
             return `
               <div class="codex-card ${isUnlocked ? 'illuminated' : 'locked'} liquid-glass-card">
                 <div class="codex-bottle-wrap">
-                  <img src="${product.image}" alt="${product.name}" class="codex-bottle-img" loading="lazy" decoding="async" />
+                  <img src="${product.image}" alt="${this.cleanText(product.name)}" class="codex-bottle-img" loading="lazy" decoding="async" />
                 </div>
                 <div>
                   <h5 style="font-family: var(--font-serif-title); font-size: 0.95rem; margin-bottom: 0.2rem; color: var(--gold-light);">${product.name}</h5>
@@ -3804,7 +3810,7 @@ const Components = {
                   <div class="admin-inventory-card liquid-glass-card">
                     <div>
                       <div style="display: flex; gap: 0.8rem; align-items: center; margin-bottom: 0.8rem;">
-                        <img src="${product.image}" alt="${product.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);" />
+                        <img src="${product.image}" alt="${this.cleanText(product.name)}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);" />
                         <div>
                           <h4 style="font-size: 0.95rem; color: var(--text-main); margin: 0;">${product.name}</h4>
                           <span style="font-size: 0.72rem; color: var(--gold-light);">${product.subtitle || ''}</span>

@@ -276,7 +276,7 @@ export const AdminComponents = {
                     <tbody>
                       ${lowStockItems.map(p => `
                         <tr>
-                          <td><img src="${p.image || 'assets/product/1kingscar.webp'}" class="sovereign-table-img" alt="${p.name}" /></td>
+                          <td><img src="${p.image || 'assets/product/1kingscar.webp'}" class="sovereign-table-img" alt="${(p.name || '').replace(/<[^>]*>/g, ' ').replace(/"/g, '&quot;').trim()}" /></td>
                           <td><strong style="color: var(--gold-light);">${p.name}</strong></td>
                           <td><span style="color: var(--text-muted); font-size: 0.78rem;">${p.collection || p.subtitle || 'Signature'}</span></td>
                           <td><strong style="color: #EF4444; font-size: 0.95rem;">${p.stock !== undefined ? p.stock : 50} left</strong></td>
@@ -536,7 +536,7 @@ export const AdminComponents = {
                     return `
                     <tr>
                       <td>
-                        <img src="${prod.image || 'assets/product/1kingscar.webp'}" class="sovereign-table-img" alt="${prod.name}" />
+                        <img src="${prod.image || 'assets/product/1kingscar.webp'}" class="sovereign-table-img" alt="${(prod.name || '').replace(/<[^>]*>/g, ' ').replace(/"/g, '&quot;').trim()}" />
                       </td>
                       <td>
                         <strong style="color: var(--gold-light); font-size: 0.95rem;">${prod.name}</strong>
@@ -556,7 +556,7 @@ export const AdminComponents = {
                                 <span style="font-size: 0.7rem; color: var(--text-muted);">₹</span>
                                 <input type="number" class="sovereign-inline-input" style="width: 78px; padding: 0.18rem 0.35rem; font-size: 0.78rem; text-align: right;" 
                                        value="${s.price || 0}" 
-                                       title="Edit ${s.ml}ml price for ${prod.name}"
+                                       title="Edit ${s.ml}ml price for ${(prod.name || '').replace(/<[^>]*>/g, ' ').replace(/"/g, '&quot;').trim()}"
                                        onchange="app.updateProductSizePrice('${prod.id}', ${s.ml}, this.value)" />
                               </div>
                             </div>
