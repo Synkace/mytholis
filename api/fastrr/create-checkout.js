@@ -29,7 +29,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { items = [], redirect_url } = req.body || {};
+    const { items = [], coupon_code, redirect_url } = req.body || {};
 
     if (!items || items.length === 0) {
       return res.status(400).json({ success: false, error: 'Cart is empty' });
@@ -52,10 +52,17 @@ export default async function handler(req, res) {
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const finalRedirectUrl = redirect_url || `${protocol}://${host}/#track-order?checkout=fastrr`;
 
+    const cartData = {
+      items: fastrrItems
+    };
+
+    if (coupon_code) {
+      cartData.coupon_code = String(coupon_code).toUpperCase().trim();
+      cartData.discount_code = String(coupon_code).toUpperCase().trim();
+    }
+
     const payload = {
-      cart_data: {
-        items: fastrrItems
-      },
+      cart_data: cartData,
       redirect_url: finalRedirectUrl,
       timestamp: new Date().toISOString()
     };

@@ -54,8 +54,14 @@ const fastrrApiMiddleware = (req, res, next) => {
           return { variant_id: String(variantId || '10022'), quantity: parseInt(item.quantity, 10) || 1 };
         });
 
+        const cartData = { items: fastrrItems };
+        if (data.coupon_code) {
+          cartData.coupon_code = String(data.coupon_code).toUpperCase().trim();
+          cartData.discount_code = String(data.coupon_code).toUpperCase().trim();
+        }
+
         const payload = {
-          cart_data: { items: fastrrItems },
+          cart_data: cartData,
           redirect_url: data.redirect_url || 'https://mytholis.com/#track-order',
           timestamp: new Date().toISOString()
         };

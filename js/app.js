@@ -1698,8 +1698,17 @@ class MytholisApp {
         };
       });
 
+      const appliedReward = store.getAppliedReward ? store.getAppliedReward() : null;
+      const activeCoupon = appliedReward ? appliedReward.code : (store.loyalty?.applied_reward_code || 'FIRST20');
+
+      const cartData = { items: fastrrItems };
+      if (activeCoupon) {
+        cartData.coupon_code = activeCoupon;
+        cartData.discount_code = activeCoupon;
+      }
+
       const payload = {
-        cart_data: { items: fastrrItems },
+        cart_data: cartData,
         redirect_url: redirectUrl,
         timestamp: new Date().toISOString()
       };
@@ -1748,6 +1757,13 @@ class MytholisApp {
   async initiateFastrrCheckout(items, event, fallbackUrl = window.location.origin + '/#track-order') {
     this.showToast('Connecting to Fastrr 1-Click Checkout...');
 
+    // Resolve active coupon (e.g. FIRST20) and sync cookie for Fastrr's client script
+    const appliedReward = store.getAppliedReward ? store.getAppliedReward() : null;
+    const activeCoupon = appliedReward ? appliedReward.code : (store.loyalty?.applied_reward_code || 'FIRST20');
+    if (activeCoupon) {
+      document.cookie = `discount_code=${encodeURIComponent(activeCoupon)}; path=/; max-age=86400; SameSite=Lax`;
+    }
+
     // Clear any previous Fastrr containers to prevent CHECKOUT_ALREADY_INIT collision
     document.getElementById('fastrr-main-container')?.remove();
     document.getElementById('headless-container')?.remove();
@@ -1763,6 +1779,7 @@ class MytholisApp {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             items,
+            coupon_code: activeCoupon,
             redirect_url: fallbackUrl
           })
         });
