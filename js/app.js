@@ -435,6 +435,7 @@ class MytholisApp {
     });
 
     this.updateMobileBottomNav(viewName, paramId);
+    this.restoreAnnouncementBar();
     this.renderCurrentView();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -2240,16 +2241,19 @@ class MytholisApp {
     }
   }
 
-  initAnnouncementBar() {
-    const isDismissed = sessionStorage.getItem('mytholis_hide_announcement') === 'true';
+  restoreAnnouncementBar() {
     const bar = document.getElementById('mytholis-announcement-bar');
-    if (isDismissed && bar) {
-      bar.style.display = 'none';
-      document.documentElement.classList.remove('has-announcement-bar');
-      document.documentElement.style.setProperty('--announcement-height', '0px');
-      return;
+    if (bar) {
+      bar.style.display = 'flex';
+      bar.style.transform = 'translateY(0)';
+      bar.style.opacity = '1';
+      this.updateAnnouncementBarHeight();
     }
-    this.updateAnnouncementBarHeight();
+  }
+
+  initAnnouncementBar() {
+    // Always show on page refresh / load
+    this.restoreAnnouncementBar();
   }
 
   updateAnnouncementBarHeight() {
@@ -2273,7 +2277,6 @@ class MytholisApp {
         bar.style.display = 'none';
         document.documentElement.classList.remove('has-announcement-bar');
         document.documentElement.style.setProperty('--announcement-height', '0px');
-        sessionStorage.setItem('mytholis_hide_announcement', 'true');
       }, 350);
     }
   }
