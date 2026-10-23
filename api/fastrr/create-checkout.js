@@ -12,7 +12,7 @@ const VARIANT_MAP = {
   'spark': { 8: '10041', 50: '10042', 100: '10043' },
   'wood-sera': { 8: '10051', 50: '10052', 100: '10053' },
   'ash': { 8: '10061', 50: '10062', 100: '10063' },
-  'mytholis-discovery-set': { 60: '10071', default: '10071' }
+  'mytholis-discovery-set': { 48: '10071', 60: '10071', default: '10071' }
 };
 
 export default async function handler(req, res) {

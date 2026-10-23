@@ -1323,6 +1323,22 @@ const Components = {
               <span class="modal-section-hint">Margin guardrails applied</span>
             </div>
 
+            <!-- First-Time Patron Offer (20% OFF) -->
+            ${!appliedReward ? `
+              <div class="first-buyer-offer-banner liquid-glass-card" style="background: linear-gradient(135deg, rgba(212,175,55,0.18), rgba(4,24,18,0.85)); border: 1px solid rgba(212, 175, 55, 0.45); padding: 0.75rem 0.9rem; border-radius: 8px; margin-bottom: 0.8rem; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <span style="font-size: 1.1rem;">👑</span>
+                  <div>
+                    <div style="font-size: 0.78rem; font-weight: 700; color: var(--gold-light);">First-Time Patron Offer: 20% OFF</div>
+                    <div style="font-size: 0.68rem; color: var(--text-muted);">Enjoy 20% off your first order with code <strong style="color: var(--gold-primary);">FIRST20</strong></div>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-gold" style="font-size: 0.68rem; padding: 0.35rem 0.7rem; white-space: nowrap;" onclick="app.applyCartPromoCode('FIRST20')">
+                  Apply 20% ✦
+                </button>
+              </div>
+            ` : ''}
+
             ${appliedReward ? `
               <div class="applied-voucher-banner" style="background: rgba(212, 175, 55, 0.12); border: 1px solid var(--gold-primary); padding: 0.8rem; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; margin-bottom: 0.6rem;">
                 <div>

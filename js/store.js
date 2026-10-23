@@ -261,12 +261,18 @@ class MytholisStore {
       payuClientId: 'b2b6ab2e737de82833c843320ddbceb9b5d34eca503c59af5dacc3d3b3604eeb',
       payuClientSecret: '3ea892b02b0122bcdd4dcea354f0d617658aadb98a78642b17dc2809500c646a',
       promoCodes: [
+        { code: 'FIRST20', discountType: 'percent', value: 20, minOrder: 0, active: true },
+        { code: 'WELCOME20', discountType: 'percent', value: 20, minOrder: 0, active: true },
         { code: 'LEGEND10', discountType: 'percent', value: 10, minOrder: 1999, active: true },
         { code: 'ROYAL500', discountType: 'flat', value: 500, minOrder: 3999, active: true }
       ]
     };
     const loadedSettings = this.loadLocalStorage('mytholis_global_settings', defaultGlobalSettings);
     this.globalSettings = Object.assign({}, defaultGlobalSettings, loadedSettings);
+    // Ensure FIRST20 is always present in promoCodes
+    if (Array.isArray(this.globalSettings.promoCodes) && !this.globalSettings.promoCodes.some(p => p.code === 'FIRST20')) {
+      this.globalSettings.promoCodes.unshift({ code: 'FIRST20', discountType: 'percent', value: 20, minOrder: 0, active: true });
+    }
     // If legacy razorpayKeyId is present, ensure payuMerchantKey is also set
     if (!this.globalSettings.payuMerchantKey) {
       this.globalSettings.payuMerchantKey = 'LqPsyW';

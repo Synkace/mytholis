@@ -9,9 +9,10 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const collectionId = parseInt(req.query.collection_id) || req.query.collection_id;
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 100;
+  const query = req.query || {};
+  const collectionId = parseInt(query.collection_id) || query.collection_id;
+  const page = parseInt(query.page) || 1;
+  const limit = parseInt(query.limit) || 100;
 
   const filtered = collectionId
     ? FASTRR_PRODUCTS.filter(p => p.collection_id == collectionId)

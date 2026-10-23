@@ -2204,6 +2204,21 @@ class MytholisApp {
     }
   }
 
+  applyCartPromoCode(code = 'FIRST20') {
+    const res = store.applyRewardCode(code);
+    if (res.success) {
+      this.showToast(`✦ Privilege code "${code}" activated: 20% discount applied!`);
+      if (store.getCartCount() > 0) {
+        this.openCartModal();
+      } else {
+        this.showToast(`✦ Code ${code} (20% OFF) saved. Add any flacon to bag to enjoy the concession!`);
+      }
+      this.renderCartModalContent();
+    } else {
+      this.showToast(res.error || `Could not apply code ${code}`);
+    }
+  }
+
   removeCartRewardCode() {
     store.removeAppliedRewardCode();
     this.showToast("Reward code removed from checkout.");

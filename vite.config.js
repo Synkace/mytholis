@@ -42,7 +42,7 @@ const fastrrApiMiddleware = (req, res, next) => {
           'spark': { 8: '10041', 50: '10042', 100: '10043', default: '10042' },
           'wood-sera': { 8: '10051', 50: '10052', 100: '10053', default: '10052' },
           'ash': { 8: '10061', 50: '10062', 100: '10063', default: '10062' },
-          'mytholis-discovery-set': { 60: '10071', default: '10071' }
+          'mytholis-discovery-set': { 48: '10071', 60: '10071', default: '10071' }
         };
         const fastrrItems = items.map(item => {
           let variantId = item.variant_id;
@@ -120,9 +120,19 @@ export default defineConfig({
     assetsInlineLimit: 4096,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
-          'vendor-gsap': ['gsap']
+        manualChunks(id) {
+          if (id.includes('node_modules/firebase')) {
+            return 'vendor-firebase';
+          }
+          if (id.includes('node_modules/gsap')) {
+            return 'vendor-gsap';
+          }
+          if (id.includes('node_modules/pdf-lib')) {
+            return 'vendor-pdf';
+          }
+          if (id.includes('adminComponents') || id.includes('labelRebrander')) {
+            return 'admin-bundle';
+          }
         }
       }
     }

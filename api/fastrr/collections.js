@@ -9,8 +9,9 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 100;
+  const query = req.query || {};
+  const page = parseInt(query.page) || 1;
+  const limit = parseInt(query.limit) || 100;
   const startIndex = (page - 1) * limit;
   const paginated = FASTRR_COLLECTIONS.slice(startIndex, startIndex + limit);
 
