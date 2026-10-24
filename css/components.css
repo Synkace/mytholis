@@ -393,12 +393,14 @@
   justify-content: center;
   z-index: 2;
   pointer-events: none;
+  padding: 0 1.5rem;
+  box-sizing: border-box;
 }
 
 .big-results {
   font-family: var(--font-serif-title);
   font-weight: 900;
-  font-size: clamp(90px, 19vw, 270px);
+  font-size: clamp(2.8rem, 8.5vw, 7.5rem);
   letter-spacing: 0.08em;
   line-height: 0.85;
   color: rgba(212, 175, 55, 0.08);
@@ -408,6 +410,8 @@
   user-select: none;
   text-shadow: 0 0 60px rgba(212, 175, 55, 0.06), 0 20px 40px rgba(0, 0, 0, 0.8);
   filter: drop-shadow(0 0 30px rgba(14, 66, 51, 0.15));
+  padding: 0 0.5rem;
+  box-sizing: border-box;
 }
 
 .big-results .letter {
@@ -426,6 +430,8 @@ div#cardsRow {
   z-index: 6;
   pointer-events: none;
   display: block;
+  mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
 }
 
 .cards-row > * {
@@ -485,6 +491,8 @@ div#cardsRow {
   -webkit-user-drag: none !important;
   pointer-events: auto !important;
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
 }
 
 .cards-row .card:hover img,
@@ -692,10 +700,12 @@ div#cardsRow {
   }
 
   .big-results {
-    font-size: clamp(40px, 12vw, 65px);
+    font-size: clamp(2.2rem, 8.5vw, 4.2rem);
     letter-spacing: 0.05em;
     line-height: 0.9;
     -webkit-text-stroke: 1px rgba(212, 175, 55, 0.22);
+    padding: 0 0.5rem;
+    box-sizing: border-box;
   }
 
   .cards-row,
@@ -823,7 +833,9 @@ div#cardsRow {
   }
 
   .big-results {
-    font-size: clamp(34px, 11vw, 48px);
+    font-size: clamp(2rem, 8.5vw, 3rem);
+    padding: 0 0.5rem;
+    box-sizing: border-box;
   }
 
   .cards-row,
@@ -1118,24 +1130,73 @@ div#cardsRow {
 
 .hero-card-row .character {
   width: 100%;
-  opacity: 0;
+  opacity: 1; /* Always visible so flacons never appear empty or blank */
   transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1), 
-              opacity 0.45s cubic-bezier(0.2, 0.9, 0.3, 1);
+              filter 0.45s ease;
   position: absolute;
-  top: 0;
+  top: -15px;
   left: 0;
-  z-index: 1;
+  z-index: 4;
   pointer-events: none;
   transform: translate3d(0%, 0%, 0);
-  will-change: transform, opacity;
+  will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.9));
 }
 
 .hero-card-row .card:hover .character,
 .hero-card-row .card.is-active .character {
-  opacity: 1;
-  transform: translate3d(0%, -30%, 100px);
+  transform: translate3d(0%, -18%, 60px) scale(1.08);
+  filter: drop-shadow(0 22px 35px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 20px rgba(212, 175, 55, 0.4));
+}
+
+/* Card Info Overlay for Signature House Collection */
+.hero-card-meta {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 20px;
+  background: linear-gradient(180deg, transparent 0%, rgba(2, 14, 9, 0.92) 35%, rgba(2, 14, 9, 0.98) 100%);
+  border-radius: 0 0 14px 14px;
+  z-index: 5;
+  text-align: center;
+  pointer-events: auto;
+  box-sizing: border-box;
+}
+
+.hero-card-family {
+  display: inline-block;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold-primary);
+  margin-bottom: 4px;
+}
+
+.hero-card-title {
+  font-family: var(--font-serif-title);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0 0 4px 0;
+  letter-spacing: 0.02em;
+}
+
+.hero-card-badge {
+  display: block;
+  font-size: 0.72rem;
+  color: #A3B899;
+  margin-bottom: 12px;
+}
+
+.hero-card-cta {
+  width: 100%;
+  padding: 0.55rem 1rem !important;
+  font-size: 0.8rem !important;
+  letter-spacing: 0.05em;
+  border-radius: 30px;
 }
 
 /* --------------------------------------------------------------------------
@@ -2785,8 +2846,8 @@ div#cardsRow {
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1.5fr;
-  gap: 3rem;
+  grid-template-columns: 1.4fr 1fr 1.1fr 1.4fr;
+  gap: 2rem;
   margin-bottom: 3rem;
 }
 
@@ -3114,10 +3175,10 @@ div#cardsRow {
   }
 
   .hero-card-row .card {
-    width: min(80vw, 250px);
-    height: calc(min(80vw, 250px) * 1.5);
+    width: min(85vw, 280px);
+    height: 420px;
     transform: translate3d(0, 0, 0) scale(1);
-    padding: 0 24px;
+    padding: 0;
     flex: 0 0 auto;
     transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1);
     will-change: transform;
@@ -4470,29 +4531,37 @@ div#cardsRow {
   }
 }
 
-/* 4. Floating WhatsApp Concierge Button */
+/* 4. Floating WhatsApp Concierge Button (Luxury Dark Emerald & Liquid Gold) */
 .floating-whatsapp-btn {
   position: fixed;
-  bottom: 26px;
+  bottom: 24px;
   right: 24px;
   z-index: 999;
   display: flex;
   align-items: center;
   gap: 0.55rem;
   padding: 0.65rem 1.15rem 0.65rem 0.95rem;
-  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
-  color: #FFFFFF !important;
+  background: #081C14;
+  border: 1px solid #D4AF37;
+  color: #F3DF99 !important;
   border-radius: 50px;
-  box-shadow: 0 10px 25px rgba(18, 140, 126, 0.45), 0 0 15px rgba(37, 211, 102, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 15px rgba(212, 175, 55, 0.2);
   text-decoration: none;
   cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .floating-whatsapp-btn:hover {
   transform: translateY(-3px) scale(1.04);
-  box-shadow: 0 14px 30px rgba(18, 140, 126, 0.6), 0 0 22px rgba(37, 211, 102, 0.5);
+  background: #0d281e;
+  border-color: #ffd700;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(212, 175, 55, 0.35);
   color: #FFFFFF !important;
+}
+
+.floating-whatsapp-btn svg {
+  color: #D4AF37;
+  fill: #D4AF37;
 }
 
 .whatsapp-label {
@@ -4511,12 +4580,13 @@ div#cardsRow {
   height: 100%;
   border-radius: 50px;
   background: inherit;
+  border: 1px solid rgba(212, 175, 55, 0.4);
   opacity: 0.4;
   z-index: -1;
-  animation: pulseGreen 2.2s infinite ease-out;
+  animation: pulseGold 2.2s infinite ease-out;
 }
 
-@keyframes pulseGreen {
+@keyframes pulseGold {
   0% {
     transform: scale(1);
     opacity: 0.6;
@@ -5818,19 +5888,71 @@ div#cardsRow {
   overflow: hidden;
 }
 
+.notched-accords-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 4px 0 8px 0;
+}
+
+.notched-accord-pill {
+  font-size: 0.65rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  color: #D4AF37;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.notched-badges-row {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.notched-badge-pill.volume-badge {
+  background: rgba(2, 14, 9, 0.9);
+  border-color: rgba(212, 175, 55, 0.55);
+  color: #F3DF99;
+}
+
 .notched-bottom-row {
   margin-top: auto;
-  padding-bottom: 2px;
-  max-width: 175px;
+  padding-bottom: 16px; /* Extra bottom spacing so compare-at price never collides with card border */
+  padding-left: 2px;
+  max-width: 195px;
+}
+
+.notched-price-display-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
 .notched-price-display {
   font-family: var(--font-serif-title, 'Cinzel', 'Playfair Display', serif);
-  font-size: 1.62rem;
+  font-size: 1.55rem;
   font-weight: 700;
   color: #D4AF37;
   letter-spacing: -0.02em;
   line-height: 1;
+}
+
+.notched-compare-price {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: #718096;
+  text-decoration: line-through;
+  font-weight: 500;
 }
 
 .notched-mythos-badge {
@@ -5891,15 +6013,15 @@ div#cardsRow {
   font-weight: 700;
 }
 
-/* Docked Action Cart Button - Precisely Flush in Bottom-Right Notch */
+/* Docked Action Cart Button - Precisely Flush in Bottom-Right Notch (No duplicate border rectangle) */
 .notched-docked-cart-btn {
   position: absolute;
   right: 0;
   bottom: 0;
-  width: 68px;
-  height: 91px;
-  border-radius: 21px;
-  border: 1.5px solid #D4AF37;
+  width: 66px;
+  height: 88px;
+  border-radius: 20px;
+  border: none !important; /* Prevents duplicate stroke against the SVG contour border */
   background: #03180f;
   display: flex;
   align-items: center;
@@ -5909,14 +6031,56 @@ div#cardsRow {
   transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
   padding: 0;
   box-sizing: border-box;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  box-shadow: -2px -2px 10px rgba(0, 0, 0, 0.6);
 }
 
 .notched-docked-cart-btn:hover {
-  background: rgba(212, 175, 55, 0.22);
-  border-color: #ffd700;
-  transform: scale(1.05);
-  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.35);
+  background: rgba(212, 175, 55, 0.25);
+  transform: scale(1.04);
+}
+
+/* ==========================================================================
+   MASTER COLLECTION 3x2 RESPONSIVE GRID
+   ========================================================================== */
+.master-collection-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.2rem 1.8rem;
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1024px) {
+  .master-collection-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.8rem;
+    max-width: 760px;
+  }
+}
+
+@media (max-width: 640px) {
+  .master-collection-grid {
+    grid-template-columns: 1fr;
+    gap: 1.8rem;
+    max-width: 360px;
+  }
+}
+
+.master-collection-grid .sovereign-slider-card {
+  width: 100%;
+  max-width: 350px;
+  min-width: 0;
+  height: 485px;
+  min-height: 485px;
+  max-height: 485px;
+  margin: 0 auto;
+}
+
+.master-collection-grid .sovereign-card-svg-frame,
+.master-collection-grid .sovereign-card-body {
+  width: 100%;
+  height: 485px;
 }
 
 .notched-docked-cart-btn:active {
@@ -6543,6 +6707,42 @@ div#cardsRow {
   padding-top: env(safe-area-inset-top, 0px) !important;
   height: calc(28px + env(safe-area-inset-top, 0px)) !important;
 }
+
+/* ==========================================================================
+   PYRAMID OF RESONANCE REFINEMENTS
+   ========================================================================== */
+.pyramid-tabs-nav {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  gap: 0.75rem !important;
+  margin-bottom: 2.5rem !important;
+  padding: 4px 1rem 10px 1rem !important;
+  max-width: 100% !important;
+  scrollbar-width: none !important;
+}
+
+.pyramid-tabs-nav::-webkit-scrollbar {
+  display: none !important;
+}
+
+.pyramid-tab-btn {
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  padding: 0.55rem 1.15rem !important;
+  font-size: 0.85rem !important;
+}
+
+.pyramid-card-title {
+  white-space: nowrap !important;
+  font-size: clamp(1rem, 1.35vw, 1.35rem) !important;
+  margin-bottom: 0.8rem !important;
+  color: var(--gold-light) !important;
+}
+
 
 
 

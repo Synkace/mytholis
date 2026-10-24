@@ -783,11 +783,11 @@ class MytholisStore {
         this.loyalty.active_reward_codes.unshift({
           code: 'MYTH-COFFRET-1000',
           id: 'COFFRET_1000',
-          title: '₹1,000 Off 100ml Flacon (Discovery Privilege)',
+          title: '₹1,000 Off 50ml Flacon (Discovery Privilege)',
           type: 'discount',
           amount: 1000,
-          minOrder: 4999,
-          requires100ml: true,
+          minOrder: 3299,
+          requiresFullFlacon: true,
           used: false,
           createdAt: new Date().toISOString()
         });
@@ -923,12 +923,12 @@ class MytholisStore {
       };
     }
 
-    if (existing.requires100ml) {
-      const has100ml = this.cart.some(item => Number(item.size) === 100);
-      if (!has100ml) {
+    if (existing.requiresFullFlacon || existing.requires100ml) {
+      const hasFullFlacon = this.cart.some(item => item.id !== 'mytholis-discovery-set' && (Number(item.size) === 50 || Number(item.size) === 100 || !item.size));
+      if (!hasFullFlacon) {
         return { 
           success: false, 
-          error: "This voucher is exclusively redeemable against a full 100ml flacon." 
+          error: "This voucher is exclusively redeemable against a full 50ml flacon." 
         };
       }
     }
@@ -982,7 +982,7 @@ class MytholisStore {
     const reward = this.getAppliedReward();
     if (!reward) return 0;
 
-    // Special privilege for Discovery Coffret voucher on full 100ml flacon
+    // Special privilege for Discovery Coffret voucher on full 50ml flacon
     if (reward.code === 'MYTH-COFFRET-1000') {
       return 1000;
     }

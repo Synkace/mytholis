@@ -94,6 +94,8 @@ const Components = {
     const cleanTitle = product.name;
     const badgeText = product.tag || 'Trending';
     const mythosInfo = store.calculateProductMythos(product.price);
+    const accordPills = (product.accords || []).slice(0, 3);
+    const compareAtPrice = product.compareAtPrice || Math.round(product.price * 1.25);
 
     // Curated evocative descriptions matching the haute parfumerie reference
     const curatedDescriptions = {
@@ -140,7 +142,10 @@ const Components = {
         <div class="sovereign-card-body">
           <!-- Top Image Showcase Pedestal -->
           <div class="notched-card-media">
-            <span class="notched-badge-pill">${badgeText}</span>
+            <div class="notched-badges-row">
+              <span class="notched-badge-pill">${badgeText}</span>
+              <span class="notched-badge-pill volume-badge">50ml Extrait</span>
+            </div>
             <div class="notched-media-halo"></div>
             <img src="${product.image}" alt="${this.cleanText(product.name)}" class="notched-bottle-img" loading="lazy" />
             <div class="notched-bottle-shadow"></div>
@@ -160,13 +165,19 @@ const Components = {
               </button>
             </div>
 
+            <!-- Compact Olfactory Accord Pills -->
+            <div class="notched-accords-row">
+              ${accordPills.map(acc => `<span class="notched-accord-pill">${acc}</span>`).join('')}
+            </div>
+
             <!-- Description -->
             <p class="notched-product-desc">${desc}</p>
 
-            <!-- Price in bottom left -->
+            <!-- Price & Compare-at in bottom left -->
             <div class="notched-bottom-row">
-              <div class="notched-price-display">
-                ${store.formatPrice(product.price)}
+              <div class="notched-price-display-wrap">
+                <span class="notched-price-display">${store.formatPrice(product.price)}</span>
+                <span class="notched-compare-price">${store.formatPrice(compareAtPrice)}</span>
               </div>
               <div class="notched-mythos-badge" title="Loyalty Privilege: 1 Mythos Coin = ₹1 Concession">
                 <span class="mythos-coin-icon">🪙</span>
@@ -298,55 +309,25 @@ const Components = {
         </div>
       </section>
 
-      <!-- ============ MASTER EXTRAIT FLACON PRODUCT SLIDER SECTION ============ -->
-      <section class="container product-slider-section" id="featured-extraits-slider" style="margin: 3rem auto 6rem;">
-        <div class="product-slider-header">
-          <div>
-            <span class="tagline" style="color: var(--gold-primary); font-size: 0.8rem; letter-spacing: 0.3em; text-transform: uppercase;">
-              HAUTE PARFUMERIE · 40% PURE EXTRAIT CONCENTRATION
-            </span>
-            <h2 class="font-title" style="font-size: clamp(1.8rem, 3.5vw, 2.5rem); color: var(--gold-light); margin: 0.4rem 0 0.2rem;">
-              The Master Extrait Collection
-            </h2>
-            <div class="divider" style="margin: 0.8rem 0 0;"></div>
-          </div>
-
-          <!-- Slider Navigation Arrows -->
-          <div class="slider-nav-controls">
-            <button class="slider-nav-btn slider-prev-btn" onclick="app.scrollProductSlider(-1)" aria-label="Previous Fragrance" title="Previous Fragrance">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="15 18 9 12 15 6"></polyline>
-              </svg>
-            </button>
-            <button class="slider-nav-btn slider-next-btn" onclick="app.scrollProductSlider(1)" aria-label="Next Fragrance" title="Next Fragrance">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
-            </button>
-          </div>
+      <!-- ============ THE MASTER EXTRAIT COLLECTION (3x2 RESPONSIVE GRID) ============ -->
+      <section class="container master-collection-section" id="featured-extraits-slider" style="margin: 4rem auto 6rem;">
+        <div class="section-header" style="text-align: center; margin-bottom: 2.8rem;">
+          <span class="tagline" style="color: var(--gold-primary); font-size: 0.82rem; letter-spacing: 0.3em; text-transform: uppercase;">
+            HAUTE PARFUMERIE · 40% PURE EXTRAIT CONCENTRATION
+          </span>
+          <h2 class="font-title" style="font-size: clamp(2rem, 3.8vw, 2.8rem); color: var(--gold-light); margin: 0.5rem 0 0.3rem;">
+            The Master Extrait Collection
+          </h2>
+          <div class="divider" style="margin: 0.8rem auto 0;"></div>
         </div>
 
-        <!-- Horizontal Scrollable Track Container -->
-        <div class="product-slider-wrapper">
-          <div class="product-slider-track" id="productSliderTrack">
-            ${(typeof store !== 'undefined' && store.getProducts ? store.getProducts() : MYTHOLIS_CATALOG)
-              .filter(p => p.id !== 'mytholis-discovery-set')
-              .map(p => `
-                <div class="product-slider-item">
-                  ${this.renderProductSliderCard(p)}
-                </div>
-              `).join('')}
-          </div>
-        </div>
-
-        <!-- Slider Pagination / Progress Bar -->
-        <div class="product-slider-footer">
-          <div class="slider-progress-track">
-            <div class="slider-progress-bar" id="productSliderProgress"></div>
-          </div>
-          <div class="slider-hint">
-            <span>← Drag or Swipe to Explore Extraits →</span>
-          </div>
+        <!-- 3x2 Responsive Masterpieces Grid -->
+        <div class="master-collection-grid">
+          ${(typeof store !== 'undefined' && store.getProducts ? store.getProducts() : MYTHOLIS_CATALOG)
+            .filter(p => p.id !== 'mytholis-discovery-set')
+            .slice(0, 6)
+            .map(p => this.renderProductSliderCard(p))
+            .join('')}
         </div>
       </section>
 
@@ -359,7 +340,7 @@ const Components = {
               Sixth Sense
             </h2>
             <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">
-              Awaken your sixth sense. Experience all 6 master extrait creations in curated 8ml travel flacons. Includes a complimentary <strong>₹1,000 voucher</strong> redeemable against your first full 100ml flacon.
+              Awaken your sixth sense. Experience all 6 master extrait creations in curated 8ml travel flacons. Includes a complimentary <strong>₹1,000 voucher</strong> redeemable against your first full 50ml flacon.
             </p>
             <div class="discovery-banner-perks">
               <span>6 × 8ml Deluxe Atomizers</span>
@@ -376,7 +357,37 @@ const Components = {
             </div>
           </div>
           <div class="discovery-banner-visual bottle-pedestal-glow">
-            <img src="assets/coffret_banner.webp" alt="Sixth Sense" loading="lazy" decoding="async" style="max-height: 280px; width: 100%; max-width: 380px; object-fit: cover; border-radius: 18px; border: 1px solid rgba(212, 175, 55, 0.35); box-shadow: 0 15px 35px rgba(0,0,0,0.8);" />
+            <div style="position: relative; width: 100%; max-width: 400px; margin: 0 auto;">
+              <img src="assets/coffret_banner.webp" alt="Sixth Sense Luxury Coffret" loading="lazy" decoding="async" style="max-height: 250px; width: 100%; object-fit: cover; border-radius: 16px; border: 1px solid rgba(212, 175, 55, 0.45); box-shadow: 0 15px 35px rgba(0,0,0,0.85);" />
+              
+              <!-- 6 Scent Archetypes Preview Grid -->
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px;">
+                <div style="background: rgba(3, 18, 13, 0.88); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 6px 8px; text-align: center;">
+                  <span style="display: block; font-size: 0.62rem; color: #D4AF37; letter-spacing: 0.1em; text-transform: uppercase;">01 · King Scar</span>
+                  <span style="font-size: 0.58rem; color: #A3B899;">Aromatic Spicy</span>
+                </div>
+                <div style="background: rgba(3, 18, 13, 0.88); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 6px 8px; text-align: center;">
+                  <span style="display: block; font-size: 0.62rem; color: #D4AF37; letter-spacing: 0.1em; text-transform: uppercase;">02 · Petralux</span>
+                  <span style="font-size: 0.58rem; color: #A3B899;">Fruity Amber</span>
+                </div>
+                <div style="background: rgba(3, 18, 13, 0.88); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 6px 8px; text-align: center;">
+                  <span style="display: block; font-size: 0.62rem; color: #D4AF37; letter-spacing: 0.1em; text-transform: uppercase;">03 · Oud Rion</span>
+                  <span style="font-size: 0.58rem; color: #A3B899;">Resinous Oud</span>
+                </div>
+                <div style="background: rgba(3, 18, 13, 0.88); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 6px 8px; text-align: center;">
+                  <span style="display: block; font-size: 0.62rem; color: #D4AF37; letter-spacing: 0.1em; text-transform: uppercase;">04 · Spark</span>
+                  <span style="font-size: 0.58rem; color: #A3B899;">Electric Neroli</span>
+                </div>
+                <div style="background: rgba(3, 18, 13, 0.88); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 6px 8px; text-align: center;">
+                  <span style="display: block; font-size: 0.62rem; color: #D4AF37; letter-spacing: 0.1em; text-transform: uppercase;">05 · Wood Sera</span>
+                  <span style="font-size: 0.58rem; color: #A3B899;">Amber Rose</span>
+                </div>
+                <div style="background: rgba(3, 18, 13, 0.88); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 6px 8px; text-align: center;">
+                  <span style="display: block; font-size: 0.62rem; color: #D4AF37; letter-spacing: 0.1em; text-transform: uppercase;">06 · Ash</span>
+                  <span style="font-size: 0.58rem; color: #A3B899;">Smoky Mineral</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -390,33 +401,60 @@ const Components = {
         </div>
 
         <div class="hero-card-row">
-          <a href="javascript:void(0)" onclick="app.openProductView('king-scar')" alt="King Scar">
+          <!-- Card 1: King Scar -->
+          <a href="javascript:void(0)" onclick="app.openProductView('king-scar')" title="King Scar Extrait de Parfum">
             <div class="card">
               <div class="wrapper king-scar">
                 <img src="assets/hero/kingscarcard.webp" class="cover-image base-card-img" alt="King Scar Cover" loading="eager" decoding="async" />
                 <img src="assets/hero/kingscarbg.webp" class="cover-image hover-bg-img" alt="King Scar Atmosphere" loading="eager" decoding="async" />
               </div>
               <img src="assets/product/1kingscar.webp" class="character" alt="King Scar Bottle" loading="eager" decoding="async" />
+              <div class="hero-card-meta">
+                <span class="hero-card-family">Aromatic · Masculine</span>
+                <h3 class="hero-card-title">King Scar</h3>
+                <span class="hero-card-badge">50ml Extrait de Parfum · 40%</span>
+                <button class="btn btn-gold hero-card-cta" onclick="event.stopPropagation(); app.addProductToCart('king-scar')">
+                  Acquire King Scar • ₹5,999
+                </button>
+              </div>
             </div>
           </a>
 
-          <a href="javascript:void(0)" onclick="app.openProductView('oud-rion')" alt="Oud Rion">
+          <!-- Card 2: Oud Rion -->
+          <a href="javascript:void(0)" onclick="app.openProductView('oud-rion')" title="Oud Rion Extrait de Parfum">
             <div class="card">
               <div class="wrapper oud-rion">
                 <img src="assets/hero/oudrioncard.webp" class="cover-image base-card-img" alt="Oud Rion Cover" loading="eager" decoding="async" />
                 <img src="assets/hero/oudrionbg.webp" class="cover-image hover-bg-img" alt="Oud Rion Atmosphere" loading="eager" decoding="async" />
               </div>
               <img src="assets/product/3oudrion.webp" class="character" alt="Oud Rion Bottle" loading="eager" decoding="async" />
+              <div class="hero-card-meta">
+                <span class="hero-card-family">Woody · Royal Oud</span>
+                <h3 class="hero-card-title">Oud Rion</h3>
+                <span class="hero-card-badge">50ml Extrait de Parfum · 40%</span>
+                <button class="btn btn-gold hero-card-cta" onclick="event.stopPropagation(); app.addProductToCart('oud-rion')">
+                  Acquire Oud Rion • ₹6,999
+                </button>
+              </div>
             </div>
           </a>
 
-          <a href="javascript:void(0)" onclick="app.openProductView('spark')" alt="Spark">
+          <!-- Card 3: Spark -->
+          <a href="javascript:void(0)" onclick="app.openProductView('spark')" title="Spark Extrait de Parfum">
             <div class="card">
               <div class="wrapper spark">
                 <img src="assets/hero/sparkcard.webp" class="cover-image base-card-img" alt="Spark Cover" loading="eager" decoding="async" />
                 <img src="assets/hero/sparkbg.webp" class="cover-image hover-bg-img" alt="Spark Atmosphere" loading="eager" decoding="async" />
               </div>
               <img src="assets/product/4spark.webp" class="character" alt="Spark Bottle" loading="eager" decoding="async" />
+              <div class="hero-card-meta">
+                <span class="hero-card-family">Electric · Aromatic</span>
+                <h3 class="hero-card-title">Spark</h3>
+                <span class="hero-card-badge">50ml Extrait de Parfum · 40%</span>
+                <button class="btn btn-gold hero-card-cta" onclick="event.stopPropagation(); app.addProductToCart('spark')">
+                  Acquire Spark • ₹5,499
+                </button>
+              </div>
             </div>
           </a>
         </div>
@@ -451,7 +489,7 @@ const Components = {
 
           return `
             <!-- 6 Interactive Extrait Tabs -->
-            <div class="pyramid-tabs-nav" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 2.5rem;">
+            <div class="pyramid-tabs-nav" id="pyramidPillsRow">
               ${pyramidScents.map(s => {
                 const isActive = s.id === activeScentObj.id;
                 return `
@@ -469,7 +507,7 @@ const Components = {
             <div id="pyramid-resonance-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; transition: opacity 0.25s ease, transform 0.25s ease;">
               <div class="liquid-glass-card" style="padding: 2.5rem; text-align: center;">
                 <div style="font-family: var(--font-serif-title); font-size: 1.5rem; margin-bottom: 1rem; color: var(--gold-primary); letter-spacing: 0.15em;">I</div>
-                <h3 class="font-title" style="margin-bottom: 0.8rem; color: var(--gold-light);">Top Notes: Ether</h3>
+                <h3 class="font-title pyramid-card-title">Top Notes: Ether</h3>
                 <p id="pyramid-top-notes" style="color: var(--gold-light); font-size: 0.95rem; font-weight: 500; margin-bottom: 0.6rem; line-height: 1.5;">
                   ${activeScent.notes.top.join(' · ')}
                 </p>
@@ -480,7 +518,7 @@ const Components = {
 
               <div class="liquid-glass-card" style="padding: 2.5rem; text-align: center;">
                 <div style="font-family: var(--font-serif-title); font-size: 1.5rem; margin-bottom: 1rem; color: var(--gold-primary); letter-spacing: 0.15em;">II</div>
-                <h3 class="font-title" style="margin-bottom: 0.8rem; color: var(--gold-light);">Heart Notes: Core</h3>
+                <h3 class="font-title pyramid-card-title">Heart Notes: Core</h3>
                 <p id="pyramid-heart-notes" style="color: var(--gold-light); font-size: 0.95rem; font-weight: 500; margin-bottom: 0.6rem; line-height: 1.5;">
                   ${activeScent.notes.heart.join(' · ')}
                 </p>
@@ -491,7 +529,7 @@ const Components = {
 
               <div class="liquid-glass-card" style="padding: 2.5rem; text-align: center;">
                 <div style="font-family: var(--font-serif-title); font-size: 1.5rem; margin-bottom: 1rem; color: var(--gold-primary); letter-spacing: 0.15em;">III</div>
-                <h3 class="font-title" style="margin-bottom: 0.8rem; color: var(--gold-light);">Base Notes: Anchor</h3>
+                <h3 class="font-title pyramid-card-title">Base Notes: Anchor</h3>
                 <p id="pyramid-base-notes" style="color: var(--gold-light); font-size: 0.95rem; font-weight: 500; margin-bottom: 0.6rem; line-height: 1.5;">
                   ${activeScent.notes.base.join(' · ')}
                 </p>
@@ -646,7 +684,7 @@ const Components = {
                   <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">Sixth Sense Guarantee</span>
                   <h4 style="font-size: 1.05rem; color: var(--gold-light); margin: 0.3rem 0 0.2rem;">Try before committing to a full flacon</h4>
                   <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">
-                    Experience this scent alongside all 5 other extraits in <strong>Sixth Sense</strong>. Includes a <strong>₹1,000 voucher</strong> redeemable against your first 100ml flacon!
+                    Experience this scent alongside all 5 other extraits in <strong>Sixth Sense</strong>. Includes a <strong>₹1,000 voucher</strong> redeemable against your first full 50ml flacon!
                   </p>
                 </div>
                 <div style="font-size: 1.3rem; font-weight: 700; color: var(--gold-primary);">₹3,999</div>
@@ -718,7 +756,7 @@ const Components = {
             <div class="track-order-header">
               <div>
                 <span class="glass-pill">Order #MYTH-89021</span>
-                <h3 class="track-order-product-name">Petralux Extrait de Parfum (100ml)</h3>
+                <h3 class="track-order-product-name">Petralux Extrait de Parfum (50ml)</h3>
               </div>
               <div class="track-delivery-est">
                 <span style="font-size: 0.8rem; color: var(--text-muted);">Estimated Delivery:</span>
@@ -1326,7 +1364,7 @@ const Components = {
                 Sixth Sense Guarantee Activated
               </div>
               <p style="font-size: 0.74rem; color: var(--text-muted); margin: 0.25rem 0 0; line-height: 1.45;">
-                Includes a <strong>₹1,000 voucher</strong> redeemable against your first full 100ml flacon!
+                Includes a <strong>₹1,000 voucher</strong> redeemable against your first full 50ml flacon!
               </p>
             </div>
           ` : ''}

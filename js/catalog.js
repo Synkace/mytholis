@@ -192,7 +192,7 @@ const MYTHOLIS_CATALOG = [
     longevityHours: 12,
     sillageRating: 96,
     accords: ["Sixth Sense Master Set", "All 6 Signature Extraits", "6 × 8ml Deluxe Sprays", "₹1,000 Flacon Voucher"],
-    description: "The complete Mytholis master collection in one curated luxury vault — Sixth Sense. Contains deluxe 8ml travel flacons of King Scar, Petralux, Oud Rion, Spark, Wood Sera, and Ash, plus a complimentary ₹1,000 voucher redeemable toward your first full 100ml flacon.",
+    description: "The complete Mytholis master collection in one curated luxury vault — Sixth Sense. Contains deluxe 8ml travel flacons of King Scar, Petralux, Oud Rion, Spark, Wood Sera, and Ash, plus a complimentary ₹1,000 voucher redeemable toward your first full 50ml flacon.",
     notes: {
       top: ["Aromatic Spices & Absinthe (King Scar 8ml)", "Italian Bergamot & Black Currant (Petralux 8ml)"],
       heart: ["Smoked Saffron & Cambodian Agarwood (Oud Rion 8ml)", "Sicilian Mandarin & Sparkling Ginger (Spark 8ml)"],
