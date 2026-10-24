@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 
-const FASTRR_API_KEY = process.env.FASTRR_API_KEY || 'GkmYB8JVVgvPFLiN';
-const FASTRR_SECRET_KEY = process.env.FASTRR_SECRET_KEY || 'bgHG23KYS9CZi8Pvo2UgmuyBWlacgKqo';
+const FASTRR_API_KEY = process.env.FASTRR_API_KEY;
+const FASTRR_SECRET_KEY = process.env.FASTRR_SECRET_KEY;
 const FASTRR_CHECKOUT_URL = process.env.FASTRR_CHECKOUT_URL || 'https://checkout-api.shiprocket.com/api/v1/access-token/checkout';
 
 // Map human product & size IDs to Fastrr variant IDs
@@ -30,6 +30,11 @@ export default async function handler(req, res) {
 
   try {
     const { items = [], coupon_code, redirect_url } = req.body || {};
+
+    if (!FASTRR_API_KEY || !FASTRR_SECRET_KEY) {
+      console.error('[Fastrr Checkout API] Gateway credentials missing in server environment.');
+      return res.status(500).json({ success: false, error: 'Checkout gateway credentials are not configured on server' });
+    }
 
     if (!items || items.length === 0) {
       return res.status(400).json({ success: false, error: 'Cart is empty' });

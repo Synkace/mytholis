@@ -39,12 +39,12 @@ export default async function handler(req, res) {
     }
 
     // Resolve Merchant Key & Salt
-    const merchantKey = (process.env.PAYU_MERCHANT_KEY || customKey || 'LqPsyW').trim();
+    const merchantKey = (process.env.PAYU_MERCHANT_KEY || customKey || '').trim();
     const merchantSalt = (process.env.PAYU_MERCHANT_SALT || customSalt || '').trim();
 
-    if (!merchantSalt) {
+    if (!merchantKey || !merchantSalt) {
       return res.status(400).json({
-        error: 'PayU Merchant Salt is not configured. Please supply PAYU_MERCHANT_SALT or configure it in Sovereign Admin Settings.'
+        error: 'PayU credentials are not configured. Please supply PAYU_MERCHANT_KEY and PAYU_MERCHANT_SALT in environment or Sovereign Admin Settings.'
       });
     }
 

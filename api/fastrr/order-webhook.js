@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-const FASTRR_SECRET_KEY = process.env.FASTRR_SECRET_KEY || 'bgHG23KYS9CZi8Pvo2UgmuyBWlacgKqo';
+const FASTRR_SECRET_KEY = process.env.FASTRR_SECRET_KEY;
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -27,20 +27,23 @@ export default async function handler(req, res) {
     const payload = req.body || {};
     console.log('[Fastrr Order Webhook] Received event:', JSON.stringify(payload).slice(0, 500));
 
-    // Enforce HMAC validation
+    // Enforce HMAC validation (Fail-closed)
+    if (!FASTRR_SECRET_KEY) {
+      console.error('[Fastrr Order Webhook] FASTRR_SECRET_KEY not configured in server environment.');
+      return res.status(500).json({ success: false, error: 'Server misconfiguration: Webhook secret missing' });
+    }
+
     const hmacHeader = req.headers['x-api-hmac-sha256'];
-    if (FASTRR_SECRET_KEY) {
-      if (!hmacHeader) {
-        console.warn('[Fastrr Order Webhook] Missing X-Api-HMAC-SHA256 signature.');
-        return res.status(401).json({ success: false, error: 'Unauthorized: Missing HMAC signature' });
-      }
-      const calculatedHmac = crypto.createHmac('sha256', FASTRR_SECRET_KEY)
-        .update(typeof req.body === 'string' ? req.body : JSON.stringify(req.body))
-        .digest('base64');
-      if (calculatedHmac !== hmacHeader) {
-        console.warn('[Fastrr Order Webhook] HMAC mismatch! Rejecting request.');
-        return res.status(401).json({ success: false, error: 'Unauthorized: Invalid HMAC signature' });
-      }
+    if (!hmacHeader) {
+      console.warn('[Fastrr Order Webhook] Missing X-Api-HMAC-SHA256 signature.');
+      return res.status(401).json({ success: false, error: 'Unauthorized: Missing HMAC signature' });
+    }
+    const calculatedHmac = crypto.createHmac('sha256', FASTRR_SECRET_KEY)
+      .update(typeof req.body === 'string' ? req.body : JSON.stringify(req.body))
+      .digest('base64');
+    if (calculatedHmac !== hmacHeader) {
+      console.warn('[Fastrr Order Webhook] HMAC mismatch! Rejecting request.');
+      return res.status(401).json({ success: false, error: 'Unauthorized: Invalid HMAC signature' });
     }
 
     const orderId = payload.order_id || payload.channel_order_id || 'FASTRR_' + Date.now();

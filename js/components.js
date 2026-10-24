@@ -932,14 +932,17 @@ const Components = {
     const isWishlisted = store.isInWishlist(product.id);
     
     // Determine active size and price for this product
-    let activeSizeObj = product.sizes.find(s => s.ml === app.selectedSize);
+    const selectedMl = (typeof app !== 'undefined' && app.selectedSize) ? app.selectedSize : null;
+    let activeSizeObj = selectedMl ? product.sizes.find(s => s.ml === selectedMl) : null;
     if (!activeSizeObj) {
       activeSizeObj = product.sizes[product.sizes.length - 1] || product.sizes[0];
     }
     const currentMl = activeSizeObj.ml;
     const currentPrice = activeSizeObj.price;
-    app.selectedSize = currentMl;
-    app.selectedPrice = currentPrice;
+    if (typeof app !== 'undefined') {
+      app.selectedSize = currentMl;
+      app.selectedPrice = currentPrice;
+    }
     const unitPricePerMl = (currentPrice / currentMl).toFixed(2);
     const detailMythosInfo = store.calculateProductMythos(currentPrice);
 
@@ -3321,8 +3324,8 @@ const Components = {
   },
 
   /* Render PayU / Hosted Gateway Instant Checkout Modal */
-  renderPayUModal(productOrCart) {
-    const isSingleProduct = !!productOrCart.id;
+  renderPayUModal(productOrCart = {}) {
+    const isSingleProduct = !!(productOrCart && productOrCart.id);
     const baseSubtotal = isSingleProduct ? (app.selectedPrice || productOrCart.price) : store.getCartTotal();
     const appliedReward = isSingleProduct ? null : store.getAppliedReward();
     const appliedGift = isSingleProduct ? null : store.getAppliedGift();
