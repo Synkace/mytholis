@@ -1401,37 +1401,37 @@ const Components = {
 
       ${store.cart.length > 0 ? `
         <div class="modal-footer modal-cart-footer">
-          <div class="modal-subtotal-row" style="flex-direction: column; gap: 0.25rem;">
+          <div class="modal-subtotal-row">
             ${discountAmount > 0 ? `
-              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); width: 100%;">
+              <div class="modal-subtotal-line">
                 <span>Subtotal</span>
                 <span>${store.formatPrice(rawSubtotal)}</span>
               </div>
-              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--gold-light); width: 100%;">
+              <div class="modal-concession-line">
                 <span>Concession (${appliedReward ? appliedReward.code : 'Reward'})</span>
                 <span>-${store.formatPrice(discountAmount)}</span>
               </div>
             ` : ''}
             ${appliedGift ? `
-              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--gold-light); width: 100%;">
+              <div class="modal-concession-line">
                 <span>Vault Flacon Gift (${appliedGift.name})</span>
-                <span class="glass-pill" style="font-size: 0.65rem; padding: 0.1rem 0.4rem;">FREE</span>
+                <span class="glass-pill" style="font-size: 0.62rem; padding: 0.05rem 0.35rem;">FREE</span>
               </div>
             ` : ''}
-            <div style="display: flex; justify-content: space-between; font-size: 0.95rem; width: 100%; margin-top: 0.15rem; border-top: 1px solid rgba(212, 175, 55, 0.2); padding-top: 0.35rem;">
-              <span>Total (Incl. all taxes)</span>
-              <span class="gold-text modal-total-amount">${store.formatPrice(finalTotal)}</span>
+            <div class="modal-total-line">
+              <span class="modal-total-label">Total (Incl. all taxes)</span>
+              <span class="modal-total-amount">${store.formatPrice(finalTotal)}</span>
             </div>
           </div>
-          <div class="modal-cart-actions-row" style="flex-direction: column; gap: 0.5rem;">
-            <button class="btn btn-gold modal-checkout-btn" style="width: 100%; padding: 0.85rem; font-weight: 700; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.9rem;" onclick="app.checkoutCartFastrr(event)">
+          <div class="modal-cart-actions-row">
+            <button class="cart-checkout-primary-btn" onclick="app.checkoutCartFastrr(event)">
               <span>⚡</span> Checkout (UPI · Cards · COD)
             </button>
-            <div style="display: flex; gap: 0.5rem; width: 100%;">
-              <button class="btn btn-glass" style="flex: 1; font-size: 0.75rem; padding: 0.55rem 0.6rem;" onclick="app.openPayUModal()">
+            <div class="cart-secondary-actions-grid">
+              <button class="cart-secondary-btn" onclick="app.openPayUModal()">
                 Pay with PayU
               </button>
-              <button class="btn btn-glass" style="flex: 1; font-size: 0.75rem; padding: 0.55rem 0.6rem;" onclick="app.checkoutCartWhatsApp()">
+              <button class="cart-secondary-btn" onclick="app.checkoutCartWhatsApp()">
                 Order via WhatsApp
               </button>
             </div>
@@ -3383,11 +3383,11 @@ const Components = {
         </div>
 
         <!-- Instant Express Checkout Option -->
-        <div style="margin-bottom: 1.2rem;">
-          <button type="button" class="btn btn-gold modal-checkout-btn" onclick="app.closePayUModal(); ${isSingleProduct ? `app.buyNowFastrr('${productOrCart.id}', event)` : 'app.checkoutCartFastrr(event)'}" style="width: 100%; padding: 0.85rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.88rem;">
+        <div style="margin-bottom: 1rem;">
+          <button type="button" class="cart-checkout-primary-btn" onclick="app.closePayUModal(); ${isSingleProduct ? `app.buyNowFastrr('${productOrCart.id}', event)` : 'app.checkoutCartFastrr(event)'}">
             <span>⚡</span> Instant Checkout (UPI · Cards · COD)
           </button>
-          <div class="auth-divider-line" style="margin: 0.9rem 0 0.5rem;">or continue with PayU Gateway</div>
+          <div class="auth-divider-line" style="margin: 0.75rem 0 0.45rem;">or continue with PayU Gateway</div>
         </div>
 
         <!-- Payment Method Tabs -->
