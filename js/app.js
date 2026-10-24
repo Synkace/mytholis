@@ -1758,7 +1758,7 @@ class MytholisApp {
   }
 
   async initiateFastrrCheckout(items, event, fallbackUrl = window.location.origin + '/#track-order') {
-    this.showToast('Connecting to Fastrr 1-Click Checkout...');
+    this.showToast('Connecting to Checkout...');
 
     // Resolve active coupon (e.g. FIRST20) and sync cookie for Fastrr's client script
     const appliedReward = store.getAppliedReward ? store.getAppliedReward() : null;
@@ -1801,7 +1801,7 @@ class MytholisApp {
 
       if (res && res.success && res.token) {
         this.closeAllModals(false);
-        this.showToast('Launching Fastrr 1-Click Checkout...');
+        this.showToast('Launching Secure Checkout...');
 
         const widgetUrl = this.buildFastrrWidgetUrl(res.token, res.redirect_url || fallbackUrl);
 

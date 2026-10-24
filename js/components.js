@@ -956,10 +956,10 @@ const Components = {
             <div class="transparent-bottle-frame">
               <img src="${product.image}" alt="${this.cleanText(product.name)}" class="main-bottle-view-img tilt-element" id="transparent-bottle-img" />
             </div>
-            <div class="subtitle" style="margin-top: 2rem; font-size: 1rem;">
+            <div class="showcase-bottle-caption">
               Crystal Flacon
             </div>
-            <div style="margin-top: 0.5rem;">
+            <div style="margin-top: 0.4rem;">
               <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-primary);">${product.concentration}</span>
             </div>
           </div>
@@ -1267,7 +1267,12 @@ const Components = {
             <p class="modal-subtitle">Complimentary express armored delivery across India</p>
           </div>
         </div>
-        <button class="icon-btn modal-close-btn" onclick="app.closeCartModal()" title="Close Cart">✕</button>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          ${store.cart.length > 0 ? `
+            <button type="button" class="cart-clear-link" onclick="store.clearCart()" title="Empty bag">Clear Bag</button>
+          ` : ''}
+          <button class="icon-btn modal-close-btn" onclick="app.closeCartModal()" title="Close Cart">✕</button>
+        </div>
       </div>
 
       <div class="modal-scroll-body">
@@ -1289,76 +1294,84 @@ const Components = {
             ${store.cart.map((item, idx) => `
               <div class="modal-product-item-card liquid-glass-card">
                 <img src="${item.image}" alt="${item.name}" class="modal-product-item-img" />
-                <div class="modal-product-item-info">
-                  <h5 class="modal-product-item-name">${item.name}</h5>
-                  <p class="modal-product-item-meta">${item.size}ml ${item.engraving ? `• "${item.engraving}"` : ''}</p>
-                  <span class="gold-text modal-product-item-price">${store.formatPrice(item.price * item.quantity)}</span>
+                <div class="modal-product-item-details">
+                  <div class="modal-product-item-top">
+                    <div class="modal-item-info-col">
+                      <h5 class="modal-product-item-name">${item.name}</h5>
+                      <p class="modal-product-item-meta">${item.size}ml ${item.engraving ? `• "${item.engraving}"` : ''}</p>
+                    </div>
+                    <button class="modal-remove-item-btn" onclick="store.removeFromCart(${idx})" title="Remove item from bag">
+                      ✕
+                    </button>
+                  </div>
+                  <div class="modal-product-item-bottom">
+                    <span class="gold-text modal-product-item-price">${store.formatPrice(item.price * item.quantity)}</span>
+                    <div class="modal-qty-control">
+                      <button class="icon-btn qty-btn" onclick="store.updateCartQuantity(${idx}, -1)" title="Decrease quantity">−</button>
+                      <span class="qty-num">${item.quantity}</span>
+                      <button class="icon-btn qty-btn" onclick="store.updateCartQuantity(${idx}, 1)" title="Increase quantity">+</button>
+                    </div>
+                  </div>
                 </div>
-                <div class="modal-qty-control">
-                  <button class="icon-btn qty-btn" onclick="store.updateCartQuantity(${idx}, -1)">-</button>
-                  <span class="qty-num">${item.quantity}</span>
-                  <button class="icon-btn qty-btn" onclick="store.updateCartQuantity(${idx}, 1)">+</button>
-                </div>
-                <button class="icon-btn modal-remove-btn" onclick="store.removeFromCart(${idx})" title="Remove item">✕</button>
               </div>
             `).join('')}
           </div>
 
           <!-- Sixth Sense Guarantee Callout Banner (if Sixth Sense in cart) -->
           ${store.cart.some(i => i.id === 'mytholis-discovery-set') ? `
-            <div class="coffret-guarantee-cart-alert liquid-glass-card" style="margin-top: 0.9rem; padding: 0.85rem 1rem; border: 1px solid var(--gold-primary); background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(4, 24, 18, 0.7) 100%);">
-              <div style="display: flex; align-items: center; gap: 0.6rem; color: var(--gold-light); font-weight: 700; font-size: 0.84rem;">
+            <div class="coffret-guarantee-cart-alert liquid-glass-card" style="margin-top: 0.6rem; padding: 0.65rem 0.85rem; border: 1px solid var(--gold-primary); background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(4, 24, 18, 0.7) 100%);">
+              <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--gold-light); font-weight: 700; font-size: 0.82rem;">
                 Sixth Sense Guarantee Activated
               </div>
-              <p style="font-size: 0.76rem; color: var(--text-muted); margin: 0.3rem 0 0; line-height: 1.5;">
+              <p style="font-size: 0.74rem; color: var(--text-muted); margin: 0.25rem 0 0; line-height: 1.45;">
                 Includes a <strong>₹1,000 voucher</strong> redeemable against your first full 100ml flacon!
               </p>
             </div>
           ` : ''}
 
           <!-- Vault Concessions & Voucher Input -->
-          <div class="modal-section-box liquid-glass-card" style="margin-top: 1rem; padding: 1rem;">
-            <div class="modal-section-header" style="margin-bottom: 0.6rem;">
-              <h5 class="modal-section-title" style="font-size: 0.82rem;">Mythos Society Concession / Voucher</h5>
+          <div class="modal-section-box liquid-glass-card" style="margin-top: 0.65rem; padding: 0.75rem 0.85rem;">
+            <div class="modal-section-header" style="margin-bottom: 0.45rem;">
+              <h5 class="modal-section-title" style="font-size: 0.8rem;">Mythos Society Concession / Voucher</h5>
               <span class="modal-section-hint">Margin guardrails applied</span>
             </div>
 
             <!-- First-Time Patron Offer (20% OFF) -->
             ${!appliedReward ? `
-              <div class="first-buyer-offer-banner liquid-glass-card" style="background: linear-gradient(135deg, rgba(212,175,55,0.18), rgba(4,24,18,0.85)); border: 1px solid rgba(212, 175, 55, 0.45); padding: 0.75rem 0.9rem; border-radius: 8px; margin-bottom: 0.8rem; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;">
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                  <span style="font-size: 1.1rem;">👑</span>
+              <div class="first-buyer-offer-banner liquid-glass-card" style="background: linear-gradient(135deg, rgba(212,175,55,0.18), rgba(4,24,18,0.85)); border: 1px solid rgba(212, 175, 55, 0.45); padding: 0.55rem 0.75rem; border-radius: 8px; margin-bottom: 0.55rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.45rem;">
+                  <span style="font-size: 1rem;">👑</span>
                   <div>
-                    <div style="font-size: 0.78rem; font-weight: 700; color: var(--gold-light);">First-Time Patron Offer: 20% OFF</div>
-                    <div style="font-size: 0.68rem; color: var(--text-muted);">Enjoy 20% off your first order with code <strong style="color: var(--gold-primary);">FIRST20</strong></div>
+                    <div style="font-size: 0.76rem; font-weight: 700; color: var(--gold-light);">First-Time Patron Offer: 20% OFF</div>
+                    <div style="font-size: 0.66rem; color: var(--text-muted);">Enjoy 20% off your first order with code <strong style="color: var(--gold-primary);">FIRST20</strong></div>
                   </div>
                 </div>
-                <button type="button" class="btn btn-gold" style="font-size: 0.68rem; padding: 0.35rem 0.7rem; white-space: nowrap;" onclick="app.applyCartPromoCode('FIRST20')">
+                <button type="button" class="btn btn-gold" style="font-size: 0.66rem; padding: 0.3rem 0.6rem; white-space: nowrap;" onclick="app.applyCartPromoCode('FIRST20')">
                   Apply 20% ✦
                 </button>
               </div>
             ` : ''}
 
             ${appliedReward ? `
-              <div class="applied-voucher-banner" style="background: rgba(212, 175, 55, 0.12); border: 1px solid var(--gold-primary); padding: 0.8rem; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; margin-bottom: 0.6rem;">
+              <div class="applied-voucher-banner" style="background: rgba(212, 175, 55, 0.12); border: 1px solid var(--gold-primary); padding: 0.6rem 0.75rem; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem;">
                 <div>
-                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <div style="display: flex; align-items: center; gap: 0.4rem;">
                     <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">${appliedReward.code}</span>
-                    <strong style="color: var(--gold-light); font-size: 0.85rem;">${appliedReward.title}</strong>
+                    <strong style="color: var(--gold-light); font-size: 0.82rem;">${appliedReward.title}</strong>
                   </div>
-                  <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 0.2rem;">
+                  <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">
                     ${appliedReward.type === 'discount' 
                       ? `Concession applied: -${store.formatPrice(discountAmount)} (Capped at 30% of cart / ₹2,500 max)` 
                       : `Complimentary Vault Gift: ${appliedGift ? appliedGift.name : 'Exclusive Flacon'} attached`
                     }
                   </div>
                 </div>
-                <button class="icon-btn" onclick="app.removeCartRewardCode()" title="Remove Voucher" style="color: #ff6b6b; font-size: 0.9rem;">✕</button>
+                <button class="icon-btn" onclick="app.removeCartRewardCode()" title="Remove Voucher" style="color: #ff6b6b; font-size: 0.85rem; padding: 0.2rem 0.4rem;">✕</button>
               </div>
             ` : `
-              <div style="display: flex; gap: 0.5rem; margin-bottom: 0.6rem;">
-                <input type="text" id="cart-voucher-input" class="engraving-input" placeholder="Enter MYTH-... Code" style="margin: 0; text-transform: uppercase; font-size: 0.82rem; padding: 0.5rem 0.8rem;" />
-                <button class="btn btn-gold" style="font-size: 0.75rem; padding: 0.5rem 1rem; white-space: nowrap;"
+              <div style="display: flex; gap: 0.4rem; margin-bottom: 0.5rem;">
+                <input type="text" id="cart-voucher-input" class="engraving-input" placeholder="Enter MYTH-... Code" style="margin: 0; text-transform: uppercase; font-size: 0.8rem; padding: 0.45rem 0.75rem;" />
+                <button class="btn btn-gold" style="font-size: 0.72rem; padding: 0.45rem 0.85rem; white-space: nowrap;"
                         onclick="const el = document.getElementById('cart-voucher-input'); if(el && el.value.trim()){ app.applyCartRewardCode(el.value.trim()); }">
                   Apply
                 </button>
@@ -1366,10 +1379,10 @@ const Components = {
             `}
 
             ${!appliedReward && unusedCodes.length > 0 ? `
-              <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; margin-top: 0.5rem;">
-                <span style="font-size: 0.7rem; color: var(--text-muted);">Quick apply:</span>
+              <div style="display: flex; gap: 0.35rem; flex-wrap: wrap; align-items: center; margin-top: 0.4rem;">
+                <span style="font-size: 0.68rem; color: var(--text-muted);">Quick apply:</span>
                 ${unusedCodes.slice(0, 3).map(c => `
-                  <button class="glass-pill" style="font-size: 0.65rem; cursor: pointer; padding: 0.2rem 0.6rem;" onclick="app.applyCartRewardCode('${c.code}')">
+                  <button class="glass-pill" style="font-size: 0.64rem; cursor: pointer; padding: 0.2rem 0.5rem;" onclick="app.applyCartRewardCode('${c.code}')">
                     ${c.code} (${c.type === 'discount' ? `₹${c.amount}` : 'Gift'})
                   </button>
                 `).join('')}
@@ -1377,7 +1390,7 @@ const Components = {
             ` : ''}
 
             <!-- Estimated Mythos Earnings -->
-            <div style="margin-top: 0.8rem; padding: 0.6rem 0.8rem; border-radius: 8px; background: rgba(4, 24, 18, 0.4); border: 1px solid rgba(212, 175, 55, 0.15); font-size: 0.74rem; color: var(--gold-light); display: flex; align-items: center; gap: 0.5rem;">
+            <div style="margin-top: 0.55rem; padding: 0.5rem 0.7rem; border-radius: 8px; background: rgba(4, 24, 18, 0.4); border: 1px solid rgba(212, 175, 55, 0.15); font-size: 0.72rem; color: var(--gold-light); display: flex; align-items: center; gap: 0.5rem;">
               <div>
                 Acquisition Earnings: <strong>+${estLoyalty.spendEarned} Spendable M</strong> & <strong>+${estLoyalty.legacyEarned} Legacy M</strong>
               </div>
@@ -1388,37 +1401,37 @@ const Components = {
 
       ${store.cart.length > 0 ? `
         <div class="modal-footer modal-cart-footer">
-          <div class="modal-subtotal-row" style="flex-direction: column; gap: 0.3rem;">
+          <div class="modal-subtotal-row" style="flex-direction: column; gap: 0.25rem;">
             ${discountAmount > 0 ? `
-              <div style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-muted); width: 100%;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); width: 100%;">
                 <span>Subtotal</span>
                 <span>${store.formatPrice(rawSubtotal)}</span>
               </div>
-              <div style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--gold-light); width: 100%;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--gold-light); width: 100%;">
                 <span>Concession (${appliedReward ? appliedReward.code : 'Reward'})</span>
                 <span>-${store.formatPrice(discountAmount)}</span>
               </div>
             ` : ''}
             ${appliedGift ? `
-              <div style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--gold-light); width: 100%;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--gold-light); width: 100%;">
                 <span>Vault Flacon Gift (${appliedGift.name})</span>
                 <span class="glass-pill" style="font-size: 0.65rem; padding: 0.1rem 0.4rem;">FREE</span>
               </div>
             ` : ''}
-            <div style="display: flex; justify-content: space-between; font-size: 1rem; width: 100%; margin-top: 0.2rem; border-top: 1px solid rgba(212, 175, 55, 0.2); padding-top: 0.4rem;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.95rem; width: 100%; margin-top: 0.15rem; border-top: 1px solid rgba(212, 175, 55, 0.2); padding-top: 0.35rem;">
               <span>Total (Incl. all taxes)</span>
               <span class="gold-text modal-total-amount">${store.formatPrice(finalTotal)}</span>
             </div>
           </div>
-          <div class="modal-cart-actions-row" style="flex-direction: column; gap: 0.6rem;">
-            <button class="btn btn-gold" style="width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #FF6C37 0%, #D84210 100%); color: #ffffff; font-weight: 700; box-shadow: 0 4px 18px rgba(255, 108, 55, 0.35); display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: none; font-size: 0.9rem;" onclick="app.checkoutCartFastrr(event)">
-              <span>⚡</span> Fastrr 1-Click Checkout (UPI · Cards · COD)
+          <div class="modal-cart-actions-row" style="flex-direction: column; gap: 0.5rem;">
+            <button class="btn btn-gold modal-checkout-btn" style="width: 100%; padding: 0.85rem; font-weight: 700; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.9rem;" onclick="app.checkoutCartFastrr(event)">
+              <span>⚡</span> Checkout (UPI · Cards · COD)
             </button>
-            <div style="display: flex; gap: 0.6rem; width: 100%;">
-              <button class="btn btn-glass" style="flex: 1;" onclick="app.openPayUModal()">
-                Pay with PayU (UPI · Cards)
+            <div style="display: flex; gap: 0.5rem; width: 100%;">
+              <button class="btn btn-glass" style="flex: 1; font-size: 0.75rem; padding: 0.55rem 0.6rem;" onclick="app.openPayUModal()">
+                Pay with PayU
               </button>
-              <button class="btn btn-glass" style="flex: 1;" onclick="app.checkoutCartWhatsApp()">
+              <button class="btn btn-glass" style="flex: 1; font-size: 0.75rem; padding: 0.55rem 0.6rem;" onclick="app.checkoutCartWhatsApp()">
                 Order via WhatsApp
               </button>
             </div>
@@ -3369,10 +3382,10 @@ const Components = {
           ` : ''}
         </div>
 
-        <!-- Fastrr 1-Click Express Checkout Option -->
+        <!-- Instant Express Checkout Option -->
         <div style="margin-bottom: 1.2rem;">
-          <button type="button" class="btn btn-gold" onclick="app.closePayUModal(); ${isSingleProduct ? `app.buyNowFastrr('${productOrCart.id}', event)` : 'app.checkoutCartFastrr(event)'}" style="width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #FF6C37 0%, #D84210 100%); color: #ffffff; font-weight: 700; box-shadow: 0 4px 18px rgba(255, 108, 55, 0.35); display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: none; font-size: 0.88rem;">
-            <span>⚡</span> Fastrr 1-Click Express Checkout (Fastest)
+          <button type="button" class="btn btn-gold modal-checkout-btn" onclick="app.closePayUModal(); ${isSingleProduct ? `app.buyNowFastrr('${productOrCart.id}', event)` : 'app.checkoutCartFastrr(event)'}" style="width: 100%; padding: 0.85rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.88rem;">
+            <span>⚡</span> Instant Checkout (UPI · Cards · COD)
           </button>
           <div class="auth-divider-line" style="margin: 0.9rem 0 0.5rem;">or continue with PayU Gateway</div>
         </div>

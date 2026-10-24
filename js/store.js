@@ -530,6 +530,12 @@ class MytholisStore {
     }
   }
 
+  clearCart() {
+    this.cart = [];
+    this.saveLocalStorage('mytholis_cart', this.cart);
+    this.notify();
+  }
+
   updateCartQuantity(index, delta) {
     if (this.cart[index]) {
       this.cart[index].quantity += delta;
