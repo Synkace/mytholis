@@ -1258,11 +1258,10 @@ const Components = {
     return `
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div class="modal-crest-icon">
-            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-              <line x1="3" y1="6" x2="21" y2="6"/>
-              <path d="M16 10a4 4 0 0 1-8 0"/>
+          <div class="modal-crest-icon" title="Bag">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 7h12l1.5 13H4.5L6 7z"/>
+              <path d="M9 7V5a3 3 0 0 1 6 0v2"/>
             </svg>
           </div>
           <div>
@@ -1296,7 +1295,7 @@ const Components = {
           <div class="modal-items-list">
             ${store.cart.map((item, idx) => `
               <div class="modal-product-item-card liquid-glass-card">
-                <img src="${item.image}" alt="${item.name}" class="modal-product-item-img" />
+                <img src="${item.image}" alt="${this.cleanText(item.name)}" class="modal-product-item-img" />
                 <div class="modal-product-item-details">
                   <div class="modal-product-item-top">
                     <div class="modal-item-info-col">

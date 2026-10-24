@@ -1990,8 +1990,9 @@ div#cardsRow {
   border-radius: 24px;
   padding: 0;
   overflow: hidden;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 40px rgba(212, 175, 55, 0.25);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95), 0 0 40px rgba(212, 175, 55, 0.25);
   border: 1px solid rgba(212, 175, 55, 0.35);
+  background: #041812 !important;
   transform: translateY(20px) scale(0.96);
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: auto;
@@ -2005,22 +2006,23 @@ div#cardsRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.1rem 1.4rem;
+  padding: 1rem 1.3rem;
   border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-  background: rgba(4, 24, 18, 0.7);
+  background: rgba(3, 18, 14, 0.95);
   flex-shrink: 0;
 }
 
 .modal-crest-icon {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: rgba(212, 175, 55, 0.15);
-  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  color: var(--gold-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  flex-shrink: 0;
 }
 
 .modal-title {
@@ -2118,21 +2120,27 @@ div#cardsRow {
   border-radius: 14px;
   transition: transform 0.25s ease, border-color 0.25s ease;
   position: relative;
+  background: rgba(6, 32, 24, 0.65);
+  border: 1px solid rgba(212, 175, 55, 0.2);
 }
 
 .modal-product-item-card:hover {
   transform: translateX(2px);
-  border-color: rgba(212, 175, 55, 0.4);
+  border-color: rgba(212, 175, 55, 0.45);
 }
 
+.modal-product-item-card img,
 .modal-product-item-img {
-  width: 54px;
-  height: 54px;
-  object-fit: contain;
+  width: 48px !important;
+  height: 48px !important;
+  max-width: 48px !important;
+  max-height: 48px !important;
+  object-fit: contain !important;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.8));
-  flex-shrink: 0;
+  flex-shrink: 0 !important;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.02);
+  padding: 2px;
 }
 
 .modal-product-item-details {
@@ -3052,16 +3060,16 @@ div#cardsRow {
 
   .product-showcase-glass {
     min-height: auto;
-    padding: 1.2rem 1rem 0.9rem;
+    padding: 0.9rem 0.8rem 0.6rem;
   }
 
   .main-bottle-view-img {
-    max-height: 240px;
+    max-height: 200px;
   }
 
   .showcase-bottle-caption {
-    font-size: 0.82rem;
-    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    margin-top: 0.4rem;
   }
 
   .footer-grid {
@@ -3525,6 +3533,10 @@ div#cardsRow {
 @media (max-width: 380px) {
   .container {
     padding: 0 0.65rem;
+  }
+
+  .main-bottle-view-img {
+    max-height: 180px;
   }
 
   .brand-name {
