@@ -488,7 +488,15 @@ class MytholisApp {
     const scent = MYTHOLIS_CATALOG.find(p => p.id === scentId);
     if (!scent) return;
 
-    const shortName = scent.name.replace(/<[^>]*>/g, ' ').replace(/Extrait\s*de\s*Parfum/gi, '').trim();
+    const pyramidScentNames = {
+      'petralux': 'Petralux',
+      'ash': 'Ash',
+      'king-scar': 'King Scar',
+      'spark': 'Spark',
+      'oud-rion': 'Oud Rion',
+      'wood-sera': 'Wood Sera'
+    };
+    const shortName = pyramidScentNames[scentId] || scent.name.replace(/<[^>]*>/g, '').replace(/Extrait\s*de\s*Parfum/gi, '').trim();
 
     // Update active tab button styles
     document.querySelectorAll('.pyramid-tab-btn').forEach(btn => {

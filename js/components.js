@@ -475,10 +475,18 @@ const Components = {
         </div>
 
         ${(() => {
+          const pyramidScentNames = {
+            'petralux': 'Petralux',
+            'ash': 'Ash',
+            'king-scar': 'King Scar',
+            'spark': 'Spark',
+            'oud-rion': 'Oud Rion',
+            'wood-sera': 'Wood Sera'
+          };
           const pyramidScentIds = ['petralux', 'ash', 'king-scar', 'spark', 'oud-rion', 'wood-sera'];
           const pyramidScents = pyramidScentIds.map(id => {
             const p = MYTHOLIS_CATALOG.find(item => item.id === id);
-            const shortName = p ? p.name.replace(' Extrait de Parfum', '').trim() : id;
+            const shortName = pyramidScentNames[id] || id;
             return { id, product: p, shortName };
           }).filter(s => s.product);
 
