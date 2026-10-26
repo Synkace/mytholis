@@ -2431,11 +2431,11 @@ class MytholisApp {
       `;
     } else {
       slot.innerHTML = `
-        <button class="nav-signin-btn" onclick="app.openAuthModal('signin')" title="Sign In / Register">
-          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+        <button class="icon-btn nav-signin-btn" onclick="app.openAuthModal('signin')" title="Sign In / Register" aria-label="Sign In / Register">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
           </svg>
-          <span class="nav-signin-label">Sign In</span>
         </button>
       `;
     }
