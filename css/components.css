@@ -5855,23 +5855,7 @@ div#cardsRow {
   white-space: nowrap;
 }
 
-.notched-badges-row {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 4;
-  pointer-events: none;
-}
 
-.notched-badge-pill.volume-badge {
-  background: rgba(2, 14, 9, 0.9);
-  border-color: rgba(212, 175, 55, 0.55);
-  color: #F3DF99;
-}
 
 .notched-bottom-row {
   margin-top: auto;
@@ -5988,49 +5972,7 @@ div#cardsRow {
   transform: scale(1.04);
 }
 
-/* ==========================================================================
-   MASTER COLLECTION 3x2 RESPONSIVE GRID
-   ========================================================================== */
-.master-collection-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2.2rem 1.8rem;
-  width: 100%;
-  max-width: 1140px;
-  margin: 0 auto;
-}
 
-@media (max-width: 1024px) {
-  .master-collection-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.8rem;
-    max-width: 760px;
-  }
-}
-
-@media (max-width: 640px) {
-  .master-collection-grid {
-    grid-template-columns: 1fr;
-    gap: 1.8rem;
-    max-width: 360px;
-  }
-}
-
-.master-collection-grid .sovereign-slider-card {
-  width: 100%;
-  max-width: 350px;
-  min-width: 0;
-  height: 485px;
-  min-height: 485px;
-  max-height: 485px;
-  margin: 0 auto;
-}
-
-.master-collection-grid .sovereign-card-svg-frame,
-.master-collection-grid .sovereign-card-body {
-  width: 100%;
-  height: 485px;
-}
 
 .notched-docked-cart-btn:active {
   transform: scale(0.97);

@@ -142,10 +142,7 @@ const Components = {
         <div class="sovereign-card-body">
           <!-- Top Image Showcase Pedestal -->
           <div class="notched-card-media">
-            <div class="notched-badges-row">
-              <span class="notched-badge-pill">${badgeText}</span>
-              <span class="notched-badge-pill volume-badge">50ml Extrait</span>
-            </div>
+            <span class="notched-badge-pill">${badgeText}</span>
             <div class="notched-media-halo"></div>
             <img src="${product.image}" alt="${this.cleanText(product.name)}" class="notched-bottle-img" loading="lazy" />
             <div class="notched-bottle-shadow"></div>
@@ -309,25 +306,55 @@ const Components = {
         </div>
       </section>
 
-      <!-- ============ THE MASTER EXTRAIT COLLECTION (3x2 RESPONSIVE GRID) ============ -->
-      <section class="container master-collection-section" id="featured-extraits-slider" style="margin: 4rem auto 6rem;">
-        <div class="section-header" style="text-align: center; margin-bottom: 2.8rem;">
-          <span class="tagline" style="color: var(--gold-primary); font-size: 0.82rem; letter-spacing: 0.3em; text-transform: uppercase;">
-            HAUTE PARFUMERIE · 40% PURE EXTRAIT CONCENTRATION
-          </span>
-          <h2 class="font-title" style="font-size: clamp(2rem, 3.8vw, 2.8rem); color: var(--gold-light); margin: 0.5rem 0 0.3rem;">
-            The Master Extrait Collection
-          </h2>
-          <div class="divider" style="margin: 0.8rem auto 0;"></div>
+      <!-- ============ MASTER EXTRAIT FLACON PRODUCT SLIDER SECTION ============ -->
+      <section class="container product-slider-section" id="featured-extraits-slider" style="margin: 3rem auto 6rem;">
+        <div class="product-slider-header">
+          <div>
+            <span class="tagline" style="color: var(--gold-primary); font-size: 0.8rem; letter-spacing: 0.3em; text-transform: uppercase;">
+              HAUTE PARFUMERIE · 40% PURE EXTRAIT CONCENTRATION
+            </span>
+            <h2 class="font-title" style="font-size: clamp(1.8rem, 3.5vw, 2.5rem); color: var(--gold-light); margin: 0.4rem 0 0.2rem;">
+              The Master Extrait Collection
+            </h2>
+            <div class="divider" style="margin: 0.8rem 0 0;"></div>
+          </div>
+
+          <!-- Slider Navigation Arrows -->
+          <div class="slider-nav-controls">
+            <button class="slider-nav-btn slider-prev-btn" onclick="app.scrollProductSlider(-1)" aria-label="Previous Fragrance" title="Previous Fragrance">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <button class="slider-nav-btn slider-next-btn" onclick="app.scrollProductSlider(1)" aria-label="Next Fragrance" title="Next Fragrance">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
         </div>
 
-        <!-- 3x2 Responsive Masterpieces Grid -->
-        <div class="master-collection-grid">
-          ${(typeof store !== 'undefined' && store.getProducts ? store.getProducts() : MYTHOLIS_CATALOG)
-            .filter(p => p.id !== 'mytholis-discovery-set')
-            .slice(0, 6)
-            .map(p => this.renderProductSliderCard(p))
-            .join('')}
+        <!-- Horizontal Scrollable Track Container -->
+        <div class="product-slider-wrapper">
+          <div class="product-slider-track" id="productSliderTrack">
+            ${(typeof store !== 'undefined' && store.getProducts ? store.getProducts() : MYTHOLIS_CATALOG)
+              .filter(p => p.id !== 'mytholis-discovery-set')
+              .map(p => `
+                <div class="product-slider-item">
+                  ${this.renderProductSliderCard(p)}
+                </div>
+              `).join('')}
+          </div>
+        </div>
+
+        <!-- Slider Pagination / Progress Bar -->
+        <div class="product-slider-footer">
+          <div class="slider-progress-track">
+            <div class="slider-progress-bar" id="productSliderProgress"></div>
+          </div>
+          <div class="slider-hint">
+            <span>← Drag or Swipe to Explore Extraits →</span>
+          </div>
         </div>
       </section>
 
