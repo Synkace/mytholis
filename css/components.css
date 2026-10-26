@@ -1128,73 +1128,24 @@ div#cardsRow {
 
 .hero-card-row .character {
   width: 100%;
-  opacity: 1; /* Always visible so flacons never appear empty or blank */
+  opacity: 0;
   transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1), 
-              filter 0.45s ease;
+              opacity 0.45s cubic-bezier(0.2, 0.9, 0.3, 1);
   position: absolute;
-  top: -15px;
+  top: 0;
   left: 0;
-  z-index: 4;
+  z-index: 1;
   pointer-events: none;
   transform: translate3d(0%, 0%, 0);
-  will-change: transform;
+  will-change: transform, opacity;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.9));
 }
 
 .hero-card-row .card:hover .character,
 .hero-card-row .card.is-active .character {
-  transform: translate3d(0%, -18%, 60px) scale(1.08);
-  filter: drop-shadow(0 22px 35px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 20px rgba(212, 175, 55, 0.4));
-}
-
-/* Card Info Overlay for Signature House Collection */
-.hero-card-meta {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 16px 20px;
-  background: linear-gradient(180deg, transparent 0%, rgba(2, 14, 9, 0.92) 35%, rgba(2, 14, 9, 0.98) 100%);
-  border-radius: 0 0 14px 14px;
-  z-index: 5;
-  text-align: center;
-  pointer-events: auto;
-  box-sizing: border-box;
-}
-
-.hero-card-family {
-  display: inline-block;
-  font-size: 0.7rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--gold-primary);
-  margin-bottom: 4px;
-}
-
-.hero-card-title {
-  font-family: var(--font-serif-title);
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: #FFFFFF;
-  margin: 0 0 4px 0;
-  letter-spacing: 0.02em;
-}
-
-.hero-card-badge {
-  display: block;
-  font-size: 0.72rem;
-  color: #A3B899;
-  margin-bottom: 12px;
-}
-
-.hero-card-cta {
-  width: 100%;
-  padding: 0.55rem 1rem !important;
-  font-size: 0.8rem !important;
-  letter-spacing: 0.05em;
-  border-radius: 30px;
+  opacity: 1;
+  transform: translate3d(0%, -30%, 100px);
 }
 
 /* --------------------------------------------------------------------------
@@ -3173,10 +3124,10 @@ div#cardsRow {
   }
 
   .hero-card-row .card {
-    width: min(85vw, 280px);
-    height: 420px;
+    width: min(80vw, 250px);
+    height: calc(min(80vw, 250px) * 1.5);
     transform: translate3d(0, 0, 0) scale(1);
-    padding: 0;
+    padding: 0 24px;
     flex: 0 0 auto;
     transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1);
     will-change: transform;

@@ -401,60 +401,33 @@ const Components = {
         </div>
 
         <div class="hero-card-row">
-          <!-- Card 1: King Scar -->
-          <a href="javascript:void(0)" onclick="app.openProductView('king-scar')" title="King Scar Extrait de Parfum">
+          <a href="javascript:void(0)" onclick="app.openProductView('king-scar')" alt="King Scar">
             <div class="card">
               <div class="wrapper king-scar">
                 <img src="assets/hero/kingscarcard.webp" class="cover-image base-card-img" alt="King Scar Cover" loading="eager" decoding="async" />
                 <img src="assets/hero/kingscarbg.webp" class="cover-image hover-bg-img" alt="King Scar Atmosphere" loading="eager" decoding="async" />
               </div>
               <img src="assets/product/1kingscar.webp" class="character" alt="King Scar Bottle" loading="eager" decoding="async" />
-              <div class="hero-card-meta">
-                <span class="hero-card-family">Aromatic · Masculine</span>
-                <h3 class="hero-card-title">King Scar</h3>
-                <span class="hero-card-badge">50ml Extrait de Parfum · 40%</span>
-                <button class="btn btn-gold hero-card-cta" onclick="event.stopPropagation(); app.addProductToCart('king-scar')">
-                  Acquire King Scar • ₹5,999
-                </button>
-              </div>
             </div>
           </a>
 
-          <!-- Card 2: Oud Rion -->
-          <a href="javascript:void(0)" onclick="app.openProductView('oud-rion')" title="Oud Rion Extrait de Parfum">
+          <a href="javascript:void(0)" onclick="app.openProductView('oud-rion')" alt="Oud Rion">
             <div class="card">
               <div class="wrapper oud-rion">
                 <img src="assets/hero/oudrioncard.webp" class="cover-image base-card-img" alt="Oud Rion Cover" loading="eager" decoding="async" />
                 <img src="assets/hero/oudrionbg.webp" class="cover-image hover-bg-img" alt="Oud Rion Atmosphere" loading="eager" decoding="async" />
               </div>
               <img src="assets/product/3oudrion.webp" class="character" alt="Oud Rion Bottle" loading="eager" decoding="async" />
-              <div class="hero-card-meta">
-                <span class="hero-card-family">Woody · Royal Oud</span>
-                <h3 class="hero-card-title">Oud Rion</h3>
-                <span class="hero-card-badge">50ml Extrait de Parfum · 40%</span>
-                <button class="btn btn-gold hero-card-cta" onclick="event.stopPropagation(); app.addProductToCart('oud-rion')">
-                  Acquire Oud Rion • ₹6,999
-                </button>
-              </div>
             </div>
           </a>
 
-          <!-- Card 3: Spark -->
-          <a href="javascript:void(0)" onclick="app.openProductView('spark')" title="Spark Extrait de Parfum">
+          <a href="javascript:void(0)" onclick="app.openProductView('spark')" alt="Spark">
             <div class="card">
               <div class="wrapper spark">
                 <img src="assets/hero/sparkcard.webp" class="cover-image base-card-img" alt="Spark Cover" loading="eager" decoding="async" />
                 <img src="assets/hero/sparkbg.webp" class="cover-image hover-bg-img" alt="Spark Atmosphere" loading="eager" decoding="async" />
               </div>
               <img src="assets/product/4spark.webp" class="character" alt="Spark Bottle" loading="eager" decoding="async" />
-              <div class="hero-card-meta">
-                <span class="hero-card-family">Electric · Aromatic</span>
-                <h3 class="hero-card-title">Spark</h3>
-                <span class="hero-card-badge">50ml Extrait de Parfum · 40%</span>
-                <button class="btn btn-gold hero-card-cta" onclick="event.stopPropagation(); app.addProductToCart('spark')">
-                  Acquire Spark • ₹5,499
-                </button>
-              </div>
             </div>
           </a>
         </div>
