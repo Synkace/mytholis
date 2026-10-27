@@ -1,0 +1,9 @@
+android/
+.gradle/
+.agents/
+scratch/
+*.apk
+.idea/
+.vscode/
+.git/
+*.log

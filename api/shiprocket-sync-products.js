@@ -15,8 +15,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const email = process.env.SHIPROCKET_EMAIL || process.env.SELLER_EMAIL || 'api@mytholis.com';
-    const password = process.env.SHIPROCKET_PASSWORD || process.env.SELLER_PASSWORD || 'naR3$pTJstLRVzbADNIQoTMH0VsJ!YkN';
+    const email = process.env.SHIPROCKET_EMAIL || process.env.SELLER_EMAIL;
+    const password = process.env.SHIPROCKET_PASSWORD || process.env.SELLER_PASSWORD;
+
+    if (!email || !password) {
+      return res.status(500).json({ success: false, error: 'Shiprocket seller credentials not configured in environment' });
+    }
 
     // 1. Authenticate with Shiprocket API
     const authRes = await fetch('https://apiv2.shiprocket.in/v1/external/auth/login', {
