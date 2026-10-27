@@ -93,7 +93,7 @@ export default async function handler(req, res) {
           continue;
         }
 
-        // If Firebase Admin DB is not initialized on Vercel
+        // If Firebase Admin DB is not initialized
         if (!adminDb) {
           console.warn('[Dispatch Webhook] adminDb in standby mode. Skipping Firestore write.');
           results.push({
