@@ -59,11 +59,9 @@ export function checkIsAdmin(user, profile = {}) {
   return false;
 }
 
-// Auto-resolve custom auth domain: if on mytholis.com, use custom domain for white-label Google Sign-In
-const resolvedAuthDomain = (import.meta.env && import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) ||
-  (typeof window !== 'undefined' && (window.location.hostname === 'mytholis.com' || window.location.hostname === 'www.mytholis.com')
-    ? 'mytholis.com'
-    : 'mytholis-1.firebaseapp.com');
+// Standard Firebase Auth Domain (whitelisted by default in Google Cloud Console OAuth)
+// If you want custom white-label domain (mytholis.com), set VITE_FIREBASE_AUTH_DOMAIN=mytholis.com AND add https://mytholis.com/__/auth/handler to Google Cloud Console OAuth Authorized Redirect URIs
+const resolvedAuthDomain = (import.meta.env && import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) || "mytholis-1.firebaseapp.com";
 
 // Your web app's Firebase configuration with Vite environment variable support
 export const firebaseConfig = {
