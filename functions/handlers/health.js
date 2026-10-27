@@ -14,9 +14,7 @@ export default async function handler(req, res) {
   const status = {
     api_server: 'ok',
     env_configured: Boolean(
-      (process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID) &&
-      (process.env.FIREBASE_CLIENT_EMAIL || process.env.FIREBASE_SERVICE_ACCOUNT) &&
-      (process.env.FIREBASE_PRIVATE_KEY || process.env.FIREBASE_SERVICE_ACCOUNT)
+      process.env.GCLOUD_PROJECT || process.env.MYTHOLIS_PROJECT_ID || process.env.FIREBASE_CONFIG
     ),
     firestore_admin: adminDb ? 'ready' : 'standby',
     auth_admin: adminAuth ? 'ready' : 'standby',

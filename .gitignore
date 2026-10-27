@@ -5,6 +5,15 @@ dist/
 .DS_Store
 .env
 .env.local
+.env.*
+!.env.example
+.firebase/
+functions/.env
+functions/.env.*
+!functions/.env.example
+functions/node_modules/
+firebase-debug.log
+firebase-debug.*.log
 scratch/
 .idea/
 android/.idea/

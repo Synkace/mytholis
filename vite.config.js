@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import crypto from 'crypto';
-import shiprocketSyncProductsHandler from './api/shiprocket-sync-products.js';
+import shiprocketSyncProductsHandler from './functions/handlers/shiprocket-sync-products.js';
 
 const shiprocketSyncMiddleware = (req, res, next) => {
   if (req.url && (req.url.startsWith('/api/shiprocket-sync-products') || req.url.startsWith('/api/shiprocket-sync-products/'))) {
@@ -67,8 +67,12 @@ const fastrrApiMiddleware = (req, res, next) => {
         };
 
         const rawBody = JSON.stringify(payload);
-        const secret = 'bgHG23KYS9CZi8Pvo2UgmuyBWlacgKqo';
-        const apiKey = 'GkmYB8JVVgvPFLiN';
+        const secret = process.env.FASTRR_SECRET_KEY || process.env.FASTRR_SECRET;
+        const apiKey = process.env.FASTRR_API_KEY;
+        if (!secret || !apiKey) {
+          res.setHeader('Content-Type', 'application/json');
+          return res.end(JSON.stringify({ success: false, error: 'Fastrr credentials not configured' }));
+        }
         const hmac = crypto.createHmac('sha256', secret).update(rawBody).digest('base64');
 
         const resp = await fetch('https://checkout-api.shiprocket.com/api/v1/access-token/checkout', {
