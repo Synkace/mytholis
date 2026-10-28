@@ -2457,11 +2457,13 @@ const Components = {
     `;
   },
 
-  /* Render Dedicated Luxury Patron Auth Modal (Sign In & Sign Up) */
-  renderAuthModal(activeTab = 'signin') {
-    const active = activeTab === 'register' ? 'register' : 'signin';
+  /* Render Dedicated Luxury Patron Auth Modal (Phone OTP, Email & Sign Up) */
+  renderAuthModal(activeTab = 'phone') {
+    const active = activeTab === 'register' ? 'register' : (activeTab === 'signin' ? 'signin' : 'phone');
+    const isPhone = active === 'phone';
     const isSignIn = active === 'signin';
     const isRegister = active === 'register';
+    const otpSent = Boolean(typeof app !== 'undefined' && app.phoneOtpSent);
 
     return `
       <div class="modal-header">
@@ -2477,27 +2479,126 @@ const Components = {
 
       <div class="modal-scroll-body" style="padding: 1.25rem;">
         <!-- Auth Navigation Tabs -->
-        <div class="auth-nav-tabs" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 1.2rem;">
-          <button class="auth-nav-tab-btn ${isSignIn ? 'active' : ''}" onclick="app.switchAuthTab('signin')" style="font-size: 0.8rem; padding: 0.65rem 0.5rem; font-weight: 600;">
+        <div class="auth-nav-tabs" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.35rem; margin-bottom: 1.2rem;">
+          <button class="auth-nav-tab-btn ${isPhone ? 'active' : ''}" onclick="app.switchAuthTab('phone')" style="font-size: 0.76rem; padding: 0.65rem 0.35rem; font-weight: 600;">
+            📱 Phone OTP
+          </button>
+          <button class="auth-nav-tab-btn ${isSignIn ? 'active' : ''}" onclick="app.switchAuthTab('signin')" style="font-size: 0.76rem; padding: 0.65rem 0.35rem; font-weight: 600;">
             ✉️ Sign In
           </button>
-          <button class="auth-nav-tab-btn ${isRegister ? 'active' : ''}" onclick="app.switchAuthTab('register')" style="font-size: 0.8rem; padding: 0.65rem 0.5rem; font-weight: 600;">
-            ✨ Create Account
+          <button class="auth-nav-tab-btn ${isRegister ? 'active' : ''}" onclick="app.switchAuthTab('register')" style="font-size: 0.76rem; padding: 0.65rem 0.35rem; font-weight: 600;">
+            ✨ Register
           </button>
         </div>
 
-        ${isSignIn ? `
-          <!-- TAB 1: EMAIL & GOOGLE SIGN IN -->
+        ${isPhone ? `
+          <!-- TAB 1: PHONE OTP SIGN IN -->
           <div class="auth-tab-pane">
-            <button class="btn btn-gold" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.65rem; padding: 0.75rem 1rem; font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);" onclick="app.handleGoogleSignIn()">
-              <svg width="18" height="18" viewBox="0 0 24 24">
-                <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.7 7.4l3.7 2.9C6.3 7.5 8.9 5 12 5z"/>
-                <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
-                <path fill="#FBBC05" d="M5.4 14.7c-.2-.7-.4-1.5-.4-2.7 0-1.1.2-1.9.4-2.7L1.7 6.4C.6 8.6 0 10.2 0 12s.6 3.4 1.7 5.6l3.7-2.9z"/>
-                <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.7-2.1-6.6-4.9L1.7 16.3C3.5 20.1 7.4 23 12 23z"/>
-              </svg>
-              <span>Continue with Google</span>
-            </button>
+            ${!otpSent ? `
+              <div style="background: rgba(4, 24, 18, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px; padding: 0.75rem 0.9rem; margin-bottom: 1.1rem;">
+                <span class="glass-pill" style="font-size: 0.62rem; color: var(--gold-light); margin-bottom: 0.25rem;">INSTANT SMS PASSCODE</span>
+                <p style="font-size: 0.76rem; color: var(--text-muted); line-height: 1.45; margin: 0.2rem 0 0;">
+                  Enter your mobile number to receive a 6-digit authentication passcode directly to your phone.
+                </p>
+              </div>
+
+              <form onsubmit="event.preventDefault(); app.handleSendPhoneOtp();" style="display: flex; flex-direction: column; gap: 0.9rem;">
+                <div>
+                  <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.4rem;">Mobile Phone Number</label>
+                  <div style="display: flex; gap: 0.5rem;">
+                    <select id="auth-country-code" class="engraving-input" style="width: 105px; padding: 0.65rem 0.4rem; font-size: 0.8rem; background: rgba(4, 24, 18, 0.8); color: var(--gold-light);">
+                      <option value="+91" selected>🇮🇳 +91</option>
+                      <option value="+1">🇺🇸 +1</option>
+                      <option value="+44">🇬🇧 +44</option>
+                      <option value="+971">🇦🇪 +971</option>
+                      <option value="+65">🇸🇬 +65</option>
+                      <option value="+61">🇦🇺 +61</option>
+                      <option value="+966">🇸🇦 +966</option>
+                      <option value="+49">🇩🇪 +49</option>
+                      <option value="+33">🇫🇷 +33</option>
+                    </select>
+                    <input type="tel" id="auth-phone-number" class="engraving-input" placeholder="98765 43210" style="flex: 1;" required />
+                  </div>
+                </div>
+
+                <!-- Invisible reCAPTCHA Anchor -->
+                <div id="recaptcha-container"></div>
+
+                <button type="submit" id="btn-send-phone-otp" class="btn btn-gold" style="width: 100%; padding: 0.75rem; font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);">
+                  Request SMS Passcode
+                </button>
+              </form>
+
+              <div class="auth-divider-line">or fast sign-in with</div>
+
+              <div style="display: flex; flex-direction: column; gap: 0.55rem;">
+                <button type="button" class="btn btn-glass" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.65rem; padding: 0.7rem 1rem; font-size: 0.84rem; font-weight: 600;" onclick="app.handleGoogleSignIn()">
+                  <svg width="18" height="18" viewBox="0 0 24 24">
+                    <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.7 7.4l3.7 2.9C6.3 7.5 8.9 5 12 5z"/>
+                    <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
+                    <path fill="#FBBC05" d="M5.4 14.7c-.2-.7-.4-1.5-.4-2.7 0-1.1.2-1.9.4-2.7L1.7 6.4C.6 8.6 0 10.2 0 12s.6 3.4 1.7 5.6l3.7-2.9z"/>
+                    <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.7-2.1-6.6-4.9L1.7 16.3C3.5 20.1 7.4 23 12 23z"/>
+                  </svg>
+                  <span>Google VIP Access</span>
+                </button>
+                <button type="button" class="btn btn-glass" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.65rem; padding: 0.7rem 1rem; font-size: 0.84rem; font-weight: 600; border: 1px solid rgba(24, 119, 242, 0.4); background: rgba(24, 119, 242, 0.08); color: #f0f4fc;" onclick="app.handleFacebookSignIn()">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                  <span>Facebook VIP Access</span>
+                </button>
+              </div>
+            ` : `
+              <!-- OTP ENTRY SCREEN -->
+              <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1.2rem; text-align: center;">
+                <span class="glass-pill" style="font-size: 0.62rem; color: #10B981; border-color: #10B981; margin-bottom: 0.3rem;">PASSCODE TRANSMITTED</span>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0.3rem 0 0; line-height: 1.5;">
+                  6-digit SMS verification code dispatched to:<br />
+                  <strong style="color: var(--gold-light); font-size: 0.95rem;">${app.authPhoneNumber}</strong>
+                </p>
+              </div>
+
+              <form onsubmit="event.preventDefault(); app.handleVerifyPhoneOtp();" style="display: flex; flex-direction: column; gap: 1rem;">
+                <div>
+                  <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.4rem; text-align: center;">Enter 6-Digit Passcode</label>
+                  <input type="text" id="auth-phone-otp" class="engraving-input" placeholder="• • • • • •" maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" style="width: 100%; text-align: center; font-size: 1.4rem; letter-spacing: 0.35em; font-weight: 700; color: var(--gold-light);" required />
+                </div>
+
+                <button type="submit" id="btn-verify-phone-otp" class="btn btn-gold" style="width: 100%; padding: 0.75rem; font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);">
+                  Verify & Enter Sanctum
+                </button>
+              </form>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.2rem; font-size: 0.76rem;">
+                <button type="button" style="background: none; border: none; color: var(--gold-light); cursor: pointer; text-decoration: underline; padding: 0;" onclick="app.resendAuthPhoneOtp()">
+                  Resend SMS Code
+                </button>
+                <button type="button" style="background: none; border: none; color: var(--text-muted); cursor: pointer; text-decoration: underline; padding: 0;" onclick="app.changeAuthPhoneNumber()">
+                  Change Number
+                </button>
+              </div>
+            `}
+          </div>
+        ` : isSignIn ? `
+          <!-- TAB 2: EMAIL & SOCIAL SIGN IN -->
+          <div class="auth-tab-pane">
+            <div style="display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.9rem;">
+              <button type="button" class="btn btn-gold" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.65rem; padding: 0.72rem 1rem; font-size: 0.84rem; font-weight: 600; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);" onclick="app.handleGoogleSignIn()">
+                <svg width="18" height="18" viewBox="0 0 24 24">
+                  <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.7 7.4l3.7 2.9C6.3 7.5 8.9 5 12 5z"/>
+                  <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
+                  <path fill="#FBBC05" d="M5.4 14.7c-.2-.7-.4-1.5-.4-2.7 0-1.1.2-1.9.4-2.7L1.7 6.4C.6 8.6 0 10.2 0 12s.6 3.4 1.7 5.6l3.7-2.9z"/>
+                  <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.7-2.1-6.6-4.9L1.7 16.3C3.5 20.1 7.4 23 12 23z"/>
+                </svg>
+                <span>Continue with Google</span>
+              </button>
+              <button type="button" class="btn btn-glass" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.65rem; padding: 0.72rem 1rem; font-size: 0.84rem; font-weight: 600; border: 1px solid rgba(24, 119, 242, 0.4); background: rgba(24, 119, 242, 0.08); color: #f0f4fc;" onclick="app.handleFacebookSignIn()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                <span>Continue with Facebook</span>
+              </button>
+            </div>
 
             <div class="auth-divider-line">or sign in with email</div>
 
@@ -2530,7 +2631,7 @@ const Components = {
             </div>
           </div>
         ` : `
-          <!-- TAB 2: REGISTER ACCOUNT -->
+          <!-- TAB 3: REGISTER ACCOUNT -->
           <div class="auth-tab-pane">
             <div style="background: rgba(4, 24, 18, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px; padding: 0.75rem 0.9rem; margin-bottom: 1rem;">
               <span class="glass-pill" style="font-size: 0.62rem; color: var(--gold-light); margin-bottom: 0.3rem;">Circle of Legends Privilege</span>
@@ -2539,16 +2640,24 @@ const Components = {
               </p>
             </div>
 
-            <!-- Google Quick Register -->
-            <button class="btn btn-gold" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.65rem; padding: 0.75rem 1rem; font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);" onclick="app.handleGoogleSignIn()">
-              <svg width="18" height="18" viewBox="0 0 24 24">
-                <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.7 7.4l3.7 2.9C6.3 7.5 8.9 5 12 5z"/>
-                <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
-                <path fill="#FBBC05" d="M5.4 14.7c-.2-.7-.4-1.5-.4-2.7 0-1.1.2-1.9.4-2.7L1.7 6.4C.6 8.6 0 10.2 0 12s.6 3.4 1.7 5.6l3.7-2.9z"/>
-                <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.7-2.1-6.6-4.9L1.7 16.3C3.5 20.1 7.4 23 12 23z"/>
-              </svg>
-              <span>Quick Register with Google</span>
-            </button>
+            <!-- Social Quick Register -->
+            <div style="display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.9rem;">
+              <button type="button" class="btn btn-gold" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.65rem; padding: 0.72rem 1rem; font-size: 0.84rem; font-weight: 600; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);" onclick="app.handleGoogleSignIn()">
+                <svg width="18" height="18" viewBox="0 0 24 24">
+                  <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.7 7.4l3.7 2.9C6.3 7.5 8.9 5 12 5z"/>
+                  <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
+                  <path fill="#FBBC05" d="M5.4 14.7c-.2-.7-.4-1.5-.4-2.7 0-1.1.2-1.9.4-2.7L1.7 6.4C.6 8.6 0 10.2 0 12s.6 3.4 1.7 5.6l3.7-2.9z"/>
+                  <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.7-2.1-6.6-4.9L1.7 16.3C3.5 20.1 7.4 23 12 23z"/>
+                </svg>
+                <span>Quick Register with Google</span>
+              </button>
+              <button type="button" class="btn btn-glass" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.65rem; padding: 0.72rem 1rem; font-size: 0.84rem; font-weight: 600; border: 1px solid rgba(24, 119, 242, 0.4); background: rgba(24, 119, 242, 0.08); color: #f0f4fc;" onclick="app.handleFacebookSignIn()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                <span>Quick Register with Facebook</span>
+              </button>
+            </div>
 
             <div class="auth-divider-line">or register with email</div>
 

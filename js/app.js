@@ -2470,8 +2470,8 @@ class MytholisApp {
     this.openProfileModal();
   }
 
-  /* Dedicated Auth Modal (Sign In / Register) */
-  openAuthModal(tab = 'signin') {
+  /* Dedicated Auth Modal (Sign In / Register / Phone OTP) */
+  openAuthModal(tab = 'phone') {
     this.closeAllModals(false);
     this.activeAuthTab = tab;
     const modalBody = document.getElementById('profile-modal-body');
@@ -2523,7 +2523,7 @@ class MytholisApp {
     const modalBody = document.getElementById('profile-modal-body');
     if (modalBody) {
       if (!store.isUserLoggedIn()) {
-        modalBody.innerHTML = Components.renderAuthModal(this.activeAuthTab || 'signin');
+        modalBody.innerHTML = Components.renderAuthModal(this.activeAuthTab || 'phone');
       } else {
         modalBody.innerHTML = Components.renderProfileModal();
       }
@@ -3135,6 +3135,20 @@ class MytholisApp {
       if (store.currentView === 'profile') this.renderCurrentView();
     } else {
       this.showToast(`Sign-in error: ${result.error}`);
+    }
+  }
+
+  async handleFacebookSignIn() {
+    if (typeof firebaseService === 'undefined') return;
+    this.showToast('Connecting to Facebook VIP Sign-In...');
+    const result = await firebaseService.signInWithFacebook();
+    if (result.success) {
+      this.showToast(`Welcome to House Mytholis, ${result.user.displayName || 'Patron'}!`);
+      this.updateNavAuth();
+      this.closeProfileModal();
+      if (store.currentView === 'profile') this.renderCurrentView();
+    } else if (result.error && result.error !== 'Sign-in cancelled.') {
+      this.showToast(result.error);
     }
   }
 

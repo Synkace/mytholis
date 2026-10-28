@@ -9,6 +9,7 @@ import {
   getAuth, 
   signInWithPopup, 
   GoogleAuthProvider, 
+  FacebookAuthProvider,
   signInWithCredential,
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
@@ -92,6 +93,14 @@ googleProvider.addScope('email');
 googleProvider.addScope('profile');
 googleProvider.setCustomParameters({
   prompt: 'select_account'
+});
+
+// Facebook OAuth Provider
+const facebookProvider = new FacebookAuthProvider();
+facebookProvider.addScope('email');
+facebookProvider.addScope('public_profile');
+facebookProvider.setCustomParameters({
+  display: 'popup'
 });
 
 export class FirebaseService {
@@ -182,6 +191,24 @@ export class FirebaseService {
     } catch (error) {
       console.error("[Mytholis Firebase] Google Sign-In Error:", error);
       const friendly = this.formatAuthError(error.code);
+      return { success: false, error: friendly || error.message };
+    }
+  }
+
+  // Facebook OAuth Popup Sign-In
+  async signInWithFacebook() {
+    try {
+      const result = await signInWithPopup(auth, facebookProvider);
+      if (result && result.user) {
+        await this.syncUserDataOnLogin(result.user);
+      }
+      return { success: true, user: result.user };
+    } catch (error) {
+      console.error("[Mytholis Firebase] Facebook Sign-In Error:", error);
+      let friendly = this.formatAuthError(error.code);
+      if (error.code === 'auth/operation-not-allowed') {
+        friendly = 'Facebook Login is not enabled in Firebase Console. Please enable Facebook under Authentication > Sign-in method in Firebase Console.';
+      }
       return { success: false, error: friendly || error.message };
     }
   }
@@ -489,8 +516,11 @@ export class FirebaseService {
       case 'auth/email-already-in-use': return 'An account already exists with this email address. Please sign in instead.';
       case 'auth/weak-password': return 'Password must be at least 6 characters.';
       case 'auth/popup-closed-by-user': return 'Sign-in cancelled.';
+      case 'auth/popup-blocked': return 'Sign-in popup was blocked by your browser. Please allow popups for this site and try again.';
+      case 'auth/cancelled-popup-request': return 'Only one sign-in window can be open at a time.';
+      case 'auth/account-exists-with-different-credential': return 'An account already exists with this email address using another sign-in method (e.g. Google or Email). Please sign in using that method.';
       case 'auth/configuration-not-found': return 'Sign-In provider is not enabled yet in your Firebase Console. Please register with Email & Password, or enable the provider in Firebase Console under Authentication > Sign-in method.';
-      case 'auth/operation-not-allowed': return 'Phone Authentication is not enabled in Firebase Console. Please go to Firebase Console > Authentication > Sign-in method and enable "Phone".';
+      case 'auth/operation-not-allowed': return 'This Authentication provider is not enabled in Firebase Console. Please go to Firebase Console > Authentication > Sign-in method and enable it.';
       case 'auth/app-not-authorized': return 'This domain is not authorized for Phone Auth. Please add it to Firebase Console > Authentication > Settings > Authorized domains.';
       case 'auth/invalid-app-credential': return 'Firebase cannot verify this app or domain (auth/invalid-app-credential). Please ensure your domain is added to Firebase Console > Authentication > Settings > Authorized Domains, or add this number under "Phone numbers for testing".';
       case 'auth/invalid-phone-number': return 'Please enter a valid mobile number with country code (e.g. +91 98765 43210).';
