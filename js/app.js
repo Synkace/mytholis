@@ -100,6 +100,7 @@ class MytholisApp {
 
     // Fastrr / Shiprocket 1-Click Login Global Bridge
     window.ShiprocketLogin = window.ShiprocketLogin || {
+      _isAppWrapper: true,
       login: (event, token, obj, callback) => this.openFastrrLogin(event)
     };
 
@@ -952,7 +953,7 @@ class MytholisApp {
       return {
         x: 0,
         y: 0,
-        scale: isNarrow ? 1.22 : 1.28,
+        scale: isNarrow ? 1.15 : 1.18,
         rotation: 0,
         zIndex: 20,
         opacity: 1
@@ -1917,8 +1918,8 @@ class MytholisApp {
     document.getElementById('headless-container')?.remove();
     document.getElementById('fastrr-pre-loader')?.remove();
 
-    // Check if ShiprocketLogin is defined from official script
-    if (typeof window.ShiprocketLogin !== 'undefined' && typeof window.ShiprocketLogin.login === 'function') {
+    // Check if ShiprocketLogin is defined from official script (avoiding self-recursive wrapper)
+    if (typeof window.ShiprocketLogin !== 'undefined' && !window.ShiprocketLogin._isAppWrapper && typeof window.ShiprocketLogin.login === 'function') {
       try {
         window.ShiprocketLogin.login(event, null, {
           domain: sellerDomain,
