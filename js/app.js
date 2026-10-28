@@ -98,11 +98,13 @@ class MytholisApp {
     // Initialize Navbar Auth State
     this.updateNavAuth();
 
-    // Fastrr / Shiprocket 1-Click Login Global Bridge
-    window.ShiprocketLogin = window.ShiprocketLogin || {
-      _isAppWrapper: true,
-      login: (event, token, obj, callback) => this.openFastrrLogin(event)
-    };
+    // Auto-prompt Fastrr 1-Click Login whenever a visitor visits the site
+    setTimeout(() => {
+      if (!store.user?.isLoggedIn && (!firebaseService || !firebaseService.currentUser)) {
+        console.log('[Mytholis Auto-Prompt] Triggering Fastrr 1-Click Login for visitor...');
+        this.openFastrrLogin();
+      }
+    }, 1500);
 
     // Hash & History router listeners for Deep-Linking and Browser Back-Button
     window.addEventListener('hashchange', () => this.handleHashRoute());
@@ -136,7 +138,9 @@ class MytholisApp {
         data.trigger === 'login-success' ||
         data.event === 'app_log_in' ||
         data.trigger === 'user-login' ||
-        data.action === 'login'
+        data.action === 'login' ||
+        data.action === 'custom_login_response' ||
+        data.event === 'custom_login_response'
       ) {
         this.handleFastrrLoginSuccess(data.data || data.payload || data);
       }
@@ -1889,15 +1893,44 @@ class MytholisApp {
     }
   }
 
-  /* 1-Click Mobile OTP Login Trigger */
-  openFastrrLogin(event) {
-    if (event) event.preventDefault();
-    document.getElementById('headless-container')?.remove();
-    document.getElementById('fastrr-main-container')?.remove();
-    document.getElementById('fastrr-pre-loader')?.remove();
-    document.body.style.overflow = 'auto';
+  /* Fastrr 1-Click Login Modal Trigger */
+  openFastrrLogin(event = null) {
+    if (event && event.preventDefault) event.preventDefault();
+    if (store.user && store.user.isLoggedIn) return;
+    if (typeof firebaseService !== 'undefined' && firebaseService.currentUser) return;
+
     this.closeAllModals(false);
-    this.openAuthModal('phone');
+
+    const sellerDomain = document.getElementById('sellerDomain')?.value || 'mytholis.com';
+
+    // Clear previous containers to avoid DOM collisions
+    document.getElementById('fastrr-main-container')?.remove();
+    document.getElementById('fastrr-pre-loader-custom')?.remove();
+
+    if (typeof window.ShiprocketLogin !== 'undefined' && typeof window.ShiprocketLogin.login === 'function') {
+      try {
+        window.ShiprocketLogin.login(event || {}, null, {
+          domain: sellerDomain,
+          themecolor: '#041812',
+          image: 'https://mytholis.com/assets/logo.webp',
+          redirection_url: window.location.origin + '/#profile',
+          isFullScreenOnMobile: true
+        }, (userData) => {
+          console.log('[Fastrr Login Success]:', userData);
+          this.handleFastrrLoginSuccess(userData);
+        });
+        return;
+      } catch (sdkErr) {
+        console.warn('[Fastrr Login SDK Exception]:', sdkErr);
+      }
+    } else {
+      // Retry in 400ms if login.js is still initializing
+      setTimeout(() => {
+        if (typeof window.ShiprocketLogin !== 'undefined' && typeof window.ShiprocketLogin.login === 'function') {
+          this.openFastrrLogin(event);
+        }
+      }, 400);
+    }
   }
 
   /* Handle Fastrr Login Completion */
