@@ -1477,7 +1477,7 @@ const Components = {
             </button>
             <div class="cart-secondary-actions-grid">
               <button class="cart-secondary-btn" onclick="app.openPayUModal()">
-                Pay with PayU
+                Card / NetBanking Desk
               </button>
               <button class="cart-secondary-btn" onclick="app.checkoutCartWhatsApp()">
                 Order via WhatsApp
@@ -2495,16 +2495,6 @@ const Components = {
           <!-- TAB 1: PHONE OTP SIGN IN -->
           <div class="auth-tab-pane">
             ${!otpSent ? `
-              <!-- Fastrr 1-Click OTP Login -->
-              <button type="button" class="btn btn-fastrr" onclick="app.openFastrrLogin(event)">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="fastrr-bolt">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/>
-                </svg>
-                <span>⚡ Fastrr 1-Click OTP Login</span>
-              </button>
-
-              <div class="auth-divider-line">or enter mobile for sms</div>
-
               <div style="background: rgba(4, 24, 18, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px; padding: 0.75rem 0.9rem; margin-bottom: 1.1rem;">
                 <span class="glass-pill" style="font-size: 0.62rem; color: var(--gold-light); margin-bottom: 0.25rem;">INSTANT SMS PASSCODE</span>
                 <p style="font-size: 0.76rem; color: var(--text-muted); line-height: 1.45; margin: 0.2rem 0 0;">
@@ -2592,12 +2582,12 @@ const Components = {
         ` : isSignIn ? `
           <!-- TAB 2: EMAIL & SOCIAL SIGN IN -->
           <div class="auth-tab-pane">
-            <!-- Fastrr 1-Click OTP Login -->
-            <button type="button" class="btn btn-fastrr" onclick="app.openFastrrLogin(event)">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="fastrr-bolt">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/>
+            <button type="button" class="btn btn-gold" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.65rem; padding: 0.72rem 1rem; font-size: 0.84rem; font-weight: 700; margin-bottom: 0.75rem; background: linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(14, 66, 51, 0.6) 100%); border: 1px solid rgba(212, 175, 55, 0.4); color: var(--gold-light);" onclick="app.openAuthModal('phone')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                <line x1="12" y1="18" x2="12.01" y2="18"/>
               </svg>
-              <span>⚡ Fastrr 1-Click OTP Login</span>
+              <span>⚡ Sign In with Mobile OTP</span>
             </button>
 
             <div style="display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.9rem;">
@@ -2651,12 +2641,12 @@ const Components = {
         ` : `
           <!-- TAB 3: REGISTER ACCOUNT -->
           <div class="auth-tab-pane">
-            <!-- Fastrr Instant Register -->
-            <button type="button" class="btn btn-fastrr" onclick="app.openFastrrLogin(event)">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="fastrr-bolt">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/>
+            <button type="button" class="btn btn-gold" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.65rem; padding: 0.72rem 1rem; font-size: 0.84rem; font-weight: 700; margin-bottom: 0.75rem; background: linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(14, 66, 51, 0.6) 100%); border: 1px solid rgba(212, 175, 55, 0.4); color: var(--gold-light);" onclick="app.openAuthModal('phone')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                <line x1="12" y1="18" x2="12.01" y2="18"/>
               </svg>
-              <span>⚡ Fastrr Instant Register</span>
+              <span>⚡ Instant Mobile Register</span>
             </button>
 
             <div style="background: rgba(4, 24, 18, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px; padding: 0.75rem 0.9rem; margin-bottom: 1rem;">
@@ -2786,13 +2776,14 @@ const Components = {
               Sign in to access your personal Patron Dossier, manage delivery coordinates, view consignment tracking, and claim Circle of Legends rewards.
             </p>
             <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-              <button class="btn btn-fastrr" style="width: auto; padding: 0.8rem 1.8rem; font-size: 0.9rem; margin-bottom: 0;" onclick="app.openFastrrLogin(event)">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="fastrr-bolt">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/>
+              <button class="btn btn-gold" style="padding: 0.8rem 1.8rem; font-size: 0.9rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.5rem;" onclick="app.openAuthModal('phone')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                  <line x1="12" y1="18" x2="12.01" y2="18"/>
                 </svg>
-                <span>⚡ Fastrr 1-Click Login</span>
+                <span>⚡ Instant Mobile Sign In</span>
               </button>
-              <button class="btn btn-gold" style="padding: 0.8rem 2rem; font-size: 0.9rem;" onclick="app.openAuthModal('signin')">
+              <button class="btn btn-glass" style="padding: 0.8rem 2rem; font-size: 0.9rem;" onclick="app.openAuthModal('signin')">
                 Sign In to Sanctum
               </button>
               <button class="btn btn-glass" style="padding: 0.8rem 1.8rem; font-size: 0.9rem;" onclick="app.openAuthModal('register')">
@@ -3422,7 +3413,7 @@ const Components = {
         </p>
         <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">2. Pricing & Payments</h4>
         <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.2rem;">
-          All prices displayed are Maximum Retail Prices (MRP) inclusive of Goods and Services Tax (GST) and all applicable taxes in India. Payments are processed securely through RBI-compliant payment gateways including PayU, UPI, credit/debit cards, and NetBanking.
+          All prices displayed are Maximum Retail Prices (MRP) inclusive of Goods and Services Tax (GST) and all applicable taxes in India. Payments are processed securely through RBI-compliant 256-bit SSL encrypted PCI-DSS Level 1 compliant gateway partners, UPI, credit/debit cards, and NetBanking.
         </p>
         <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">3. Intellectual Property</h4>
         <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">
@@ -3438,7 +3429,7 @@ const Components = {
         </p>
         <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">2. Payment Security</h4>
         <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.2rem;">
-          We do not store complete credit card or debit card numbers on our servers. All financial transactions are securely handled by 256-bit SSL encrypted PCI-DSS Level 1 compliant gateway partners (PayU / UPI).
+          We do not store complete credit card or debit card numbers on our servers. All financial transactions are securely handled by 256-bit SSL encrypted PCI-DSS Level 1 compliant gateway partners and UPI.
         </p>
         <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">3. Data Protection & Grievance</h4>
         <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">
@@ -3533,7 +3524,7 @@ const Components = {
             </svg>
           </div>
           <div>
-            <h3 class="modal-title font-title">PayU Hosted Checkout</h3>
+            <h3 class="modal-title font-title">Encrypted Payment Desk</h3>
             <p class="modal-subtitle">256-Bit SSL Encrypted Instant Payment</p>
           </div>
         </div>
@@ -3576,7 +3567,7 @@ const Components = {
           <button type="button" class="cart-checkout-primary-btn" onclick="app.closePayUModal(); ${isSingleProduct ? `app.buyNowFastrr('${productOrCart.id}', event)` : 'app.checkoutCartFastrr(event)'}">
             <span>⚡</span> Instant Checkout (UPI · Cards · COD)
           </button>
-          <div class="auth-divider-line" style="margin: 0.75rem 0 0.45rem;">or continue with PayU Gateway</div>
+          <div class="auth-divider-line" style="margin: 0.75rem 0 0.45rem;">or continue with Card / NetBanking</div>
         </div>
 
         <!-- Payment Method Tabs -->
@@ -3624,21 +3615,21 @@ const Components = {
               return `
                 <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem; background: rgba(4, 24, 18, 0.6); border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(212, 175, 55, 0.15);">
                   <svg width="14" height="14" fill="none" stroke="var(--gold-primary)" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                  <span style="font-size: 0.72rem; color: var(--gold-light);">PayU 256-Bit SSL Hosted Gateway Active (${isLive ? 'Production Live' : 'Test Sandbox'}). Cards, UPI, NetBanking supported.</span>
+                  <span style="font-size: 0.72rem; color: var(--gold-light);">256-Bit SSL Encrypted Vault Active (${isLive ? 'Production Live' : 'Test Sandbox'}). Cards, UPI, NetBanking supported.</span>
                 </div>
               `;
             } else if (payuKey && !payuSalt) {
               return `
                 <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem; background: rgba(245, 158, 11, 0.1); border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(245, 158, 11, 0.3);">
                   <span style="font-size: 0.85rem;">⚠️</span>
-                  <span style="font-size: 0.72rem; color: #FCD34D;">PayU Merchant Salt pending in Sovereign Admin Settings. Please configure Salt to generate secure transaction signatures.</span>
+                  <span style="font-size: 0.72rem; color: #FCD34D;">Payment Gateway Salt pending in Sovereign Admin Settings. Please configure Salt to generate secure transaction signatures.</span>
                 </div>
               `;
             } else {
               return `
                 <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem; background: rgba(245, 158, 11, 0.1); border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(245, 158, 11, 0.3);">
                   <span style="font-size: 0.85rem;">⚠️</span>
-                  <span style="font-size: 0.72rem; color: #FCD34D;">PayU Gateway pending setup in Sovereign Admin Settings. Cash on Delivery (COD) is available.</span>
+                  <span style="font-size: 0.72rem; color: #FCD34D;">Online Gateway pending setup in Sovereign Admin Settings. Cash on Delivery (COD) is available.</span>
                 </div>
               `;
             }
@@ -3658,7 +3649,7 @@ const Components = {
 
       <div class="modal-footer" style="display: flex; gap: 0.8rem;">
         <button class="btn btn-gold" style="flex: 1;" onclick="app.launchPayUCheckout(${finalAmount})">
-          Proceed to PayU Gateway • ${store.formatPrice(finalAmount)}
+          Proceed to Payment Desk • ${store.formatPrice(finalAmount)}
         </button>
       </div>
     `;

@@ -1889,55 +1889,15 @@ class MytholisApp {
     }
   }
 
-  /* Fastrr 1-Click OTP Login Modal Trigger */
+  /* 1-Click Mobile OTP Login Trigger */
   openFastrrLogin(event) {
     if (event) event.preventDefault();
-    this.closeAllModals(false);
-    this.showToast('Connecting to Fastrr 1-Click Login...');
-
-    const sellerDomain = document.getElementById('sellerDomain')?.value || 'mytholis.com';
-    const checkoutBuyer = window.checkoutBuyer || 'https://fastrr-boost-ui.pickrr.com/';
-    const channel = btoa(encodeURIComponent(JSON.stringify({
-      channel_id: 119,
-      channel_code: 'SH',
-      seller_id: 1,
-      sr_company_id: '704',
-      shop_name: 'Mytholis',
-      shop_url: sellerDomain,
-      shop_logo: 'https://mytholis.com/assets/logo.webp',
-      redirectUrl: window.location.origin + '/#profile',
-      credInstalled: false,
-      gpayInstalled: false
-    })));
-
-    const cartBase64 = btoa(encodeURIComponent(JSON.stringify([])));
-    const loginUrl = `${checkoutBuyer}?channel=${channel}&type=product&platform=CUSTOM&login=sr-login&themeColor=%23041812#cart=${cartBase64}`;
-
-    // Clear previous containers
-    document.getElementById('fastrr-main-container')?.remove();
     document.getElementById('headless-container')?.remove();
+    document.getElementById('fastrr-main-container')?.remove();
     document.getElementById('fastrr-pre-loader')?.remove();
-
-    // Check if ShiprocketLogin is defined from official script (avoiding self-recursive wrapper)
-    if (typeof window.ShiprocketLogin !== 'undefined' && !window.ShiprocketLogin._isAppWrapper && typeof window.ShiprocketLogin.login === 'function') {
-      try {
-        window.ShiprocketLogin.login(event, null, {
-          domain: sellerDomain,
-          themecolor: '#041812',
-          image: 'https://mytholis.com/assets/logo.webp',
-          redirection_url: window.location.origin + '/#profile',
-          isFullScreenOnMobile: true
-        }, (userData) => {
-          this.handleFastrrLoginSuccess(userData);
-        });
-        return;
-      } catch (sdkErr) {
-        console.warn('[Fastrr Login SDK Exception]:', sdkErr);
-      }
-    }
-
-    // Direct headless modal fallback
-    this.openFastrrIframeModal(loginUrl, window.location.origin + '/#profile');
+    document.body.style.overflow = 'auto';
+    this.closeAllModals(false);
+    this.openAuthModal('phone');
   }
 
   /* Handle Fastrr Login Completion */
@@ -2130,8 +2090,8 @@ class MytholisApp {
     const payuEnv = (store.globalSettings && store.globalSettings.payuEnv) || 'test';
 
     if (!payuSalt) {
-      console.warn("[Mytholis Payment] PayU Merchant Salt not configured.");
-      this.showToast('PayU Merchant Salt missing: Please configure your full PayU Salt in Sovereign Admin Settings (or select Cash on Delivery).');
+      console.warn("[Mytholis Payment] Payment Gateway Salt not configured.");
+      this.showToast('Payment Gateway Salt missing: Please configure credentials in Sovereign Admin Settings (or select Cash on Delivery).');
       return;
     }
 
@@ -2146,7 +2106,7 @@ class MytholisApp {
     const surl = `${origin}/api/payu/response`;
     const furl = `${origin}/api/payu/response`;
 
-    this.showToast('Connecting to PayU Secure Payment Gateway...');
+    this.showToast('Connecting to Encrypted Payment Desk...');
 
     let initiateResult = null;
 
@@ -2249,11 +2209,11 @@ class MytholisApp {
 
       document.body.appendChild(form);
       this.closePayUModal();
-      this.showToast('Redirecting to PayU Secure Gateway...');
+      this.showToast('Redirecting to Encrypted Payment Vault...');
       form.submit();
     } catch (formErr) {
-      console.error('[PayU Form Redirection Error]:', formErr);
-      this.showToast(`Failed to redirect to PayU: ${formErr.message}`);
+      console.error('[Payment Form Redirection Error]:', formErr);
+      this.showToast(`Failed to open payment desk: ${formErr.message}`);
     }
   }
 
