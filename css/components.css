@@ -752,8 +752,9 @@ div#cardsRow {
     right: auto !important;
     width: 100% !important;
     max-width: 100% !important;
-    height: 290px !important;
-    margin: 16px auto 0 !important;
+    height: 280px !important;
+    margin: 36px auto 0 !important;
+    background: transparent !important;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
@@ -778,10 +779,14 @@ div#cardsRow {
     position: absolute !important;
     left: 50% !important;
     top: 50% !important;
-    width: 175px !important;
-    height: 300px !important;
-    margin-left: -87.5px !important;
-    margin-top: -150px !important;
+    width: 165px !important;
+    height: 280px !important;
+    margin-left: -82.5px !important;
+    margin-top: -140px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
     transform-origin: center bottom;
     transition: filter 0.4s ease;
     will-change: transform, opacity, z-index;
@@ -877,8 +882,9 @@ div#cardsRow {
 
   .cards-row,
   div#cardsRow {
-    height: 275px !important;
-    margin: 14px auto 0 !important;
+    height: 255px !important;
+    margin: 32px auto 0 !important;
+    background: transparent !important;
   }
 
   .cards-row .card,
@@ -886,10 +892,13 @@ div#cardsRow {
   .cards-row .flacon-card,
   #cardsRow .flacon-card,
   .flacon-card {
-    width: 162px !important;
-    height: 280px !important;
-    margin-left: -81px !important;
-    margin-top: -140px !important;
+    width: 150px !important;
+    height: 255px !important;
+    margin-left: -75px !important;
+    margin-top: -127.5px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 
   .subline,
@@ -934,18 +943,22 @@ div#cardsRow {
   }
   .cards-row,
   div#cardsRow {
-    height: 245px !important;
-    margin: 12px auto 0 !important;
+    height: 230px !important;
+    margin: 28px auto 0 !important;
+    background: transparent !important;
   }
   .cards-row .card,
   #cardsRow .card,
   .cards-row .flacon-card,
   #cardsRow .flacon-card,
   .flacon-card {
-    width: 142px !important;
-    height: 245px !important;
-    margin-left: -71px !important;
-    margin-top: -122.5px !important;
+    width: 135px !important;
+    height: 230px !important;
+    margin-left: -67.5px !important;
+    margin-top: -115px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 
   .subline,

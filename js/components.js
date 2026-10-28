@@ -2486,13 +2486,13 @@ const Components = {
         </div>
 
         ${isSignIn ? `
-          <!-- TAB 1: FASTRR 1-CLICK & EMAIL SIGN IN -->
+          <!-- TAB 1: 1-CLICK & EMAIL SIGN IN -->
           <div class="auth-tab-pane">
             <button type="button" class="btn btn-fastrr" style="margin-bottom: 0.9rem;" onclick="app.openFastrrLogin(event)">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="fastrr-bolt">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/>
               </svg>
-              <span>⚡ Fastrr 1-Click Login</span>
+              <span>⚡ 1-Click Instant Sign In</span>
             </button>
 
             <div class="auth-divider-line">or sign in with email</div>
@@ -2526,13 +2526,13 @@ const Components = {
             </div>
           </div>
         ` : `
-          <!-- TAB 2: FASTRR 1-CLICK & EMAIL REGISTER -->
+          <!-- TAB 2: 1-CLICK & EMAIL REGISTER -->
           <div class="auth-tab-pane">
             <button type="button" class="btn btn-fastrr" style="margin-bottom: 0.9rem;" onclick="app.openFastrrLogin(event)">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="fastrr-bolt">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/>
               </svg>
-              <span>⚡ Fastrr 1-Click Register</span>
+              <span>⚡ 1-Click Instant Register</span>
             </button>
 
             <div style="background: rgba(4, 24, 18, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px; padding: 0.75rem 0.9rem; margin-bottom: 1rem;">
@@ -2647,7 +2647,7 @@ const Components = {
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="fastrr-bolt">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/>
                 </svg>
-                <span>⚡ Fastrr 1-Click Login</span>
+                <span>⚡ 1-Click Instant Sign In</span>
               </button>
               <button class="btn btn-glass" style="padding: 0.8rem 2rem; font-size: 0.9rem;" onclick="app.openAuthModal('signin')">
                 Sign In to Sanctum

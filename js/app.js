@@ -953,11 +953,11 @@ class MytholisApp {
     const spacing = isNarrow ? Math.min(window.innerWidth * 0.19, 74) : Math.min(window.innerWidth * 0.23, 92);
 
     if (diff === 0) {
-      // Center active bottle (front, prominently scaled up, glowing)
+      // Center active bottle (front, prominently scaled up, glowing with clear headroom below title)
       return {
         x: 0,
-        y: 0,
-        scale: isNarrow ? 1.15 : 1.18,
+        y: 8,
+        scale: isNarrow ? 1.08 : 1.12,
         rotation: 0,
         zIndex: 20,
         opacity: 1
@@ -966,8 +966,8 @@ class MytholisApp {
       // Immediate left overlapping behind center
       return {
         x: -spacing,
-        y: 16,
-        scale: 0.98,
+        y: 20,
+        scale: 0.95,
         rotation: -7,
         zIndex: 14,
         opacity: 0.92
@@ -976,8 +976,8 @@ class MytholisApp {
       // Immediate right overlapping behind center
       return {
         x: spacing,
-        y: 16,
-        scale: 0.98,
+        y: 20,
+        scale: 0.95,
         rotation: 7,
         zIndex: 14,
         opacity: 0.92
@@ -1747,40 +1747,22 @@ class MytholisApp {
       };
 
       const rawBody = JSON.stringify(payload);
-      const secret = 'bgHG23KYS9CZi8Pvo2UgmuyBWlacgKqo';
-      const apiKey = 'GkmYB8JVVgvPFLiN';
-
-      const enc = new TextEncoder();
-      const key = await window.crypto.subtle.importKey(
-        'raw',
-        enc.encode(secret),
-        { name: 'HMAC', hash: 'SHA-256' },
-        false,
-        ['sign']
-      );
-      const sig = await window.crypto.subtle.sign('HMAC', key, enc.encode(rawBody));
-      const hmacBase64 = btoa(String.fromCharCode(...new Uint8Array(sig)));
-
-      const resp = await fetch('https://checkout-api.shiprocket.com/api/v1/access-token/checkout', {
+      const resp = await fetch('/api/fastrr/create-checkout', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Api-Key': apiKey,
-          'X-Api-HMAC-SHA256': hmacBase64
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: rawBody
       });
 
       const resJson = await resp.json().catch(() => ({}));
-      if (resJson.ok && resJson.result?.token) {
+      if (resJson.success && resJson.token) {
         return {
           success: true,
-          token: resJson.result.token,
-          order_id: resJson.result?.data?.order_id,
+          token: resJson.token,
+          order_id: resJson.order_id,
           redirect_url: redirectUrl
         };
       }
-      return { success: false, error: resJson.error?.message || 'Token generation failed' };
+      return { success: false, error: resJson.error || 'Token generation failed' };
     } catch (err) {
       console.warn('[Fastrr Direct Token Generation]:', err);
       return { success: false, error: err.message };
@@ -1870,27 +1852,42 @@ class MytholisApp {
 
   openFastrrIframeModal(iframeSrc, fallbackUrl) {
     let container = document.getElementById('headless-container');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'headless-container';
-      container.innerHTML = `
-        <div class="headless-modal" style="position: fixed; inset: 0; z-index: 2147483647; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
-          <div class="headless-modal-content" style="position: relative; width: 100%; max-width: 480px; height: 92vh; max-height: 850px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 80px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1);">
-            <button id="headless-close-btn" onclick="document.getElementById('headless-container')?.remove(); document.body.style.overflow='auto';" style="position: absolute; top: 12px; right: 12px; z-index: 100000; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; width: 34px; height: 34px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">✕</button>
-            <div class="headless-modal-body" style="width: 100%; height: 100%;">
-              <iframe id="headless-iframe" src="${iframeSrc}" allow="geolocation; clipboard-read; clipboard-write; web-share" style="width: 100%; height: 100%; border: none;"></iframe>
-            </div>
+    if (container) container.remove();
+
+    container = document.createElement('div');
+    container.id = 'headless-container';
+    container.innerHTML = `
+      <div class="headless-modal" style="position: fixed; inset: 0; z-index: 2147483647; background: rgba(2, 12, 9, 0.88); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+        <div class="headless-modal-content" style="position: relative; width: 100%; max-width: 460px; height: 92vh; max-height: 820px; background: #041812; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 80px rgba(0,0,0,0.95); border: 1px solid rgba(212, 175, 55, 0.25);">
+          <!-- Luxury Preloader -->
+          <div id="headless-modal-preloader" style="position: absolute; inset: 0; background: #041812; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; gap: 1rem; color: #d4af37;">
+            <div style="width: 44px; height: 44px; border: 2.5px solid rgba(212,175,55,0.2); border-top-color: #d4af37; border-radius: 50%; animation: spin 0.9s linear infinite;"></div>
+            <span style="font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase; color: #e6ca65;">Connecting Secure Desk...</span>
+          </div>
+          <button id="headless-close-btn" onclick="document.getElementById('headless-container')?.remove(); document.body.style.overflow='auto';" style="position: absolute; top: 14px; right: 14px; z-index: 100000; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid rgba(212,175,55,0.3); border-radius: 50%; width: 34px; height: 34px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">✕</button>
+          <div class="headless-modal-body" style="width: 100%; height: 100%;">
+            <iframe id="headless-iframe" src="${iframeSrc}" allow="geolocation; clipboard-read; clipboard-write; web-share" style="width: 100%; height: 100%; border: none;" onload="document.getElementById('headless-modal-preloader')?.remove();"></iframe>
           </div>
         </div>
-      `;
-      document.body.appendChild(container);
-      document.body.style.overflow = 'hidden';
-    } else {
-      const iframe = document.getElementById('headless-iframe');
-      if (iframe) iframe.src = iframeSrc;
-      container.style.display = 'block';
-      document.body.style.overflow = 'hidden';
-    }
+      </div>
+    `;
+    document.body.appendChild(container);
+    document.body.style.overflow = 'hidden';
+
+    // Watchdog: If iframe fails to load or is blocked within 5.5s, provide seamless fallback action
+    setTimeout(() => {
+      const preloader = document.getElementById('headless-modal-preloader');
+      if (preloader) {
+        preloader.innerHTML = `
+          <div style="text-align: center; padding: 2rem; color: #fff;">
+            <div style="font-size: 1.8rem; margin-bottom: 0.75rem;">🛡️</div>
+            <h3 style="color: #d4af37; font-size: 1.1rem; margin-bottom: 0.5rem; font-family: serif;">Secure Sovereign Checkout</h3>
+            <p style="font-size: 0.82rem; color: rgba(255,255,255,0.7); margin-bottom: 1.5rem; line-height: 1.5;">Third-party iframe access was restricted by your browser. Proceed directly to our encrypted payment desk.</p>
+            <button class="btn btn-gold" onclick="document.getElementById('headless-container')?.remove(); document.body.style.overflow='auto'; app.openPayUModal();" style="padding: 0.75rem 1.6rem; font-size: 0.85rem;">Open Payment Desk</button>
+          </div>
+        `;
+      }
+    }, 5500);
   }
 
   /* Fastrr 1-Click Login Modal Trigger */
@@ -1919,15 +1916,32 @@ class MytholisApp {
           console.log('[Fastrr Login Success]:', userData);
           this.handleFastrrLoginSuccess(userData);
         });
+
+        // Watchdog: If Fastrr fails to mount or is blocked within 4.5 seconds, open Sanctum Gate
+        setTimeout(() => {
+          const preloader = document.getElementById('fastrr-pre-loader-custom');
+          const headless = document.getElementById('headless-container');
+          if (preloader && (!headless || headless.style.visibility === 'hidden')) {
+            document.getElementById('fastrr-main-container')?.remove();
+            preloader.remove();
+            document.body.style.overflow = 'auto';
+            if (!store.user?.isLoggedIn && (!firebaseService || !firebaseService.currentUser)) {
+              this.openAuthModal('signin');
+            }
+          }
+        }, 4500);
         return;
       } catch (sdkErr) {
         console.warn('[Fastrr Login SDK Exception]:', sdkErr);
+        this.openAuthModal('signin');
       }
     } else {
       // Retry in 400ms if login.js is still initializing
       setTimeout(() => {
         if (typeof window.ShiprocketLogin !== 'undefined' && typeof window.ShiprocketLogin.login === 'function') {
           this.openFastrrLogin(event);
+        } else {
+          this.openAuthModal('signin');
         }
       }, 400);
     }
