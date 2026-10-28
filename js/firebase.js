@@ -9,7 +9,6 @@ import {
   getAuth, 
   signInWithPopup, 
   GoogleAuthProvider, 
-  FacebookAuthProvider,
   signInWithCredential,
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
@@ -93,14 +92,6 @@ googleProvider.addScope('email');
 googleProvider.addScope('profile');
 googleProvider.setCustomParameters({
   prompt: 'select_account'
-});
-
-// Facebook OAuth Provider
-const facebookProvider = new FacebookAuthProvider();
-facebookProvider.addScope('email');
-facebookProvider.addScope('public_profile');
-facebookProvider.setCustomParameters({
-  display: 'popup'
 });
 
 export class FirebaseService {
@@ -191,24 +182,6 @@ export class FirebaseService {
     } catch (error) {
       console.error("[Mytholis Firebase] Google Sign-In Error:", error);
       const friendly = this.formatAuthError(error.code);
-      return { success: false, error: friendly || error.message };
-    }
-  }
-
-  // Facebook OAuth Popup Sign-In
-  async signInWithFacebook() {
-    try {
-      const result = await signInWithPopup(auth, facebookProvider);
-      if (result && result.user) {
-        await this.syncUserDataOnLogin(result.user);
-      }
-      return { success: true, user: result.user };
-    } catch (error) {
-      console.error("[Mytholis Firebase] Facebook Sign-In Error:", error);
-      let friendly = this.formatAuthError(error.code);
-      if (error.code === 'auth/operation-not-allowed') {
-        friendly = 'Facebook Login is not enabled in Firebase Console. Please enable Facebook under Authentication > Sign-in method in Firebase Console.';
-      }
       return { success: false, error: friendly || error.message };
     }
   }
@@ -516,11 +489,8 @@ export class FirebaseService {
       case 'auth/email-already-in-use': return 'An account already exists with this email address. Please sign in instead.';
       case 'auth/weak-password': return 'Password must be at least 6 characters.';
       case 'auth/popup-closed-by-user': return 'Sign-in cancelled.';
-      case 'auth/popup-blocked': return 'Sign-in popup was blocked by your browser. Please allow popups for this site and try again.';
-      case 'auth/cancelled-popup-request': return 'Only one sign-in window can be open at a time.';
-      case 'auth/account-exists-with-different-credential': return 'An account already exists with this email address using another sign-in method (e.g. Google or Email). Please sign in using that method.';
       case 'auth/configuration-not-found': return 'Sign-In provider is not enabled yet in your Firebase Console. Please register with Email & Password, or enable the provider in Firebase Console under Authentication > Sign-in method.';
-      case 'auth/operation-not-allowed': return 'This Authentication provider is not enabled in Firebase Console. Please go to Firebase Console > Authentication > Sign-in method and enable it.';
+      case 'auth/operation-not-allowed': return 'Phone Authentication is not enabled in Firebase Console. Please go to Firebase Console > Authentication > Sign-in method and enable "Phone".';
       case 'auth/app-not-authorized': return 'This domain is not authorized for Phone Auth. Please add it to Firebase Console > Authentication > Settings > Authorized domains.';
       case 'auth/invalid-app-credential': return 'Firebase cannot verify this app or domain (auth/invalid-app-credential). Please ensure your domain is added to Firebase Console > Authentication > Settings > Authorized Domains, or add this number under "Phone numbers for testing".';
       case 'auth/invalid-phone-number': return 'Please enter a valid mobile number with country code (e.g. +91 98765 43210).';
@@ -696,6 +666,111 @@ export class FirebaseService {
       console.warn("[Mytholis Firebase] Cloud sync notice (offline or rules in progress):", err.message);
     } finally {
       this.isSyncing = false;
+    }
+  }
+
+  // Synchronize Fastrr authenticated patron profile and loyalty with store & Firestore
+  async syncFastrrUserData(fastrrUser) {
+    if (!this.store || !fastrrUser) return;
+    const phone = fastrrUser.phone || fastrrUser.mobile || fastrrUser.phone_number || '';
+    const cleanPhone = phone ? String(phone).replace(/\s+/g, '') : '';
+    const patronName = fastrrUser.name || [fastrrUser.first_name, fastrrUser.last_name].filter(Boolean).join(' ') || (cleanPhone ? `Patron (${cleanPhone})` : 'Mytholis Patron');
+    const patronEmail = fastrrUser.email || (cleanPhone ? `${cleanPhone.replace(/\D/g, '')}@phone.mytholis.com` : '');
+    const uid = fastrrUser.uid || (cleanPhone ? `fastrr_${cleanPhone.replace(/\D/g, '')}` : `fastrr_${Date.now()}`);
+
+    this.store.user.isLoggedIn = true;
+    this.store.user.uid = uid;
+    this.store.user.email = patronEmail;
+    this.store.user.phone = cleanPhone;
+    this.store.user.name = patronName;
+    this.store.user.authProvider = 'fastrr';
+
+    // Parse addresses if Fastrr returned shipping address
+    if (fastrrUser.addresses && Array.isArray(fastrrUser.addresses) && fastrrUser.addresses.length > 0) {
+      const primaryAddr = fastrrUser.addresses[0];
+      if (primaryAddr.address1 || primaryAddr.address) {
+        this.store.user.address = primaryAddr.address1 || primaryAddr.address || this.store.user.address;
+      }
+      if (primaryAddr.city) this.store.user.city = primaryAddr.city;
+      if (primaryAddr.state || primaryAddr.province) this.store.user.state = primaryAddr.state || primaryAddr.province;
+      if (primaryAddr.pincode || primaryAddr.zip) this.store.user.pincode = primaryAddr.pincode || primaryAddr.zip;
+    } else if (fastrrUser.address && !this.store.user.address) {
+      this.store.user.address = fastrrUser.address;
+      if (fastrrUser.city) this.store.user.city = fastrrUser.city;
+      if (fastrrUser.pincode) this.store.user.pincode = fastrrUser.pincode;
+      if (fastrrUser.state) this.store.user.state = fastrrUser.state;
+    }
+
+    this.store.saveLocalStorage('mytholis_user', this.store.user);
+    this.store.firebaseUser = {
+      uid,
+      email: patronEmail,
+      phone: cleanPhone,
+      displayName: patronName,
+      role: 'patron',
+      isAdmin: false
+    };
+
+    this.store.notify();
+    if (this.app && typeof this.app.updateNavAuth === 'function') {
+      this.app.updateNavAuth();
+    }
+
+    // Background Cloud Firestore sync
+    try {
+      if (db) {
+        const userDocRef = doc(db, 'users', uid);
+        const userDocSnap = await getDoc(userDocRef).catch(() => null);
+        if (userDocSnap && userDocSnap.exists()) {
+          const cloudData = userDocSnap.data();
+          if (cloudData.profile) {
+            this.store.user = Object.assign({}, this.store.user, cloudData.profile, {
+              uid,
+              phone: cleanPhone || cloudData.profile.phone,
+              email: patronEmail || cloudData.profile.email,
+              name: patronName !== 'Mytholis Patron' ? patronName : (cloudData.profile.name || patronName)
+            });
+            this.store.saveLocalStorage('mytholis_user', this.store.user);
+          }
+          if (cloudData.loyalty) {
+            this.store.loyalty = cloudData.loyalty;
+            this.store.saveLocalStorage('mytholis_loyalty', cloudData.loyalty);
+          }
+        } else {
+          await setDoc(userDocRef, {
+            profile: {
+              name: patronName,
+              email: patronEmail,
+              phone: cleanPhone,
+              address: this.store.user.address || '',
+              pincode: this.store.user.pincode || '',
+              city: this.store.user.city || '',
+              state: this.store.user.state || '',
+              authProvider: 'fastrr',
+              role: 'patron',
+              isAdmin: false,
+              createdAt: serverTimestamp()
+            },
+            loyalty: this.store.loyalty || {
+              spendable_mythos: this.store?.globalSettings?.signupBonusMythos || 100,
+              legacy_mythos: this.store?.globalSettings?.signupBonusMythos || 100,
+              full_bottles_purchased: 0,
+              initiation_completed: false,
+              codex_unlocked: [],
+              trinity_claimed: false,
+              pantheon_claimed: false,
+              reviewed_scents: [],
+              active_reward_codes: [],
+              applied_reward_code: null
+            },
+            updatedAt: serverTimestamp()
+          }, { merge: true }).catch(() => {});
+        }
+        this.store.saveLocalStorage('mytholis_user', this.store.user);
+        this.store.notify();
+      }
+    } catch (syncErr) {
+      console.warn('[Mytholis Firebase] Fastrr cloud profile sync note:', syncErr.message);
     }
   }
 

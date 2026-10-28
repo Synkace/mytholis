@@ -98,6 +98,11 @@ class MytholisApp {
     // Initialize Navbar Auth State
     this.updateNavAuth();
 
+    // Fastrr / Shiprocket 1-Click Login Global Bridge
+    window.ShiprocketLogin = window.ShiprocketLogin || {
+      login: (event, token, obj, callback) => this.openFastrrLogin(event)
+    };
+
     // Hash & History router listeners for Deep-Linking and Browser Back-Button
     window.addEventListener('hashchange', () => this.handleHashRoute());
     window.addEventListener('popstate', () => this.handleHashRoute());
@@ -121,6 +126,18 @@ class MytholisApp {
         document.getElementById('fastrr-main-container')?.remove();
         document.getElementById('fastrr-pre-loader')?.remove();
         document.body.style.overflow = 'auto';
+      }
+
+      // Fastrr Login Success / Completion Bridge
+      if (
+        data.trigger === 'headless-custom-complete' ||
+        data.trigger === 'headless-complete' ||
+        data.trigger === 'login-success' ||
+        data.event === 'app_log_in' ||
+        data.trigger === 'user-login' ||
+        data.action === 'login'
+      ) {
+        this.handleFastrrLoginSuccess(data.data || data.payload || data);
       }
     });
 
@@ -1871,6 +1888,112 @@ class MytholisApp {
     }
   }
 
+  /* Fastrr 1-Click OTP Login Modal Trigger */
+  openFastrrLogin(event) {
+    if (event) event.preventDefault();
+    this.closeAllModals(false);
+    this.showToast('Connecting to Fastrr 1-Click Login...');
+
+    const sellerDomain = document.getElementById('sellerDomain')?.value || 'mytholis.com';
+    const checkoutBuyer = window.checkoutBuyer || 'https://fastrr-boost-ui.pickrr.com/';
+    const channel = btoa(encodeURIComponent(JSON.stringify({
+      channel_id: 119,
+      channel_code: 'SH',
+      seller_id: 1,
+      sr_company_id: '704',
+      shop_name: 'Mytholis',
+      shop_url: sellerDomain,
+      shop_logo: 'https://mytholis.com/assets/logo.webp',
+      redirectUrl: window.location.origin + '/#profile',
+      credInstalled: false,
+      gpayInstalled: false
+    })));
+
+    const cartBase64 = btoa(encodeURIComponent(JSON.stringify([])));
+    const loginUrl = `${checkoutBuyer}?channel=${channel}&type=product&platform=CUSTOM&login=sr-login&themeColor=%23041812#cart=${cartBase64}`;
+
+    // Clear previous containers
+    document.getElementById('fastrr-main-container')?.remove();
+    document.getElementById('headless-container')?.remove();
+    document.getElementById('fastrr-pre-loader')?.remove();
+
+    // Check if ShiprocketLogin is defined from official script
+    if (typeof window.ShiprocketLogin !== 'undefined' && typeof window.ShiprocketLogin.login === 'function') {
+      try {
+        window.ShiprocketLogin.login(event, null, {
+          domain: sellerDomain,
+          themecolor: '#041812',
+          image: 'https://mytholis.com/assets/logo.webp',
+          redirection_url: window.location.origin + '/#profile',
+          isFullScreenOnMobile: true
+        }, (userData) => {
+          this.handleFastrrLoginSuccess(userData);
+        });
+        return;
+      } catch (sdkErr) {
+        console.warn('[Fastrr Login SDK Exception]:', sdkErr);
+      }
+    }
+
+    // Direct headless modal fallback
+    this.openFastrrIframeModal(loginUrl, window.location.origin + '/#profile');
+  }
+
+  /* Handle Fastrr Login Completion */
+  async handleFastrrLoginSuccess(userData) {
+    if (!userData) return;
+    try {
+      // Remove any lingering Fastrr modal frames
+      document.getElementById('headless-container')?.remove();
+      document.getElementById('fastrr-main-container')?.remove();
+      document.getElementById('fastrr-pre-loader')?.remove();
+      document.body.style.overflow = 'auto';
+
+      const phone = userData.phone || userData.mobile || userData.phone_number || userData.contact || '';
+      const cleanPhone = phone ? String(phone).replace(/\s+/g, '') : '';
+      const name = userData.name || [userData.first_name, userData.last_name].filter(Boolean).join(' ') || (cleanPhone ? `Patron (${cleanPhone})` : 'Mytholis Patron');
+      const email = userData.email || (cleanPhone ? `${cleanPhone.replace(/\D/g, '')}@phone.mytholis.com` : '');
+
+      const fastrrPatron = {
+        name,
+        email,
+        phone: cleanPhone,
+        addresses: userData.addresses || (userData.address ? [userData.address] : []),
+        address: userData.address || (userData.addresses && userData.addresses[0]?.address1) || '',
+        city: userData.city || (userData.addresses && userData.addresses[0]?.city) || '',
+        state: userData.state || (userData.addresses && userData.addresses[0]?.state) || '',
+        pincode: userData.pincode || (userData.addresses && userData.addresses[0]?.pincode) || ''
+      };
+
+      if (typeof firebaseService !== 'undefined' && typeof firebaseService.syncFastrrUserData === 'function') {
+        await firebaseService.syncFastrrUserData(fastrrPatron);
+      } else if (typeof store !== 'undefined') {
+        store.user = {
+          ...store.user,
+          isLoggedIn: true,
+          name,
+          email,
+          phone: cleanPhone,
+          authProvider: 'fastrr'
+        };
+        store.saveLocalStorage('mytholis_user', store.user);
+        store.notify();
+      }
+
+      this.closeProfileModal();
+      this.closeAllModals(false);
+      this.updateNavAuth();
+
+      if (typeof store !== 'undefined' && (store.currentView === 'profile' || store.currentView === 'user-profile')) {
+        this.renderCurrentView();
+      }
+
+      this.showToast(`✨ Welcome to House Mytholis, ${name}!`);
+    } catch (err) {
+      console.error('[Fastrr Login Handler Error]:', err);
+    }
+  }
+
   buyNow(productId, event) {
     return this.buyNowFastrr(productId, event);
   }
@@ -2470,8 +2593,8 @@ class MytholisApp {
     this.openProfileModal();
   }
 
-  /* Dedicated Auth Modal (Sign In / Register / Phone OTP) */
-  openAuthModal(tab = 'phone') {
+  /* Dedicated Auth Modal (Sign In / Register) */
+  openAuthModal(tab = 'signin') {
     this.closeAllModals(false);
     this.activeAuthTab = tab;
     const modalBody = document.getElementById('profile-modal-body');
@@ -2523,7 +2646,7 @@ class MytholisApp {
     const modalBody = document.getElementById('profile-modal-body');
     if (modalBody) {
       if (!store.isUserLoggedIn()) {
-        modalBody.innerHTML = Components.renderAuthModal(this.activeAuthTab || 'phone');
+        modalBody.innerHTML = Components.renderAuthModal(this.activeAuthTab || 'signin');
       } else {
         modalBody.innerHTML = Components.renderProfileModal();
       }
@@ -3135,20 +3258,6 @@ class MytholisApp {
       if (store.currentView === 'profile') this.renderCurrentView();
     } else {
       this.showToast(`Sign-in error: ${result.error}`);
-    }
-  }
-
-  async handleFacebookSignIn() {
-    if (typeof firebaseService === 'undefined') return;
-    this.showToast('Connecting to Facebook VIP Sign-In...');
-    const result = await firebaseService.signInWithFacebook();
-    if (result.success) {
-      this.showToast(`Welcome to House Mytholis, ${result.user.displayName || 'Patron'}!`);
-      this.updateNavAuth();
-      this.closeProfileModal();
-      if (store.currentView === 'profile') this.renderCurrentView();
-    } else if (result.error && result.error !== 'Sign-in cancelled.') {
-      this.showToast(result.error);
     }
   }
 

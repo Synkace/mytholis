@@ -2495,6 +2495,16 @@ const Components = {
           <!-- TAB 1: PHONE OTP SIGN IN -->
           <div class="auth-tab-pane">
             ${!otpSent ? `
+              <!-- Fastrr 1-Click OTP Login -->
+              <button type="button" class="btn btn-fastrr" onclick="app.openFastrrLogin(event)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="fastrr-bolt">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/>
+                </svg>
+                <span>⚡ Fastrr 1-Click OTP Login</span>
+              </button>
+
+              <div class="auth-divider-line">or enter mobile for sms</div>
+
               <div style="background: rgba(4, 24, 18, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px; padding: 0.75rem 0.9rem; margin-bottom: 1.1rem;">
                 <span class="glass-pill" style="font-size: 0.62rem; color: var(--gold-light); margin-bottom: 0.25rem;">INSTANT SMS PASSCODE</span>
                 <p style="font-size: 0.76rem; color: var(--text-muted); line-height: 1.45; margin: 0.2rem 0 0;">
@@ -2582,6 +2592,14 @@ const Components = {
         ` : isSignIn ? `
           <!-- TAB 2: EMAIL & SOCIAL SIGN IN -->
           <div class="auth-tab-pane">
+            <!-- Fastrr 1-Click OTP Login -->
+            <button type="button" class="btn btn-fastrr" onclick="app.openFastrrLogin(event)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="fastrr-bolt">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/>
+              </svg>
+              <span>⚡ Fastrr 1-Click OTP Login</span>
+            </button>
+
             <div style="display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.9rem;">
               <button type="button" class="btn btn-gold" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.65rem; padding: 0.72rem 1rem; font-size: 0.84rem; font-weight: 600; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);" onclick="app.handleGoogleSignIn()">
                 <svg width="18" height="18" viewBox="0 0 24 24">
@@ -2633,6 +2651,14 @@ const Components = {
         ` : `
           <!-- TAB 3: REGISTER ACCOUNT -->
           <div class="auth-tab-pane">
+            <!-- Fastrr Instant Register -->
+            <button type="button" class="btn btn-fastrr" onclick="app.openFastrrLogin(event)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="fastrr-bolt">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/>
+              </svg>
+              <span>⚡ Fastrr Instant Register</span>
+            </button>
+
             <div style="background: rgba(4, 24, 18, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px; padding: 0.75rem 0.9rem; margin-bottom: 1rem;">
               <span class="glass-pill" style="font-size: 0.62rem; color: var(--gold-light); margin-bottom: 0.3rem;">Circle of Legends Privilege</span>
               <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.45; margin: 0.2rem 0 0;">
@@ -2760,6 +2786,12 @@ const Components = {
               Sign in to access your personal Patron Dossier, manage delivery coordinates, view consignment tracking, and claim Circle of Legends rewards.
             </p>
             <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+              <button class="btn btn-fastrr" style="width: auto; padding: 0.8rem 1.8rem; font-size: 0.9rem; margin-bottom: 0;" onclick="app.openFastrrLogin(event)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="fastrr-bolt">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/>
+                </svg>
+                <span>⚡ Fastrr 1-Click Login</span>
+              </button>
               <button class="btn btn-gold" style="padding: 0.8rem 2rem; font-size: 0.9rem;" onclick="app.openAuthModal('signin')">
                 Sign In to Sanctum
               </button>
