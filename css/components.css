@@ -428,8 +428,7 @@ div#cardsRow {
   z-index: 6;
   pointer-events: none;
   display: block;
-  mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
+  overflow: visible !important;
 }
 
 .cards-row > * {
