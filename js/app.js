@@ -1665,31 +1665,13 @@ class MytholisApp {
     window.open(`https://wa.me/917770009170?text=${encodeURIComponent(text)}`, '_blank');
   }
 
-  /* Fastrr / Shiprocket 1-Click Checkout Gateway Integration */
+  /* Instant Checkout Routing */
   async buyNowFastrr(productId, event) {
-    if (event) event.preventDefault();
-    const product = (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG.find(p => p.id === productId) : null) || { id: productId };
-    const size = this.selectedSize || 50;
-    const items = [{
-      productId: product.id,
-      size: size,
-      quantity: 1
-    }];
-    await this.initiateFastrrCheckout(items, event, window.location.origin + '/#track-order?product=' + product.id);
+    return this.buyNow(productId, event);
   }
 
   async checkoutCartFastrr(event) {
-    if (event) event.preventDefault();
-    if (!store.cart || store.cart.length === 0) {
-      this.showToast('Your cart is empty.');
-      return;
-    }
-    const items = store.cart.map(item => ({
-      productId: item.id || item.productId,
-      size: item.size || 50,
-      quantity: item.quantity || 1
-    }));
-    await this.initiateFastrrCheckout(items, event, window.location.origin + '/#track-order');
+    return this.checkoutCart(event);
   }
 
   async loadFastrrCheckoutSdk() {
@@ -1900,20 +1882,15 @@ class MytholisApp {
     document.body.appendChild(container);
     document.body.style.overflow = 'hidden';
 
-    // Watchdog: If iframe fails to load or is blocked within 5.5s, provide seamless fallback action
+    // Watchdog: If iframe fails to load or is blocked within 2.5s, automatically open Payment Desk
     setTimeout(() => {
       const preloader = document.getElementById('headless-modal-preloader');
       if (preloader) {
-        preloader.innerHTML = `
-          <div style="text-align: center; padding: 2rem; color: #fff;">
-            <div style="font-size: 1.8rem; margin-bottom: 0.75rem;">🛡️</div>
-            <h3 style="color: #d4af37; font-size: 1.1rem; margin-bottom: 0.5rem; font-family: serif;">Secure Sovereign Checkout</h3>
-            <p style="font-size: 0.82rem; color: rgba(255,255,255,0.7); margin-bottom: 1.5rem; line-height: 1.5;">Third-party iframe access was restricted by your browser. Proceed directly to our encrypted payment desk.</p>
-            <button class="btn btn-gold" onclick="document.getElementById('headless-container')?.remove(); document.body.style.overflow='auto'; app.openPayUModal();" style="padding: 0.75rem 1.6rem; font-size: 0.85rem;">Open Payment Desk</button>
-          </div>
-        `;
+        document.getElementById('headless-container')?.remove();
+        document.body.style.overflow = 'auto';
+        this.openPayUModal();
       }
-    }, 5500);
+    }, 2500);
   }
 
   /* Fastrr 1-Click Login Popup (Matches Mobile & App Preview) */
@@ -2307,19 +2284,23 @@ class MytholisApp {
   }
 
   buyNow(productId, event) {
-    return this.buyNowFastrr(productId, event);
+    if (event) event.preventDefault();
+    const product = (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG.find(p => p.id === productId) : null) || { id: productId };
+    return this.openPayUModal(product);
   }
 
   buyNowPayU(productId, event) {
-    return this.buyNowFastrr(productId, event);
+    return this.buyNow(productId, event);
   }
 
   buyNowRazorpay(productId, event) {
-    return this.buyNowPayU(productId, event);
+    return this.buyNow(productId, event);
   }
 
   checkoutCart(event) {
-    return this.checkoutCartFastrr(event);
+    if (event) event.preventDefault();
+    this.closeCartModal();
+    return this.openPayUModal();
   }
 
   /* ==========================================================================

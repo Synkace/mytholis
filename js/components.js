@@ -1097,7 +1097,7 @@ const Components = {
                 <button class="btn btn-glass" style="flex: 1; padding: 1rem 1.2rem; font-size: 0.92rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border-color: var(--gold-primary); color: var(--gold-light);" onclick="app.addProductToCart('${product.id}')">
                   Add to Cart
                 </button>
-                <button class="btn btn-gold" style="flex: 1; padding: 1rem 1.2rem; font-size: 0.92rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;" onclick="app.buyNowFastrr('${product.id}', event)">
+                <button class="btn btn-gold" style="flex: 1; padding: 1rem 1.2rem; font-size: 0.92rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;" onclick="app.buyNow('${product.id}', event)">
                   Buy Now
                 </button>
               </div>
@@ -1472,7 +1472,7 @@ const Components = {
             </div>
           </div>
           <div class="modal-cart-actions-row">
-            <button class="cart-checkout-primary-btn" onclick="app.checkoutCartFastrr(event)">
+            <button class="cart-checkout-primary-btn" onclick="app.checkoutCart(event)">
               <span>⚡</span> Checkout (UPI · Cards · COD)
             </button>
             <div class="cart-secondary-actions-grid">
@@ -3426,14 +3426,6 @@ const Components = {
               ` : ''}
             </div>
           ` : ''}
-        </div>
-
-        <!-- Instant Express Checkout Option -->
-        <div style="margin-bottom: 1rem;">
-          <button type="button" class="cart-checkout-primary-btn" onclick="app.closePayUModal(); ${isSingleProduct ? `app.buyNowFastrr('${productOrCart.id}', event)` : 'app.checkoutCartFastrr(event)'}">
-            <span>⚡</span> Instant Checkout (UPI · Cards · COD)
-          </button>
-          <div class="auth-divider-line" style="margin: 0.75rem 0 0.45rem;">or continue with Card / NetBanking</div>
         </div>
 
         <!-- Payment Method Tabs -->
