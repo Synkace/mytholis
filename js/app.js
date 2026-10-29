@@ -429,7 +429,7 @@ class MytholisApp {
       store.selectedProductId = paramId;
       const product = MYTHOLIS_CATALOG.find(p => p.id === paramId);
       if (product && product.sizes && product.sizes.length > 0) {
-        const defaultSize = product.sizes[product.sizes.length - 1] || product.sizes[0];
+        const defaultSize = product.sizes[0];
         this.selectedSize = defaultSize.ml;
         this.selectedPrice = defaultSize.price;
       }
@@ -1332,7 +1332,7 @@ class MytholisApp {
 
   openProductView(productId) {
     const product = MYTHOLIS_CATALOG.find(p => p.id === productId) || MYTHOLIS_CATALOG[0];
-    const defaultSize = product.sizes[product.sizes.length - 1] || product.sizes[0];
+    const defaultSize = product.sizes[0];
     this.selectedSize = defaultSize.ml;
     this.selectedPrice = defaultSize.price;
     this.navigateTo('product', productId);
@@ -1568,7 +1568,7 @@ class MytholisApp {
   /* Cart & Toast */
   addProductToCart(productId) {
     const product = MYTHOLIS_CATALOG.find(p => p.id === productId) || MYTHOLIS_CATALOG[0];
-    const activeSizeObj = product.sizes.find(s => s.ml === this.selectedSize) || product.sizes[product.sizes.length - 1] || product.sizes[0];
+    const activeSizeObj = product.sizes.find(s => s.ml === this.selectedSize) || product.sizes[0];
     const engravingEl = document.getElementById('engraving-text');
     const engraving = engravingEl ? engravingEl.value.trim() : '';
 
@@ -1582,10 +1582,11 @@ class MytholisApp {
     const product = MYTHOLIS_CATALOG.find(p => p.id === productId) || MYTHOLIS_CATALOG[0];
     const targetSize = ml 
       ? (product.sizes.find(s => s.ml === ml) || product.sizes[0])
-      : (product.sizes[product.sizes.length - 1] || product.sizes[0]);
+      : product.sizes[0];
     
     store.addToCart(productId, targetSize.ml, '', 1);
-    this.showToast(`${product.name} (${targetSize.ml}ml) added to your cart.`);
+    const cleanName = (product.name || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    this.showToast(`${cleanName} (${targetSize.ml}ml) added to your cart.`);
     this.openCartModal();
   }
 
@@ -1627,7 +1628,7 @@ class MytholisApp {
 
   buyNowWhatsApp(productId) {
     const product = MYTHOLIS_CATALOG.find(p => p.id === productId) || MYTHOLIS_CATALOG[0];
-    const activeSizeObj = product.sizes.find(s => s.ml === this.selectedSize) || product.sizes[product.sizes.length - 1] || product.sizes[0];
+    const activeSizeObj = product.sizes.find(s => s.ml === this.selectedSize) || product.sizes[0];
     const size = activeSizeObj.ml;
     const price = activeSizeObj.price;
     const engravingEl = document.getElementById('engraving-text');
@@ -1727,13 +1728,14 @@ class MytholisApp {
 
       const fastrrItems = items.map(item => {
         let variantId = item.variant_id;
-        if (!variantId && item.productId) {
-          const sizeMap = VARIANT_MAP[item.productId] || {};
-          const parsedSize = parseInt(item.size, 10);
-          variantId = sizeMap[item.size] || sizeMap[parsedSize] || sizeMap[50] || sizeMap.default || '10022';
+        const prodId = item.productId || item.id;
+        if (!variantId && prodId) {
+          const sizeMap = VARIANT_MAP[prodId] || {};
+          const parsedSize = parseInt(String(item.size).replace(/\D/g, ''), 10) || 50;
+          variantId = sizeMap[parsedSize] || sizeMap[String(parsedSize)] || sizeMap[item.size] || sizeMap.default || '10012';
         }
         return {
-          variant_id: String(variantId || '10022'),
+          variant_id: String(variantId || '10012'),
           quantity: parseInt(item.quantity, 10) || 1
         };
       });
@@ -2285,7 +2287,33 @@ class MytholisApp {
 
   buyNow(productId, event) {
     if (event) event.preventDefault();
-    const product = (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG.find(p => p.id === productId) : null) || { id: productId };
+    const catalog = (typeof store !== 'undefined' && store.getProducts) ? store.getProducts() : MYTHOLIS_CATALOG;
+    const product = catalog.find(p => p.id === productId) || MYTHOLIS_CATALOG.find(p => p.id === productId) || { id: productId };
+    
+    // Determine the active selected size or default to 50ml (or 48ml for coffret)
+    const isCoffret = product.id === 'mytholis-discovery-set';
+    const fallbackSize = isCoffret ? 48 : 50;
+    const activeMl = (this.selectedSize && product.sizes?.some(s => s.ml === this.selectedSize))
+      ? this.selectedSize
+      : fallbackSize;
+    const activeSizeObj = product.sizes?.find(s => s.ml === activeMl) || product.sizes?.[0] || { ml: activeMl, price: product.price };
+
+    this.selectedSize = activeSizeObj.ml;
+    this.selectedPrice = activeSizeObj.price;
+
+    // Set cart to this exact item so checkout processes this exact size and price
+    store.cart = [{
+      id: product.id,
+      name: product.name,
+      image: product.image,
+      size: activeSizeObj.ml,
+      price: activeSizeObj.price,
+      engraving: '',
+      quantity: 1
+    }];
+    store.saveLocalStorage('mytholis_cart', store.cart);
+    store.notify();
+
     return this.openPayUModal(product);
   }
 
@@ -4116,6 +4144,36 @@ class MytholisApp {
         btn.style.opacity = '1';
       }
     }
+  }
+
+  downloadShiprocketCatalogCSV() {
+    const csvContent = [
+      'Product Name,SKU,Category,Type,MRP,Selling Price,Weight (kg),Length (cm),Breadth (cm),Height (cm),HSN,Available Quantity',
+      'King Scar - Extrait de Parfum 50ml,10012,Fragrance,Single,3999,3999,0.35,12,12,15,33030040,150',
+      'King Scar - Extrait de Parfum 100ml,10013,Fragrance,Single,5999,5999,0.55,12,12,18,33030040,100',
+      'Petralux - Extrait de Parfum 50ml,10022,Fragrance,Single,3299,3299,0.35,12,12,15,33030040,200',
+      'Petralux - Extrait de Parfum 100ml,10023,Fragrance,Single,4999,4999,0.55,12,12,18,33030040,100',
+      'Oud Rion - Extrait de Parfum 50ml,10032,Fragrance,Single,4599,4599,0.35,12,12,15,33030040,130',
+      'Oud Rion - Extrait de Parfum 100ml,10033,Fragrance,Single,6999,6999,0.55,12,12,18,33030040,75',
+      'Spark - Extrait de Parfum 50ml,10042,Fragrance,Single,3699,3699,0.35,12,12,15,33030040,110',
+      'Spark - Extrait de Parfum 100ml,10043,Fragrance,Single,5499,5499,0.55,12,12,18,33030040,75',
+      'Wood Sera - Extrait de Parfum 50ml,10052,Fragrance,Single,3299,3299,0.35,12,12,15,33030040,90',
+      'Wood Sera - Extrait de Parfum 100ml,10053,Fragrance,Single,4999,4999,0.55,12,12,18,33030040,60',
+      'Ash - Extrait de Parfum 50ml,10062,Fragrance,Single,3999,3999,0.35,12,12,15,33030040,100',
+      'Ash - Extrait de Parfum 100ml,10063,Fragrance,Single,5999,5999,0.55,12,12,18,33030040,60',
+      'Sixth Sense Discovery Coffret (6x8ml),10071,Fragrance,Single,3999,3999,0.45,18,14,6,33030040,250'
+    ].join('\r\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'mytholis_shiprocket_products_50ml_100ml.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    this.showToast('📥 Downloaded Shiprocket 50ml & 100ml Catalog CSV for Bulk Import.');
   }
 
   openProductEditorModal(productId = null) {

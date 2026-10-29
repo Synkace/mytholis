@@ -54,22 +54,22 @@ export default async function handler(req, res) {
     const DEFAULT_CATALOG = [
       // Ash
       { id: 'ash', name: 'Ash - Extrait de Parfum 50ml', sku: '10062', price: 3999, stock: 100, weight: 0.35, height: 15 },
-      { id: 'ash', name: 'Ash - Extrait de Parfum 100ml', sku: '10063', price: 4999, stock: 60, weight: 0.55, height: 18 },
+      { id: 'ash', name: 'Ash - Extrait de Parfum 100ml', sku: '10063', price: 5999, stock: 60, weight: 0.55, height: 18 },
       // King Scar
       { id: 'king-scar', name: 'King Scar - Extrait de Parfum 50ml', sku: '10012', price: 3999, stock: 150, weight: 0.35, height: 15 },
       { id: 'king-scar', name: 'King Scar - Extrait de Parfum 100ml', sku: '10013', price: 5999, stock: 100, weight: 0.55, height: 18 },
       // Petralux
-      { id: 'petralux', name: 'Petralux - Extrait de Parfum 50ml', sku: '10022', price: 3999, stock: 200, weight: 0.35, height: 15 },
-      { id: 'petralux', name: 'Petralux - Extrait de Parfum 100ml', sku: '10023', price: 5999, stock: 100, weight: 0.55, height: 18 },
+      { id: 'petralux', name: 'Petralux - Extrait de Parfum 50ml', sku: '10022', price: 3299, stock: 200, weight: 0.35, height: 15 },
+      { id: 'petralux', name: 'Petralux - Extrait de Parfum 100ml', sku: '10023', price: 4999, stock: 100, weight: 0.55, height: 18 },
       // Spark
-      { id: 'spark', name: 'Spark - Extrait de Parfum 50ml', sku: '10042', price: 3999, stock: 110, weight: 0.35, height: 15 },
+      { id: 'spark', name: 'Spark - Extrait de Parfum 50ml', sku: '10042', price: 3699, stock: 110, weight: 0.35, height: 15 },
       { id: 'spark', name: 'Spark - Extrait de Parfum 100ml', sku: '10043', price: 5499, stock: 75, weight: 0.55, height: 18 },
       // Oud Rion
-      { id: 'oud-rion', name: 'Oud Rion - Extrait de Parfum 50ml', sku: '10032', price: 3999, stock: 130, weight: 0.35, height: 15 },
-      { id: 'oud-rion', name: 'Oud Rion - Extrait de Parfum 100ml', sku: '10033', price: 5499, stock: 75, weight: 0.55, height: 18 },
+      { id: 'oud-rion', name: 'Oud Rion - Extrait de Parfum 50ml', sku: '10032', price: 4599, stock: 130, weight: 0.35, height: 15 },
+      { id: 'oud-rion', name: 'Oud Rion - Extrait de Parfum 100ml', sku: '10033', price: 6999, stock: 75, weight: 0.55, height: 18 },
       // Wood Sera
-      { id: 'wood-sera', name: 'Wood Sera - Extrait de Parfum 50ml', sku: '10052', price: 3999, stock: 90, weight: 0.35, height: 15 },
-      { id: 'wood-sera', name: 'Wood Sera - Extrait de Parfum 100ml', sku: '10053', price: 5499, stock: 60, weight: 0.55, height: 18 },
+      { id: 'wood-sera', name: 'Wood Sera - Extrait de Parfum 50ml', sku: '10052', price: 3299, stock: 90, weight: 0.35, height: 15 },
+      { id: 'wood-sera', name: 'Wood Sera - Extrait de Parfum 100ml', sku: '10053', price: 4999, stock: 60, weight: 0.55, height: 18 },
       // Sixth Sense Discovery Coffret
       { id: 'mytholis-discovery-set', name: 'Sixth Sense Discovery Coffret (6x8ml)', sku: '10071', price: 3999, stock: 250, weight: 0.45, height: 6 }
     ];

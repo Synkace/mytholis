@@ -492,7 +492,7 @@ class MytholisStore {
   }
 
   /* Cart Methods */
-  addToCart(productId, sizeMl = 100, engraving = '', quantity = 1) {
+  addToCart(productId, sizeMl = 50, engraving = '', quantity = 1) {
     const catalog = this.getProducts();
     const product = catalog.find(p => p.id === productId);
     if (!product) return;
@@ -501,7 +501,7 @@ class MytholisStore {
     const itemPrice = sizeObj.price;
 
     const existingIndex = this.cart.findIndex(
-      item => item.id === productId && item.size === sizeMl && item.engraving === engraving
+      item => item.id === productId && item.size === sizeObj.ml && item.engraving === engraving
     );
 
     if (existingIndex > -1) {
@@ -511,7 +511,7 @@ class MytholisStore {
         id: productId,
         name: product.name,
         image: product.image,
-        size: sizeMl,
+        size: sizeObj.ml,
         price: itemPrice,
         engraving: engraving,
         quantity: quantity

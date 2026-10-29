@@ -496,6 +496,9 @@ export const AdminComponents = {
                 <button class="btn btn-glass" onclick="app.seedCatalogToFirestore()">
                   ↻ Sync Local Catalog to Firestore
                 </button>
+                <button class="btn btn-glass" onclick="app.downloadShiprocketCatalogCSV()" style="border-color: rgba(212,175,55,0.4);" title="Download Shiprocket Bulk Import CSV with 50ml and 100ml flacons">
+                  📥 Download Shiprocket CSV (50ml & 100ml)
+                </button>
                 <button class="btn btn-gold" id="btn-sync-shiprocket" onclick="app.syncProductsToShiprocket()" style="background: linear-gradient(135deg, rgba(212,175,55,0.25), rgba(124,58,237,0.35)); border-color: rgba(212,175,55,0.5);">
                   🚀 Sync Products to Shiprocket
                 </button>

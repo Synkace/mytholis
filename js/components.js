@@ -14,7 +14,7 @@ const Components = {
   /* Render Product Card with 3D Pop-out Overlap, Wear Metrics & Instant Quick Add */
   renderProductCard(product) {
     const isWishlisted = store.isInWishlist(product.id);
-    const defaultSize = product.sizes && product.sizes.length > 0 ? product.sizes[product.sizes.length - 1] : { ml: 100, price: product.price };
+    const defaultSize = product.sizes && product.sizes.length > 0 ? product.sizes[0] : { ml: 50, price: product.price };
     const travelSize = product.sizes ? product.sizes.find(s => s.ml === 8) : null;
     const sillageLabel = product.sillageRating >= 95 ? "Formidable" : "Intimate";
     const occasionLabel = product.scentFamily.includes("Royal") || product.scentFamily.includes("Resinous") || product.scentFamily.includes("Smoky")
@@ -981,7 +981,7 @@ const Components = {
     const selectedMl = (typeof app !== 'undefined' && app.selectedSize) ? app.selectedSize : null;
     let activeSizeObj = selectedMl ? product.sizes.find(s => s.ml === selectedMl) : null;
     if (!activeSizeObj) {
-      activeSizeObj = product.sizes[product.sizes.length - 1] || product.sizes[0];
+      activeSizeObj = product.sizes[0];
     }
     const currentMl = activeSizeObj.ml;
     const currentPrice = activeSizeObj.price;
@@ -3369,12 +3369,20 @@ const Components = {
   /* Render PayU / Hosted Gateway Instant Checkout Modal */
   renderPayUModal(productOrCart = {}) {
     const isSingleProduct = !!(productOrCart && productOrCart.id);
-    const baseSubtotal = isSingleProduct ? (app.selectedPrice || productOrCart.price) : store.getCartTotal();
+    let chosenSize = app.selectedSize || 50;
+    let singlePrice = app.selectedPrice;
+    if (isSingleProduct && productOrCart.sizes) {
+      const sObj = productOrCart.sizes.find(s => s.ml === chosenSize) || productOrCart.sizes[0];
+      chosenSize = sObj.ml;
+      singlePrice = sObj.price;
+    }
+    const baseSubtotal = isSingleProduct ? (singlePrice || productOrCart.price) : store.getCartTotal();
     const appliedReward = isSingleProduct ? null : store.getAppliedReward();
     const appliedGift = isSingleProduct ? null : store.getAppliedGift();
     const discount = isSingleProduct ? 0 : store.getDiscountAmount(baseSubtotal);
     const finalAmount = Math.max(0, baseSubtotal - discount);
-    const title = isSingleProduct ? productOrCart.name : `Vault Cart (${store.getCartCount()} items)`;
+    const cleanName = isSingleProduct ? (productOrCart.name || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '';
+    const title = isSingleProduct ? `${cleanName} (${chosenSize}ml)` : `Vault Cart (${store.getCartCount()} items)`;
 
     const payuKey = (store.globalSettings && store.globalSettings.payuMerchantKey && store.globalSettings.payuMerchantKey.trim()) || 'LqPsyW';
     const payuSalt = (store.globalSettings && store.globalSettings.payuMerchantSalt && store.globalSettings.payuMerchantSalt.trim()) || '';
