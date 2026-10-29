@@ -1692,6 +1692,31 @@ class MytholisApp {
     await this.initiateFastrrCheckout(items, event, window.location.origin + '/#track-order');
   }
 
+  async loadFastrrCheckoutSdk() {
+    if (typeof window.HeadlessCheckout !== 'undefined' && typeof window.HeadlessCheckout.addToCart === 'function') {
+      return true;
+    }
+    return new Promise((resolve) => {
+      const existing = document.getElementById('shiprocket-custom-sdk');
+      if (existing) {
+        if (typeof window.HeadlessCheckout !== 'undefined') return resolve(true);
+        existing.addEventListener('load', () => resolve(true), { once: true });
+        existing.addEventListener('error', () => resolve(false), { once: true });
+        return;
+      }
+      const script = document.createElement('script');
+      script.id = 'shiprocket-custom-sdk';
+      script.src = 'https://checkout-ui.shiprocket.com/assets/js/channels/custom.js';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => {
+        console.warn('[Fastrr Checkout SDK blocked by client adblocker]');
+        resolve(false);
+      };
+      document.head.appendChild(script);
+    });
+  }
+
   buildFastrrWidgetUrl(token, fallbackUrl) {
     const sellerDomain = document.getElementById('sellerDomain')?.value || 'mytholis.com';
     const checkoutBuyer = window.checkoutBuyer || 'https://fastrr-boost-ui.pickrr.com/';
@@ -1816,6 +1841,7 @@ class MytholisApp {
         this.showToast('Launching Secure Checkout...');
 
         const widgetUrl = this.buildFastrrWidgetUrl(res.token, res.redirect_url || fallbackUrl);
+        await this.loadFastrrCheckoutSdk();
 
         if (typeof window.HeadlessCheckout !== 'undefined' && typeof window.HeadlessCheckout.addToCart === 'function') {
           try {
