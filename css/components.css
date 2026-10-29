@@ -268,8 +268,9 @@
   text-transform: uppercase;
 }
 
-/* Fastrr 1-Click OTP Login Button */
-.btn-fastrr {
+/* VIP 1-Click Mobile OTP Access Button */
+.btn-fastrr,
+.btn-otp-login {
   width: 100%;
   display: flex;
   align-items: center;
@@ -6687,7 +6688,7 @@ div#cardsRow {
 }
 
 /* ==============================================================================
-   FASTRR 1-CLICK POPUP STYLES (APP & PHONE)
+   VIP PATRON POPUP LOGIN STYLES (APP & PHONE)
    ============================================================================== */
 .fastrr-popup-backdrop {
   animation: fastrrFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;

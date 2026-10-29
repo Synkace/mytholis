@@ -98,53 +98,16 @@ class MytholisApp {
     // Initialize Navbar Auth State
     this.updateNavAuth();
 
-    // Auto-prompt Fastrr 1-Click Login whenever a visitor visits the site
+    // Auto-prompt VIP Patron Access Login whenever a visitor visits the site
     setTimeout(() => {
       if (!store.user?.isLoggedIn && (!firebaseService || !firebaseService.currentUser)) {
-        console.log('[Mytholis Auto-Prompt] Triggering Fastrr 1-Click Login for visitor...');
-        this.openFastrrLogin(null, false);
+        this.openPatronLogin(null, false);
       }
     }, 1500);
 
     // Hash & History router listeners for Deep-Linking and Browser Back-Button
     window.addEventListener('hashchange', () => this.handleHashRoute());
     window.addEventListener('popstate', () => this.handleHashRoute());
-
-    // Fastrr / Shiprocket 1-Click Checkout Event Bridge & Safety Listeners
-    window.addEventListener('message', (event) => {
-      const data = event.data;
-      if (!data) return;
-
-      // When Fastrr sends hide-pre-loader, immediately reveal iframe and enable interactions
-      if (data.trigger === 'hide-pre-loader') {
-        const preloader = document.getElementById('fastrr-pre-loader');
-        if (preloader) preloader.style.display = 'none';
-        const mainContainer = document.getElementById('fastrr-main-container');
-        if (mainContainer) mainContainer.style.pointerEvents = 'auto';
-      }
-
-      // Fastrr modal close triggers from user clicking ✕ inside iframe
-      if (data.trigger === 'headless-close' || data.trigger === 'headlessClose' || data.action === 'headlessClose') {
-        document.getElementById('headless-container')?.remove();
-        document.getElementById('fastrr-main-container')?.remove();
-        document.getElementById('fastrr-pre-loader')?.remove();
-        document.body.style.overflow = 'auto';
-      }
-
-      // Fastrr Login Success / Completion Bridge
-      if (
-        data.trigger === 'headless-custom-complete' ||
-        data.trigger === 'headless-complete' ||
-        data.trigger === 'login-success' ||
-        data.event === 'app_log_in' ||
-        data.trigger === 'user-login' ||
-        data.action === 'login' ||
-        data.action === 'custom_login_response' ||
-        data.event === 'custom_login_response'
-      ) {
-        this.handleFastrrLoginSuccess(data.data || data.payload || data);
-      }
-    });
 
     // Scroll Header effect (cached & RAF throttled)
     const header = document.querySelector('.header-nav');
@@ -1431,7 +1394,7 @@ class MytholisApp {
       const st = (foundOrder.status || 'Pending').toLowerCase();
       const awb = foundOrder.trackingNumber || foundOrder.awb_number || '';
       const courier = foundOrder.courierName || foundOrder.courier || 'BlueDart Express';
-      const trackingUrl = foundOrder.trackingUrl || (awb ? `https://shiprocket.co/tracking/${awb}` : '');
+      const trackingUrl = foundOrder.trackingUrl || (awb ? `https://track.delhivery.com/tracking?tracking_id=${awb}` : '');
       const estDate = foundOrder.estimatedDelivery || '3-5 Business Days';
       const itemsDesc = Array.isArray(foundOrder.items) 
         ? foundOrder.items.map(i => `${i.name || i.id} (${i.size || '50ml'}) × ${i.quantity || i.qty || 1}`).join(', ')
@@ -1497,7 +1460,7 @@ class MytholisApp {
               <div>
                 <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">Live Consignment Telemetry</span>
                 <p style="font-size: 0.84rem; color: var(--text-main); margin: 0.35rem 0 0;">
-                  ${foundOrder.lastActivity || foundOrder.shiprocketRawStatus || `Status: ${foundOrder.status || 'Dispatched'}`}
+                  ${foundOrder.lastActivity || foundOrder.logisticsRawStatus || foundOrder.shiprocketRawStatus || `Status: ${foundOrder.status || 'Dispatched'}`}
                   ${foundOrder.lastLocation ? ` &bull; Location: <strong style="color: var(--gold-light);">${foundOrder.lastLocation}</strong>` : ''}
                 </p>
               </div>
@@ -1675,228 +1638,12 @@ class MytholisApp {
     return this.checkoutCart(event);
   }
 
-  async loadFastrrCheckoutSdk() {
-    if (typeof window.HeadlessCheckout !== 'undefined' && typeof window.HeadlessCheckout.addToCart === 'function') {
-      return true;
-    }
-    return new Promise((resolve) => {
-      const existing = document.getElementById('shiprocket-custom-sdk');
-      if (existing) {
-        if (typeof window.HeadlessCheckout !== 'undefined') return resolve(true);
-        existing.addEventListener('load', () => resolve(true), { once: true });
-        existing.addEventListener('error', () => resolve(false), { once: true });
-        return;
-      }
-      const script = document.createElement('script');
-      script.id = 'shiprocket-custom-sdk';
-      script.src = 'https://checkout-ui.shiprocket.com/assets/js/channels/custom.js';
-      script.async = true;
-      script.onload = () => resolve(true);
-      script.onerror = () => {
-        console.warn('[Fastrr Checkout SDK blocked by client adblocker]');
-        resolve(false);
-      };
-      document.head.appendChild(script);
-    });
+  async initiateFastrrCheckout(items, event, fallbackUrl) {
+    return this.openPayUModal();
   }
 
-  buildFastrrWidgetUrl(token, fallbackUrl) {
-    const sellerDomain = document.getElementById('sellerDomain')?.value || 'mytholis.com';
-    const checkoutBuyer = window.checkoutBuyer || 'https://fastrr-boost-ui.pickrr.com/';
-    const channel = btoa(encodeURIComponent(JSON.stringify({
-      shop_name: 'company-logo',
-      shop_url: sellerDomain,
-      redirectUrl: fallbackUrl,
-      credInstalled: false,
-      gpayInstalled: false
-    })));
-    const cartBase64 = btoa(encodeURIComponent(JSON.stringify([])));
-    return `${checkoutBuyer}?platform=CUSTOM&customCheckoutToken=${token}&type=cart&channel=${channel}#cart=${cartBase64}`;
-  }
-
-  async generateFastrrTokenClient(items, redirectUrl) {
-    try {
-      const VARIANT_MAP = {
-        'king-scar': { 8: '10011', 50: '10012', 100: '10013', default: '10012' },
-        'petralux': { 8: '10021', 50: '10022', 100: '10023', default: '10022' },
-        'oud-rion': { 8: '10031', 50: '10032', 100: '10033', default: '10032' },
-        'spark': { 8: '10041', 50: '10042', 100: '10043', default: '10042' },
-        'wood-sera': { 8: '10051', 50: '10052', 100: '10053', default: '10052' },
-        'ash': { 8: '10061', 50: '10062', 100: '10063', default: '10062' },
-        'mytholis-discovery-set': { 48: '10071', 60: '10071', default: '10071' }
-      };
-
-      const fastrrItems = items.map(item => {
-        let variantId = item.variant_id;
-        const prodId = item.productId || item.id;
-        if (!variantId && prodId) {
-          const sizeMap = VARIANT_MAP[prodId] || {};
-          const parsedSize = parseInt(String(item.size).replace(/\D/g, ''), 10) || 50;
-          variantId = sizeMap[parsedSize] || sizeMap[String(parsedSize)] || sizeMap[item.size] || sizeMap.default || '10012';
-        }
-        return {
-          variant_id: String(variantId || '10012'),
-          quantity: parseInt(item.quantity, 10) || 1
-        };
-      });
-
-      const appliedReward = store.getAppliedReward ? store.getAppliedReward() : null;
-      const activeCoupon = appliedReward ? appliedReward.code : (store.loyalty?.applied_reward_code || 'FIRST20');
-
-      const cartData = { items: fastrrItems };
-      if (activeCoupon) {
-        cartData.coupon_code = activeCoupon;
-        cartData.discount_code = activeCoupon;
-      }
-
-      const payload = {
-        cart_data: cartData,
-        redirect_url: redirectUrl,
-        timestamp: new Date().toISOString()
-      };
-
-      const rawBody = JSON.stringify(payload);
-      const resp = await fetch('/api/fastrr/create-checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: rawBody
-      });
-
-      const resJson = await resp.json().catch(() => ({}));
-      if (resJson.success && resJson.token) {
-        return {
-          success: true,
-          token: resJson.token,
-          order_id: resJson.order_id,
-          redirect_url: redirectUrl
-        };
-      }
-      return { success: false, error: resJson.error || 'Token generation failed' };
-    } catch (err) {
-      console.warn('[Fastrr Direct Token Generation]:', err);
-      return { success: false, error: err.message };
-    }
-  }
-
-  async initiateFastrrCheckout(items, event, fallbackUrl = window.location.origin + '/#track-order') {
-    this.showToast('Connecting to Checkout...');
-
-    // Resolve active coupon (e.g. FIRST20) and sync cookie for Fastrr's client script
-    const appliedReward = store.getAppliedReward ? store.getAppliedReward() : null;
-    const activeCoupon = appliedReward ? appliedReward.code : (store.loyalty?.applied_reward_code || 'FIRST20');
-    if (activeCoupon) {
-      document.cookie = `discount_code=${encodeURIComponent(activeCoupon)}; path=/; max-age=86400; SameSite=Lax`;
-    }
-
-    // Clear any previous Fastrr containers to prevent CHECKOUT_ALREADY_INIT collision
-    document.getElementById('fastrr-main-container')?.remove();
-    document.getElementById('headless-container')?.remove();
-    document.getElementById('fastrr-pre-loader')?.remove();
-
-    try {
-      let res = null;
-
-      // 1. Try local or remote API endpoint
-      try {
-        const response = await fetch('/api/fastrr/create-checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            items,
-            coupon_code: activeCoupon,
-            redirect_url: fallbackUrl
-          })
-        });
-
-        if (response.ok) {
-          res = await response.json().catch(() => null);
-        }
-      } catch (netErr) {
-        console.warn('[Fastrr] Server endpoint fetch failed, falling back to direct token generator...');
-      }
-
-      // 2. Client-side direct fallback if server endpoint is 404/unavailable (e.g. preview mode or local testing)
-      if (!res || !res.token) {
-        res = await this.generateFastrrTokenClient(items, fallbackUrl);
-      }
-
-      if (res && res.success && res.token) {
-        this.closeAllModals(false);
-        this.showToast('Launching Secure Checkout...');
-
-        const widgetUrl = this.buildFastrrWidgetUrl(res.token, res.redirect_url || fallbackUrl);
-        await this.loadFastrrCheckoutSdk();
-
-        if (typeof window.HeadlessCheckout !== 'undefined' && typeof window.HeadlessCheckout.addToCart === 'function') {
-          try {
-            window.HeadlessCheckout.addToCart(event, res.token, {
-              fallbackUrl: res.redirect_url || fallbackUrl
-            });
-
-            // Watchdog: If preloader doesn't hide within 3.5s, auto-hide preloader and make container interactive
-            setTimeout(() => {
-              const preloader = document.getElementById('fastrr-pre-loader');
-              if (preloader) preloader.style.display = 'none';
-              const mainContainer = document.getElementById('fastrr-main-container');
-              if (mainContainer) mainContainer.style.pointerEvents = 'auto';
-            }, 3500);
-          } catch (sdkErr) {
-            console.warn('[Fastrr Headless SDK notice]:', sdkErr);
-            this.openFastrrIframeModal(widgetUrl, res.redirect_url || fallbackUrl);
-          }
-        } else {
-          // If SDK is not ready, blocked by client ad-blocker, or on native WebView, mount direct Fastrr iframe
-          this.openFastrrIframeModal(widgetUrl, res.redirect_url || fallbackUrl);
-        }
-      } else {
-        console.warn('[Fastrr Checkout API Notice]:', res);
-        this.showToast('Opening payment desk...');
-        this.openPayUModal();
-      }
-    } catch (err) {
-      console.error('[Fastrr Checkout Error]:', err);
-      this.showToast('Opening payment desk...');
-      this.openPayUModal();
-    }
-  }
-
-  openFastrrIframeModal(iframeSrc, fallbackUrl) {
-    let container = document.getElementById('headless-container');
-    if (container) container.remove();
-
-    container = document.createElement('div');
-    container.id = 'headless-container';
-    container.innerHTML = `
-      <div class="headless-modal" style="position: fixed; inset: 0; z-index: 2147483647; background: rgba(2, 12, 9, 0.88); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
-        <div class="headless-modal-content" style="position: relative; width: 100%; max-width: 460px; height: 92vh; max-height: 820px; background: #041812; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 80px rgba(0,0,0,0.95); border: 1px solid rgba(212, 175, 55, 0.25);">
-          <!-- Luxury Preloader -->
-          <div id="headless-modal-preloader" style="position: absolute; inset: 0; background: #041812; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; gap: 1rem; color: #d4af37;">
-            <div style="width: 44px; height: 44px; border: 2.5px solid rgba(212,175,55,0.2); border-top-color: #d4af37; border-radius: 50%; animation: spin 0.9s linear infinite;"></div>
-            <span style="font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase; color: #e6ca65;">Connecting Secure Desk...</span>
-          </div>
-          <button id="headless-close-btn" onclick="document.getElementById('headless-container')?.remove(); document.body.style.overflow='auto';" style="position: absolute; top: 14px; right: 14px; z-index: 100000; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid rgba(212,175,55,0.3); border-radius: 50%; width: 34px; height: 34px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">✕</button>
-          <div class="headless-modal-body" style="width: 100%; height: 100%;">
-            <iframe id="headless-iframe" src="${iframeSrc}" allow="geolocation; clipboard-read; clipboard-write; web-share" style="width: 100%; height: 100%; border: none;" onload="document.getElementById('headless-modal-preloader')?.remove();"></iframe>
-          </div>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(container);
-    document.body.style.overflow = 'hidden';
-
-    // Watchdog: If iframe fails to load or is blocked within 2.5s, automatically open Payment Desk
-    setTimeout(() => {
-      const preloader = document.getElementById('headless-modal-preloader');
-      if (preloader) {
-        document.getElementById('headless-container')?.remove();
-        document.body.style.overflow = 'auto';
-        this.openPayUModal();
-      }
-    }, 2500);
-  }
-
-  /* Fastrr 1-Click Login Popup (Matches Mobile & App Preview) */
-  openFastrrLogin(event = null, force = true) {
+  /* VIP Patron 1-Click Mobile Access Popup */
+  openPatronLogin(event = null, force = true) {
     if (event && event.preventDefault) event.preventDefault();
     if (store.user && store.user.isLoggedIn) return;
     if (typeof firebaseService !== 'undefined' && firebaseService.currentUser) return;
@@ -1950,7 +1697,7 @@ class MytholisApp {
               <!-- Disclaimer -->
               <div style="margin-top: 0.95rem; font-size: 0.69rem; color: #64748b; line-height: 1.45; text-align: center;">
                 <span style="font-size: 0.75rem; color: #94a3b8; margin-right: 3px;">ⓘ</span>
-                <span>By proceeding, you are agreeing to Shiprocket's <a href="#privacy" onclick="app.closeFastrrPopup(); app.navigateTo('privacy');" style="color: #475569; text-decoration: underline;">T&C</a> and <a href="#privacy" onclick="app.closeFastrrPopup(); app.navigateTo('privacy');" style="color: #475569; text-decoration: underline;">Privacy policy</a>.</span>
+                <span>By proceeding, you agree to House Mytholis <a href="#privacy" onclick="app.closeFastrrPopup(); app.navigateTo('privacy');" style="color: #475569; text-decoration: underline;">T&C</a> and <a href="#privacy" onclick="app.closeFastrrPopup(); app.navigateTo('privacy');" style="color: #475569; text-decoration: underline;">Privacy Policy</a>.</span>
               </div>
             </div>
 
@@ -1988,10 +1735,9 @@ class MytholisApp {
 
           <!-- Card Footer Branding -->
           <div style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.75rem; color: #475569; font-weight: 500; user-select: none;">
-            <span>Powered by</span>
-            <span style="font-weight: 700; display: inline-flex; align-items: center; gap: 4px; color: #334155;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="#6366f1"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              Shiprocket
+            <span>Protected by</span>
+            <span style="font-weight: 700; display: inline-flex; align-items: center; gap: 4px; color: #1e293b;">
+              256-Bit SSL Encrypted Vault
             </span>
           </div>
 
@@ -2008,12 +1754,20 @@ class MytholisApp {
     }, 150);
   }
 
-  /* Close Fastrr Popup */
+  /* Close Patron Popup */
   closeFastrrPopup() {
     sessionStorage.setItem('mytholis_fastrr_prompted', 'true');
     document.getElementById('fastrr-login-modal-root')?.remove();
     document.body.style.overflow = 'auto';
     clearInterval(this.fastrrResendTimer);
+  }
+
+  closePatronPopup() {
+    return this.closeFastrrPopup();
+  }
+
+  openFastrrLogin(event = null, force = true) {
+    return this.openPatronLogin(event, force);
   }
 
   /* Step 1: Submit Phone Number */
@@ -4103,79 +3857,6 @@ class MytholisApp {
     }
   }
 
-  async syncProductsToShiprocket() {
-    const btn = document.getElementById('btn-sync-shiprocket');
-    const originalText = btn ? btn.innerHTML : '🚀 Sync Products to Shiprocket';
-    if (btn) {
-      btn.disabled = true;
-      btn.innerHTML = '⏳ Syncing Catalog to Shiprocket...';
-      btn.style.opacity = '0.75';
-    }
-
-    this.showToast('Connecting to Shiprocket Master Product Catalog...');
-
-    try {
-      const catalog = (this.adminData && this.adminData.products && this.adminData.products.length)
-        ? this.adminData.products
-        : store.getProducts();
-
-      const response = await fetch('/api/shiprocket-sync-products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ products: catalog })
-      });
-
-      const resJson = await response.json().catch(() => null);
-
-      if (response.ok && resJson && resJson.success) {
-        const count = resJson.syncedCount || resJson.totalCount || 6;
-        this.showToast(`✨ Successfully synced ${count} products to Shiprocket's Master Catalog!`);
-      } else {
-        const errMsg = resJson?.error || `HTTP ${response.status}`;
-        this.showToast(`Shiprocket sync notice: ${errMsg}`);
-      }
-    } catch (err) {
-      console.error('[Shiprocket Sync Error]:', err);
-      this.showToast(`Shiprocket sync failed: ${err.message || 'Network error'}`);
-    } finally {
-      if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-        btn.style.opacity = '1';
-      }
-    }
-  }
-
-  downloadShiprocketCatalogCSV() {
-    const csvContent = [
-      'Product Name,SKU,Category,Type,MRP,Selling Price,Weight (kg),Length (cm),Breadth (cm),Height (cm),HSN,Available Quantity',
-      'King Scar - Extrait de Parfum 50ml,10012,Fragrance,Single,3999,3999,0.35,12,12,15,33030040,150',
-      'King Scar - Extrait de Parfum 100ml,10013,Fragrance,Single,5999,5999,0.55,12,12,18,33030040,100',
-      'Petralux - Extrait de Parfum 50ml,10022,Fragrance,Single,3299,3299,0.35,12,12,15,33030040,200',
-      'Petralux - Extrait de Parfum 100ml,10023,Fragrance,Single,4999,4999,0.55,12,12,18,33030040,100',
-      'Oud Rion - Extrait de Parfum 50ml,10032,Fragrance,Single,4599,4599,0.35,12,12,15,33030040,130',
-      'Oud Rion - Extrait de Parfum 100ml,10033,Fragrance,Single,6999,6999,0.55,12,12,18,33030040,75',
-      'Spark - Extrait de Parfum 50ml,10042,Fragrance,Single,3699,3699,0.35,12,12,15,33030040,110',
-      'Spark - Extrait de Parfum 100ml,10043,Fragrance,Single,5499,5499,0.55,12,12,18,33030040,75',
-      'Wood Sera - Extrait de Parfum 50ml,10052,Fragrance,Single,3299,3299,0.35,12,12,15,33030040,90',
-      'Wood Sera - Extrait de Parfum 100ml,10053,Fragrance,Single,4999,4999,0.55,12,12,18,33030040,60',
-      'Ash - Extrait de Parfum 50ml,10062,Fragrance,Single,3999,3999,0.35,12,12,15,33030040,100',
-      'Ash - Extrait de Parfum 100ml,10063,Fragrance,Single,5999,5999,0.55,12,12,18,33030040,60',
-      'Sixth Sense Discovery Coffret (6x8ml),10071,Fragrance,Single,3999,3999,0.45,18,14,6,33030040,250'
-    ].join('\r\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'mytholis_shiprocket_products_50ml_100ml.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    this.showToast('📥 Downloaded Shiprocket 50ml & 100ml Catalog CSV for Bulk Import.');
-  }
-
   openProductEditorModal(productId = null) {
     let prod = null;
     if (productId) {
@@ -4975,7 +4656,7 @@ class MytholisApp {
       const arrayBuffer = await file.arrayBuffer();
       this.currentRebranderPdfBytes = arrayBuffer;
       await this.triggerRebrandPreview();
-      this.showToast('Shiprocket PDF loaded into Rebrander Studio.');
+      this.showToast('Courier Label loaded into Studio.');
     } catch (err) {
       console.error('[LabelRebrander] Error reading file:', err);
       this.updateRebranderStatus('Error reading file', '#EF4444');

@@ -330,26 +330,3 @@ h1, h2, h3, h4, .font-title {
   transform: translateY(0);
 }
 
-/* Fastrr / Shiprocket 1-Click Checkout Modal Styles */
-#fastrr-main-container:empty {
-  display: none !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-}
-
-#fastrr-main-container:not(:empty) {
-  display: block !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 2147483647 !important;
-}
-
-#headless-container {
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 2147483647 !important;
-  pointer-events: auto !important;
-}
-

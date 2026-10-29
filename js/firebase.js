@@ -669,21 +669,21 @@ export class FirebaseService {
     }
   }
 
-  // Synchronize Fastrr authenticated patron profile and loyalty with store & Firestore
-  async syncFastrrUserData(fastrrUser) {
-    if (!this.store || !fastrrUser) return;
-    const phone = fastrrUser.phone || fastrrUser.mobile || fastrrUser.phone_number || '';
+  // Synchronize authenticated mobile patron profile and loyalty with store & Firestore
+  async syncPhoneUserData(userData) {
+    if (!this.store || !userData) return;
+    const phone = userData.phone || userData.mobile || userData.phone_number || '';
     const cleanPhone = phone ? String(phone).replace(/\s+/g, '') : '';
-    const patronName = fastrrUser.name || [fastrrUser.first_name, fastrrUser.last_name].filter(Boolean).join(' ') || (cleanPhone ? `Patron (${cleanPhone})` : 'Mytholis Patron');
-    const patronEmail = fastrrUser.email || (cleanPhone ? `${cleanPhone.replace(/\D/g, '')}@phone.mytholis.com` : '');
-    const uid = fastrrUser.uid || (cleanPhone ? `fastrr_${cleanPhone.replace(/\D/g, '')}` : `fastrr_${Date.now()}`);
+    const patronName = userData.name || [userData.first_name, userData.last_name].filter(Boolean).join(' ') || (cleanPhone ? `Patron (${cleanPhone})` : 'Mytholis Patron');
+    const patronEmail = userData.email || (cleanPhone ? `${cleanPhone.replace(/\D/g, '')}@phone.mytholis.com` : '');
+    const uid = userData.uid || (cleanPhone ? `phone_${cleanPhone.replace(/\D/g, '')}` : `patron_${Date.now()}`);
 
     this.store.user.isLoggedIn = true;
     this.store.user.uid = uid;
     this.store.user.email = patronEmail;
     this.store.user.phone = cleanPhone;
     this.store.user.name = patronName;
-    this.store.user.authProvider = 'fastrr';
+    this.store.user.authProvider = 'phone';
 
     // Parse addresses if Fastrr returned shipping address
     if (fastrrUser.addresses && Array.isArray(fastrrUser.addresses) && fastrrUser.addresses.length > 0) {
@@ -746,7 +746,7 @@ export class FirebaseService {
               pincode: this.store.user.pincode || '',
               city: this.store.user.city || '',
               state: this.store.user.state || '',
-              authProvider: 'fastrr',
+              authProvider: 'phone',
               role: 'patron',
               isAdmin: false,
               createdAt: serverTimestamp()
@@ -770,8 +770,12 @@ export class FirebaseService {
         this.store.notify();
       }
     } catch (syncErr) {
-      console.warn('[Mytholis Firebase] Fastrr cloud profile sync note:', syncErr.message);
+      console.warn('[Mytholis Firebase] Phone cloud profile sync note:', syncErr.message);
     }
+  }
+
+  syncFastrrUserData(userData) {
+    return this.syncPhoneUserData(userData);
   }
 
   // Push local changes up to Firestore
@@ -1343,10 +1347,10 @@ export class FirebaseService {
     }
   }
 
-  // Save Shiprocket Shipping & Rebranded Label Metadata
-  async saveShiprocketOrderDetails(orderId, details = {}) {
+  // Save Shipping & Rebranded Label Metadata
+  async saveShippingOrderDetails(orderId, details = {}) {
     return this.updateOrderStatus(orderId, {
-      shiprocketOrderId: details.shiprocketOrderId || details.order_id || '',
+      logisticsOrderId: details.logisticsOrderId || details.order_id || details.shiprocketOrderId || '',
       shipmentId: details.shipmentId || details.shipment_id || '',
       awbCode: details.awbCode || details.awb_code || details.trackingNumber || '',
       trackingNumber: details.awbCode || details.awb_code || details.trackingNumber || '',
@@ -1357,6 +1361,10 @@ export class FirebaseService {
       company_name: 'MYTHOLIS LUXURY PARFUMS',
       reseller_name: 'MYTHOLIS LUXURY PARFUMS'
     });
+  }
+
+  saveShiprocketOrderDetails(orderId, details = {}) {
+    return this.saveShippingOrderDetails(orderId, details);
   }
 
   // Settle COD order rewards with duplicate protection

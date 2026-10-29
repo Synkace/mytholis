@@ -1,6 +1,6 @@
 /* ==========================================================================
-   MYTHOLIS LUXURY PARFUMS - SHIPROCKET PDF LABEL REBRANDER ENGINE
-   Method 3: Automated Client-Side PDF Label Rebranding using pdf-lib
+   MYTHOLIS LUXURY PARFUMS - COURIER PDF LABEL REBRANDER ENGINE
+   Method 3: Automated Client-Side PDF Label Customization using pdf-lib
    Preserves 100% of Barcodes, Routing Hub Codes, and Buyer Coordinates
    ========================================================================== */
 
@@ -8,7 +8,7 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 export const LABEL_PRESETS = {
   'thermal-4x6-bottom': {
-    name: 'Standard Shiprocket 4x6 Thermal (Bottom "Sold By")',
+    name: 'Standard 4x6 Thermal Label (Bottom Mask)',
     description: 'Masks bottom return/shipped-by block on standard 4x6 thermal courier labels.',
     maskX: 14,
     maskY: 18,
@@ -22,8 +22,8 @@ export const LABEL_PRESETS = {
     topMaskHeight: 0
   },
   'thermal-4x6-top-bottom': {
-    name: 'Shiprocket 4x6 Thermal (Top Brand + Bottom "Sold By")',
-    description: 'Masks both the top Shiprocket banner and the bottom seller info block.',
+    name: '4x6 Thermal Label (Top Brand + Bottom Mask)',
+    description: 'Masks both the top partner banner and the bottom seller info block.',
     maskX: 14,
     maskY: 18,
     maskWidth: 260,
@@ -36,7 +36,7 @@ export const LABEL_PRESETS = {
     topMaskHeight: 45
   },
   'a4-top-left': {
-    name: 'Shiprocket A4 Label (Top-Left Quadrant)',
+    name: 'A4 Sheet Courier Label (Top-Left Quadrant)',
     description: 'Calibrated for standard A4 4-per-page or single sheet printouts.',
     maskX: 25,
     maskY: 440,
@@ -120,7 +120,7 @@ export function generateShiprocketOrderPayload(order, config = {}) {
  * Core PDF-Lib Rebranding Engine
  * Masks locked KYC company details and stamps luxury Mytholis typography & crest
  */
-export async function rebrandShiprocketLabelPdf(pdfData, options = {}) {
+export async function rebrandLabelPdf(pdfData, options = {}) {
   // 1. Load PDF from ArrayBuffer, Uint8Array, or base64
   let pdfBytes;
   if (pdfData instanceof ArrayBuffer) {
@@ -309,6 +309,8 @@ export async function rebrandShiprocketLabelPdf(pdfData, options = {}) {
     blobUrl
   };
 }
+
+export const rebrandShiprocketLabelPdf = rebrandLabelPdf;
 
 /**
  * Utility: Generate a realistic 4x6 Shiprocket courier label PDF for testing & calibration

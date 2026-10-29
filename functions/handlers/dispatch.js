@@ -1,5 +1,5 @@
-// Status mapper from Shiprocket to Mytholis Haute Parfumerie Statuses
-function mapShiprocketStatus(status) {
+// Status mapper from Logistics Partners to Mytholis Haute Parfumerie Statuses
+function mapLogisticsStatus(status) {
   if (!status) return 'Shipped';
   const s = String(status).toUpperCase().trim();
 
@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // Health-check / verification ping (Shiprocket or browser GET)
+  // Health-check / verification ping
   if (req.method === 'GET') {
     return res.status(200).json({
       success: true,
@@ -40,7 +40,7 @@ export default async function handler(req, res) {
 
   try {
     // Security Check: Optional secret verification
-    const webhookSecret = process.env.SHIPROCKET_WEBHOOK_SECRET;
+    const webhookSecret = process.env.DISPATCH_WEBHOOK_SECRET || process.env.WEBHOOK_SECRET;
     const providedSecret = req.headers['x-api-key'] || req.headers['x-webhook-token'] || req.headers['authorization'];
     
     if (webhookSecret && providedSecret) {
@@ -54,7 +54,7 @@ export default async function handler(req, res) {
     const payload = req.body || {};
     console.log('[Dispatch Webhook] Incoming payload:', JSON.stringify(payload).slice(0, 400));
 
-    // Handle Shiprocket "Test Webhook" ping or empty test body
+    // Handle courier "Test Webhook" ping or empty test body
     if (!payload || Object.keys(payload).length === 0 || payload.test === true || payload.is_test === 1) {
       return res.status(200).json({
         success: true,
@@ -64,7 +64,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // Shiprocket may send a single object or an array of event objects
+    // Courier may send a single object or an array of event objects
     const events = Array.isArray(payload) ? payload : [payload];
     const results = [];
 
@@ -86,7 +86,7 @@ export default async function handler(req, res) {
         const etd = item.etd || item.expected_delivery_date || '';
         const scans = Array.isArray(item.scans) ? item.scans : [];
 
-        // If neither orderId nor AWB is present (e.g. dummy test payload from Shiprocket UI)
+        // If neither orderId nor AWB is present (e.g. dummy test payload)
         if (!orderId && !awb) {
           console.log('[Dispatch Webhook] Test / generic event acknowledged:', item);
           results.push({ item, status: 'acknowledged' });
@@ -99,7 +99,7 @@ export default async function handler(req, res) {
           results.push({
             orderId,
             awb,
-            status: mapShiprocketStatus(rawStatus),
+            status: mapLogisticsStatus(rawStatus),
             standby: true
           });
           continue;
@@ -148,7 +148,7 @@ export default async function handler(req, res) {
           continue;
         }
 
-        const mappedStatus = mapShiprocketStatus(rawStatus);
+        const mappedStatus = mapLogisticsStatus(rawStatus);
         const isDelivered = mappedStatus.toLowerCase() === 'delivered';
         const isCod = (targetOrderDoc.paymentMethod || '').toUpperCase() === 'COD';
 
@@ -156,15 +156,15 @@ export default async function handler(req, res) {
           status: mappedStatus,
           trackingNumber: awb || targetOrderDoc.trackingNumber || targetOrderDoc.awb_number || '',
           courierName: courierName || targetOrderDoc.courierName || 'BlueDart Express',
-          trackingUrl: awb ? `https://shiprocket.co/tracking/${awb}` : (targetOrderDoc.trackingUrl || ''),
-          shiprocketRawStatus: rawStatus,
-          shiprocketLastUpdate: new Date().toISOString(),
+          trackingUrl: awb ? `https://track.delhivery.com/tracking?tracking_id=${awb}` : (targetOrderDoc.trackingUrl || ''),
+          logisticsRawStatus: rawStatus,
+          logisticsLastUpdate: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
 
         if (etd) updateData.estimatedDelivery = etd;
         if (scans.length) {
-          updateData.shiprocketScans = scans;
+          updateData.trackingScans = scans;
           const lastScan = scans[scans.length - 1];
           if (lastScan.location) updateData.lastLocation = lastScan.location;
           if (lastScan.activity) updateData.lastActivity = lastScan.activity;
@@ -242,7 +242,7 @@ export default async function handler(req, res) {
     if (adminDb) {
       try {
         await adminDb.collection('webhook_logs').add({
-          source: 'shiprocket',
+          source: 'logistics',
           receivedAt: new Date().toISOString(),
           eventCount: events.length,
           results
@@ -259,7 +259,6 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('[Dispatch Webhook] Global handler error caught:', error);
-    // Never return 500 to Shiprocket test pings
     return res.status(200).json({
       success: true,
       message: 'Dispatch webhook acknowledged with fallback',

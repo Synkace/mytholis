@@ -1091,7 +1091,7 @@ const Components = {
               </div>
             </div>
 
-            <!-- Action Buttons: Add to Cart and Buy Now (Fastrr Checkout) -->
+            <!-- Action Buttons: Add to Cart and Buy Now -->
             <div class="product-detail-actions-stacked" style="margin-top: 1.8rem;">
               <div class="action-btn-row" style="display: flex; gap: 0.9rem;">
                 <button class="btn btn-glass" style="flex: 1; padding: 1rem 1.2rem; font-size: 0.92rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border-color: var(--gold-primary); color: var(--gold-light);" onclick="app.addProductToCart('${product.id}')">
@@ -2457,7 +2457,7 @@ const Components = {
     `;
   },
 
-  /* Render Dedicated Luxury Patron Auth Modal (Fastrr 1-Click & Email) */
+  /* Render Dedicated Luxury Patron Auth Modal (1-Click OTP & Email) */
   renderAuthModal(activeTab = 'signin') {
     const isRegister = activeTab === 'register';
     const isSignIn = !isRegister;
@@ -2488,11 +2488,8 @@ const Components = {
         ${isSignIn ? `
           <!-- TAB 1: 1-CLICK & EMAIL SIGN IN -->
           <div class="auth-tab-pane">
-            <button type="button" class="btn btn-fastrr" style="margin-bottom: 0.9rem;" onclick="app.openFastrrLogin(event)">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="fastrr-bolt">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/>
-              </svg>
-              <span>⚡ 1-Click Instant Sign In</span>
+            <button type="button" class="btn btn-gold" style="margin-bottom: 0.9rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" onclick="app.openPatronLogin(event)">
+              <span>⚡ 1-Click Mobile OTP Access</span>
             </button>
 
             <div class="auth-divider-line">or sign in with email</div>
@@ -2528,11 +2525,8 @@ const Components = {
         ` : `
           <!-- TAB 2: 1-CLICK & EMAIL REGISTER -->
           <div class="auth-tab-pane">
-            <button type="button" class="btn btn-fastrr" style="margin-bottom: 0.9rem;" onclick="app.openFastrrLogin(event)">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="fastrr-bolt">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/>
-              </svg>
-              <span>⚡ 1-Click Instant Register</span>
+            <button type="button" class="btn btn-gold" style="margin-bottom: 0.9rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" onclick="app.openPatronLogin(event)">
+              <span>⚡ 1-Click Mobile OTP Access</span>
             </button>
 
             <div style="background: rgba(4, 24, 18, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px; padding: 0.75rem 0.9rem; margin-bottom: 1rem;">
@@ -2643,11 +2637,8 @@ const Components = {
               Sign in to access your personal Patron Dossier, manage delivery coordinates, view consignment tracking, and claim Circle of Legends rewards.
             </p>
             <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-              <button class="btn btn-fastrr" style="width: auto; padding: 0.8rem 1.8rem; font-size: 0.9rem; margin-bottom: 0;" onclick="app.openFastrrLogin(event)">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="fastrr-bolt">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/>
-                </svg>
-                <span>⚡ 1-Click Instant Sign In</span>
+              <button class="btn btn-gold" style="width: auto; padding: 0.8rem 1.8rem; font-size: 0.9rem; margin-bottom: 0; display: inline-flex; align-items: center; gap: 0.5rem;" onclick="app.openPatronLogin(event)">
+                <span>⚡ 1-Click Mobile Access</span>
               </button>
               <button class="btn btn-glass" style="padding: 0.8rem 2rem; font-size: 0.9rem;" onclick="app.openAuthModal('signin')">
                 Sign In to Sanctum

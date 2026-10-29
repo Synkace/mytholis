@@ -8,17 +8,6 @@ import completeOrderHandler from "./handlers/complete-order.js";
 import dispatchHandler from "./handlers/dispatch.js";
 import healthHandler from "./handlers/health.js";
 import redeemRewardHandler from "./handlers/redeem-reward.js";
-import shiprocketSyncProductsHandler from "./handlers/shiprocket-sync-products.js";
-
-// Fastrr handlers
-import fastrrBlockPointsHandler from "./handlers/fastrr/block-points.js";
-import fastrrCollectionsHandler from "./handlers/fastrr/collections.js";
-import fastrrCreateCheckoutHandler from "./handlers/fastrr/create-checkout.js";
-import fastrrLoyaltyPointsHandler from "./handlers/fastrr/loyalty-points.js";
-import fastrrOrderWebhookHandler from "./handlers/fastrr/order-webhook.js";
-import fastrrProductsHandler from "./handlers/fastrr/products.js";
-import fastrrProductsByCollectionHandler from "./handlers/fastrr/products-by-collection.js";
-import fastrrUnblockPointsHandler from "./handlers/fastrr/unblock-points.js";
 
 // PayU handlers
 import payuInitiateHandler from "./handlers/payu/initiate.js";
@@ -63,21 +52,9 @@ router.all("/admin", adminHandler);
 router.all("/complete-order", completeOrderHandler);
 router.all("/dispatch", dispatchHandler);
 router.all("/dispatch-event", dispatchHandler);
-router.all("/shiprocket-webhook", dispatchHandler);
 router.all("/webhook", dispatchHandler);
 router.all("/health", healthHandler);
 router.all("/redeem-reward", redeemRewardHandler);
-router.all("/shiprocket-sync-products", shiprocketSyncProductsHandler);
-
-// Fastrr Checkout & Loyalty APIs
-router.all("/fastrr/block-points", fastrrBlockPointsHandler);
-router.all("/fastrr/collections", fastrrCollectionsHandler);
-router.all("/fastrr/create-checkout", fastrrCreateCheckoutHandler);
-router.all("/fastrr/loyalty-points", fastrrLoyaltyPointsHandler);
-router.all("/fastrr/order-webhook", fastrrOrderWebhookHandler);
-router.all("/fastrr/products", fastrrProductsHandler);
-router.all("/fastrr/products-by-collection", fastrrProductsByCollectionHandler);
-router.all("/fastrr/unblock-points", fastrrUnblockPointsHandler);
 
 // PayU Hosted Gateway APIs
 router.all("/payu/initiate", payuInitiateHandler);

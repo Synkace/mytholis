@@ -462,7 +462,7 @@ export const AdminComponents = {
 
                       <!-- 1-Click Actions: Label Rebrander & WhatsApp -->
                       <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                        <button class="btn btn-gold" style="font-size: 0.72rem; padding: 0.45rem 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem; background: linear-gradient(135deg, #D4AF37 0%, #AA820A 100%); color: #041812; font-weight: 700;" onclick="app.openLabelRebranderForOrder('${orderId}')" title="Rebrand Shiprocket 4x6 Label with Mytholis Identity">
+                        <button class="btn btn-gold" style="font-size: 0.72rem; padding: 0.45rem 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem; background: linear-gradient(135deg, #D4AF37 0%, #AA820A 100%); color: #041812; font-weight: 700;" onclick="app.openLabelRebranderForOrder('${orderId}')" title="Stamp 4x6 Shipping Label with Mytholis Identity">
                           🏷️ Rebrand Label
                         </button>
                         ${paymentMethod === 'COD' ? `
@@ -495,12 +495,6 @@ export const AdminComponents = {
               <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
                 <button class="btn btn-glass" onclick="app.seedCatalogToFirestore()">
                   ↻ Sync Local Catalog to Firestore
-                </button>
-                <button class="btn btn-glass" onclick="app.downloadShiprocketCatalogCSV()" style="border-color: rgba(212,175,55,0.4);" title="Download Shiprocket Bulk Import CSV with 50ml and 100ml flacons">
-                  📥 Download Shiprocket CSV (50ml & 100ml)
-                </button>
-                <button class="btn btn-gold" id="btn-sync-shiprocket" onclick="app.syncProductsToShiprocket()" style="background: linear-gradient(135deg, rgba(212,175,55,0.25), rgba(124,58,237,0.35)); border-color: rgba(212,175,55,0.5);">
-                  🚀 Sync Products to Shiprocket
                 </button>
                 <button class="btn btn-gold" onclick="app.openProductEditorModal()">
                   + Inscribe New Fragrance Extrait
@@ -1850,7 +1844,7 @@ export const AdminComponents = {
               <!-- Source PDF Input Section -->
               <div class="calibration-card">
                 <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold-light); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                  1. Source Shiprocket PDF Label
+                  1. Source Courier PDF Shipping Label
                 </div>
 
                 <!-- Drag & Drop Zone -->
@@ -1858,7 +1852,7 @@ export const AdminComponents = {
                   <input type="file" id="rebrander-file-input" accept="application/pdf" style="display: none;" onchange="app.handleLabelFileUpload(event)" />
                   <div style="font-size: 1.8rem; margin-bottom: 0.4rem;">📄</div>
                   <div style="color: var(--gold-light); font-weight: 600; font-size: 0.9rem; margin-bottom: 0.2rem;" id="dropzone-label-text">
-                    Drop Shiprocket 4x6 or A4 PDF Here
+                    Drop 4x6 or A4 Shipping Label PDF Here
                   </div>
                   <div style="color: var(--text-muted); font-size: 0.75rem;">
                     or click to browse from device
@@ -1868,7 +1862,7 @@ export const AdminComponents = {
                 <!-- Alternative: Direct URL -->
                 <div style="margin-top: 0.8rem;">
                   <div style="display: flex; gap: 0.4rem;">
-                    <input type="text" id="rebrander-url-input" class="sovereign-form-input" placeholder="Or paste Shiprocket label PDF URL..." value="${existingLabelUrl}" style="font-size: 0.8rem; flex: 1;" />
+                    <input type="text" id="rebrander-url-input" class="sovereign-form-input" placeholder="Or paste label PDF URL..." value="${existingLabelUrl}" style="font-size: 0.8rem; flex: 1;" />
                     <button type="button" class="btn btn-glass" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;" onclick="app.loadLabelFromUrl()">
                       Fetch
                     </button>
@@ -1897,9 +1891,9 @@ export const AdminComponents = {
                 <div style="margin-bottom: 1rem;">
                   <label class="sovereign-field-label">Template Preset</label>
                   <select id="rebrander-preset-select" class="sovereign-select" style="width: 100%;" onchange="app.applyLabelPreset(this.value)">
-                    <option value="thermal-4x6-bottom" ${defaultPreset === 'thermal-4x6-bottom' ? 'selected' : ''}>Standard Shiprocket 4x6 Thermal (Bottom Sold By)</option>
-                    <option value="thermal-4x6-top-bottom" ${defaultPreset === 'thermal-4x6-top-bottom' ? 'selected' : ''}>Shiprocket 4x6 Thermal (Top Brand + Bottom Sold By)</option>
-                    <option value="a4-top-left" ${defaultPreset === 'a4-top-left' ? 'selected' : ''}>Shiprocket A4 Sheet Label (Top-Left Quadrant)</option>
+                    <option value="thermal-4x6-bottom" ${defaultPreset === 'thermal-4x6-bottom' ? 'selected' : ''}>Standard 4x6 Thermal Label (Bottom Mask)</option>
+                    <option value="thermal-4x6-top-bottom" ${defaultPreset === 'thermal-4x6-top-bottom' ? 'selected' : ''}>4x6 Thermal Label (Top Brand + Bottom Mask)</option>
+                    <option value="a4-top-left" ${defaultPreset === 'a4-top-left' ? 'selected' : ''}>A4 Sheet Courier Label (Top-Left Quadrant)</option>
                     <option value="custom" ${defaultPreset === 'custom' ? 'selected' : ''}>Custom Manual Coordinates</option>
                   </select>
                 </div>
@@ -1989,7 +1983,7 @@ export const AdminComponents = {
                     <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">🏷️</div>
                     <h4 class="font-title" style="color: var(--gold-light); margin: 0 0 0.4rem;">No PDF Loaded</h4>
                     <p style="font-size: 0.82rem; color: var(--text-muted); max-width: 320px; margin-bottom: 1.2rem;">
-                      Upload a Shiprocket PDF label or click the test button on the left to calibrate the white-out mask.
+                      Upload a courier PDF label or click the test button on the left to calibrate the white-out mask.
                     </p>
                     <button type="button" class="btn btn-gold" style="font-size: 0.8rem; padding: 0.6rem 1.4rem;" onclick="app.loadSampleThermalLabel()">
                       Generate Sample 4x6 Label
