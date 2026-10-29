@@ -6686,6 +6686,43 @@ div#cardsRow {
   color: var(--gold-light) !important;
 }
 
+/* ==============================================================================
+   FASTRR 1-CLICK POPUP STYLES (APP & PHONE)
+   ============================================================================== */
+.fastrr-popup-backdrop {
+  animation: fastrrFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.fastrr-popup-card {
+  animation: fastrrScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes fastrrFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fastrrScaleUp {
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.fastrr-otp-digit:focus {
+  border-color: #6366f1 !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18) !important;
+}
+
+#fastrr-popup-login-btn:hover {
+  background: #4f46e5 !important;
+}
+
+#fastrr-verify-btn:hover {
+  background: #4f46e5 !important;
+}
+
+
 
 
 
