@@ -9,9 +9,12 @@ import dispatchHandler from "./handlers/dispatch.js";
 import healthHandler from "./handlers/health.js";
 import redeemRewardHandler from "./handlers/redeem-reward.js";
 
-// PayU handlers
-import payuInitiateHandler from "./handlers/payu/initiate.js";
-import payuResponseHandler from "./handlers/payu/response.js";
+// Patron & Collector Deduplication & Reconciliation
+import patronReconcileHandler from "./handlers/patron/reconcile.js";
+
+// Razorpay handlers
+import razorpayCreateOrderHandler from "./handlers/razorpay/create-order.js";
+import razorpayVerifyPaymentHandler from "./handlers/razorpay/verify-payment.js";
 
 const app = express();
 
@@ -56,9 +59,13 @@ router.all("/webhook", dispatchHandler);
 router.all("/health", healthHandler);
 router.all("/redeem-reward", redeemRewardHandler);
 
-// PayU Hosted Gateway APIs
-router.all("/payu/initiate", payuInitiateHandler);
-router.all("/payu/response", payuResponseHandler);
+// Patron Account Deduplication & Reconciliation
+router.all("/patron/reconcile", patronReconcileHandler);
+router.all("/collector/reconcile", patronReconcileHandler);
+
+// Razorpay Payment Gateway APIs
+router.all("/razorpay/create-order", razorpayCreateOrderHandler);
+router.all("/razorpay/verify-payment", razorpayVerifyPaymentHandler);
 
 // Mount router on both '/api' and '/' to support Firebase Hosting rewrite and direct invocation
 app.use("/api", router);

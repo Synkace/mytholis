@@ -397,6 +397,163 @@ export async function generateSampleThermalLabelPdf() {
 }
 
 /**
+ * Native Mytholis 4x6 Thermal Shipping Label Generator
+ * Creates an authentic, direct-dispatch 4x6 courier thermal shipping label
+ * with zero reliance on 3rd-party aggregators or white-out masking.
+ */
+export async function generateMytholisShippingLabelPdf(order = {}) {
+  const pdfDoc = await PDFDocument.create();
+  // Standard 4x6 inches at 72 points per inch = 288 x 432 pt
+  const page = pdfDoc.addPage([288, 432]);
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+  const orderId = order.orderId || order.id || `MYTH-${Date.now().toString().slice(-6)}`;
+  const dateStr = order.date || (order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN'));
+  const courier = (order.courierName || order.courier || 'BLUEDART EXPRESS').toUpperCase();
+  const awb = order.trackingNumber || order.awbCode || order.awb_number || `AWB-${orderId.replace(/[^0-9]/g, '') || '9170'}`;
+  const totalAmount = Number(order.finalPayable || order.total || order.subtotal || 0);
+  const paymentMethod = (order.paymentMethod || 'Prepaid').toUpperCase();
+  const isCOD = paymentMethod.includes('COD') || paymentMethod.includes('CASH');
+
+  // Customer Coordinates
+  const collectorName = (order.customerName || order.name || order.userName || 'Mytholis Collector').toUpperCase();
+  const phone = order.customerPhone || order.phone || order.phoneNumber || '';
+  const address = (order.customerAddress || order.address || order.shippingAddress || '').trim();
+  const city = (order.customerCity || order.city || '').toUpperCase();
+  const state = (order.customerState || order.state || '').toUpperCase();
+  const pincode = order.customerPincode || order.pincode || '';
+
+  // 1. Outer Border
+  page.drawRectangle({
+    x: 8,
+    y: 8,
+    width: 272,
+    height: 416,
+    borderColor: rgb(0, 0, 0),
+    borderWidth: 1.5,
+    color: rgb(1, 1, 1)
+  });
+
+  // 2. Top Header: Mytholis Haute Parfumerie & Courier routing
+  page.drawRectangle({
+    x: 8,
+    y: 388,
+    width: 272,
+    height: 36,
+    color: rgb(0.02, 0.10, 0.07) // Deep Mytholis emerald
+  });
+  page.drawText('MYTHOLIS', { x: 16, y: 405, size: 14, font: fontBold, color: rgb(0.85, 0.70, 0.22) });
+  page.drawText('HAUTE PARFUMERIE • ARMORED COURIER', { x: 16, y: 394, size: 6.5, font: fontRegular, color: rgb(1, 1, 1) });
+  page.drawText(courier.slice(0, 20), { x: 172, y: 403, size: 8, font: fontBold, color: rgb(1, 1, 1) });
+  page.drawText('ROUTING: AIR PRIORITY', { x: 172, y: 394, size: 6.5, font: fontRegular, color: rgb(0.85, 0.70, 0.22) });
+
+  // 3. AWB, Order ID & Barcode section
+  page.drawText(`ORDER #${orderId}`, { x: 14, y: 373, size: 10, font: fontBold, color: rgb(0, 0, 0) });
+  page.drawText(`DATE: ${dateStr}`, { x: 185, y: 373, size: 8, font: fontRegular, color: rgb(0.2, 0.2, 0.2) });
+  page.drawText(`AWB: ${awb}`, { x: 14, y: 358, size: 10, font: fontBold, color: rgb(0, 0, 0) });
+
+  // Barcode lines
+  const barcodeY = 318;
+  const barcodeHeight = 32;
+  for (let x = 16; x < 272; x += 3) {
+    const isThick = ((x * 7) % 5 === 0 || (x % 4 === 0));
+    page.drawLine({
+      start: { x, y: barcodeY },
+      end: { x, y: barcodeY + barcodeHeight },
+      thickness: isThick ? 2.2 : 1,
+      color: rgb(0, 0, 0)
+    });
+  }
+  page.drawLine({ start: { x: 8, y: 308 }, end: { x: 280, y: 308 }, thickness: 1, color: rgb(0, 0, 0) });
+
+  // 4. Collector Delivery Coordinates & COD/Prepaid Box
+  page.drawText('SHIP TO (COLLECTOR):', { x: 14, y: 294, size: 7.5, font: fontBold, color: rgb(0.35, 0.35, 0.35) });
+  page.drawText(collectorName.slice(0, 30), { x: 14, y: 280, size: 10, font: fontBold, color: rgb(0, 0, 0) });
+
+  // Wrap address into lines
+  const words = address.split(/\s+/);
+  let l1 = '', l2 = '';
+  words.forEach(w => {
+    if ((l1 + ' ' + w).length <= 32) l1 += (l1 ? ' ' : '') + w;
+    else if ((l2 + ' ' + w).length <= 36) l2 += (l2 ? ' ' : '') + w;
+  });
+
+  page.drawText(l1 || address.slice(0, 32), { x: 14, y: 267, size: 8.5, font: fontRegular, color: rgb(0, 0, 0) });
+  if (l2) {
+    page.drawText(l2, { x: 14, y: 255, size: 8.5, font: fontRegular, color: rgb(0, 0, 0) });
+  }
+
+  const destLine = `${city}${city && state ? ', ' : ''}${state}${pincode ? ' - ' + pincode : ''}`;
+  page.drawText(destLine || 'INDIA', { x: 14, y: 242, size: 9, font: fontBold, color: rgb(0, 0, 0) });
+  if (phone) {
+    page.drawText(`Phone: +91 ${phone.replace(/\D/g, '').slice(-10)}`, { x: 14, y: 230, size: 8.5, font: fontBold, color: rgb(0, 0, 0) });
+  }
+
+  // Payment Box
+  page.drawRectangle({
+    x: 180,
+    y: 226,
+    width: 95,
+    height: 76,
+    borderColor: isCOD ? rgb(0.7, 0, 0) : rgb(0, 0.45, 0.2),
+    borderWidth: 1.5,
+    color: isCOD ? rgb(1, 0.96, 0.96) : rgb(0.96, 1, 0.96)
+  });
+
+  if (isCOD) {
+    page.drawText('CASH ON DELIVERY', { x: 185, y: 290, size: 7.5, font: fontBold, color: rgb(0.7, 0, 0) });
+    page.drawText('COLLECT CASH:', { x: 185, y: 278, size: 6.5, font: fontRegular, color: rgb(0.3, 0.3, 0.3) });
+    page.drawText(`Rs. ${totalAmount.toLocaleString('en-IN')}`, { x: 185, y: 258, size: 12, font: fontBold, color: rgb(0.7, 0, 0) });
+    page.drawText('ARMORED SEALED', { x: 185, y: 236, size: 6.5, font: fontBold, color: rgb(0.2, 0.2, 0.2) });
+  } else {
+    page.drawText('PREPAID PARCEL', { x: 185, y: 290, size: 7.5, font: fontBold, color: rgb(0, 0.5, 0.2) });
+    page.drawText('DO NOT COLLECT', { x: 185, y: 278, size: 6.5, font: fontBold, color: rgb(0, 0.5, 0.2) });
+    page.drawText(`PAID: Rs. ${totalAmount.toLocaleString('en-IN')}`, { x: 185, y: 258, size: 10, font: fontBold, color: rgb(0, 0, 0) });
+    page.drawText('VERIFIED ORDER', { x: 185, y: 236, size: 6.5, font: fontRegular, color: rgb(0.3, 0.3, 0.3) });
+  }
+
+  page.drawLine({ start: { x: 8, y: 216 }, end: { x: 280, y: 216 }, thickness: 1, color: rgb(0, 0, 0) });
+
+  // 5. Itemized Extrait Manifest
+  page.drawText('HAUTE EXTRAIT DE PARFUM MANIFEST:', { x: 14, y: 202, size: 7.5, font: fontBold, color: rgb(0.3, 0.3, 0.3) });
+  const items = Array.isArray(order.items) ? order.items : [];
+  let curY = 188;
+  if (items.length > 0) {
+    items.slice(0, 5).forEach(item => {
+      const itemName = item.name || item.id || 'Mytholis Extrait';
+      const itemSize = item.size ? `${item.size}ml` : '50ml';
+      const itemQty = item.quantity || item.qty || 1;
+      page.drawText(`• ${itemName} (${itemSize})  x${itemQty}`, { x: 14, y: curY, size: 8, font: fontRegular, color: rgb(0, 0, 0) });
+      curY -= 13;
+    });
+  } else {
+    page.drawText('• Mytholis Extrait de Parfum (50ml)  x1', { x: 14, y: 188, size: 8, font: fontRegular, color: rgb(0, 0, 0) });
+  }
+
+  page.drawLine({ start: { x: 8, y: 108 }, end: { x: 280, y: 108 }, thickness: 1, color: rgb(0, 0, 0) });
+
+  // 6. Return / Dispatched By (Authentic Mytholis Identity)
+  page.drawText('SHIPPED BY & RETURN ADDRESS:', { x: 14, y: 94, size: 7.5, font: fontBold, color: rgb(0.25, 0.25, 0.25) });
+  page.drawText('MYTHOLIS LUXURY FRAGRANCES PVT. LTD.', { x: 14, y: 80, size: 8.5, font: fontBold, color: rgb(0, 0, 0) });
+  page.drawText('GSTIN: 24AAECM4821P1ZT | HSN: 33030010 (Fine Perfumery)', { x: 14, y: 68, size: 7, font: fontRegular, color: rgb(0, 0, 0) });
+  page.drawText('Vasant Vihar 2, Nava Naroda, Ahmedabad, Gujarat 382330, India', { x: 14, y: 56, size: 7, font: fontRegular, color: rgb(0, 0, 0) });
+  page.drawText('Concierge: concierge@mytholis.com | WhatsApp: +91 70207 25550', { x: 14, y: 44, size: 7, font: fontRegular, color: rgb(0, 0, 0) });
+  page.drawText('Formulated in London, UK • Handcrafted in Ahmedabad, India', { x: 14, y: 32, size: 6.5, font: fontBold, color: rgb(0.3, 0.3, 0.3) });
+
+  const pdfBytes = await pdfDoc.save();
+  const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+  const blobUrl = URL.createObjectURL(blob);
+
+  return {
+    pdfDoc,
+    pdfBytes,
+    blob,
+    blobUrl
+  };
+}
+
+/**
  * Utility: Trigger browser download for a PDF Blob
  */
 export function downloadPdfBlob(blob, filename = 'MYTHOLIS-Shipping-Label.pdf') {

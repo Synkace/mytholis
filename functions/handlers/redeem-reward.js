@@ -2,6 +2,8 @@ import { adminAuth, adminDb } from './_firebaseAdmin.js';
 
 // Authoritative Server-Side Loyalty Reward Table
 const SERVER_REWARDS = {
+  "DISC_200": { cost: 200, amount: 200, type: "discount", title: "₹200 Off Voucher" },
+  "DISC_400": { cost: 400, amount: 400, type: "discount", title: "₹400 Off Voucher" },
   "FREE_8ML": { cost: 500, amount: 0, type: "gift", title: "Free 8ml Deluxe Travel Spray" },
   "DISC_800": { cost: 800, amount: 800, type: "discount", title: "₹800 Off Voucher" },
   "FREE_15ML": { cost: 1100, amount: 0, type: "gift", title: "Exclusive 15ml Vault Flacon" },

@@ -62,12 +62,34 @@ export default async function handler(req, res) {
     'alexander@mytholis.com',
     'founder@mytholis.com'
   ];
-  if (configuredAdminEmail) allowedAdmins.push(configuredAdminEmail);
+  if (configuredAdminEmail) {
+    configuredAdminEmail.split(',').forEach(e => {
+      const trimmed = e.trim().toLowerCase();
+      if (trimmed && !allowedAdmins.includes(trimmed)) allowedAdmins.push(trimmed);
+    });
+  }
+
+  // Also check dynamic admin emails from Firestore settings/global
+  if (adminDb) {
+    try {
+      const settingsSnap = await adminDb.collection('settings').doc('global').get();
+      if (settingsSnap.exists) {
+        const s = settingsSnap.data() || {};
+        if (Array.isArray(s.adminEmails)) {
+          s.adminEmails.forEach(e => {
+            const trimmed = String(e).trim().toLowerCase();
+            if (trimmed && !allowedAdmins.includes(trimmed)) allowedAdmins.push(trimmed);
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('[Mytholis Admin API] Could not load dynamic admin emails:', e.message);
+    }
+  }
 
   const isAuthorized = 
     decodedToken.admin === true ||
-    allowedAdmins.some(a => a.toLowerCase() === tokenEmail) || 
-    tokenEmail.includes('gunhegarr');
+    allowedAdmins.some(a => a.toLowerCase() === tokenEmail);
 
   if (!isAuthorized) {
     console.warn(`[Mytholis Admin API] Forbidden attempt by ${tokenEmail || decodedToken.uid}.`);

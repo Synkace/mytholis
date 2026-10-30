@@ -743,6 +743,8 @@ const Components = {
 
   /* Render Track Order View */
   renderTrackOrder() {
+    const userOrders = (store.user && Array.isArray(store.user.orders)) ? store.user.orders : [];
+
     return `
       <div class="container" style="max-width: 900px;">
         <div class="section-header">
@@ -756,60 +758,29 @@ const Components = {
             Enter Tracking Number or Order ID:
           </label>
           <div class="track-input-wrap">
-            <input type="text" id="track-order-input" class="engraving-input" style="flex-grow: 1; font-size: 1rem;" placeholder="e.g. MYTH-89021 or MYTH-VIP-99420" value="MYTH-89021" />
+            <input type="text" id="track-order-input" class="engraving-input" style="flex-grow: 1; font-size: 1rem;" placeholder="e.g. Enter Order ID or AWB Tracking Number" value="" />
             <button class="btn btn-gold track-search-btn" onclick="app.searchTrackOrder()">Track Order</button>
           </div>
 
+          ${userOrders.length > 0 ? `
+            <div style="margin-top: 0.9rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+              <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Your Orders:</span>
+              ${userOrders.map(o => `
+                <button type="button" class="glass-pill" style="font-size: 0.7rem; cursor: pointer; color: var(--gold-light);" onclick="document.getElementById('track-order-input').value = '${o.orderId || o.id}'; app.searchTrackOrder();">
+                  #${o.orderId || o.id}
+                </button>
+              `).join('')}
+            </div>
+          ` : ''}
+
           <div id="track-result-box" class="track-result-container">
-            <div class="track-order-header">
-              <div>
-                <span class="glass-pill">Order #MYTH-89021</span>
-                <h3 class="track-order-product-name">Petralux Extrait de Parfum (50ml)</h3>
-              </div>
-              <div class="track-delivery-est">
-                <span style="font-size: 0.8rem; color: var(--text-muted);">Estimated Delivery:</span>
-                <p style="font-weight: 600; color: var(--gold-primary);">August 26, 2026</p>
-              </div>
+            <div style="text-align: center; padding: 2.5rem 1.5rem; color: var(--text-muted);">
+              <div style="font-size: 1.8rem; margin-bottom: 0.6rem; color: var(--gold-primary);">📦</div>
+              <div style="font-size: 0.95rem; color: var(--gold-light); font-weight: 600; margin-bottom: 0.3rem;">Armored Dispatch Telemetry</div>
+              <p style="font-size: 0.85rem; max-width: 460px; margin: 0 auto; line-height: 1.5;">
+                Enter your Order ID (from your confirmation SMS, email, or order history) or courier Air Waybill (AWB) number above to view real-time fulfillment and transit status.
+              </p>
             </div>
-
-            <!-- Progress Tracker -->
-            <div class="tracker-steps-grid">
-              <div class="tracker-step-item">
-                <div class="tracker-icon-circle completed">
-                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                </div>
-                <h5>Order Placed</h5>
-                <span>Aug 24</span>
-              </div>
-
-              <div class="tracker-step-item">
-                <div class="tracker-icon-circle completed">
-                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                </div>
-                <h5>Vault Packed</h5>
-                <span>Aug 24</span>
-              </div>
-
-              <div class="tracker-step-item">
-                <div class="tracker-icon-circle completed">
-                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                </div>
-                <h5>Dispatched</h5>
-                <span>Aug 25</span>
-              </div>
-
-              <div class="tracker-step-item">
-                <div class="tracker-icon-circle active liquid-pulse">
-                  <span style="font-size: 0.75rem; font-weight: 700; color: var(--gold-light);">4</span>
-                </div>
-                <h5>Out for Delivery</h5>
-                <span style="color: var(--gold-primary);">BlueDart Express</span>
-              </div>
-            </div>
-
-            <p class="track-location-status">
-              Current Location: BlueDart Armored Express Hub (Ahmedabad Air Cargo Terminal). Dispatched for destination delivery.
-            </p>
           </div>
         </div>
       </div>
@@ -1476,7 +1447,7 @@ const Components = {
               <span>⚡</span> Checkout (UPI · Cards · COD)
             </button>
             <div class="cart-secondary-actions-grid">
-              <button class="cart-secondary-btn" onclick="app.openPayUModal()">
+              <button class="cart-secondary-btn" onclick="app.openRazorpayModal()">
                 Card / NetBanking Desk
               </button>
               <button class="cart-secondary-btn" onclick="app.checkoutCartWhatsApp()">
@@ -2439,6 +2410,54 @@ const Components = {
     `;
   },
 
+  /* Render Registration Honor / Welcome Signup Bonus Celebration Modal */
+  renderSignupBonusModal(points = 200) {
+    const pts = Number(points) || 200;
+    return `
+      <div class="modal-header" style="justify-content: flex-end; padding: 0.75rem 1rem 0 1rem; border-bottom: none;">
+        <button class="icon-btn modal-close-btn" onclick="app.closeSignupBonusModal()" title="Close Notification" style="font-size: 1.25rem;">✕</button>
+      </div>
+      <div style="padding: 0 1.5rem 1.85rem 1.5rem; text-align: center;">
+        <div style="width: 76px; height: 76px; margin: 0 auto 1.2rem auto; border-radius: 50%; background: radial-gradient(circle, rgba(212, 175, 55, 0.3) 0%, rgba(13, 15, 20, 0.95) 75%); border: 2px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 35px rgba(212, 175, 55, 0.45);">
+          <span style="font-size: 2.2rem; filter: drop-shadow(0 2px 8px rgba(212,175,55,0.7));">🪙</span>
+        </div>
+
+        <span class="glass-pill" style="font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 0.75rem; display: inline-block; padding: 0.35rem 0.9rem; border-color: rgba(212,175,55,0.45);">
+          Initiate Welcome Honor
+        </span>
+
+        <h2 class="font-title gold-shimmer-text" style="font-size: 1.8rem; margin: 0 0 0.5rem 0; font-family: var(--font-serif-title);">
+          Congratulations!
+        </h2>
+
+        <div style="font-size: 1.25rem; font-weight: 700; color: #FFF; margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
+          <span>You have received</span>
+          <span style="color: var(--gold-light); background: rgba(212, 175, 55, 0.16); padding: 0.25rem 0.75rem; border-radius: 6px; border: 1px solid rgba(212, 175, 55, 0.4);">+${pts} Mythos</span>
+        </div>
+
+        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin: 0 auto 1.35rem auto; max-width: 380px;">
+          Your Initiate Dossier has been forged. <strong style="color: #fff;">${pts} Spendable Mythos (₹${pts} Concession Value)</strong> have been deposited directly into your private Collector Vault.
+        </p>
+
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 1.5rem; text-align: left; display: flex; gap: 0.75rem; align-items: center;">
+          <div style="font-size: 1.4rem;">✨</div>
+          <div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.45;">
+            <strong style="color: var(--gold-light);">Instant Concession:</strong> Redeem your ${pts} Mythos at checkout for an immediate ₹${pts} order reduction, or accumulate them towards higher tiers.
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <button class="btn btn-gold" style="width: 100%; padding: 0.85rem; font-size: 0.92rem; font-weight: 600; letter-spacing: 0.04em;" onclick="app.closeSignupBonusModal(); app.navigateTo('catalog');">
+            Acquire Haute Parfumerie
+          </button>
+          <button class="btn btn-glass" style="width: 100%; padding: 0.75rem; font-size: 0.85rem;" onclick="app.closeSignupBonusModal(); app.navigateTo('loyalty');">
+            Inspect Collector Vault & Perks
+          </button>
+        </div>
+      </div>
+    `;
+  },
+
   /* Render Dedicated Circle of Legends Loyalty & Vault Page */
   renderCircleOfLegends() {
     return `
@@ -3166,7 +3185,7 @@ const Components = {
                 <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.35rem;">
                   Full Name / Title
                 </label>
-                <input type="text" id="dossier-name-input" class="engraving-input" value="${displayName}" placeholder="e.g. Lord Alexander Vance" required />
+                <input type="text" id="dossier-name-input" class="engraving-input" value="${displayName}" placeholder="e.g. Your Full Name" required />
               </div>
 
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
@@ -3443,8 +3462,8 @@ const Components = {
     `;
   },
 
-  /* Render PayU / Hosted Gateway Instant Checkout Modal */
-  renderPayUModal(productOrCart = {}) {
+  /* Render Razorpay / Hosted Gateway Instant Checkout Modal */
+  renderRazorpayModal(productOrCart = {}) {
     const isSingleProduct = !!(productOrCart && productOrCart.id);
     let chosenSize = app.selectedSize || 50;
     let singlePrice = app.selectedPrice;
@@ -3461,9 +3480,8 @@ const Components = {
     const cleanName = isSingleProduct ? (productOrCart.name || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '';
     const title = isSingleProduct ? `${cleanName} (${chosenSize}ml)` : `Vault Cart (${store.getCartCount()} items)`;
 
-    const payuKey = (store.globalSettings && store.globalSettings.payuMerchantKey && store.globalSettings.payuMerchantKey.trim()) || 'LqPsyW';
-    const payuSalt = (store.globalSettings && store.globalSettings.payuMerchantSalt && store.globalSettings.payuMerchantSalt.trim()) || '';
-    const isLive = (store.globalSettings && store.globalSettings.payuEnv === 'live');
+    const razorpayKey = (store.globalSettings && store.globalSettings.razorpayKeyId && store.globalSettings.razorpayKeyId.trim()) ||
+                        (typeof import.meta !== 'undefined' && import.meta.env?.VITE_RAZORPAY_KEY_ID) || '';
 
     return `
       <div class="modal-header">
@@ -3476,10 +3494,10 @@ const Components = {
           </div>
           <div>
             <h3 class="modal-title font-title">Encrypted Payment Desk</h3>
-            <p class="modal-subtitle">256-Bit SSL Encrypted Instant Payment</p>
+            <p class="modal-subtitle">256-Bit SSL Encrypted Instant Payment (Razorpay & COD)</p>
           </div>
         </div>
-        <button class="icon-btn modal-close-btn" onclick="app.closePayUModal()" title="Close Checkout">✕</button>
+        <button class="icon-btn modal-close-btn" onclick="app.closeRazorpayModal()" title="Close Checkout">✕</button>
       </div>
 
       <div class="modal-scroll-body" style="padding: 1.2rem;">
@@ -3554,53 +3572,61 @@ const Components = {
 
           <!-- Gateway Status Notice -->
           ${(() => {
-            if (payuKey && payuSalt) {
+            if (razorpayKey) {
               return `
                 <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem; background: rgba(4, 24, 18, 0.6); border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(212, 175, 55, 0.15);">
                   <svg width="14" height="14" fill="none" stroke="var(--gold-primary)" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                  <span style="font-size: 0.72rem; color: var(--gold-light);">256-Bit SSL Encrypted Vault Active (${isLive ? 'Production Live' : 'Test Sandbox'}). Cards, UPI, NetBanking supported.</span>
-                </div>
-              `;
-            } else if (payuKey && !payuSalt) {
-              return `
-                <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem; background: rgba(245, 158, 11, 0.1); border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(245, 158, 11, 0.3);">
-                  <span style="font-size: 0.85rem;">⚠️</span>
-                  <span style="font-size: 0.72rem; color: #FCD34D;">Payment Gateway Salt pending in Sovereign Admin Settings. Please configure Salt to generate secure transaction signatures.</span>
+                  <span style="font-size: 0.72rem; color: var(--gold-light);">Razorpay 256-Bit SSL Encrypted Vault Active. Cards, UPI (GPay, PhonePe, Paytm), NetBanking supported.</span>
                 </div>
               `;
             } else {
               return `
                 <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem; background: rgba(245, 158, 11, 0.1); border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(245, 158, 11, 0.3);">
                   <span style="font-size: 0.85rem;">⚠️</span>
-                  <span style="font-size: 0.72rem; color: #FCD34D;">Online Gateway pending setup in Sovereign Admin Settings. Cash on Delivery (COD) is available.</span>
+                  <span style="font-size: 0.72rem; color: #FCD34D;">Razorpay Gateway setup pending. Cash on Delivery (COD) is available.</span>
                 </div>
               `;
             }
           })()}
 
-          <!-- Shipping Details Form -->
+          <!-- Shipping Details Form (Smart Checkout Autofill) -->
           <div style="display: flex; flex-direction: column; gap: 0.8rem;">
-            <input type="text" id="checkout-name" class="engraving-input" placeholder="Full Delivery Name" value="${store.user.name || ''}" />
             <div style="display: flex; gap: 0.6rem;">
-              <input type="tel" id="checkout-phone" class="engraving-input" placeholder="Mobile / WhatsApp Number (+91...)" value="${store.user.phone || ''}" style="flex: 1;" />
-              <input type="text" id="checkout-pincode" class="engraving-input" placeholder="PIN Code" value="${store.user.pincode || ''}" style="flex: 1;" />
+              <input type="text" id="checkout-name" class="engraving-input" placeholder="Full Delivery Name" autocomplete="name" value="${store.user.name || ''}" style="flex: 1.2;" required />
+              <input type="email" id="checkout-email" class="engraving-input" placeholder="Email Address" autocomplete="email" value="${store.user.email || ''}" style="flex: 1;" required />
             </div>
-            <input type="text" id="checkout-address" class="engraving-input" placeholder="Flat, Street, Area, Landmark Address" value="${store.user.address || ''}" />
+
+            <div style="display: flex; gap: 0.6rem; align-items: flex-start;">
+              <div style="flex: 1.2;">
+                <input type="tel" id="checkout-phone" class="engraving-input" placeholder="10-Digit Mobile (+91)" autocomplete="tel-national" value="${store.user.phone || ''}" oninput="app.handleCheckoutPhoneInput(this)" maxlength="14" style="width: 100%;" required />
+              </div>
+              <div style="flex: 1; position: relative;">
+                <input type="text" id="checkout-pincode" class="engraving-input" placeholder="PIN Code (6 Digits)" autocomplete="postal-code" maxlength="6" value="${store.user.pincode || ''}" oninput="app.handlePincodeLookup(this.value)" style="width: 100%;" required />
+                <div id="pincode-status-hint" style="font-size: 0.65rem; color: var(--gold-light); display: none; margin-top: 3px; position: absolute; bottom: -16px; left: 2px; white-space: nowrap;"></div>
+              </div>
+            </div>
+
+            <input type="text" id="checkout-address" class="engraving-input" placeholder="Flat / Building, Street, Area, Landmark" autocomplete="street-address" value="${store.user.address || ''}" required />
+
+            <div style="display: flex; gap: 0.6rem;">
+              <input type="text" id="checkout-city" class="engraving-input" placeholder="City / District" autocomplete="address-level2" value="${store.user.city || ''}" style="flex: 1;" required />
+              <input type="text" id="checkout-state" class="engraving-input" placeholder="State" autocomplete="address-level1" value="${store.user.state || ''}" style="flex: 1;" required />
+            </div>
           </div>
         </div>
       </div>
 
       <div class="modal-footer" style="display: flex; gap: 0.8rem;">
-        <button class="btn btn-gold" style="flex: 1;" onclick="app.launchPayUCheckout(${finalAmount})">
+        <button class="btn btn-gold" style="flex: 1;" onclick="app.launchRazorpayCheckout(${finalAmount})">
           Proceed to Payment Desk • ${store.formatPrice(finalAmount)}
         </button>
       </div>
     `;
   },
 
-  /* Backward Compatibility Alias */
-  renderRazorpayModal(productOrCart) {
-    return this.renderPayUModal(productOrCart);
+  /* Backward Compatibility Alias for PayU invocation */
+  renderPayUModal(productOrCart) {
+    return this.renderRazorpayModal(productOrCart);
   },
 
   /* ==========================================================================
@@ -4065,7 +4091,7 @@ const Components = {
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.8rem; align-items: end;">
                 <div>
                   <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Code Name</label>
-                  <input type="text" id="mint-code-input" class="admin-input-compact" style="width: 100%; text-transform: uppercase;" placeholder="MYTH-VIP-ALEXANDER" />
+                  <input type="text" id="mint-code-input" class="admin-input-compact" style="width: 100%; text-transform: uppercase;" placeholder="e.g. MYTH-VIP-2026" />
                 </div>
                 <div>
                   <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Concession Title</label>
@@ -4088,7 +4114,7 @@ const Components = {
                   <input type="email" id="mint-email-input" class="admin-input-compact" style="width: 100%;" placeholder="vip@collector.com" />
                 </div>
                 <div style="grid-column: 1 / -1; display: flex; gap: 0.8rem; align-items: center;">
-                  <input type="text" id="mint-note-input" class="admin-input-compact" style="flex: 1;" placeholder="Internal Reference Note (e.g. Granted to Alexander for VIP concierge request)" />
+                  <input type="text" id="mint-note-input" class="admin-input-compact" style="flex: 1;" placeholder="Internal Reference Note (e.g. Special VIP Concession)" />
                   <button class="btn btn-gold" style="padding: 0.6rem 1.4rem; font-size: 0.78rem; white-space: nowrap;" onclick="app.submitNewVipCode()">
                     Mint Sanctum Code
                   </button>

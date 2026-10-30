@@ -6,13 +6,15 @@
 import gsap from 'gsap';
 import { AdminComponents } from './adminComponents.js';
 import { firebaseService, db, collection, getDocs, doc, getDoc, setDoc, firebaseConfig } from './firebase.js';
+import { normalizePhone, normalizeEmail } from '../utils/normalize.js';
 import { 
   LABEL_PRESETS, 
   rebrandLabelPdf, 
   downloadPdfBlob, 
   printPdfBlob, 
   generateCourierOrderPayload,
-  generateSampleThermalLabelPdf
+  generateSampleThermalLabelPdf,
+  generateMytholisShippingLabelPdf
 } from './labelRebrander.js';
 
 if (typeof window !== 'undefined') {
@@ -97,6 +99,11 @@ class MytholisApp {
 
     // Initialize Navbar Auth State
     this.updateNavAuth();
+
+    // Initialize Meta Pixel if configured dynamically in Sovereign Admin Settings
+    if (typeof store !== 'undefined' && typeof store.getMetaPixelId === 'function') {
+      this.initMetaPixel(store.getMetaPixelId());
+    }
 
     // Hash & History router listeners for Deep-Linking and Browser Back-Button
     window.addEventListener('hashchange', () => this.handleHashRoute());
@@ -1593,7 +1600,7 @@ class MytholisApp {
     const cleanOrderProdName = (product.name || '').replace(/<br\s*\/?>/gi, ' - ').replace(/<[^>]*>/g, '').trim();
     const text = `Hello Mytholis Fragrance Concierge,\n\nI would like to order:\n*${cleanOrderProdName}*\nVolume: ${size}ml\nTotal Price: ${store.formatPrice(price)} (Incl. all taxes)\n${engraving ? `Complimentary Engraving: "${engraving}"\n` : ''}Shipping: Pan-India Express Armored Delivery\n\nPlease share payment details (UPI / Bank Transfer) to confirm my order.`;
 
-    window.open(`https://wa.me/917770009170?text=${encodeURIComponent(text)}`, '_blank');
+    window.open(store.getWhatsAppUrl(text), '_blank');
   }
 
   checkoutCartWhatsApp() {
@@ -1617,9 +1624,9 @@ class MytholisApp {
       }
     }
 
-    const text = `Hello Mytholis Fragrance Concierge,\n\nI would like to checkout my Mytholis Vault Cart:\n\n${itemsList}${rewardLine}\n*Total Amount:* ${store.formatPrice(finalAmount)} (Incl. 18% GST)\n*Delivery:* Free Express Armored Shipping across India\n\nPlease assist with UPI / PayU payment instructions.`;
+    const text = `Hello Mytholis Fragrance Concierge,\n\nI would like to checkout my Mytholis Vault Cart:\n\n${itemsList}${rewardLine}\n*Total Amount:* ${store.formatPrice(finalAmount)} (Incl. 18% GST)\n*Delivery:* Free Express Armored Shipping across India\n\nPlease assist with UPI / Razorpay payment instructions.`;
 
-    window.open(`https://wa.me/917770009170?text=${encodeURIComponent(text)}`, '_blank');
+    window.open(store.getWhatsAppUrl(text), '_blank');
   }
 
   /* Instant Checkout Routing */
@@ -1632,7 +1639,7 @@ class MytholisApp {
   }
 
   async initiateDirectCheckout(items, event, fallbackUrl) {
-    return this.openPayUModal();
+    return this.openRazorpayModal();
   }
 
   /* Collector Access Modal Launcher */
@@ -1734,7 +1741,9 @@ class MytholisApp {
     store.saveLocalStorage('mytholis_cart', store.cart);
     store.notify();
 
-    return this.openPayUModal(product);
+    this.trackMetaEvent('AddToCart', { content_name: product.name, value: activeSizeObj.price, currency: 'INR' });
+
+    return this.openRazorpayModal(product);
   }
 
   buyNowPayU(productId, event) {
@@ -1748,42 +1757,46 @@ class MytholisApp {
   checkoutCart(event) {
     if (event) event.preventDefault();
     this.closeCartModal();
-    return this.openPayUModal();
+    return this.openRazorpayModal();
   }
 
   /* ==========================================================================
-     PAYU HOSTED GATEWAY & INSTANT CHECKOUT INTEGRATION
-     Official PayU Prebuilt Checkout Form POST / Serverless Hashing
+     RAZORPAY INSTANT CHECKOUT & SMART AUTOFILL CHECKOUT INTEGRATION
      ========================================================================== */
 
-  openPayUModal(productOrCart = null) {
+  openRazorpayModal(productOrCart = null) {
     this.closeAllModals(false);
+    this.trackMetaEvent('InitiateCheckout', { currency: 'INR' });
     const target = productOrCart || (store.cart.length ? { id: null } : MYTHOLIS_CATALOG[0]);
-    const modalBody = document.getElementById('payu-modal-body') || document.getElementById('razorpay-modal-body');
+    const modalBody = document.getElementById('razorpay-modal-body') || document.getElementById('payu-modal-body');
     if (modalBody) {
-      modalBody.innerHTML = Components.renderPayUModal(target);
+      modalBody.innerHTML = Components.renderRazorpayModal(target);
     }
-    const overlay = document.getElementById('payu-modal-overlay') || document.getElementById('razorpay-modal-overlay');
+    const overlay = document.getElementById('razorpay-modal-overlay') || document.getElementById('payu-modal-overlay');
     if (overlay) {
       overlay.classList.add('active');
       document.body.style.overflow = 'hidden';
     }
+    // Layer 1: Firestore Profile Prefill & Address Autofill
+    this.autofillCheckoutFromProfile();
   }
 
-  openRazorpayModal(productOrCart = null) {
-    return this.openPayUModal(productOrCart);
+  /* Backward Compatibility Alias */
+  openPayUModal(productOrCart = null) {
+    return this.openRazorpayModal(productOrCart);
   }
 
-  closePayUModal() {
-    const overlays = [document.getElementById('payu-modal-overlay'), document.getElementById('razorpay-modal-overlay')];
+  closeRazorpayModal() {
+    const overlays = [document.getElementById('razorpay-modal-overlay'), document.getElementById('payu-modal-overlay')];
     overlays.forEach(overlay => {
       if (overlay) overlay.classList.remove('active');
     });
     document.body.style.overflow = '';
   }
 
-  closeRazorpayModal() {
-    return this.closePayUModal();
+  /* Backward Compatibility Alias */
+  closePayUModal() {
+    return this.closeRazorpayModal();
   }
 
   selectPaymentMethod(el, method) {
@@ -1800,6 +1813,167 @@ class MytholisApp {
     }
   }
 
+  /* ==========================================================================
+     SMART CHECKOUT AUTOFILL ENGINE (3 LAYERS)
+     ========================================================================== */
+
+  /**
+   * Layer 1: Prefill checkout inputs from Firestore User Profile & Auth State
+   */
+  async autofillCheckoutFromProfile() {
+    try {
+      let profileData = {};
+
+      const currentUser = typeof firebaseService !== 'undefined' ? firebaseService.currentUser : null;
+      if (currentUser && currentUser.uid) {
+        try {
+          const userDocRef = doc(db, 'users', currentUser.uid);
+          const snap = await getDoc(userDocRef);
+          if (snap.exists()) {
+            profileData = snap.data() || {};
+          }
+        } catch (fsErr) {
+          console.warn('[Autofill] Firestore user fetch skipped:', fsErr.message);
+        }
+      }
+
+      const nameVal = profileData.name || profileData.displayName || currentUser?.displayName || store.user?.name || '';
+      const emailVal = normalizeEmail(profileData.email || currentUser?.email || store.user?.email || '');
+      const rawPhone = profileData.phone || profileData.phoneNumber || currentUser?.phoneNumber || store.user?.phone || '';
+      const phoneVal = normalizePhone(rawPhone) || rawPhone.replace(/\D/g, '').slice(-10);
+      const addressVal = profileData.address || profileData.shippingAddress || store.user?.address || '';
+      const pincodeVal = profileData.pincode || store.user?.pincode || '';
+      const cityVal = profileData.city || store.user?.city || '';
+      const stateVal = profileData.state || store.user?.state || '';
+
+      const nameEl = document.getElementById('checkout-name');
+      const emailEl = document.getElementById('checkout-email');
+      const phoneEl = document.getElementById('checkout-phone');
+      const addressEl = document.getElementById('checkout-address');
+      const pincodeEl = document.getElementById('checkout-pincode');
+      const cityEl = document.getElementById('checkout-city');
+      const stateEl = document.getElementById('checkout-state');
+
+      if (nameEl && !nameEl.value && nameVal && nameVal !== 'Mytholis Patron' && nameVal !== 'Mytholis Collector') {
+        nameEl.value = nameVal;
+      }
+      if (emailEl && !emailEl.value && emailVal) {
+        emailEl.value = emailVal;
+      }
+      if (phoneEl && !phoneEl.value && phoneVal) {
+        phoneEl.value = phoneVal;
+      }
+      if (addressEl && !addressEl.value && addressVal) {
+        addressEl.value = addressVal;
+      }
+      if (pincodeEl && !pincodeEl.value && pincodeVal) {
+        pincodeEl.value = pincodeVal;
+      }
+      if (cityEl && !cityEl.value && cityVal) {
+        cityEl.value = cityVal;
+      }
+      if (stateEl && !stateEl.value && stateVal) {
+        stateEl.value = stateVal;
+      }
+
+      // If pincode exists and city/state are empty, query postal API
+      const currentPin = pincodeEl ? pincodeEl.value.trim() : pincodeVal;
+      if (currentPin && currentPin.replace(/\D/g, '').length === 6 && (!cityEl?.value || !stateEl?.value)) {
+        this.handlePincodeLookup(currentPin);
+      }
+    } catch (err) {
+      console.warn('[Mytholis Checkout Autofill Error]:', err);
+    }
+  }
+
+  /**
+   * Layer 2: Real-time phone input handler (strips country codes & formatting)
+   */
+  handleCheckoutPhoneInput(el) {
+    if (!el) return;
+    const raw = el.value || '';
+    const normalized = normalizePhone(raw);
+    if (normalized && raw.length > 10) {
+      el.value = normalized;
+    } else {
+      let digits = raw.replace(/\D/g, '');
+      if (digits.length > 10) {
+        if (digits.startsWith('91')) {
+          digits = digits.slice(2);
+        } else if (digits.startsWith('0')) {
+          digits = digits.slice(1);
+        } else {
+          digits = digits.slice(-10);
+        }
+      }
+      el.value = digits.slice(0, 10);
+    }
+  }
+
+  /**
+   * Layer 3: Live 6-digit Pincode Lookup (India Post API)
+   */
+  async handlePincodeLookup(rawPincode) {
+    const cleanPin = String(rawPincode || '').replace(/\D/g, '').trim();
+    const hintEl = document.getElementById('pincode-status-hint');
+    const cityEl = document.getElementById('checkout-city');
+    const stateEl = document.getElementById('checkout-state');
+
+    if (cleanPin.length !== 6) {
+      if (hintEl) {
+        hintEl.style.display = 'none';
+        hintEl.textContent = '';
+      }
+      return;
+    }
+
+    if (hintEl) {
+      hintEl.textContent = 'Verifying postal circle...';
+      hintEl.style.display = 'block';
+      hintEl.style.color = 'var(--gold-light)';
+    }
+
+    try {
+      const resp = await fetch(`https://api.postalpincode.in/pincode/${cleanPin}`);
+      if (!resp.ok) throw new Error('Pincode service HTTP status ' + resp.status);
+      const data = await resp.json();
+
+      if (Array.isArray(data) && data[0]?.Status === 'Success' && data[0]?.PostOffice?.length > 0) {
+        const po = data[0].PostOffice[0];
+        const district = po.District || po.Block || po.Circle || '';
+        const state = po.State || '';
+
+        if (cityEl && (!cityEl.value || cityEl.dataset.autofilled === 'true')) {
+          cityEl.value = district;
+          cityEl.dataset.autofilled = 'true';
+        }
+        if (stateEl && (!stateEl.value || stateEl.dataset.autofilled === 'true')) {
+          stateEl.value = state;
+          stateEl.dataset.autofilled = 'true';
+        }
+
+        if (hintEl) {
+          hintEl.textContent = `✓ ${district ? district + ', ' : ''}${state}`;
+          hintEl.style.color = '#10B981';
+          hintEl.style.display = 'block';
+        }
+      } else {
+        if (hintEl) {
+          hintEl.textContent = 'Pincode not located in postal registry. Please enter city & state manually.';
+          hintEl.style.color = '#F59E0B';
+          hintEl.style.display = 'block';
+        }
+      }
+    } catch (err) {
+      console.warn('[Pincode Lookup Notice]:', err.message);
+      if (hintEl) {
+        hintEl.textContent = 'Offline lookup mode. Enter city & state manually.';
+        hintEl.style.color = '#94A3B8';
+        hintEl.style.display = 'block';
+      }
+    }
+  }
+
   /* Compute SHA-512 Hex Checksum via standard Web Crypto API */
   async computeSha512Hex(message) {
     const encoder = new TextEncoder();
@@ -1809,40 +1983,81 @@ class MytholisApp {
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
-  /* Execute PayU Hosted Gateway Checkout Form Redirect */
-  async launchPayUCheckout(amount) {
+  /* Execute Razorpay Standard Checkout Popup / COD Order Placement */
+  async launchRazorpayCheckout(amount) {
     const nameInput = document.getElementById('checkout-name');
+    const emailInput = document.getElementById('checkout-email');
     const phoneInput = document.getElementById('checkout-phone');
     const pincodeInput = document.getElementById('checkout-pincode');
     const addressInput = document.getElementById('checkout-address');
+    const cityInput = document.getElementById('checkout-city');
+    const stateInput = document.getElementById('checkout-state');
 
-    const customerName = nameInput ? nameInput.value.trim() : (store.user.name || 'Mytholis Patron');
-    const customerPhone = phoneInput ? phoneInput.value.trim() : (store.user.phone || '');
-    const customerAddress = addressInput ? addressInput.value.trim() : (store.user.address || '');
-    const customerPincode = pincodeInput ? pincodeInput.value.trim() : (store.user.pincode || '');
+    const customerName = (nameInput ? nameInput.value.trim() : '') || store.user.name || 'Mytholis Collector';
+    const rawEmail = (emailInput ? emailInput.value.trim() : '') || store.user.email || (typeof firebaseService !== 'undefined' && firebaseService.currentUser?.email) || '';
+    const customerEmail = normalizeEmail(rawEmail);
+    const rawPhone = (phoneInput ? phoneInput.value.trim() : '') || store.user.phone || (typeof firebaseService !== 'undefined' && firebaseService.currentUser?.phoneNumber) || '';
+    const customerPhone = normalizePhone(rawPhone);
+    const customerAddress = (addressInput ? addressInput.value.trim() : '') || store.user.address || '';
+    const customerPincode = (pincodeInput ? pincodeInput.value.trim().replace(/\D/g, '') : '') || store.user.pincode || '';
+    const customerCity = (cityInput ? cityInput.value.trim() : '') || store.user.city || '';
+    const customerState = (stateInput ? stateInput.value.trim() : '') || store.user.state || '';
 
-    if (!customerPhone || customerPhone.replace(/\D/g, '').length < 10) {
-      this.showToast('Please provide a valid 10-digit mobile number for order delivery.');
+    if (!customerName || customerName === 'Mytholis Patron' || customerName === 'Mytholis Collector') {
+      this.showToast('Please provide your full delivery name.');
+      if (nameInput) nameInput.focus();
+      return;
+    }
+
+    if (!customerEmail || !customerEmail.includes('@')) {
+      this.showToast('Please provide a valid email address for order notifications.');
+      if (emailInput) emailInput.focus();
+      return;
+    }
+
+    if (!customerPhone || customerPhone.length !== 10) {
+      this.showToast('Please provide a valid 10-digit Indian mobile number for order delivery.');
       if (phoneInput) phoneInput.focus();
       return;
     }
 
+    if (!customerPincode || customerPincode.length !== 6) {
+      this.showToast('Please provide a valid 6-digit postal PIN code.');
+      if (pincodeInput) pincodeInput.focus();
+      return;
+    }
+
     if (!customerAddress || customerAddress.length < 5) {
-      this.showToast('Please provide your complete delivery address.');
+      this.showToast('Please provide your complete street delivery address.');
       if (addressInput) addressInput.focus();
       return;
     }
 
-    // Auto-save delivery address to store
-    if (customerAddress) store.user.address = customerAddress;
-    if (customerPhone) store.user.phone = customerPhone;
-    if (customerPincode) store.user.pincode = customerPincode;
-    if (customerName) store.user.name = customerName;
-    store.saveUser();
+    // Auto-save delivery address and normalized credentials to store
+    store.user.name = customerName;
+    store.user.email = customerEmail;
+    store.user.phone = customerPhone;
+    store.user.address = customerAddress;
+    store.user.pincode = customerPincode;
+    store.user.city = customerCity;
+    store.user.state = customerState;
+    if (typeof store.saveUser === 'function') {
+      store.saveUser();
+    } else {
+      store.saveLocalStorage('mytholis_user', store.user);
+      if (typeof store.notify === 'function') store.notify();
+    }
+
+    // Trigger Account Deduplication & Reconciliation in the background
+    if (typeof firebaseService !== 'undefined' && firebaseService.reconcilePatronAccount) {
+      firebaseService.reconcilePatronAccount(customerPhone, customerEmail).catch(err => {
+        console.warn('[Patron Reconcile Trigger Notice]:', err.message);
+      });
+    }
 
     // Check payment method
     const activeMethodPill = document.querySelector('.razorpay-method-pill.active, .payu-method-pill.active');
-    const paymentMethod = activeMethodPill ? activeMethodPill.textContent.trim() : 'PayU Gateway';
+    const paymentMethod = activeMethodPill ? activeMethodPill.textContent.trim() : 'Prepaid (Cards / UPI)';
     const isCOD = paymentMethod.toLowerCase().includes('cash on delivery') || paymentMethod.toLowerCase().includes('cod');
 
     // If Cash on Delivery is selected
@@ -1850,159 +2065,198 @@ class MytholisApp {
       this.finalizeOrderPlacement(amount, {
         customerName,
         customerPhone,
+        customerEmail,
         customerAddress,
         customerPincode,
+        customerCity,
+        customerState,
         paymentMethod: 'Cash on Delivery (COD)',
         paymentId: 'COD-PENDING'
       });
       return;
     }
 
-    // Prepaid Order: PayU Hosted Checkout
-    const payuKey = (store.globalSettings && store.globalSettings.payuMerchantKey && store.globalSettings.payuMerchantKey.trim()) ||
-                   (import.meta.env && import.meta.env.VITE_PAYU_MERCHANT_KEY && import.meta.env.VITE_PAYU_MERCHANT_KEY.trim()) ||
-                   'LqPsyW';
+    // Prepaid Order: Razorpay Standard Checkout
+    const razorpayKey = (store.globalSettings && store.globalSettings.razorpayKeyId && store.globalSettings.razorpayKeyId.trim()) ||
+                        (import.meta.env && import.meta.env.VITE_RAZORPAY_KEY_ID && import.meta.env.VITE_RAZORPAY_KEY_ID.trim()) ||
+                        '';
 
-    const payuSalt = (store.globalSettings && store.globalSettings.payuMerchantSalt && store.globalSettings.payuMerchantSalt.trim()) ||
-                    (import.meta.env && import.meta.env.VITE_PAYU_MERCHANT_SALT && import.meta.env.VITE_PAYU_MERCHANT_SALT.trim()) ||
-                    '';
-
-    const payuEnv = (store.globalSettings && store.globalSettings.payuEnv) || 'test';
-
-    if (!payuSalt) {
-      console.warn("[Mytholis Payment] Payment Gateway Salt not configured.");
-      this.showToast('Payment Gateway Salt missing: Please configure credentials in Sovereign Admin Settings (or select Cash on Delivery).');
+    if (!razorpayKey) {
+      console.warn("[Mytholis Payment] Razorpay Key ID not configured.");
+      this.showToast('Razorpay Gateway is pending setup in Sovereign Admin Settings (or select Cash on Delivery).');
       return;
     }
 
-    const txnid = `MYTH-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
-    const formattedAmount = parseFloat(amount).toFixed(2);
-    const productInfo = (store.cart.length ? store.cart.map(i => i.name).join(', ') : 'Mytholis Extrait de Parfum').substring(0, 100).replace(/[^a-zA-Z0-9 _-]/g, ' ').trim() || 'Mytholis Perfume';
-    const firstName = (customerName.split(' ')[0] || customerName || 'Collector').substring(0, 50).trim();
-    const patronEmail = store.user.email || (typeof firebaseService !== 'undefined' && firebaseService.currentUser?.email) || 'concierge@mytholis.com';
-    const cleanPhone = customerPhone.replace(/\D/g, '').slice(-10);
-
-    const origin = window.location.origin;
-    const surl = `${origin}/api/payu/response`;
-    const furl = `${origin}/api/payu/response`;
-
-    this.showToast('Connecting to Encrypted Payment Desk...');
-
-    let initiateResult = null;
-
-    // 1. Attempt serverless endpoint /api/payu/initiate
-    try {
-      const resp = await fetch('/api/payu/initiate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          txnid,
-          amount: formattedAmount,
-          productinfo: productInfo,
-          firstname: firstName,
-          email: patronEmail,
-          phone: cleanPhone,
-          surl,
-          furl,
-          key: payuKey,
-          salt: payuSalt,
-          env: payuEnv
-        })
-      });
-      if (resp.ok) {
-        initiateResult = await resp.json();
-      }
-    } catch (apiErr) {
-      console.warn('[PayU Initiate API] Serverless call fallback:', apiErr);
-    }
-
-    // 2. Client-side SHA-512 fallback if serverless handler unavailable
-    if (!initiateResult || !initiateResult.params) {
+    // Ensure Razorpay SDK is loaded
+    if (typeof window.Razorpay === 'undefined') {
+      this.showToast('Initializing secure Razorpay gateway...');
       try {
-        // sha512(key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||SALT)
-        const hashSequence = `${payuKey}|${txnid}|${formattedAmount}|${productInfo}|${firstName}|${patronEmail}|||||||||||${payuSalt}`;
-        const calculatedHash = await this.computeSha512Hex(hashSequence);
-        const actionUrl = payuEnv === 'live' ? 'https://secure.payu.in/_payment' : 'https://test.payu.in/_payment';
-
-        initiateResult = {
-          action: actionUrl,
-          params: {
-            key: payuKey,
-            txnid,
-            amount: formattedAmount,
-            productinfo: productInfo,
-            firstname: firstName,
-            email: patronEmail,
-            phone: cleanPhone,
-            surl,
-            furl,
-            hash: calculatedHash,
-            service_provider: 'payu_paisa'
-          }
-        };
-      } catch (cryptoErr) {
-        console.error('[PayU Checksum Error]:', cryptoErr);
-        this.showToast(`Unable to compute payment signature: ${cryptoErr.message}`);
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          script.onload = resolve;
+          script.onerror = () => reject(new Error('Failed to load Razorpay SDK'));
+          document.body.appendChild(script);
+        });
+      } catch (sdkErr) {
+        this.showToast('Could not load payment gateway. Please check your connection or choose COD.');
         return;
       }
     }
 
-    // Save pending order record in Firestore before redirecting
-    try {
-      const pendingOrder = {
-        orderId: txnid,
-        items: store.cart.map(i => ({ id: i.id, name: i.name, size: i.size, price: i.price, qty: i.quantity || 1 })),
-        total: amount,
-        status: 'Initiated (Awaiting PayU Confirmation)',
-        paymentStatus: 'Pending',
-        paymentMethod: 'PayU Hosted (Cards/UPI)',
-        name: customerName,
-        phone: cleanPhone,
-        address: customerAddress,
-        pincode: customerPincode,
-        email: patronEmail,
-        createdAt: new Date().toISOString()
-      };
-      if (typeof firebaseService !== 'undefined' && firebaseService.saveOrder) {
-        await firebaseService.saveOrder(pendingOrder);
-      }
-    } catch (orderErr) {
-      console.warn('[PayU Pending Order Save]:', orderErr);
-    }
+    this.showToast('Opening Encrypted Payment Desk...');
 
-    // 3. Dynamically construct and submit the PayU Hosted Checkout form
-    try {
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = initiateResult.action;
-      form.style.display = 'none';
+    let rzpOrderId = null;
+    let rzpAmount = Math.round(Number(amount) * 100);
 
-      for (const [k, v] of Object.entries(initiateResult.params)) {
-        if (v !== undefined && v !== null) {
-          const hiddenField = document.createElement('input');
-          hiddenField.type = 'hidden';
-          hiddenField.name = k;
-          hiddenField.value = v;
-          form.appendChild(hiddenField);
+    // Call serverless /api/razorpay/create-order
+    try {
+      const orderResp = await fetch('/api/razorpay/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount,
+          currency: 'INR',
+          receipt: `MYTH-${Date.now().toString().slice(-6)}`,
+          notes: {
+            customerName,
+            customerPhone,
+            customerEmail,
+            customerAddress,
+            customerPincode,
+            customerCity,
+            customerState
+          }
+        })
+      });
+
+      if (orderResp.ok) {
+        const orderData = await orderResp.json();
+        if (orderData && orderData.orderId) {
+          rzpOrderId = orderData.orderId;
+          if (orderData.amount) rzpAmount = orderData.amount;
         }
       }
-
-      document.body.appendChild(form);
-      this.closePayUModal();
-      this.showToast('Redirecting to Encrypted Payment Vault...');
-      form.submit();
-    } catch (formErr) {
-      console.error('[Payment Form Redirection Error]:', formErr);
-      this.showToast(`Failed to open payment desk: ${formErr.message}`);
+    } catch (createErr) {
+      console.warn('[Razorpay Order API Notice]: Serverless order creation fallback:', createErr);
     }
+
+    const patronEmail = customerEmail || 'concierge@mytholis.com';
+    const cleanPhone = customerPhone;
+    const cartSummary = (store.cart.length ? store.cart.map(i => i.name).join(', ') : 'Mytholis Haute Extrait de Parfum').substring(0, 100);
+
+    const options = {
+      key: razorpayKey,
+      amount: rzpAmount,
+      currency: 'INR',
+      name: 'Mytholis Haute Parfumerie',
+      description: cartSummary,
+      image: 'assets/logo.webp',
+      prefill: {
+        name: customerName,
+        email: patronEmail,
+        contact: cleanPhone
+      },
+      notes: {
+        shipping_address: customerAddress,
+        city: customerCity,
+        state: customerState,
+        pincode: customerPincode
+      },
+      theme: {
+        color: '#D4AF37'
+      },
+      modal: {
+        ondismiss: () => {
+          this.showToast('Payment window closed. Order remains pending.');
+        }
+      },
+      handler: async (response) => {
+        this.showToast('Verifying payment cryptographically...');
+        try {
+          const verifyResp = await fetch('/api/razorpay/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id || rzpOrderId || '',
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature || '',
+              orderDetails: {
+                orderId: rzpOrderId || `MYTH-${Date.now().toString().slice(-6)}`,
+                total: amount,
+                items: store.cart.map(i => ({ id: i.id, name: i.name, size: i.size, price: i.price, qty: i.quantity || 1 })),
+                customerName,
+                customerPhone: cleanPhone,
+                email: patronEmail,
+                customerAddress,
+                customerPincode,
+                customerCity,
+                customerState,
+                userId: (typeof firebaseService !== 'undefined' && firebaseService.currentUser?.uid) || store.user.uid || ''
+              }
+            })
+          });
+
+          const verifyData = await verifyResp.json().catch(() => ({}));
+          if (verifyResp.ok && verifyData.success) {
+            this.finalizeOrderPlacement(amount, {
+              customerName,
+              customerPhone: cleanPhone,
+              customerEmail: patronEmail,
+              customerAddress,
+              customerPincode,
+              customerCity,
+              customerState,
+              paymentMethod: 'Razorpay Instant (UPI / Cards)',
+              paymentId: response.razorpay_payment_id
+            });
+          } else {
+            console.error('[Razorpay Verification Failed]:', verifyData);
+            this.showToast(`Verification issue: ${verifyData.error || 'Please contact concierge.'}`);
+          }
+        } catch (verErr) {
+          console.error('[Razorpay Verification Error]:', verErr);
+          this.finalizeOrderPlacement(amount, {
+            customerName,
+            customerPhone: cleanPhone,
+            customerEmail: patronEmail,
+            customerAddress,
+            customerPincode,
+            customerCity,
+            customerState,
+            paymentMethod: 'Razorpay Instant',
+            paymentId: response.razorpay_payment_id
+          });
+        }
+      }
+    };
+
+    if (rzpOrderId) {
+      options.order_id = rzpOrderId;
+    }
+
+    try {
+      this.closeRazorpayModal();
+      const rzpInstance = new window.Razorpay(options);
+      rzpInstance.open();
+    } catch (openErr) {
+      console.error('[Razorpay Open Error]:', openErr);
+      this.showToast(`Failed to launch payment window: ${openErr.message}`);
+    }
+  }
+
+  /* Backward Compatibility Aliases */
+  launchPayUCheckout(amount) {
+    return this.launchRazorpayCheckout(amount);
   }
 
   completeRazorpayPayment(amount) {
-    return this.launchPayUCheckout(amount);
+    return this.launchRazorpayCheckout(amount);
   }
 
   finalizeOrderPlacement(amount, details = {}) {
-    this.closePayUModal();
+    this.closeRazorpayModal();
+    this.trackMetaEvent('Purchase', { value: amount, currency: 'INR' });
     const purchasedItems = [...store.cart];
     const loyaltyResult = store.recordLoyaltyPurchase(purchasedItems, amount);
 
@@ -2021,9 +2275,12 @@ class MytholisApp {
       status: details.paymentMethod?.includes('COD') ? 'Placed (COD)' : 'Payment Authorized',
       name: details.customerName,
       phone: details.customerPhone,
+      email: details.customerEmail || store.user.email || '',
       address: details.customerAddress,
       pincode: details.customerPincode,
-      paymentMethod: details.paymentMethod || 'PayU Hosted',
+      city: details.customerCity || store.user.city || '',
+      state: details.customerState || store.user.state || '',
+      paymentMethod: details.paymentMethod || 'Razorpay Instant',
       paymentId: details.paymentId || '',
       referredBy: store.user.referredBy || (store.getAppliedReward()?.isReferral ? store.getAppliedReward()?.code : '') || '',
       date: new Date().toLocaleDateString('en-IN')
@@ -2039,7 +2296,16 @@ class MytholisApp {
     if (details.customerPincode) {
       store.user.pincode = details.customerPincode;
     }
-    if (details.customerName && (!store.user.name || store.user.name === 'Mytholis Patron')) {
+    if (details.customerCity) {
+      store.user.city = details.customerCity;
+    }
+    if (details.customerState) {
+      store.user.state = details.customerState;
+    }
+    if (details.customerEmail) {
+      store.user.email = details.customerEmail;
+    }
+    if (details.customerName && (!store.user.name || store.user.name === 'Mytholis Patron' || store.user.name === 'Mytholis Collector')) {
       store.user.name = details.customerName;
     }
     store.saveLocalStorage('mytholis_user', store.user);
@@ -2049,9 +2315,12 @@ class MytholisApp {
       firebaseService.recordOrderInCloud(orderRecord);
       firebaseService.updatePatronProfile({
         name: store.user.name,
+        email: store.user.email,
         phone: store.user.phone,
         address: store.user.address,
-        pincode: store.user.pincode
+        pincode: store.user.pincode,
+        city: store.user.city,
+        state: store.user.state
       }).catch(() => {});
     }
 
@@ -2091,9 +2360,9 @@ class MytholisApp {
       this.showToast(`Code ${code} applied to checkout.`);
       this.renderCartModalContent();
       this.renderProfileModalContent();
-      const payuBody = document.getElementById('payu-modal-body') || document.getElementById('razorpay-modal-body');
-      if (payuBody) {
-        payuBody.innerHTML = Components.renderPayUModal(store.cart.length ? { id: null } : MYTHOLIS_CATALOG[0]);
+      const modalBody = document.getElementById('razorpay-modal-body') || document.getElementById('payu-modal-body');
+      if (modalBody) {
+        modalBody.innerHTML = Components.renderRazorpayModal(store.cart.length ? { id: null } : MYTHOLIS_CATALOG[0]);
       }
     } else {
       this.showToast(res.error);
@@ -2160,9 +2429,9 @@ class MytholisApp {
     this.showToast("Reward code removed from checkout.");
     this.renderCartModalContent();
     this.renderProfileModalContent();
-    const payuBody = document.getElementById('payu-modal-body') || document.getElementById('razorpay-modal-body');
-    if (payuBody) {
-      payuBody.innerHTML = Components.renderPayUModal(store.cart.length ? { id: null } : MYTHOLIS_CATALOG[0]);
+    const modalBody = document.getElementById('razorpay-modal-body') || document.getElementById('payu-modal-body');
+    if (modalBody) {
+      modalBody.innerHTML = Components.renderRazorpayModal(store.cart.length ? { id: null } : MYTHOLIS_CATALOG[0]);
     }
   }
 
@@ -2480,9 +2749,50 @@ class MytholisApp {
     window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
   }
 
+  /* ==========================================================================
+     NEW COLLECTOR REGISTRATION BONUS CELEBRATION MODAL
+     ========================================================================== */
+  openSignupBonusModal(points = 200) {
+    let overlay = document.getElementById('signup-bonus-modal-overlay');
+    let modalBody = document.getElementById('signup-bonus-modal-body');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      overlay.id = 'signup-bonus-modal-overlay';
+      overlay.onclick = (e) => { if (e.target === overlay) this.closeSignupBonusModal(); };
+
+      modalBody = document.createElement('div');
+      modalBody.className = 'modal-card glass-panel';
+      modalBody.id = 'signup-bonus-modal-body';
+      modalBody.style.maxWidth = '460px';
+      modalBody.style.border = '1px solid rgba(212, 175, 55, 0.4)';
+      modalBody.style.boxShadow = '0 25px 70px rgba(0, 0, 0, 0.85), 0 0 40px rgba(212, 175, 55, 0.25)';
+
+      overlay.appendChild(modalBody);
+      document.body.appendChild(overlay);
+    }
+
+    if (modalBody && typeof Components !== 'undefined' && typeof Components.renderSignupBonusModal === 'function') {
+      modalBody.innerHTML = Components.renderSignupBonusModal(points);
+    }
+
+    this.closeAllModals(false);
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeSignupBonusModal() {
+    const overlay = document.getElementById('signup-bonus-modal-overlay');
+    if (overlay) {
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  }
+
   /* Close All Modals */
   closeAllModals(restoreScroll = true) {
     document.querySelectorAll('.modal-overlay').forEach(el => el.classList.remove('active'));
+    document.getElementById('signup-bonus-modal-overlay')?.classList.remove('active');
     document.getElementById('patron-login-modal-root')?.remove();
     document.getElementById('headless-container')?.remove();
     if (restoreScroll) {
@@ -3161,6 +3471,7 @@ class MytholisApp {
       this.showToast(`VIP Dossier Account Activated for ${result.user.email}!`);
       this.updateNavAuth();
       this.closeProfileModal();
+      this.openSignupBonusModal(store.globalSettings?.signupBonusMythos || 200);
       if (store.currentView === 'profile') this.renderCurrentView();
     } else {
       this.showToast(result.error);
@@ -3188,6 +3499,38 @@ class MytholisApp {
       this.navigateTo('home');
     } else {
       this.renderCurrentView();
+    }
+  }
+
+  /* Meta Pixel (Facebook & Instagram Ads) Dynamic Tracking */
+  initMetaPixel(pixelId) {
+    if (!pixelId || typeof window === 'undefined') return;
+    const cleanId = String(pixelId).trim();
+    if (!cleanId) return;
+
+    if (!window.fbq) {
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+
+      window.fbq('init', cleanId);
+      window.fbq('track', 'PageView');
+      console.log('[Mytholis Analytics] Meta Pixel initialized dynamically:', cleanId);
+    }
+  }
+
+  trackMetaEvent(eventName, params = {}) {
+    if (typeof window !== 'undefined' && window.fbq) {
+      try {
+        window.fbq('track', eventName, params);
+      } catch (err) {
+        console.warn('[Meta Pixel] Event tracking notice:', err.message);
+      }
     }
   }
 
@@ -4078,11 +4421,15 @@ class MytholisApp {
       const maxCodAmount = getNum('setting-max-cod-amount') ?? getNum('set-max-cod-amount') ?? 15000;
       const freeShip = getNum('setting-free-ship-threshold') ?? getNum('set-free-shipping-threshold') ?? 3000;
       const shipFee = getNum('setting-standard-ship-fee') ?? getNum('set-shipping-fee') ?? 150;
-      const payuKey = getStr('setting-payu-merchant-key') || currentSettings.payuMerchantKey || 'LqPsyW';
-      const payuSalt = getStr('setting-payu-merchant-salt') || currentSettings.payuMerchantSalt || '';
-      const payuEnv = getStr('setting-payu-env') || currentSettings.payuEnv || 'test';
-      const payuClientId = getStr('setting-payu-client-id') || currentSettings.payuClientId || 'b2b6ab2e737de82833c843320ddbceb9b5d34eca503c59af5dacc3d3b3604eeb';
-      const payuClientSecret = getStr('setting-payu-client-secret') || currentSettings.payuClientSecret || '3ea892b02b0122bcdd4dcea354f0d617658aadb98a78642b17dc2809500c646a';
+      const razorpayKey = getStr('setting-razorpay-key-id') || currentSettings.razorpayKeyId || '';
+      const razorpaySecret = getStr('setting-razorpay-key-secret') || currentSettings.razorpayKeySecret || '';
+      const metaPixelId = getStr('setting-meta-pixel-id') || currentSettings.metaPixelId || '';
+      const supportPhone = getStr('setting-support-phone') || currentSettings.supportPhone || '+91 777000 9170';
+      const supportEmail = getStr('setting-support-email') || currentSettings.supportEmail || 'concierge@mytholis.com';
+      const adminEmailsRaw = getStr('setting-admin-emails');
+      const adminEmails = adminEmailsRaw 
+        ? adminEmailsRaw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+        : (currentSettings.adminEmails || ['gunhegarr@gmail.com', 'admin@mytholis.com', 'alexander@mytholis.com', 'founder@mytholis.com']);
 
       const settingsData = {
         ...currentSettings,
@@ -4099,16 +4446,23 @@ class MytholisApp {
         freeShippingThreshold: freeShip,
         standardShippingFee: shipFee,
         shippingFee: shipFee,
-        payuMerchantKey: payuKey,
-        payuMerchantSalt: payuSalt,
-        payuEnv: payuEnv,
-        payuClientId: payuClientId,
-        payuClientSecret: payuClientSecret
+        razorpayKeyId: razorpayKey,
+        razorpayKeySecret: razorpaySecret,
+        metaPixelId: metaPixelId,
+        supportPhone: supportPhone,
+        supportWhatsApp: supportPhone.replace(/\D/g, ''),
+        supportEmail: supportEmail,
+        adminEmails: adminEmails
       };
+
+      if (metaPixelId) {
+        this.initMetaPixel(metaPixelId);
+      }
 
       this.showToast('Synchronizing global commerce rules to Firestore...');
       const res = await firebaseService.saveGlobalSettings(settingsData);
       if (res.success) {
+        store.globalSettings = settingsData;
         this.showToast('Global economy & checkout rules saved.');
         await this.loadAdminDashboard();
       } else {
@@ -4342,11 +4696,11 @@ class MytholisApp {
   }
 
   /* ==========================================================================
-     METHOD 3: LOGISTICS THERMAL LABEL REBRANDER CONTROLLER
-     Client-side vector rebranding with 100% courier barcode integrity
+     DIRECT 4x6 THERMAL SHIPPING LABEL & LOGISTICS DISPATCH STUDIO
+     Native in-house 4x6 courier thermal label generator (pdf-lib)
      ========================================================================== */
 
-  openLabelRebranderModal(targetOrder = null) {
+  async openShippingLabelStudio(targetOrder = null) {
     this.targetRebranderOrder = targetOrder;
     this.currentRebranderPdfBytes = null;
     this.activeRebrandedResult = null;
@@ -4361,21 +4715,69 @@ class MytholisApp {
       savedConfig = { ...savedConfig, ...store.globalSettings.labelConfig };
     }
 
-    const modalHtml = AdminComponents.renderLabelRebranderModal(targetOrder, savedConfig);
+    const modalHtml = AdminComponents.renderShippingLabelModal(targetOrder, savedConfig);
     this.injectAdminModal(modalHtml);
     this.setupLabelDropzone();
 
-    // If order has an existing label URL, auto-load it
-    if (targetOrder && targetOrder.labelUrl) {
+    // If an order is targeted, immediately generate our native 4x6 thermal shipping label!
+    if (targetOrder && (targetOrder.orderId || targetOrder.id)) {
+      await this.generateAndPreviewOrderLabel(targetOrder);
+    } else if (targetOrder && targetOrder.labelUrl) {
       this.loadLabelFromUrl(targetOrder.labelUrl);
     }
   }
 
-  openLabelRebranderForOrder(orderId) {
+  openLabelRebranderModal(targetOrder = null) {
+    return this.openShippingLabelStudio(targetOrder);
+  }
+
+  async printShippingLabelForOrder(orderId) {
     const order = (this.adminData && this.adminData.orders) 
       ? this.adminData.orders.find(o => (o.orderId === orderId || o.id === orderId))
       : null;
-    this.openLabelRebranderModal(order || { orderId });
+    await this.openShippingLabelStudio(order || { orderId });
+  }
+
+  openLabelRebranderForOrder(orderId) {
+    return this.printShippingLabelForOrder(orderId);
+  }
+
+  async generateAndPreviewOrderLabel(order) {
+    this.updateRebranderStatus('Generating 4x6 Thermal Label...', 'var(--gold-primary)');
+    try {
+      const result = await generateMytholisShippingLabelPdf(order);
+      this.activeRebrandedResult = result;
+      this.currentRebranderPdfBytes = result.pdfBytes;
+
+      const iframe = document.getElementById('rebrander-preview-frame');
+      const placeholder = document.getElementById('rebrander-preview-placeholder');
+
+      if (iframe) {
+        iframe.src = result.blobUrl;
+        iframe.style.display = 'block';
+      }
+      if (placeholder) {
+        placeholder.style.display = 'none';
+      }
+
+      this.updateRebranderStatus('✓ 4x6 Thermal Label Ready', '#10B981');
+    } catch (err) {
+      console.error('[ShippingLabel] Generation error:', err);
+      this.updateRebranderStatus('Label Error: ' + err.message, '#EF4444');
+    }
+  }
+
+  async refreshOrderShippingLabel() {
+    if (!this.targetRebranderOrder) return;
+    const courierInput = document.getElementById('label-courier-input');
+    const awbInput = document.getElementById('label-awb-input');
+    if (courierInput && courierInput.value) {
+      this.targetRebranderOrder.courierName = courierInput.value.trim();
+    }
+    if (awbInput && awbInput.value) {
+      this.targetRebranderOrder.trackingNumber = awbInput.value.trim();
+    }
+    await this.generateAndPreviewOrderLabel(this.targetRebranderOrder);
   }
 
   setupLabelDropzone() {

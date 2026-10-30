@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { adminDb } from '../_firebaseAdmin.js';
 
 export default async function handler(req, res) {
   // Enable CORS
@@ -38,9 +39,24 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing mandatory fields: txnid and amount are required.' });
     }
 
-    // Resolve Merchant Key & Salt
-    const merchantKey = (process.env.PAYU_MERCHANT_KEY || customKey || '').trim();
-    const merchantSalt = (process.env.PAYU_MERCHANT_SALT || customSalt || '').trim();
+    // Resolve Merchant Key & Salt dynamically (from process.env, request body, or Firestore settings/global)
+    let merchantKey = (process.env.PAYU_MERCHANT_KEY || customKey || '').trim();
+    let merchantSalt = (process.env.PAYU_MERCHANT_SALT || customSalt || '').trim();
+    let isLive = customEnv === 'live' || process.env.PAYU_ENV === 'live';
+
+    if ((!merchantKey || !merchantSalt) && adminDb) {
+      try {
+        const settingsSnap = await adminDb.collection('settings').doc('global').get();
+        if (settingsSnap.exists) {
+          const s = settingsSnap.data() || {};
+          if (!merchantKey) merchantKey = (s.payuMerchantKey || '').trim();
+          if (!merchantSalt) merchantSalt = (s.payuMerchantSalt || '').trim();
+          if (s.payuEnv) isLive = s.payuEnv === 'live';
+        }
+      } catch (dbErr) {
+        console.warn('[PayU Initiate] Could not read settings from Firestore:', dbErr.message);
+      }
+    }
 
     if (!merchantKey || !merchantSalt) {
       return res.status(400).json({
@@ -67,8 +83,7 @@ export default async function handler(req, res) {
     const hashSequence = `${merchantKey}|${txnid}|${formattedAmount}|${sanitizedProductInfo}|${sanitizedFirstName}|${sanitizedEmail}|${udf1}|${udf2}|${udf3}|${udf4}|${udf5}||||||${merchantSalt}`;
     const hash = crypto.createHash('sha512').update(hashSequence).digest('hex').toLowerCase();
 
-    // Determine gateway endpoint based on environment or key
-    const isLive = customEnv === 'live' || process.env.PAYU_ENV === 'live';
+    // Determine gateway endpoint based on resolved environment
     const actionUrl = isLive ? 'https://secure.payu.in/_payment' : 'https://test.payu.in/_payment';
 
     return res.status(200).json({

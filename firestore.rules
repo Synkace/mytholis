@@ -6,7 +6,6 @@ service cloud.firestore {
       return request.auth != null && (
         request.auth.token.admin == true ||
         (request.auth.token.email != null && (
-          request.auth.token.email.matches('.*gunhegarr.*') ||
           request.auth.token.email in ['gunhegarr@gmail.com', 'admin@mytholis.com', 'alexander@mytholis.com', 'founder@mytholis.com']
         )) ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 

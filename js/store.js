@@ -249,17 +249,19 @@ class MytholisStore {
       mythosEarnPct: 3,
       redemptionRatio: 1,
       maxMythosRedemptionPct: 30,
-      signupBonusMythos: 100,
+      signupBonusMythos: 200,
       codEnabled: true,
       codFee: 0,
       maxCodAmount: 15000,
       freeShippingThreshold: 3000,
       standardShippingFee: 150,
-      payuMerchantKey: 'LqPsyW',
-      payuMerchantSalt: '',
-      payuEnv: 'test',
-      payuClientId: 'b2b6ab2e737de82833c843320ddbceb9b5d34eca503c59af5dacc3d3b3604eeb',
-      payuClientSecret: '3ea892b02b0122bcdd4dcea354f0d617658aadb98a78642b17dc2809500c646a',
+      razorpayKeyId: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_RAZORPAY_KEY_ID) || '',
+      razorpayKeySecret: '',
+      supportPhone: '+91 777000 9170',
+      supportWhatsApp: '917770009170',
+      supportEmail: 'concierge@mytholis.com',
+      metaPixelId: '',
+      adminEmails: ['gunhegarr@gmail.com', 'admin@mytholis.com', 'alexander@mytholis.com', 'founder@mytholis.com'],
       promoCodes: [
         { code: 'FIRST20', discountType: 'percent', value: 20, minOrder: 0, active: true },
         { code: 'WELCOME20', discountType: 'percent', value: 20, minOrder: 0, active: true },
@@ -272,10 +274,6 @@ class MytholisStore {
     // Ensure FIRST20 is always present in promoCodes
     if (Array.isArray(this.globalSettings.promoCodes) && !this.globalSettings.promoCodes.some(p => p.code === 'FIRST20')) {
       this.globalSettings.promoCodes.unshift({ code: 'FIRST20', discountType: 'percent', value: 20, minOrder: 0, active: true });
-    }
-    // If legacy razorpayKeyId is present, ensure payuMerchantKey is also set
-    if (!this.globalSettings.payuMerchantKey) {
-      this.globalSettings.payuMerchantKey = 'LqPsyW';
     }
 
     // Auto-purge any legacy mock "Lord Alexander" data from existing client localStorage
@@ -296,13 +294,40 @@ class MytholisStore {
     this.listeners = [];
   }
 
+  /* Dynamic Contact, Tracking & Analytics Helpers */
+  getSupportPhone() {
+    return (this.globalSettings && this.globalSettings.supportPhone) || '+91 777000 9170';
+  }
+
+  getSupportWhatsApp() {
+    const raw = (this.globalSettings && (this.globalSettings.supportWhatsApp || this.globalSettings.supportPhone)) || '917770009170';
+    return String(raw).replace(/\D/g, '');
+  }
+
+  getSupportEmail() {
+    return (this.globalSettings && this.globalSettings.supportEmail) || 'concierge@mytholis.com';
+  }
+
+  getWhatsAppUrl(text = '') {
+    const phone = this.getSupportWhatsApp();
+    return `https://wa.me/${phone}${text ? `?text=${encodeURIComponent(text)}` : ''}`;
+  }
+
+  getMetaPixelId() {
+    return (this.globalSettings && this.globalSettings.metaPixelId) || (import.meta.env && import.meta.env.VITE_META_PIXEL_ID) || '';
+  }
+
   /* Admin Authorization Gate */
   isAdmin() {
-    const whitelist = (typeof window !== 'undefined' && window.ADMIN_EMAILS) || [
+    const configuredAdmins = (this.globalSettings && Array.isArray(this.globalSettings.adminEmails)) 
+      ? this.globalSettings.adminEmails 
+      : [];
+    const whitelist = [
       'gunhegarr@gmail.com',
       'admin@mytholis.com',
       'alexander@mytholis.com',
-      'founder@mytholis.com'
+      'founder@mytholis.com',
+      ...configuredAdmins
     ];
     const fbUser = (typeof firebaseService !== 'undefined' && firebaseService?.currentUser) || null;
     const userEmail = (
@@ -312,7 +337,7 @@ class MytholisStore {
       ''
     ).toLowerCase().trim();
 
-    if (userEmail && (whitelist.some(e => e.toLowerCase() === userEmail) || userEmail.includes('gunhegarr'))) return true;
+    if (userEmail && whitelist.some(e => e.toLowerCase().trim() === userEmail)) return true;
     if (this.user && (this.user.isAdmin === true || this.user.role === 'admin')) return true;
     if (this.firebaseUser && (this.firebaseUser.isAdmin === true || this.firebaseUser.role === 'admin')) return true;
     if (fbUser && (fbUser.isAdmin === true || fbUser.role === 'admin')) return true;
@@ -376,7 +401,10 @@ class MytholisStore {
 
   setGlobalSettings(settings) {
     if (settings && typeof settings === 'object') {
-      this.globalSettings = Object.assign({}, this.globalSettings, settings);
+      const merged = Object.assign({}, this.globalSettings, settings);
+      if (!merged.razorpayKeyId && this.globalSettings?.razorpayKeyId) merged.razorpayKeyId = this.globalSettings.razorpayKeyId;
+      if (!merged.razorpayKeySecret && this.globalSettings?.razorpayKeySecret) merged.razorpayKeySecret = this.globalSettings.razorpayKeySecret;
+      this.globalSettings = merged;
       this.saveLocalStorage('mytholis_global_settings', this.globalSettings);
       this.notify();
     }
@@ -454,6 +482,11 @@ class MytholisStore {
     } catch (e) {
       console.warn("LocalStorage save failed", e);
     }
+  }
+
+  saveUser() {
+    this.saveLocalStorage('mytholis_user', this.user);
+    this.notify();
   }
 
   subscribe(listener) {

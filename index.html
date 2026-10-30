@@ -188,14 +188,19 @@
     <div class="modal-card glass-panel" id="policy-modal-body"></div>
   </div>
 
-  <!-- 5. PayU / UPI Instant Checkout Modal Overlay -->
-  <div class="modal-overlay" id="payu-modal-overlay" onclick="if(event.target === this) app.closePayUModal()">
-    <div class="modal-card glass-panel" id="payu-modal-body"></div>
+  <!-- 5. Razorpay & Instant Checkout Modal Overlay -->
+  <div class="modal-overlay" id="razorpay-modal-overlay" onclick="if(event.target === this) app.closeRazorpayModal()">
+    <div class="modal-card glass-panel" id="razorpay-modal-body"></div>
   </div>
 
   <!-- 6. Collector Referral & Invitation Sanctum Modal Overlay -->
   <div class="modal-overlay" id="referral-modal-overlay" onclick="if(event.target === this) app.closeReferralModal()">
     <div class="modal-card glass-panel" id="referral-modal-body"></div>
+  </div>
+
+  <!-- 7. Welcome Signup Bonus Celebration Modal Overlay -->
+  <div class="modal-overlay" id="signup-bonus-modal-overlay" onclick="if(event.target === this) app.closeSignupBonusModal()">
+    <div class="modal-card glass-panel" id="signup-bonus-modal-body" style="max-width: 460px; border: 1px solid rgba(212, 175, 55, 0.4); box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85), 0 0 40px rgba(212, 175, 55, 0.25);"></div>
   </div>
 
   <!-- Toast Notification Container -->
@@ -366,6 +371,9 @@
   <!-- Sovereign 1-Click Access & Checkout Configuration -->
   <input type="hidden" value="mytholis.com" id="sellerDomain" />
   <div id="recaptcha-container" style="display: none;"></div>
+
+  <!-- Razorpay Standard 256-Bit SSL Checkout SDK -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
   <!-- Bundled & Optimized Application Engine (Includes GSAP & Animations) -->
   <script type="module" src="/js/main.js"></script>

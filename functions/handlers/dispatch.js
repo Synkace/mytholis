@@ -39,14 +39,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Security Check: Optional secret verification
+    // Security Check: Enforce secret verification if configured (fail-closed)
     const webhookSecret = process.env.DISPATCH_WEBHOOK_SECRET || process.env.WEBHOOK_SECRET;
     const providedSecret = req.headers['x-api-key'] || req.headers['x-webhook-token'] || req.headers['authorization'];
     
-    if (webhookSecret && providedSecret) {
-      const cleanProvided = String(providedSecret).replace(/^Bearer\s+/i, '').trim();
-      if (cleanProvided !== webhookSecret.trim()) {
-        console.warn('[Dispatch Webhook] Unauthorized attempt with invalid secret.');
+    if (webhookSecret) {
+      const cleanProvided = providedSecret ? String(providedSecret).replace(/^Bearer\s+/i, '').trim() : '';
+      if (!cleanProvided || cleanProvided !== webhookSecret.trim()) {
+        console.warn('[Dispatch Webhook] Unauthorized attempt with invalid or missing secret.');
         return res.status(401).json({ success: false, error: 'Unauthorized webhook request' });
       }
     }

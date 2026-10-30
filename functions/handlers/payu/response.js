@@ -29,7 +29,20 @@ export default async function handler(req, res) {
       udf5 = ''
     } = data;
 
-    const merchantSalt = (process.env.PAYU_MERCHANT_SALT || '').trim();
+    let merchantSalt = (process.env.PAYU_MERCHANT_SALT || '').trim();
+
+    // Dynamically fallback to Firestore settings/global if not configured in environment
+    if (!merchantSalt && adminDb) {
+      try {
+        const settingsSnap = await adminDb.collection('settings').doc('global').get();
+        if (settingsSnap.exists) {
+          const s = settingsSnap.data() || {};
+          merchantSalt = (s.payuMerchantSalt || '').trim();
+        }
+      } catch (dbErr) {
+        console.warn('[PayU Callback] Could not read salt from settings:', dbErr.message);
+      }
+    }
 
     // Verify reverse hash (strictly fail-closed: must have merchantSalt, hash, and matching calculation)
     let isHashValid = false;

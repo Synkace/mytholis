@@ -7,8 +7,10 @@ export const AdminComponents = {
   renderAdmin() {
     const currentUser = (typeof firebaseService !== 'undefined' && firebaseService?.currentUser) || store.firebaseUser;
     const userEmail = (currentUser?.email || store.user?.email || '').trim().toLowerCase();
-    const whitelist = ['gunhegarr@gmail.com', 'admin@mytholis.com', 'alexander@mytholis.com', 'founder@mytholis.com'];
-    const isAuthorized = store.isAdmin() || (userEmail && (whitelist.includes(userEmail) || userEmail.includes('gunhegarr')));
+    const adminEmails = (store.globalSettings && Array.isArray(store.globalSettings.adminEmails)) 
+      ? store.globalSettings.adminEmails 
+      : ['gunhegarr@gmail.com', 'admin@mytholis.com', 'alexander@mytholis.com', 'founder@mytholis.com'];
+    const isAuthorized = store.isAdmin() || (userEmail && adminEmails.some(e => e.toLowerCase().trim() === userEmail));
 
     // 1. Unauthenticated or Unauthorized Gate
     if (!isAuthorized) {
@@ -327,8 +329,8 @@ export const AdminComponents = {
                 <option value="Paid">Status: Paid</option>
                 <option value="PendingPay">Status: Unpaid / Pending COD</option>
               </select>
-              <button class="btn btn-gold" style="font-size: 0.78rem; padding: 0.5rem 1rem; display: inline-flex; align-items: center; gap: 0.4rem;" onclick="app.openLabelRebranderModal()">
-                🏷️ Label Rebrander Studio
+              <button class="btn btn-gold" style="font-size: 0.78rem; padding: 0.5rem 1rem; display: inline-flex; align-items: center; gap: 0.4rem;" onclick="app.openShippingLabelStudio()">
+                🏷️ Shipping Label Studio
               </button>
               <button class="btn btn-glass" onclick="app.refreshAdminDashboard()">
                 ↻ Reload Orders
@@ -460,10 +462,10 @@ export const AdminComponents = {
                         </button>
                       </div>
 
-                      <!-- 1-Click Actions: Label Rebrander & WhatsApp -->
+                      <!-- 1-Click Actions: Shipping Label & WhatsApp -->
                       <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                        <button class="btn btn-gold" style="font-size: 0.72rem; padding: 0.45rem 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem; background: linear-gradient(135deg, #D4AF37 0%, #AA820A 100%); color: #041812; font-weight: 700;" onclick="app.openLabelRebranderForOrder('${orderId}')" title="Stamp 4x6 Shipping Label with Mytholis Identity">
-                          🏷️ Rebrand Label
+                        <button class="btn btn-gold" style="font-size: 0.72rem; padding: 0.45rem 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem; background: linear-gradient(135deg, #D4AF37 0%, #AA820A 100%); color: #041812; font-weight: 700;" onclick="app.printShippingLabelForOrder('${orderId}')" title="Generate & Print 4x6 Thermal Shipping Label">
+                          🏷️ Print Shipping Label
                         </button>
                         ${paymentMethod === 'COD' ? `
                           <button class="btn-whatsapp-verify" onclick="app.verifyCodWhatsApp('${orderId}', '${patronPhone}', ${finalPayable})" title="Send WhatsApp COD Confirmation">
@@ -934,7 +936,7 @@ export const AdminComponents = {
 
                     <div>
                       <label class="sovereign-field-label">New Collector Registration Bonus (M Coins)</label>
-                      <input type="number" id="setting-signup-bonus" class="sovereign-form-input" value="${globalSettings.signupBonusMythos !== undefined ? globalSettings.signupBonusMythos : 100}" min="0" required />
+                      <input type="number" id="setting-signup-bonus" class="sovereign-form-input" value="${globalSettings.signupBonusMythos !== undefined ? globalSettings.signupBonusMythos : 200}" min="0" required />
                     </div>
                   </div>
                 </div>
@@ -976,75 +978,104 @@ export const AdminComponents = {
                   </div>
                 </div>
 
-                <!-- PayU Hosted & UPI Payment Gateway Configuration -->
+                <!-- Razorpay Standard & UPI Payment Gateway Configuration -->
+                ${(() => {
+                  const activeKey = (globalSettings.razorpayKeyId || '').trim() || (typeof import.meta !== 'undefined' && import.meta.env?.VITE_RAZORPAY_KEY_ID) || '';
+                  const activeSecret = (globalSettings.razorpayKeySecret || '').trim() || '';
+                  return `
                 <div class="liquid-glass-card" style="padding: 1.5rem; grid-column: 1 / -1;">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem;">
                     <h4 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
-                      <span>💳</span> PayU Hosted & UPI Payment Gateway
+                      <span>💳</span> Razorpay Instant &amp; UPI Payment Gateway
                     </h4>
                     <div>
-                      ${(globalSettings.payuMerchantKey || '').trim() ? `
+                      ${activeKey ? `
                         <span class="glass-pill" style="font-size: 0.72rem; color: #10B981; border-color: #10B981; background: rgba(16, 185, 129, 0.1);">
-                          ● PayU Gateway Active (${(globalSettings.payuEnv === 'live') ? 'Production Live' : 'Test Sandbox'})
+                          ● Razorpay Gateway Active (${activeKey.startsWith('rzp_live') ? 'Production Live' : 'Test Mode'})
                         </span>
                       ` : `
                         <span class="glass-pill" style="font-size: 0.72rem; color: #F59E0B; border-color: #F59E0B; background: rgba(245, 158, 11, 0.1);">
-                          ⚠️ PayU Key Incomplete
+                          ⚠️ Razorpay Key Pending
                         </span>
                       `}
                     </div>
                   </div>
 
-                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem;">
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem;">
                     <div>
-                      <label class="sovereign-field-label">PayU Merchant Key</label>
-                      <input type="text" id="setting-payu-merchant-key" class="sovereign-form-input" style="font-family: monospace;" placeholder="e.g. LqPsyW" value="${globalSettings.payuMerchantKey || 'LqPsyW'}" />
+                      <label class="sovereign-field-label">Razorpay Key ID</label>
+                      <input type="text" id="setting-razorpay-key-id" class="sovereign-form-input" style="font-family: monospace;" placeholder="rzp_test_... or rzp_live_..." value="${activeKey}" />
                       <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
-                        Found in your PayU Dashboard &gt; Developer API credentials.
+                        Found in Razorpay Dashboard &gt; Settings &gt; API Keys.
                       </div>
                     </div>
 
                     <div>
-                      <label class="sovereign-field-label">Gateway Environment</label>
-                      <select id="setting-payu-env" class="sovereign-form-input">
-                        <option value="test" ${globalSettings.payuEnv !== 'live' ? 'selected' : ''}>Test Sandbox (test.payu.in)</option>
-                        <option value="live" ${globalSettings.payuEnv === 'live' ? 'selected' : ''}>Production Live (secure.payu.in)</option>
-                      </select>
-                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
-                        Select Sandbox for test payments or Live for actual collector transactions.
-                      </div>
-                    </div>
-
-                    <div style="grid-column: 1 / -1;">
-                      <label class="sovereign-field-label">PayU Merchant Salt</label>
+                      <label class="sovereign-field-label">Razorpay Key Secret</label>
                       <div style="display: flex; gap: 0.5rem;">
-                        <input type="password" id="setting-payu-merchant-salt" class="sovereign-form-input" style="font-family: monospace; flex: 1;" placeholder="Enter complete PayU Salt from dashboard" value="${globalSettings.payuMerchantSalt || ''}" />
+                        <input type="password" id="setting-razorpay-key-secret" class="sovereign-form-input" style="font-family: monospace; flex: 1;" placeholder="Enter Razorpay Key Secret" value="${activeSecret}" />
                         <button type="button" class="btn btn-glass" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;" onclick="
-                          const saltInput = document.getElementById('setting-payu-merchant-salt');
-                          if (saltInput) {
-                            saltInput.type = saltInput.type === 'password' ? 'text' : 'password';
-                            this.textContent = saltInput.type === 'password' ? 'Reveal' : 'Hide';
+                          const secretInput = document.getElementById('setting-razorpay-key-secret');
+                          if (secretInput) {
+                            secretInput.type = secretInput.type === 'password' ? 'text' : 'password';
+                            this.textContent = secretInput.type === 'password' ? 'Reveal' : 'Hide';
                           }
                         ">Reveal</button>
                       </div>
-                      <div style="font-size: 0.72rem; color: ${globalSettings.payuMerchantSalt ? 'var(--text-muted)' : '#F59E0B'}; margin-top: 0.35rem;">
-                        ${globalSettings.payuMerchantSalt ? 'Salt is saved. Used to compute SHA-512 transaction hashes.' : '⚠️ Action Required: Copy your full Merchant Salt from PayU Merchant Dashboard &gt; Developer API and paste here.'}
+                      <div style="font-size: 0.72rem; color: ${activeSecret ? 'var(--text-muted)' : '#F59E0B'}; margin-top: 0.35rem;">
+                        ${activeSecret ? 'Secret is securely configured for server-side HMAC validation.' : '⚠️ Action: Enter your Key Secret to enable server-side signature validation.'}
                       </div>
-                    </div>
-
-                    <div>
-                      <label class="sovereign-field-label">PayU Client ID (OAuth / Webhook)</label>
-                      <input type="text" id="setting-payu-client-id" class="sovereign-form-input" style="font-family: monospace; font-size: 0.75rem;" placeholder="e.g. b2b6ab2e737de82833c843320ddbceb9b5d34eca503c59af5dacc3d3b3604eeb" value="${globalSettings.payuClientId || 'b2b6ab2e737de82833c843320ddbceb9b5d34eca503c59af5dacc3d3b3604eeb'}" />
-                    </div>
-
-                    <div>
-                      <label class="sovereign-field-label">PayU Client Secret</label>
-                      <input type="password" id="setting-payu-client-secret" class="sovereign-form-input" style="font-family: monospace; font-size: 0.75rem;" placeholder="e.g. 3ea892b02b0122bcdd4dcea354f0d617658aadb98a78642b17dc2809500c646a" value="${globalSettings.payuClientSecret || '3ea892b02b0122bcdd4dcea354f0d617658aadb98a78642b17dc2809500c646a'}" />
                     </div>
                   </div>
 
                   <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: rgba(212, 175, 55, 0.05); border: 1px dashed rgba(212, 175, 55, 0.2); border-radius: 6px; font-size: 0.75rem; color: var(--text-muted); line-height: 1.5;">
-                    💡 <strong>PayU Hosted Checkout:</strong> Collectors clicking "Pay with PayU" will be redirected to PayU's secure prebuilt payment interface supporting Cards, UPI (GPay, PhonePe, Paytm, BHIM), NetBanking, and Wallets. Documentation: <a href="https://docs.payu.in/docs/prebuilt-checkout-payu-hosted" target="_blank" style="color: var(--gold-primary); text-decoration: underline;">PayU Hosted Docs</a> &bull; <a href="https://payu.in/business/developer/api" target="_blank" style="color: var(--gold-primary); text-decoration: underline;">PayU API Portal</a>.
+                    🔒 <strong>Razorpay Standard Checkout:</strong> Provides a 256-bit SSL encrypted popup supporting UPI (GPay, PhonePe, Paytm, QR scan), Credit &amp; Debit Cards, NetBanking across all Indian banks, and Wallets.
+                  </div>
+                </div>
+                  `;
+                })()}
+
+                <!-- Marketing, Ad Tracking & Concierge Communications -->
+                <div class="liquid-glass-card" style="padding: 1.5rem; grid-column: 1 / -1; margin-top: 1rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 0.6rem;">
+                    <h4 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+                      <span>🎯</span> Ad Attribution, Pixel &amp; Concierge Contacts
+                    </h4>
+                    <span class="glass-pill" style="font-size: 0.72rem; color: var(--gold-light);">Dynamic Global Configuration</span>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem;">
+                    <div>
+                      <label class="sovereign-field-label">Meta Pixel ID (Facebook / Instagram Ads)</label>
+                      <input type="text" id="setting-meta-pixel-id" class="sovereign-form-input" style="font-family: monospace;" placeholder="e.g. 123456789012345" value="${globalSettings.metaPixelId || ''}" />
+                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
+                        Automatically fires PageView, AddToCart, InitiateCheckout &amp; Purchase events.
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="sovereign-field-label">Concierge WhatsApp Number</label>
+                      <input type="text" id="setting-support-phone" class="sovereign-form-input" style="font-family: monospace;" placeholder="+91 777000 9170" value="${globalSettings.supportPhone || '+91 777000 9170'}" />
+                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
+                        Updates all WhatsApp Concierge direct links across the storefront and orders.
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="sovereign-field-label">Concierge Support Email</label>
+                      <input type="email" id="setting-support-email" class="sovereign-form-input" placeholder="concierge@mytholis.com" value="${globalSettings.supportEmail || 'concierge@mytholis.com'}" />
+                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
+                        Displayed in customer policy, metrology, and dispatch communications.
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="sovereign-field-label">Additional Sovereign Admin Emails</label>
+                      <input type="text" id="setting-admin-emails" class="sovereign-form-input" placeholder="founder@mytholis.com, partner@mytholis.com" value="${Array.isArray(globalSettings.adminEmails) ? globalSettings.adminEmails.join(', ') : (globalSettings.adminEmails || '')}" />
+                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
+                        Comma-separated list of emails authorized to access Sovereign Command.
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1756,8 +1787,8 @@ export const AdminComponents = {
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.8rem;">
                           <strong class="gold-shimmer-text" style="font-size: 0.95rem;">₹${ordAmount.toLocaleString('en-IN')}</strong>
-                          <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;" onclick="app.closeAdminModal(); app.openLabelRebranderForOrder('${ordId}')">
-                            🏷️ Label Studio
+                          <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;" onclick="app.closeAdminModal(); app.printShippingLabelForOrder('${ordId}')">
+                            🏷️ Shipping Label
                           </button>
                         </div>
                       </div>
@@ -1786,8 +1817,12 @@ export const AdminComponents = {
   },
 
   /* ==========================================================================
-     METHOD 3: LOGISTICS THERMAL LABEL REBRANDER STUDIO MODAL
+     DIRECT 4x6 THERMAL SHIPPING LABEL STUDIO MODAL
      ========================================================================== */
+  renderShippingLabelModal(targetOrder = null, config = {}) {
+    return this.renderLabelRebranderModal(targetOrder, config);
+  },
+
   renderLabelRebranderModal(targetOrder = null, config = {}) {
     const orderId = targetOrder ? (targetOrder.orderId || targetOrder.id || '') : '';
     const patronName = targetOrder ? (targetOrder.userName || targetOrder.name || targetOrder.customer?.name || '') : '';
@@ -1812,11 +1847,11 @@ export const AdminComponents = {
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.8rem; flex-wrap: wrap; gap: 0.8rem;">
             <div>
               <div style="display: flex; align-items: center; gap: 0.6rem;">
-                <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-primary); letter-spacing: 0.1em;">METHOD 3 AUTOMATION</span>
-                <span class="glass-pill" style="font-size: 0.7rem; color: #10B981; border-color: #10B981;">100% Barcode Integrity</span>
+                <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-primary); letter-spacing: 0.1em;">AUTHENTIC DISPATCH</span>
+                <span class="glass-pill" style="font-size: 0.7rem; color: #10B981; border-color: #10B981;">Direct 4x6 Thermal Ready</span>
               </div>
               <h3 class="font-title" style="color: var(--gold-light); margin: 0.3rem 0 0; font-size: 1.3rem;">
-                Mytholis Thermal Label Rebrander Studio
+                Mytholis 4x6 Thermal Shipping Label Studio
               </h3>
             </div>
             <button class="icon-btn" onclick="app.closeAdminModal()" style="font-size: 1.3rem; color: var(--gold-light);">✕</button>
@@ -1830,7 +1865,7 @@ export const AdminComponents = {
                 <span style="color: var(--text-muted); font-size: 0.85rem; margin-left: 0.5rem;">Collector: <strong style="color: var(--text-main);">${patronName}</strong></span>
               </div>
               <div style="font-size: 0.8rem; color: var(--text-muted);">
-                Courier: <strong style="color: var(--gold-light);">${courier || 'BlueDart'}</strong> &bull; AWB: <strong style="color: var(--gold-light); font-family: monospace;">${awb || 'Pending'}</strong>
+                Courier: <strong style="color: var(--gold-light);">${courier || 'BlueDart Express'}</strong> &bull; AWB: <strong style="color: var(--gold-light); font-family: monospace;">${awb || 'Pending'}</strong>
               </div>
             </div>
           ` : ''}
@@ -1838,21 +1873,45 @@ export const AdminComponents = {
           <!-- Two-Column Studio Layout -->
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
             
-            <!-- Column 1: Source PDF & Calibration Controls -->
+            <!-- Column 1: Native Generator & Controls -->
             <div style="display: flex; flex-direction: column; gap: 1.2rem;">
               
-              <!-- Source PDF Input Section -->
-              <div class="calibration-card">
-                <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold-light); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                  1. Source Courier PDF Shipping Label
+              ${targetOrder ? `
+                <!-- Native Thermal Label Configuration -->
+                <div class="calibration-card">
+                  <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold-light); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                    1. Consignment Dispatch Parameters
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 0.7rem;">
+                    <div>
+                      <label class="sovereign-field-label">Assigned Courier</label>
+                      <input type="text" id="label-courier-input" class="sovereign-form-input" value="${courier || 'BlueDart Express'}" onchange="app.refreshOrderShippingLabel()" />
+                    </div>
+                    <div>
+                      <label class="sovereign-field-label">AWB / Courier Tracking #</label>
+                      <input type="text" id="label-awb-input" class="sovereign-form-input" value="${awb}" placeholder="e.g. 84920194821" onchange="app.refreshOrderShippingLabel()" />
+                    </div>
+                    <div style="margin-top: 0.3rem;">
+                      <button type="button" class="btn btn-gold" style="width: 100%; font-size: 0.8rem; font-weight: 700;" onclick="app.refreshOrderShippingLabel()">
+                        ⚡ Update & Regenerate Label
+                      </button>
+                    </div>
+                  </div>
                 </div>
+              ` : ''}
+
+              <!-- External PDF Fallback (Collapsible) -->
+              <details class="calibration-card" ${targetOrder ? '' : 'open'}>
+                <summary style="font-size: 0.85rem; font-weight: 700; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer;">
+                  External PDF Slip Import (Optional)
+                </summary>
 
                 <!-- Drag & Drop Zone -->
-                <div class="label-dropzone" id="label-dropzone" onclick="document.getElementById('rebrander-file-input').click()">
+                <div class="label-dropzone" id="label-dropzone" style="margin-top: 0.8rem;" onclick="document.getElementById('rebrander-file-input').click()">
                   <input type="file" id="rebrander-file-input" accept="application/pdf" style="display: none;" onchange="app.handleLabelFileUpload(event)" />
                   <div style="font-size: 1.8rem; margin-bottom: 0.4rem;">📄</div>
                   <div style="color: var(--gold-light); font-weight: 600; font-size: 0.9rem; margin-bottom: 0.2rem;" id="dropzone-label-text">
-                    Drop 4x6 or A4 Shipping Label PDF Here
+                    Drop 4x6 Shipping Label PDF Here
                   </div>
                   <div style="color: var(--text-muted); font-size: 0.75rem;">
                     or click to browse from device
@@ -1874,7 +1933,7 @@ export const AdminComponents = {
                     ⚡ Test With Sample 4x6 Courier Label
                   </button>
                 </div>
-              </div>
+              </details>
 
               <!-- Alignment Presets & Geometry Slider Controls -->
               <div class="calibration-card">

@@ -54,15 +54,18 @@ export default async function handler(req, res) {
         const loyalty = userData.loyalty || {};
         const profile = userData.profile || {};
 
-        // Award points based on subtotal (3% initiate return default)
-        const earnedPoints = Math.round((Number(orderData.total) || 0) * 0.03);
-        loyalty.spendable_mythos = (loyalty.spendable_mythos || 0) + earnedPoints;
-        loyalty.legacy_mythos = (loyalty.legacy_mythos || 0) + earnedPoints;
+        // Per AGENTS.md Rule 3: Points and tiers may only be credited after verified payment confirmation
+        const isVerifiedPaid = orderData.paymentStatus === 'Paid';
+        if (isVerifiedPaid) {
+          const earnedPoints = Math.round((Number(orderData.total) || 0) * 0.03);
+          loyalty.spendable_mythos = (loyalty.spendable_mythos || 0) + earnedPoints;
+          loyalty.legacy_mythos = (loyalty.legacy_mythos || 0) + earnedPoints;
 
-        // Count full bottles
-        const items = Array.isArray(orderData.items) ? orderData.items : [];
-        const fullBottles = items.filter(i => (Number(i.size) === 50 || Number(i.size) === 100)).reduce((sum, i) => sum + (Number(i.qty) || 1), 0);
-        loyalty.full_bottles_purchased = (loyalty.full_bottles_purchased || 0) + fullBottles;
+          // Count full bottles
+          const items = Array.isArray(orderData.items) ? orderData.items : [];
+          const fullBottles = items.filter(i => (Number(i.size) === 50 || Number(i.size) === 100)).reduce((sum, i) => sum + (Number(i.qty) || 1), 0);
+          loyalty.full_bottles_purchased = (loyalty.full_bottles_purchased || 0) + fullBottles;
+        }
 
         // If voucher used, mark as used
         if (orderData.appliedVoucherCode && Array.isArray(loyalty.active_reward_codes)) {
