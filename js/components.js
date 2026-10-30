@@ -11,6 +11,24 @@ const Components = {
     return String(str).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').replace(/"/g, '&quot;').trim();
   },
 
+  /* Helper to format item arrays into readable strings (e.g. Petralux (50ml) x 1) */
+  formatOrderItemsSummary(items) {
+    if (!items) return 'Extrait de Parfum';
+    if (typeof items === 'string') return items;
+    if (Array.isArray(items)) {
+      if (items.length === 0) return 'Extrait de Parfum';
+      return items.map(i => {
+        if (!i) return '';
+        if (typeof i === 'string') return i;
+        const name = i.name || i.id || 'Mytholis Extrait';
+        const sizeStr = i.size ? (String(i.size).toLowerCase().includes('ml') ? ` (${i.size})` : ` (${i.size}ml)`) : '';
+        const qty = i.quantity || i.qty || 1;
+        return `${name}${sizeStr}${qty > 1 ? ' × ' + qty : ''}`;
+      }).filter(Boolean).join(', ');
+    }
+    return 'Extrait de Parfum';
+  },
+
   /* Render Product Card with 3D Pop-out Overlap, Wear Metrics & Instant Quick Add */
   renderProductCard(product) {
     const isWishlisted = store.isInWishlist(product.id);
@@ -2911,9 +2929,9 @@ const Components = {
                 <tbody>
                   ${u.orders.map(o => `
                     <tr>
-                      <td style="font-family: var(--font-serif-title); color: var(--gold-light); font-weight: 600;">${o.id}</td>
+                      <td style="font-family: var(--font-serif-title); color: var(--gold-light); font-weight: 600;">${o.orderId || o.id}</td>
                       <td>${o.date || new Date().toLocaleDateString()}</td>
-                      <td>${o.items || 'Extrait de Parfum'}</td>
+                      <td>${this.formatOrderItemsSummary(o.items)}</td>
                       <td class="gold-text" style="font-weight: 700;">${store.formatPrice(o.total)}</td>
                       <td><span class="glass-pill" style="font-size: 0.7rem; color: #10B981;">${o.status || 'Processing'}</span></td>
                       <td>
@@ -3150,9 +3168,9 @@ const Components = {
               <div class="modal-order-row">
                 <div>
                   <div style="font-family: var(--font-serif-title); color: var(--gold-light); font-size: 0.85rem;">
-                    ${u.orders[0].id} <span style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-sans);">• ${u.orders[0].date || new Date().toLocaleDateString()}</span>
+                    ${u.orders[0].orderId || u.orders[0].id} <span style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-sans);">• ${u.orders[0].date || new Date().toLocaleDateString()}</span>
                   </div>
-                  <p style="font-size: 0.78rem; color: var(--text-main); margin-top: 0.15rem;">${u.orders[0].items || 'Extrait de Parfum'}</p>
+                  <p style="font-size: 0.78rem; color: var(--text-main); margin-top: 0.15rem;">${this.formatOrderItemsSummary(u.orders[0].items)}</p>
                 </div>
                 <div style="text-align: right;">
                   <span class="gold-text" style="font-weight: 700; font-size: 0.85rem;">${store.formatPrice(u.orders[0].total)}</span>
