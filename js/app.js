@@ -3677,12 +3677,12 @@ class MytholisApp {
   }
 
   /* Sovereign Admin: Purge Test Collector Account & Data */
-  async handleAdminDeleteUser(targetUid, name = 'Collector', email = '') {
+  async handleAdminDeleteUser(targetUid, name = 'Collector', email = '', phone = '') {
     if (!targetUid) return;
     const confirm = window.confirm(
       `⚠️ PURGE COLLECTOR (ADMIN TEST TOOL)\n\n` +
       `Are you sure you want to permanently delete collector "${name}" (${email || targetUid})?\n\n` +
-      `This will remove the user profile and data from Firestore so they can register again as a fresh initiate.`
+      `This will remove the user profile, authentication record, and all associated consignment order records from the database.`
     );
     if (!confirm) return;
 
@@ -3693,9 +3693,9 @@ class MytholisApp {
         return;
       }
       this.closeAdminModal();
-      const res = await firebaseService.deleteAccountAndData(targetUid);
+      const res = await firebaseService.deleteAccountAndData(targetUid, { email, phone });
       if (res && res.success) {
-        this.showToast(`Collector "${name}" successfully purged.`);
+        this.showToast(`Collector "${name}" and all records successfully purged.`);
         await this.refreshAdminDashboard();
       } else {
         this.showToast(res?.error || 'Failed to purge collector.');

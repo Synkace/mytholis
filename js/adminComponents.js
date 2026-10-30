@@ -896,7 +896,7 @@ export const AdminComponents = {
                                 ${isAdmin ? 'Demote' : 'Admin'}
                               </button>
                             ` : ''}
-                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.handleAdminDeleteUser('${u.uid}', '${name.replace(/'/g, "\\'")}', '${email.replace(/'/g, "\\'")}')" title="Permanently delete user from Auth & Firestore (Dev Test)">
+                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.handleAdminDeleteUser('${u.uid}', '${name.replace(/'/g, "\\'")}', '${email.replace(/'/g, "\\'")}', '${cleanPhone}')" title="Permanently delete user and order records from database">
                               🗑️ Delete
                             </button>
                           </div>
@@ -1701,7 +1701,7 @@ export const AdminComponents = {
             <button type="button" class="btn btn-glass" style="font-size: 0.78rem; margin-left: auto;" onclick="navigator.clipboard.writeText('${addressCopyText.replace(/'/g, "\\'")}'); app.showToast('Copied full shipping label coordinates!');">
               📋 Copy Delivery Label Data
             </button>
-            <button type="button" class="btn" style="background: #EF4444; color: white; font-weight: 700; font-size: 0.78rem; padding: 0.45rem 1rem; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;" onclick="app.closeAdminModal(); app.handleAdminDeleteUser('${patron.uid}', '${name.replace(/'/g, "\\'")}', '${email.replace(/'/g, "\\'")}')" title="Permanently delete user from Auth & Firestore (Dev Test)">
+            <button type="button" class="btn" style="background: #EF4444; color: white; font-weight: 700; font-size: 0.78rem; padding: 0.45rem 1rem; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;" onclick="app.closeAdminModal(); app.handleAdminDeleteUser('${patron.uid}', '${name.replace(/'/g, "\\'")}', '${email.replace(/'/g, "\\'")}', '${cleanPhone}')" title="Permanently delete user and order records from database">
               <span>🗑️</span> Purge User & Data
             </button>
           </div>
@@ -1829,7 +1829,7 @@ export const AdminComponents = {
               <button type="button" class="btn btn-glass" style="font-size: 0.75rem;" onclick="app.closeAdminModal(); app.openOverrideTierModal('${patron.uid}', '${name.replace(/'/g, "\\'")}', ${bottles}, ${currentTierLevel})">
                 Override Tier
               </button>
-              <button type="button" class="btn btn-glass" style="font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.closeAdminModal(); app.handleAdminDeleteUser('${patron.uid}', '${name.replace(/'/g, "\\'")}', '${email.replace(/'/g, "\\'")}')" title="Permanently delete user from Auth & Firestore (Dev Test)">
+              <button type="button" class="btn btn-glass" style="font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.closeAdminModal(); app.handleAdminDeleteUser('${patron.uid}', '${name.replace(/'/g, "\\'")}', '${email.replace(/'/g, "\\'")}', '${cleanPhone}')" title="Permanently delete user and order records from database">
                 🗑️ Purge User & Data
               </button>
             </div>

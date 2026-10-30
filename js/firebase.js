@@ -704,13 +704,15 @@ export class FirebaseService {
   }
 
   // Delete user account & purge data (for testing or profile deletion)
-  async deleteAccountAndData(targetUid = null) {
+  async deleteAccountAndData(targetUid = null, options = {}) {
     try {
       if (!auth.currentUser) {
         return { success: false, error: 'User is not currently authenticated.' };
       }
       const idToken = await auth.currentUser.getIdToken(true).catch(() => null);
       const uidToDelete = targetUid || auth.currentUser.uid;
+      const targetEmail = (options.email || '').trim().toLowerCase();
+      const targetPhone = (options.phone || '').trim();
 
       // Master Admin Protection Safeguard
       const adminEmails = ['gunhegarr@gmail.com', 'admin@mytholis.com', 'alexander@mytholis.com', 'founder@mytholis.com'];
@@ -718,7 +720,7 @@ export class FirebaseService {
         return { success: false, error: 'Cannot delete sovereign master administrator account.' };
       }
 
-      // 1. Attempt authoritative backend deletion (removes from Firebase Auth + Firestore)
+      // 1. Attempt authoritative backend deletion (removes from Firebase Auth + Firestore + Orders)
       if (idToken) {
         try {
           const resp = await fetch('/api/patron/delete-account', {
@@ -727,7 +729,12 @@ export class FirebaseService {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${idToken}`
             },
-            body: JSON.stringify({ targetUid: uidToDelete })
+            body: JSON.stringify({ 
+              targetUid: uidToDelete,
+              purgeOrders: true,
+              email: targetEmail,
+              phone: targetPhone
+            })
           });
           if (resp.ok) {
             const data = await resp.json().catch(() => null);
@@ -748,7 +755,34 @@ export class FirebaseService {
         console.warn('[Mytholis Firebase] Direct Firestore delete note:', fsErr.message);
       }
 
-      // 3. If user deleted themselves, call client Auth deletion
+      // 3. Direct Firestore Orders Purge: Remove matching orders so user does not reappear as a [CONSIGNMENT] customer
+      try {
+        const ordersToDelete = new Set();
+        if (uidToDelete && !uidToDelete.startsWith('guest_')) {
+          const qUid = query(collection(db, "orders"), where("userId", "==", uidToDelete));
+          const snapUid = await getDocs(qUid).catch(() => null);
+          if (snapUid) snapUid.forEach(d => ordersToDelete.add(d.id));
+        }
+
+        if (targetEmail && !targetEmail.endsWith('@phone.mytholis.com')) {
+          const qEmail1 = query(collection(db, "orders"), where("userEmail", "==", targetEmail));
+          const snapEmail1 = await getDocs(qEmail1).catch(() => null);
+          if (snapEmail1) snapEmail1.forEach(d => ordersToDelete.add(d.id));
+
+          const qEmail2 = query(collection(db, "orders"), where("email", "==", targetEmail));
+          const snapEmail2 = await getDocs(qEmail2).catch(() => null);
+          if (snapEmail2) snapEmail2.forEach(d => ordersToDelete.add(d.id));
+        }
+
+        for (const ordId of ordersToDelete) {
+          await deleteDoc(doc(db, "orders", ordId)).catch(() => {});
+        }
+        console.log(`[Mytholis Firebase] Client purged ${ordersToDelete.size} associated consignment orders for ${uidToDelete}`);
+      } catch (ordDelErr) {
+        console.warn('[Mytholis Firebase] Orders client purge note:', ordDelErr.message);
+      }
+
+      // 4. If user deleted themselves, call client Auth deletion
       if (!targetUid || targetUid === auth.currentUser.uid) {
         try {
           await auth.currentUser.delete().catch(() => {});

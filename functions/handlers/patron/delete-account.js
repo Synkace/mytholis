@@ -100,14 +100,39 @@ export default async function handler(req, res) {
     // 5. Delete from archived_users collection if present
     await adminDb.collection('archived_users').doc(targetUid).delete().catch(() => {});
 
-    // 6. Optionally purge orders for this user if requested (default to false to keep ledger intact)
-    const purgeOrders = Boolean(req.body?.purgeOrders);
+    // 6. Purge all orders for this user so they do not resurrect as a [CONSIGNMENT] row
+    const purgeOrders = req.body?.purgeOrders !== false;
     if (purgeOrders) {
-      const ordersSnap = await adminDb.collection('orders').where('userId', '==', targetUid).get();
-      const batch = adminDb.batch();
-      ordersSnap.forEach(doc => batch.delete(doc.ref));
-      await batch.commit();
-      console.log(`[Delete Account API] Purged ${ordersSnap.size} orders for ${targetUid}`);
+      const ordersToPurge = new Set();
+      // Query by userId
+      if (targetUid && !targetUid.startsWith('guest_')) {
+        const ordersSnap1 = await adminDb.collection('orders').where('userId', '==', targetUid).get().catch(() => null);
+        if (ordersSnap1) ordersSnap1.forEach(doc => ordersToPurge.add(doc.id));
+      }
+
+      // Query by email if available
+      const cleanTargetEmail = (req.body?.email || targetEmail || '').trim().toLowerCase();
+      if (cleanTargetEmail && !cleanTargetEmail.endsWith('@phone.mytholis.com')) {
+        const ordersSnap2 = await adminDb.collection('orders').where('userEmail', '==', cleanTargetEmail).get().catch(() => null);
+        if (ordersSnap2) ordersSnap2.forEach(doc => ordersToPurge.add(doc.id));
+        const ordersSnap3 = await adminDb.collection('orders').where('email', '==', cleanTargetEmail).get().catch(() => null);
+        if (ordersSnap3) ordersSnap3.forEach(doc => ordersToPurge.add(doc.id));
+      }
+
+      // Query by order ID if targetUid is actually an order ID
+      const directOrd = await adminDb.collection('orders').doc(targetUid).get().catch(() => null);
+      if (directOrd && directOrd.exists) {
+        ordersToPurge.add(targetUid);
+      }
+
+      if (ordersToPurge.size > 0) {
+        const batch = adminDb.batch();
+        ordersToPurge.forEach(ordId => {
+          batch.delete(adminDb.collection('orders').doc(ordId));
+        });
+        await batch.commit();
+        console.log(`[Delete Account API] Successfully purged ${ordersToPurge.size} order(s) for ${targetUid}`);
+      }
     }
 
     return res.status(200).json({
