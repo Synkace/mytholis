@@ -3105,13 +3105,6 @@ const Components = {
 
         ${tab === 'overview' ? `
           <!-- TAB 1: OVERVIEW & STATUS -->
-          ${store.isAdmin() ? `
-            <div style="margin-bottom: 1.2rem;">
-              <button class="btn btn-gold" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.6rem; padding: 0.75rem 1rem; font-size: 0.85rem;" onclick="app.closeProfileModal(); app.navigateTo('admin');">
-                <span>👑</span> Sovereign Admin Command Desk
-              </button>
-            </div>
-          ` : ''}
 
           <!-- Cloud Sync Status Pill -->
           <div class="modal-section-box liquid-glass-card" style="padding: 0.9rem 1.1rem; margin-bottom: 1.2rem; border: 1px solid rgba(16, 185, 129, 0.35); background: rgba(16, 185, 129, 0.06); display: flex; justify-content: space-between; align-items: center; gap: 0.6rem;">
