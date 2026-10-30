@@ -49,7 +49,7 @@ export const AdminComponents = {
                   Founder Google Authentication
                 </button>
                 <button class="btn btn-glass" style="width: 100%;" onclick="app.openAuthModal('signin')">
-                  Patron Email Sign In
+                  Collector Email Sign In
                 </button>
               </div>
             `}
@@ -155,8 +155,8 @@ export const AdminComponents = {
           <button class="sovereign-tab ${activeTab === 'editorial' ? 'active' : ''}" onclick="app.setAdminTab('editorial')">
             📜 Lore & Editorial (${postsList.length})
           </button>
-          <button class="sovereign-tab ${activeTab === 'patrons' ? 'active' : ''}" onclick="app.setAdminTab('patrons')">
-            👑 Patron Registry (${usersList.length})
+          <button class="sovereign-tab ${activeTab === 'patrons' || activeTab === 'collectors' ? 'active' : ''}" onclick="app.setAdminTab('patrons')">
+            👑 Collector Registry (${usersList.length})
           </button>
           <button class="sovereign-tab ${activeTab === 'economy' ? 'active' : ''}" onclick="app.setAdminTab('economy')">
             ⚙️ Economy & Settings
@@ -309,7 +309,7 @@ export const AdminComponents = {
           <div class="sovereign-tab-content">
             <!-- Filter Bar -->
             <div class="sovereign-filter-bar">
-              <input type="text" id="admin-order-search" class="sovereign-search-input" placeholder="Search by Order ID, Patron Name, Email, or WhatsApp..." oninput="app.filterAdminOrders()" />
+              <input type="text" id="admin-order-search" class="sovereign-search-input" placeholder="Search by Order ID, Collector Name, Email, or WhatsApp..." oninput="app.filterAdminOrders()" />
               <select id="admin-order-status-filter" class="sovereign-select" onchange="app.filterAdminOrders()">
                 <option value="All">Filter Status: All</option>
                 <option value="Pending">Pending</option>
@@ -341,11 +341,11 @@ export const AdminComponents = {
                 <div class="liquid-glass-card" style="padding: 3rem; text-align: center; color: var(--text-muted);">
                   <div style="font-size: 2rem; margin-bottom: 0.5rem;">📦</div>
                   <h3 class="font-title" style="color: var(--gold-light);">No Consignments Recorded</h3>
-                  <p style="font-size: 0.85rem;">Orders placed by patrons will stream into this real-time ledger automatically.</p>
+                  <p style="font-size: 0.85rem;">Orders placed by collectors will stream into this real-time ledger automatically.</p>
                 </div>
               ` : ordersList.map(order => {
                 const orderId = order.orderId || order.id || 'MYTH-0000';
-                const patronName = order.userName || order.customer?.name || order.shipping?.name || 'Patron';
+                const patronName = order.userName || order.customer?.name || order.shipping?.name || 'Collector';
                 const patronEmail = order.userEmail || order.customer?.email || order.shipping?.email || 'N/A';
                 const patronPhone = order.phone || order.customer?.phone || order.shipping?.phone || '';
                 const shippingAddr = order.address || order.shippingAddress || order.shipping?.address || 'Standard Address';
@@ -382,9 +382,9 @@ export const AdminComponents = {
 
                     <!-- Body -->
                     <div class="sovereign-order-body">
-                      <!-- Patron Coordinates -->
+                      <!-- Collector Coordinates -->
                       <div class="sovereign-subpanel">
-                        <div class="sovereign-subpanel-title">Patron Coordinates</div>
+                        <div class="sovereign-subpanel-title">Collector Coordinates</div>
                         <div style="font-weight: 700; color: var(--gold-light); font-size: 0.95rem; margin-bottom: 0.2rem;">${patronName}</div>
                         <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.2rem;">${patronEmail}</div>
                         <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">WhatsApp / Tel: <strong style="color: var(--text-main);">${patronPhone || 'Not provided'}</strong></div>
@@ -656,19 +656,19 @@ export const AdminComponents = {
         ` : ''}
 
         <!-- ====================================================================
-             MODULE E: PATRONS, MYTHOS COINS & TIER LEVELS
+             MODULE E: COLLECTORS, MYTHOS COINS & TIER LEVELS
              ==================================================================== -->
-        ${activeTab === 'patrons' ? `
+        ${activeTab === 'patrons' || activeTab === 'collectors' ? `
           <div class="sovereign-tab-content">
-            <!-- Patron Intelligence KPI Strip -->
+            <!-- Collector Intelligence KPI Strip -->
             <div class="sovereign-kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 1.5rem;">
               <div class="sovereign-kpi-card">
                 <div class="sovereign-kpi-header">
-                  <span class="sovereign-kpi-title">Total Patrons & Customers</span>
+                  <span class="sovereign-kpi-title">Total Collectors & Customers</span>
                   <span class="sovereign-kpi-icon">👑</span>
                 </div>
                 <div class="sovereign-kpi-value gold-shimmer-text">${usersList.length}</div>
-                <div class="sovereign-kpi-hint">Registered Profiles + Order Patrons</div>
+                <div class="sovereign-kpi-hint">Registered Profiles + Order Collectors</div>
               </div>
               <div class="sovereign-kpi-card">
                 <div class="sovereign-kpi-header">
@@ -688,35 +688,35 @@ export const AdminComponents = {
               </div>
               <div class="sovereign-kpi-card">
                 <div class="sovereign-kpi-header">
-                  <span class="sovereign-kpi-title">Patron Lifetime Spend (LTV)</span>
+                  <span class="sovereign-kpi-title">Collector Lifetime Spend (LTV)</span>
                   <span class="sovereign-kpi-icon">💰</span>
                 </div>
                 <div class="sovereign-kpi-value gold-shimmer-text">₹${Math.round(usersList.reduce((s, u) => s + Number(u.lifetimeSpend || 0), 0)).toLocaleString('en-IN')}</div>
-                <div class="sovereign-kpi-hint">Total Gross Patron Commerce</div>
+                <div class="sovereign-kpi-hint">Total Gross Collector Commerce</div>
               </div>
             </div>
 
             <!-- Filter & Search Bar -->
             <div class="sovereign-filter-bar" style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
-              <input type="text" id="admin-patron-search" class="sovereign-search-input" style="flex: 2; min-width: 260px;" placeholder="Search patrons by Name, Email, Phone / WhatsApp, Address, City, State, or UID..." oninput="app.filterAdminPatrons()" />
+              <input type="text" id="admin-patron-search" class="sovereign-search-input" style="flex: 2; min-width: 260px;" placeholder="Search collectors by Name, Email, Phone / WhatsApp, Address, City, State, or UID..." oninput="app.filterAdminPatrons()" />
               <select id="admin-patron-filter-type" class="sovereign-select" onchange="app.filterAdminPatrons()" style="flex: 1; min-width: 170px;">
-                <option value="ALL">Filter: All Patrons (${usersList.length})</option>
+                <option value="ALL">Filter: All Collectors (${usersList.length})</option>
                 <option value="HAS_PHONE">Has Phone / WhatsApp</option>
                 <option value="HAS_ADDRESS">Has Delivery Address</option>
                 <option value="HAS_ORDERS">Has Placed Orders</option>
                 <option value="ADMINS">Admins Only</option>
               </select>
               <button class="btn btn-glass" onclick="app.refreshAdminDashboard()">
-                ↻ Synchronize Patrons
+                ↻ Synchronize Collectors
               </button>
             </div>
 
-            <!-- Patrons Table -->
+            <!-- Collectors Table -->
             <div class="liquid-glass-card" style="padding: 0; overflow-x: auto;">
               <table class="sovereign-table">
                 <thead>
                   <tr>
-                    <th style="min-width: 180px;">Patron & Identity</th>
+                    <th style="min-width: 180px;">Collector & Identity</th>
                     <th style="min-width: 190px;">Contact & WhatsApp</th>
                     <th style="min-width: 250px;">Shipping & Delivery Address</th>
                     <th style="min-width: 130px;">Orders & LTV</th>
@@ -729,13 +729,13 @@ export const AdminComponents = {
                   ${usersList.length === 0 ? `
                     <tr>
                       <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 3rem;">
-                        No patron profiles registered in Firestore yet.
+                        No collector profiles registered in Firestore yet.
                       </td>
                     </tr>
                   ` : usersList.map(u => {
                     const prof = u.profile || {};
                     const loyalty = u.loyalty || {};
-                    const name = prof.name || u.name || 'Patron';
+                    const name = prof.name || u.name || 'Collector';
                     const email = prof.email || u.email || 'N/A';
                     const rawPhone = prof.phone || u.phone || '';
                     const cleanPhone = (rawPhone || '').replace(/[^0-9]/g, '');
@@ -871,7 +871,7 @@ export const AdminComponents = {
                         </td>
                         <td>
                           <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
-                            <button class="btn btn-gold" style="font-size: 0.7rem; padding: 0.25rem 0.55rem;" onclick="app.openPatronDossier('${u.uid}')" title="View Full Patron Coordinates & Consignment Ledger">
+                            <button class="btn btn-gold" style="font-size: 0.7rem; padding: 0.25rem 0.55rem;" onclick="app.openPatronDossier('${u.uid}')" title="View Full Collector Coordinates & Consignment Ledger">
                               🔍 Dossier
                             </button>
                             <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem;" onclick="app.openAdjustMythosModal('${u.uid}', '${name.replace(/'/g, "\\'")}', ${spendable})">
@@ -917,7 +917,7 @@ export const AdminComponents = {
                     <div>
                       <label class="sovereign-field-label">Cashback Earn Rate (% Return on Paid Orders)</label>
                       <input type="number" id="setting-mythos-earn" class="sovereign-form-input" value="${globalSettings.mythosEarnPct !== undefined ? globalSettings.mythosEarnPct : 3}" min="1" max="25" required />
-                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Default 3% base return for Level 1 patrons.</div>
+                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Default 3% base return for Level 1 collectors.</div>
                     </div>
 
                     <div>
@@ -933,7 +933,7 @@ export const AdminComponents = {
                     </div>
 
                     <div>
-                      <label class="sovereign-field-label">New Patron Registration Bonus (M Coins)</label>
+                      <label class="sovereign-field-label">New Collector Registration Bonus (M Coins)</label>
                       <input type="number" id="setting-signup-bonus" class="sovereign-form-input" value="${globalSettings.signupBonusMythos !== undefined ? globalSettings.signupBonusMythos : 100}" min="0" required />
                     </div>
                   </div>
@@ -948,7 +948,7 @@ export const AdminComponents = {
                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.8rem; background: rgba(0, 0, 0, 0.4); border-radius: 8px;">
                       <div>
                         <strong style="color: var(--gold-light); font-size: 0.88rem;">Enable Cash on Delivery (COD)</strong>
-                        <div style="font-size: 0.72rem; color: var(--text-muted);">Allow patrons to pay upon flacon delivery.</div>
+                        <div style="font-size: 0.72rem; color: var(--text-muted);">Allow collectors to pay upon flacon delivery.</div>
                       </div>
                       <input type="checkbox" id="setting-cod-enabled" style="width: 20px; height: 20px; accent-color: var(--gold-primary);" ${globalSettings.codEnabled !== false ? 'checked' : ''} />
                     </div>
@@ -1011,7 +1011,7 @@ export const AdminComponents = {
                         <option value="live" ${globalSettings.payuEnv === 'live' ? 'selected' : ''}>Production Live (secure.payu.in)</option>
                       </select>
                       <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
-                        Select Sandbox for test payments or Live for actual patron transactions.
+                        Select Sandbox for test payments or Live for actual collector transactions.
                       </div>
                     </div>
 
@@ -1044,7 +1044,7 @@ export const AdminComponents = {
                   </div>
 
                   <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: rgba(212, 175, 55, 0.05); border: 1px dashed rgba(212, 175, 55, 0.2); border-radius: 6px; font-size: 0.75rem; color: var(--text-muted); line-height: 1.5;">
-                    💡 <strong>PayU Hosted Checkout:</strong> Patrons clicking "Pay with PayU" will be redirected to PayU's secure prebuilt payment interface supporting Cards, UPI (GPay, PhonePe, Paytm, BHIM), NetBanking, and Wallets. Documentation: <a href="https://docs.payu.in/docs/prebuilt-checkout-payu-hosted" target="_blank" style="color: var(--gold-primary); text-decoration: underline;">PayU Hosted Docs</a> &bull; <a href="https://payu.in/business/developer/api" target="_blank" style="color: var(--gold-primary); text-decoration: underline;">PayU API Portal</a>.
+                    💡 <strong>PayU Hosted Checkout:</strong> Collectors clicking "Pay with PayU" will be redirected to PayU's secure prebuilt payment interface supporting Cards, UPI (GPay, PhonePe, Paytm, BHIM), NetBanking, and Wallets. Documentation: <a href="https://docs.payu.in/docs/prebuilt-checkout-payu-hosted" target="_blank" style="color: var(--gold-primary); text-decoration: underline;">PayU Hosted Docs</a> &bull; <a href="https://payu.in/business/developer/api" target="_blank" style="color: var(--gold-primary); text-decoration: underline;">PayU API Portal</a>.
                   </div>
                 </div>
               </div>
@@ -1422,7 +1422,7 @@ export const AdminComponents = {
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.4); padding: 0.8rem 1rem; border-radius: 8px;">
               <div>
                 <strong style="color: var(--gold-light); font-size: 0.85rem;">Publish Live to Storefront</strong>
-                <div style="font-size: 0.72rem; color: var(--text-muted);">When active, patrons will discover this entry in House Lore.</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">When active, collectors will discover this entry in House Lore.</div>
               </div>
               <input type="checkbox" id="post-published" style="width: 20px; height: 20px; accent-color: var(--gold-primary);" ${p.isPublished !== false ? 'checked' : ''} />
             </div>
@@ -1452,7 +1452,7 @@ export const AdminComponents = {
           <div style="background: rgba(212, 175, 55, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1.2rem; border: 1px solid rgba(212, 175, 55, 0.25);">
             <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Current Balance</div>
             <div class="gold-shimmer-text" style="font-size: 1.8rem; font-family: var(--font-serif-title);">${currentBalance.toLocaleString()} M</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace;">Patron UID: ${uid}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace;">Collector UID: ${uid}</div>
           </div>
 
           <form onsubmit="app.submitAdjustMythos(event, '${uid}')">
@@ -1504,7 +1504,7 @@ export const AdminComponents = {
                 <option value="2" ${tierLevel === 2 ? 'selected' : ''}>Level 2: The Curator (1+ Bottles, 2x Return)</option>
                 <option value="3" ${tierLevel === 3 ? 'selected' : ''}>Level 3: The Collector (3+ Bottles, 3x Return)</option>
                 <option value="4" ${tierLevel === 4 ? 'selected' : ''}>Level 4: The Archivist (6+ Bottles, 4x Return)</option>
-                <option value="5" ${tierLevel === 5 ? 'selected' : ''}>Level 5: The Patron (12+ Bottles, 5x Return)</option>
+                <option value="5" ${tierLevel === 5 ? 'selected' : ''}>Level 5: The Sovereign (12+ Bottles, 5x Return)</option>
               </select>
             </div>
 
@@ -1566,12 +1566,12 @@ export const AdminComponents = {
   },
 
   /* ==========================================================================
-     PATRON DOSSIER MODAL: COMPLETE COORDINATES, PHONE & CONSIGNMENT LEDGER
+     COLLECTOR DOSSIER MODAL: COMPLETE COORDINATES, PHONE & CONSIGNMENT LEDGER
      ========================================================================== */
   renderPatronDossierModal(patron) {
     const prof = patron.profile || {};
     const loyalty = patron.loyalty || {};
-    const name = prof.name || patron.name || 'Patron';
+    const name = prof.name || patron.name || 'Collector';
     const email = prof.email || patron.email || 'N/A';
     const rawPhone = prof.phone || patron.phone || '';
     const cleanPhone = (rawPhone || '').replace(/[^0-9]/g, '');
@@ -1624,7 +1624,7 @@ export const AdminComponents = {
                   ${patron.isGuestOrder ? '<span class="glass-pill" style="font-size: 0.68rem; color: #6EE7B7;">Consignment Customer</span>' : ''}
                 </div>
                 <div style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace; margin-top: 0.2rem; display: flex; align-items: center; gap: 6px;">
-                  <span>Patron UID: ${patron.uid || 'N/A'}</span>
+                  <span>Collector UID: ${patron.uid || 'N/A'}</span>
                   ${patron.uid ? `<button type="button" class="btn btn-glass" style="font-size: 0.65rem; padding: 1px 5px;" onclick="navigator.clipboard.writeText('${patron.uid || ''}'); app.showToast('Copied UID');">📋 Copy</button>` : ''}
                 </div>
               </div>
@@ -1646,7 +1646,7 @@ export const AdminComponents = {
             `}
             ${email && email !== 'N/A' ? `
               <a href="mailto:${email}" class="btn btn-glass" style="font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
-                <span>✉️</span> Email Patron
+                <span>✉️</span> Email Collector
               </a>
             ` : ''}
             <button type="button" class="btn btn-glass" style="font-size: 0.78rem; margin-left: auto;" onclick="navigator.clipboard.writeText('${addressCopyText.replace(/'/g, "\\'")}'); app.showToast('Copied full shipping label coordinates!');">
@@ -1687,7 +1687,7 @@ export const AdminComponents = {
             <!-- Economy, Flacons & Tier Standing -->
             <div class="sovereign-subpanel">
               <div class="sovereign-subpanel-title" style="color: var(--gold-light); display: flex; justify-content: space-between; align-items: center;">
-                <span>🪙 Patron Economy & Circle of Legends</span>
+                <span>🪙 Collector Economy & Circle of Legends</span>
                 <span class="glass-pill" style="font-size: 0.65rem;">VIP Privileges</span>
               </div>
               <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; margin-bottom: 0.8rem;">
@@ -1721,7 +1721,7 @@ export const AdminComponents = {
             </div>
             ${orders.length === 0 ? `
               <div style="text-align: center; color: var(--text-muted); padding: 1.5rem; font-size: 0.85rem;">
-                No orders placed by this patron yet.
+                No orders placed by this collector yet.
               </div>
             ` : `
               <div style="display: flex; flex-direction: column; gap: 0.75rem;">
@@ -1827,7 +1827,7 @@ export const AdminComponents = {
             <div style="background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 0.8rem 1rem; margin-bottom: 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.6rem;">
               <div>
                 <strong style="color: var(--gold-primary); font-size: 0.95rem;">Order #${orderId}</strong>
-                <span style="color: var(--text-muted); font-size: 0.85rem; margin-left: 0.5rem;">Patron: <strong style="color: var(--text-main);">${patronName}</strong></span>
+                <span style="color: var(--text-muted); font-size: 0.85rem; margin-left: 0.5rem;">Collector: <strong style="color: var(--text-main);">${patronName}</strong></span>
               </div>
               <div style="font-size: 0.8rem; color: var(--text-muted);">
                 Courier: <strong style="color: var(--gold-light);">${courier || 'BlueDart'}</strong> &bull; AWB: <strong style="color: var(--gold-light); font-family: monospace;">${awb || 'Pending'}</strong>
@@ -2013,7 +2013,7 @@ export const AdminComponents = {
           <!-- Footer -->
           <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(212, 175, 55, 0.2); padding-top: 0.8rem;">
             <span style="font-size: 0.75rem; color: var(--text-muted);">
-              🛡️ Method 3 Compliance: Legal KYC entity is preserved in courier manifests; shipping labels are branded exclusively for the patron.
+              🛡️ Method 3 Compliance: Legal KYC entity is preserved in courier manifests; shipping labels are branded exclusively for the collector.
             </span>
             <button type="button" class="btn btn-glass" onclick="app.closeAdminModal()">Close Studio</button>
           </div>

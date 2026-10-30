@@ -15,7 +15,7 @@ service cloud.firestore {
       );
     }
     
-    // 1. Patrons can read & update their own profile (cannot escalate role or tamper with isAdmin); Admins have sovereign read/write
+    // 1. Collectors can read & update their own profile (cannot escalate role or tamper with isAdmin); Admins have sovereign read/write
     match /users/{userId} {
       allow read: if (request.auth != null && request.auth.uid == userId) || isAdmin();
       allow create: if (request.auth != null && request.auth.uid == userId &&

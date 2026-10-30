@@ -85,7 +85,7 @@ export function generateCourierOrderPayload(order, config = {}) {
     company_name: 'MYTHOLIS LUXURY PARFUMS',
     reseller_name: 'MYTHOLIS LUXURY PARFUMS',
 
-    billing_customer_name: (order.name || order.customerName || 'Patron').trim(),
+    billing_customer_name: (order.name || order.customerName || 'Collector').trim(),
     billing_last_name: '',
     billing_address: (order.address || order.shippingAddress || 'Armored Delivery Address').trim(),
     billing_address_2: '',
@@ -361,7 +361,7 @@ export async function generateSampleThermalLabelPdf() {
   page.drawLine({ start: { x: 8, y: 308 }, end: { x: 280, y: 308 }, thickness: 1, color: rgb(0, 0, 0) });
 
   // Destination / Deliver To Section
-  page.drawText('DELIVER TO (PATRON):', { x: 14, y: 292, size: 8, font: fontBold, color: rgb(0.3, 0.3, 0.3) });
+  page.drawText('DELIVER TO (COLLECTOR):', { x: 14, y: 292, size: 8, font: fontBold, color: rgb(0.3, 0.3, 0.3) });
   page.drawText('AARAV VISHWANATHAN', { x: 14, y: 278, size: 10, font: fontBold, color: rgb(0, 0, 0) });
   page.drawText('Villa 42, The Palms Sovereign Enclave', { x: 14, y: 264, size: 8.5, font: fontRegular, color: rgb(0, 0, 0) });
   page.drawText('Golf Course Road, DLF Phase 5', { x: 14, y: 252, size: 8.5, font: fontRegular, color: rgb(0, 0, 0) });

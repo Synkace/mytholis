@@ -126,7 +126,7 @@ export class FirebaseService {
         if (this.store) {
           this.store.firebaseUser = null;
           this.store.user.isAdmin = false;
-          this.store.user.role = 'patron';
+          this.store.user.role = 'collector';
           this.store.notify();
         }
         if (this.app) {
@@ -358,7 +358,7 @@ export class FirebaseService {
     }
   }
 
-  // Update Patron Profile (Name, Phone, Address, Coordinates, Avatar Photo)
+  // Update Collector Profile (Name, Phone, Address, Coordinates, Avatar Photo)
   async updatePatronProfile(profileData = {}) {
     try {
       const user = auth.currentUser || this.currentUser;
@@ -398,17 +398,17 @@ export class FirebaseService {
 
       return { success: true };
     } catch (error) {
-      console.error("[Mytholis Firebase] Update Patron Profile Error:", error);
+      console.error("[Mytholis Firebase] Update Collector Profile Error:", error);
       return { success: false, error: error.message };
     }
   }
 
-  // Change or Update Patron Password
+  // Change or Update Collector Password
   async updatePatronPassword(currentPassword, newPassword) {
     try {
       const user = auth.currentUser || this.currentUser;
       if (!user) {
-        return { success: false, error: 'No active patron session found.' };
+        return { success: false, error: 'No active collector session found.' };
       }
 
       if (!newPassword || newPassword.length < 6) {
@@ -448,7 +448,7 @@ export class FirebaseService {
     try {
       const user = auth.currentUser || this.currentUser;
       if (!user) {
-        return { success: false, error: 'No active patron session found.' };
+        return { success: false, error: 'No active collector session found.' };
       }
 
       if (!email || !email.includes('@')) {
@@ -511,8 +511,8 @@ export class FirebaseService {
 
     // 1. Immediately establish authenticated session in local store & localStorage
     const isUserAdmin = checkIsAdmin(user, this.store.user);
-    const existingCustomName = (this.store.user?.name && this.store.user.name !== 'Mytholis Patron' && !this.store.user.name.startsWith('Patron (')) ? this.store.user.name : null;
-    const patronName = existingCustomName || user.displayName || user.email?.split('@')[0] || (user.phoneNumber ? `Patron (${user.phoneNumber})` : 'Mytholis Patron');
+    const existingCustomName = (this.store.user?.name && this.store.user.name !== 'Mytholis Collector' && this.store.user.name !== 'Mytholis Patron' && !this.store.user.name.startsWith('Collector (') && !this.store.user.name.startsWith('Patron (')) ? this.store.user.name : null;
+    const patronName = existingCustomName || user.displayName || user.email?.split('@')[0] || (user.phoneNumber ? `Collector (${user.phoneNumber})` : 'Mytholis Collector');
     const patronEmail = user.email || (user.phoneNumber ? `${user.phoneNumber}@phone.mytholis.com` : '');
     const existingCustomPhoto = this.store.user?.photoURL || null;
     const patronPhoto = existingCustomPhoto || user.photoURL || null;
@@ -524,7 +524,7 @@ export class FirebaseService {
     this.store.user.name = patronName;
     this.store.user.photoURL = patronPhoto;
     this.store.user.isAdmin = isUserAdmin;
-    this.store.user.role = isUserAdmin ? 'admin' : 'patron';
+    this.store.user.role = isUserAdmin ? 'admin' : 'collector';
     this.store.saveLocalStorage('mytholis_user', this.store.user);
 
     this.store.firebaseUser = {
@@ -533,7 +533,7 @@ export class FirebaseService {
       phone: this.store.user.phone,
       displayName: patronName,
       photoURL: patronPhoto,
-      role: isUserAdmin ? 'admin' : 'patron',
+      role: isUserAdmin ? 'admin' : 'collector',
       isAdmin: isUserAdmin
     };
 
@@ -559,7 +559,7 @@ export class FirebaseService {
           const mergedCity = cloudData.profile.city || this.store.user.city || '';
           const mergedState = cloudData.profile.state || this.store.user.state || '';
           const mergedPincode = cloudData.profile.pincode || this.store.user.pincode || '';
-          const mergedName = cloudData.profile.name || existingCustomName || user.displayName || this.store.user.name || 'Mytholis Patron';
+          const mergedName = cloudData.profile.name || existingCustomName || user.displayName || this.store.user.name || 'Mytholis Collector';
           const mergedPhone = user.phoneNumber || cloudData.profile.phone || this.store.user.phone || '';
           const mergedPhoto = cloudData.profile.photoURL || this.store.user.photoURL || user.photoURL || null;
 
@@ -574,7 +574,7 @@ export class FirebaseService {
             uid: user.uid,
             photoURL: mergedPhoto,
             isAdmin: isUserAdmin || cloudData.profile.isAdmin === true || cloudData.isAdmin === true,
-            role: isUserAdmin || cloudData.profile.role === 'admin' || cloudData.role === 'admin' ? 'admin' : 'patron'
+            role: isUserAdmin || cloudData.profile.role === 'admin' || cloudData.role === 'admin' ? 'admin' : 'collector'
           });
           this.store.saveLocalStorage('mytholis_user', this.store.user);
 
@@ -618,7 +618,7 @@ export class FirebaseService {
           city: this.store.user.city || '',
           state: this.store.user.state || '',
           photoURL: patronPhoto,
-          role: isUserAdmin ? 'admin' : 'patron',
+          role: isUserAdmin ? 'admin' : 'collector',
           isAdmin: isUserAdmin,
           createdAt: serverTimestamp()
         };
@@ -626,7 +626,7 @@ export class FirebaseService {
         await setDoc(userDocRef, {
           profile: initialProfile,
           loyalty: initialLoyalty,
-          role: isUserAdmin ? 'admin' : 'patron',
+          role: isUserAdmin ? 'admin' : 'collector',
           isAdmin: isUserAdmin,
           updatedAt: serverTimestamp()
         }, { merge: true }).catch(() => {});
@@ -669,14 +669,14 @@ export class FirebaseService {
     }
   }
 
-  // Synchronize authenticated mobile patron profile and loyalty with store & Firestore
+  // Synchronize authenticated mobile collector profile and loyalty with store & Firestore
   async syncPhoneUserData(userData) {
     if (!this.store || !userData) return;
     const phone = userData.phone || userData.mobile || userData.phone_number || '';
     const cleanPhone = phone ? String(phone).replace(/\s+/g, '') : '';
-    const patronName = userData.name || [userData.first_name, userData.last_name].filter(Boolean).join(' ') || (cleanPhone ? `Patron (${cleanPhone})` : 'Mytholis Patron');
+    const patronName = userData.name || [userData.first_name, userData.last_name].filter(Boolean).join(' ') || (cleanPhone ? `Collector (${cleanPhone})` : 'Mytholis Collector');
     const patronEmail = userData.email || (cleanPhone ? `${cleanPhone.replace(/\D/g, '')}@phone.mytholis.com` : '');
-    const uid = userData.uid || (cleanPhone ? `phone_${cleanPhone.replace(/\D/g, '')}` : `patron_${Date.now()}`);
+    const uid = userData.uid || (cleanPhone ? `phone_${cleanPhone.replace(/\D/g, '')}` : `collector_${Date.now()}`);
 
     this.store.user.isLoggedIn = true;
     this.store.user.uid = uid;
@@ -685,7 +685,7 @@ export class FirebaseService {
     this.store.user.name = patronName;
     this.store.user.authProvider = 'phone';
 
-    // Parse addresses if patron profile provided shipping address
+    // Parse addresses if collector profile provided shipping address
     if (userData.addresses && Array.isArray(userData.addresses) && userData.addresses.length > 0) {
       const primaryAddr = userData.addresses[0];
       if (primaryAddr.address1 || primaryAddr.address) {
@@ -707,7 +707,7 @@ export class FirebaseService {
       email: patronEmail,
       phone: cleanPhone,
       displayName: patronName,
-      role: 'patron',
+      role: 'collector',
       isAdmin: false
     };
 
@@ -728,7 +728,7 @@ export class FirebaseService {
               uid,
               phone: cleanPhone || cloudData.profile.phone,
               email: patronEmail || cloudData.profile.email,
-              name: patronName !== 'Mytholis Patron' ? patronName : (cloudData.profile.name || patronName)
+              name: (patronName !== 'Mytholis Collector' && patronName !== 'Mytholis Patron') ? patronName : (cloudData.profile.name || patronName)
             });
             this.store.saveLocalStorage('mytholis_user', this.store.user);
           }
@@ -747,7 +747,7 @@ export class FirebaseService {
               city: this.store.user.city || '',
               state: this.store.user.state || '',
               authProvider: 'phone',
-              role: 'patron',
+              role: 'collector',
               isAdmin: false,
               createdAt: serverTimestamp()
             },
@@ -815,7 +815,7 @@ export class FirebaseService {
       const docRef = await addDoc(ordersRef, {
         userId: this.currentUser.uid,
         userEmail: this.currentUser.email,
-        userName: this.currentUser.displayName || this.store?.user?.name || 'Mytholis Patron',
+        userName: this.currentUser.displayName || this.store?.user?.name || 'Mytholis Collector',
         ...orderData,
         rewardsCredited: orderData.paymentMethod === 'Prepaid' ? true : false,
         timestamp: serverTimestamp()
@@ -964,9 +964,9 @@ export class FirebaseService {
               const ordPhone = cleanDigits(ord.phone || ord.customerPhone || ord.shippingPhone || ord.customer?.phone || ord.shipping?.phone || ord.shippingAddress?.phone);
               if (ordPhone) uPhone = ordPhone;
             }
-            if (!uName || uName === 'Patron') {
+            if (!uName || uName === 'Patron' || uName === 'Collector') {
               const ordName = ord.userName || ord.customerName || ord.name || ord.customer?.name || ord.shipping?.name;
-              if (ordName && ordName !== 'Patron') uName = ordName;
+              if (ordName && ordName !== 'Patron' && ordName !== 'Collector') uName = ordName;
             }
             if (!uAddress) {
               const rawAddr = ord.address || ord.shippingAddress || ord.shipping?.address || ord.customerAddress || ord.customer?.address || ord.billingAddress;
@@ -1002,7 +1002,7 @@ export class FirebaseService {
           // Sync back into user structure
           u.profile = {
             ...prof,
-            name: uName || prof.name || 'Patron',
+            name: uName || prof.name || 'Collector',
             email: uEmail || prof.email || 'N/A',
             phone: uPhone || prof.phone || '',
             address: uAddress || prof.address || '',
@@ -1010,7 +1010,7 @@ export class FirebaseService {
             state: uState || prof.state || '',
             pincode: uPincode || prof.pincode || '',
             fullAddress: formattedFullAddress,
-            role: prof.role || u.role || 'patron',
+            role: prof.role || u.role || 'collector',
             isAdmin: Boolean(prof.isAdmin || u.isAdmin || u.role === 'admin')
           };
           u.phone = uPhone;
@@ -1053,7 +1053,7 @@ export class FirebaseService {
 
         guestOrdersByCustomer.forEach((ordList, key) => {
           const latestOrd = ordList[0];
-          const ordName = latestOrd.userName || latestOrd.customerName || latestOrd.name || latestOrd.customer?.name || latestOrd.shipping?.name || 'Patron';
+          const ordName = latestOrd.userName || latestOrd.customerName || latestOrd.name || latestOrd.customer?.name || latestOrd.shipping?.name || 'Collector';
           const ordEmail = normEmail(latestOrd.userEmail || latestOrd.email || latestOrd.customer?.email || latestOrd.shipping?.email) || 'N/A';
           const ordPhone = cleanDigits(latestOrd.phone || latestOrd.customerPhone || latestOrd.shippingPhone || latestOrd.customer?.phone || latestOrd.shipping?.phone || latestOrd.shippingAddress?.phone);
           const rawAddr = latestOrd.address || latestOrd.shippingAddress || latestOrd.shipping?.address || latestOrd.customerAddress || latestOrd.billingAddress;
@@ -1082,7 +1082,7 @@ export class FirebaseService {
               state: ordState,
               pincode: ordPin,
               fullAddress: fullAddr,
-              role: 'patron',
+              role: 'collector',
               isAdmin: false
             },
             loyalty: {
@@ -1437,7 +1437,7 @@ export class FirebaseService {
       const userDocRef = doc(db, "users", uid);
       const userSnap = await getDoc(userDocRef);
       if (!userSnap.exists()) {
-        return { success: false, error: "Patron account does not exist." };
+        return { success: false, error: "Collector account does not exist." };
       }
 
       const userDocData = userSnap.data();
@@ -1477,7 +1477,7 @@ export class FirebaseService {
         full_bottles_purchased: (Number(currentLoyalty.full_bottles_purchased) || 0) + bottleCount
       };
 
-      // Write updated loyalty to patron
+      // Write updated loyalty to collector
       await setDoc(userDocRef, {
         loyalty: updatedLoyalty,
         updatedAt: serverTimestamp()
@@ -1494,7 +1494,7 @@ export class FirebaseService {
         }
       });
 
-      console.log(`[Mytholis Admin] Succeeded crediting ${spendEarned}M to patron ${uid} for order ${orderId}`);
+      console.log(`[Mytholis Admin] Succeeded crediting ${spendEarned}M to collector ${uid} for order ${orderId}`);
       return { 
         success: true, 
         spendEarned, 
@@ -1555,15 +1555,15 @@ export class FirebaseService {
     }
   }
 
-  // Patron Management
+  // Collector & Patron Management
   async adjustPatronMythos(uid, deltaSpendable, reason = '') {
-    if (!uid) return { success: false, error: "Missing Patron UID." };
+    if (!uid) return { success: false, error: "Missing Collector UID." };
 
     try {
       const userDocRef = doc(db, "users", uid);
       const userSnap = await getDoc(userDocRef);
       if (!userSnap.exists()) {
-        return { success: false, error: "Patron document not found." };
+        return { success: false, error: "Collector document not found." };
       }
 
       const userData = userSnap.data();
@@ -1598,12 +1598,12 @@ export class FirebaseService {
   }
 
   async overridePatronTier(uid, levelNum, fullBottles) {
-    if (!uid) return { success: false, error: "Missing Patron UID." };
+    if (!uid) return { success: false, error: "Missing Collector UID." };
 
     try {
       const userDocRef = doc(db, "users", uid);
       const userSnap = await getDoc(userDocRef);
-      if (!userSnap.exists()) return { success: false, error: "Patron document not found in Firestore." };
+      if (!userSnap.exists()) return { success: false, error: "Collector document not found in Firestore." };
 
       const userData = userSnap.data() || {};
       const currentLoyalty = userData.loyalty || {};
@@ -1616,7 +1616,7 @@ export class FirebaseService {
         { level: 2, name: "The Curator" },
         { level: 3, name: "The Collector" },
         { level: 4, name: "The Archivist" },
-        { level: 5, name: "The Patron" }
+        { level: 5, name: "The Sovereign" }
       ];
       const tierObj = tiers.find(t => t.level === targetLevel) || tiers[0];
       const tierLabel = `Level ${tierObj.level}: ${tierObj.name}`;
@@ -1634,7 +1634,7 @@ export class FirebaseService {
         updatedAt: serverTimestamp()
       }, { merge: true });
 
-      // If updating currently logged in patron, also sync locally
+      // If updating currently logged in collector, also sync locally
       if (this.currentUser && this.currentUser.uid === uid && this.store) {
         if (this.store.loyalty) {
           this.store.loyalty.full_bottles_purchased = newBottles;
@@ -1656,12 +1656,12 @@ export class FirebaseService {
   }
 
   async togglePatronAdmin(uid, makeAdmin) {
-    if (!uid) return { success: false, error: "Missing Patron UID." };
+    if (!uid) return { success: false, error: "Missing Collector UID." };
 
     try {
       const userDocRef = doc(db, "users", uid);
       await setDoc(userDocRef, {
-        role: makeAdmin ? 'admin' : 'patron',
+        role: makeAdmin ? 'admin' : 'collector',
         isAdmin: Boolean(makeAdmin),
         updatedAt: serverTimestamp()
       }, { merge: true });
@@ -1671,6 +1671,23 @@ export class FirebaseService {
       console.error("[Mytholis Admin] togglePatronAdmin error:", err);
       return { success: false, error: err.message };
     }
+  }
+
+  // Collector Aliases for full backward & forward parity
+  adjustCollectorMythos(uid, deltaSpendable, reason) {
+    return this.adjustPatronMythos(uid, deltaSpendable, reason);
+  }
+  overrideCollectorTier(uid, levelNum, fullBottles) {
+    return this.overridePatronTier(uid, levelNum, fullBottles);
+  }
+  toggleCollectorAdmin(uid, makeAdmin) {
+    return this.togglePatronAdmin(uid, makeAdmin);
+  }
+  updateCollectorProfile(profileData) {
+    return this.updatePatronProfile(profileData);
+  }
+  updateCollectorPassword(currentPassword, newPassword) {
+    return this.updatePatronPassword(currentPassword, newPassword);
   }
 
   // Global Settings CRUD

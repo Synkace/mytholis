@@ -22,7 +22,7 @@ All automated coding agents and contributors MUST adhere strictly to the followi
 ## 4. Firestore Security Rules & Access Control
 - Maintain strict least-privilege access in `firestore.rules`.
 - Disallow client writes to administrative keys (`role`, `isAdmin`) on user documents.
-- Restrict `/orders` reads so patrons can only read their own documents (`resource.data.userId == request.auth.uid`). Updates and deletes are restricted to `isAdmin()`.
+- Restrict `/orders` reads so collectors can only read their own documents (`resource.data.userId == request.auth.uid`). Updates and deletes are restricted to `isAdmin()`.
 - Global configuration (`/settings`, `/reward_codes`) must be writable strictly by `isAdmin()`.
 
 ## 5. Mobile & Android Packaging Hygiene

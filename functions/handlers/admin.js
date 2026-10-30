@@ -6,7 +6,7 @@ const LOYALTY_TIERS = [
   { level: 2, name: "The Curator", minLegacy: 500, minBottles: 1 },
   { level: 3, name: "The Collector", minLegacy: 2500, minBottles: 3 },
   { level: 4, name: "The Archivist", minLegacy: 8000, minBottles: 6 },
-  { level: 5, name: "The Patron", minLegacy: 20000, minBottles: 12 }
+  { level: 5, name: "The Sovereign", minLegacy: 20000, minBottles: 12 }
 ];
 
 function calculateTier(legacyMythos, fullBottles) {

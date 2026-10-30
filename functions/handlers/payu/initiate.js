@@ -19,8 +19,8 @@ export default async function handler(req, res) {
       txnid,
       amount,
       productinfo = 'Mytholis Extrait de Parfum',
-      firstname = 'Patron',
-      email = 'patron@mytholis.com',
+      firstname = 'Collector',
+      email = 'collector@mytholis.com',
       phone = '9999999999',
       surl,
       furl,
@@ -50,7 +50,7 @@ export default async function handler(req, res) {
 
     const formattedAmount = parseFloat(amount).toFixed(2);
     const sanitizedProductInfo = String(productinfo).substring(0, 100).replace(/[^a-zA-Z0-9 _-]/g, ' ').trim() || 'Mytholis Perfume';
-    const sanitizedFirstName = String(firstname).substring(0, 50).trim() || 'Patron';
+    const sanitizedFirstName = String(firstname).substring(0, 50).trim() || 'Collector';
     const sanitizedEmail = String(email).trim().toLowerCase() || 'concierge@mytholis.com';
     const sanitizedPhone = String(phone).replace(/\D/g, '').slice(-10) || '9999999999';
 

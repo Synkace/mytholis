@@ -1384,13 +1384,13 @@ const Components = {
               <span class="modal-section-hint">Margin guardrails applied</span>
             </div>
 
-            <!-- First-Time Patron Offer (20% OFF) -->
+            <!-- First-Time Collector Offer (20% OFF) -->
             ${!appliedReward ? `
               <div class="first-buyer-offer-banner liquid-glass-card" style="background: linear-gradient(135deg, rgba(212,175,55,0.18), rgba(4,24,18,0.85)); border: 1px solid rgba(212, 175, 55, 0.45); padding: 0.55rem 0.75rem; border-radius: 8px; margin-bottom: 0.55rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
                 <div style="display: flex; align-items: center; gap: 0.45rem;">
                   <span style="font-size: 1rem;">👑</span>
                   <div>
-                    <div style="font-size: 0.76rem; font-weight: 700; color: var(--gold-light);">First-Time Patron Offer: 20% OFF</div>
+                    <div style="font-size: 0.76rem; font-weight: 700; color: var(--gold-light);">First-Time Collector Offer: 20% OFF</div>
                     <div style="font-size: 0.66rem; color: var(--text-muted);">Enjoy 20% off your first order with code <strong style="color: var(--gold-primary);">FIRST20</strong></div>
                   </div>
                 </div>
@@ -1606,7 +1606,7 @@ const Components = {
             <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">Tier ${currentTier.level} of 5</span>
             <h4 style="font-size: 1.2rem; color: var(--gold-light); margin: 0.4rem 0 0.2rem;">${currentTier.name}</h4>
             <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">
-              ${nextTier ? `Path to elevation: Level ${nextTier.level} — ${nextTier.name}` : 'Pinnacle Status Achieved — Patron of the Extrait Pantheon'}
+              ${nextTier ? `Path to elevation: Level ${nextTier.level} — ${nextTier.name}` : 'Pinnacle Status Achieved — Grand Sovereign of the Extrait Pantheon'}
             </p>
           </div>
           <div style="text-align: right;">
@@ -1800,7 +1800,7 @@ const Components = {
         </div>
       </div>
 
-      <!-- 4. Patron Referral Sanctum -->
+      <!-- 4. Collector Referral Sanctum -->
       ${this.renderReferralPanel(isModal)}
 
       <!-- 5. Tier Perks Comparative Table -->
@@ -1918,7 +1918,7 @@ const Components = {
           </div>
 
           <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 1.2rem;">
-            Enrollment into <strong>The Circle of Legends</strong> constitutes an exclusive privilege extended to patrons of House Mytholis. Membership is voluntary, automatic upon first qualification, and subject to adherence to these bylaws.
+            Enrollment into <strong>The Circle of Legends</strong> constitutes an exclusive privilege extended to collectors of House Mytholis. Membership is voluntary, automatic upon first qualification, and subject to adherence to these bylaws.
           </p>
 
           <div class="loyalty-rule-grid">
@@ -1995,7 +1995,7 @@ const Components = {
                 Lifetime Status Score — NEVER Decreases
               </div>
               <ul style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.7; padding-left: 1.2rem; margin: 0;">
-                <li>Tracks the patron's lifetime journey and volume within House Mytholis.</li>
+                <li>Tracks the collector's lifetime journey and volume within House Mytholis.</li>
                 <li><strong>Never decreases</strong> when Spendable Mythos is redeemed in the Vault.</li>
                 <li>Serves as Key 1 of the Dual-Key requirement to elevate your status through Levels 1 to 5.</li>
               </ul>
@@ -2052,7 +2052,7 @@ const Components = {
               The Dual-Key Governance Rule
             </div>
             <p style="font-size: 0.85rem; color: var(--text-main); margin: 0; line-height: 1.6;">
-              If a patron accumulates 3,000 Legacy Mythos but owns only 2 Full Bottles, they remain at <strong>Level 2: The Curator</strong> until acquiring their 3rd full bottle (50ml or 100ml), which then unlocks <strong>Level 3: The Collector</strong>. Both keys must turn to open the chamber.
+              If a collector accumulates 3,000 Legacy Mythos but owns only 2 Full Bottles, they remain at <strong>Level 2: The Curator</strong> until acquiring their 3rd full bottle (50ml or 100ml), which then unlocks <strong>Level 3: The Collector</strong>. Both keys must turn to open the chamber.
             </p>
           </div>
         </section>
@@ -2118,7 +2118,7 @@ const Components = {
                 § 4.4 Olfactory Inscriptions (Reviews)
               </div>
               <p class="loyalty-rule-subcard-desc">
-                Patrons at <strong>Level 2 (The Curator)</strong> and above may submit verified olfactory reviews:
+                Collectors at <strong>Level 2 (The Curator)</strong> and above may submit verified olfactory reviews:
               </p>
               <ul style="color: var(--gold-light); font-size: 0.82rem; line-height: 1.7; padding-left: 1.2rem; margin: 0.5rem 0;">
                 <li>Written Scent Inscription: <strong>+50 Spendable Mythos</strong></li>
@@ -2289,10 +2289,10 @@ const Components = {
               </span>
             </div>
             <h3 class="font-title" style="color: var(--gold-light); font-size: ${isModal ? '1.25rem' : '1.65rem'}; margin: 0.3rem 0 0.4rem;">
-              Patron Referral Sanctum
+              Collector Referral Sanctum
             </h3>
             <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; margin: 0; max-width: 620px;">
-              Invite discerning patrons to House Mytholis. Your invited guests receive <strong style="color: var(--gold-light);">₹500 off</strong> their first master extrait acquisition, and <strong style="color: var(--gold-light);">+250 Spendable Mythos &amp; +150 Legacy Mythos</strong> are credited to your vault.
+              Invite discerning collectors to House Mytholis. Your invited guests receive <strong style="color: var(--gold-light);">₹500 off</strong> their first master extrait acquisition, and <strong style="color: var(--gold-light);">+250 Spendable Mythos &amp; +150 Legacy Mythos</strong> are credited to your vault.
             </p>
           </div>
           ${!isModal ? `
@@ -2457,7 +2457,7 @@ const Components = {
     `;
   },
 
-  /* Render Dedicated Luxury Patron Auth Modal (1-Click OTP & Email) */
+  /* Render Dedicated Luxury Collector Auth Modal (1-Click OTP & Email) */
   renderAuthModal(activeTab = 'signin') {
     const isRegister = activeTab === 'register';
     const isSignIn = !isRegister;
@@ -2468,7 +2468,7 @@ const Components = {
           <div class="modal-crest-icon" style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(212, 175, 55, 0.15); border: 1px solid var(--gold-primary); font-family: var(--font-serif-title); font-size: 0.95rem; color: var(--gold-light);">M</div>
           <div>
             <h3 class="modal-title font-title">The Sanctum Gate</h3>
-            <p class="modal-subtitle">House Mytholis • Patron Authentication</p>
+            <p class="modal-subtitle">House Mytholis • Collector Authentication</p>
           </div>
         </div>
         <button class="icon-btn modal-close-btn" onclick="app.closeProfileModal()" title="Close Sanctum Gate">✕</button>
@@ -2496,8 +2496,8 @@ const Components = {
 
             <form onsubmit="event.preventDefault(); app.handleEmailSignIn();" style="display: flex; flex-direction: column; gap: 0.85rem;">
               <div>
-                <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.35rem;">Patron Email</label>
-                <input type="email" id="auth-email-input" class="engraving-input" placeholder="patron@domain.com" style="width: 100%;" required />
+                <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.35rem;">Collector Email</label>
+                <input type="email" id="auth-email-input" class="engraving-input" placeholder="collector@domain.com" style="width: 100%;" required />
               </div>
 
               <div>
@@ -2517,7 +2517,7 @@ const Components = {
               <p style="font-size: 0.76rem; color: var(--text-muted); margin: 0;">
                 First time at House Mytholis? 
                 <button type="button" style="background: none; border: none; color: var(--gold-light); font-weight: 600; cursor: pointer; text-decoration: underline; padding: 0;" onclick="app.switchAuthTab('register')">
-                  Create Patron Account
+                  Create Collector Account
                 </button>
               </p>
             </div>
@@ -2546,7 +2546,7 @@ const Components = {
 
               <div>
                 <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.35rem;">Email Address</label>
-                <input type="email" id="signup-email-input" class="engraving-input" placeholder="patron@domain.com" style="width: 100%;" required />
+                <input type="email" id="signup-email-input" class="engraving-input" placeholder="collector@domain.com" style="width: 100%;" required />
               </div>
 
               <div>
@@ -2555,7 +2555,7 @@ const Components = {
               </div>
 
               <button type="submit" class="btn btn-gold" style="width: 100%; padding: 0.75rem; font-size: 0.85rem; margin-top: 0.4rem; font-weight: 600;">
-                Become a Mytholis Patron
+                Become a Mytholis Collector
               </button>
             </form>
 
@@ -2634,7 +2634,7 @@ const Components = {
             <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-light); margin-bottom: 0.8rem;">House Mytholis</span>
             <h2 class="font-title" style="color: var(--gold-light); font-size: 2rem; margin-bottom: 0.8rem;">Enter The Sanctum</h2>
             <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; max-width: 480px; margin: 0 auto 2rem;">
-              Sign in to access your personal Patron Dossier, manage delivery coordinates, view consignment tracking, and claim Circle of Legends rewards.
+              Sign in to access your personal Collector Dossier, manage delivery coordinates, view consignment tracking, and claim Circle of Legends rewards.
             </p>
             <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
               <button class="btn btn-gold" style="width: auto; padding: 0.8rem 1.8rem; font-size: 0.9rem; margin-bottom: 0; display: inline-flex; align-items: center; gap: 0.5rem;" onclick="app.openPatronLogin(event)">
@@ -2644,7 +2644,7 @@ const Components = {
                 Sign In to Sanctum
               </button>
               <button class="btn btn-glass" style="padding: 0.8rem 1.8rem; font-size: 0.9rem;" onclick="app.openAuthModal('register')">
-                Become a Patron
+                Become a Collector
               </button>
             </div>
           </div>
@@ -2655,7 +2655,7 @@ const Components = {
 
     const u = store.user;
     const fbUser = store.firebaseUser;
-    const displayName = u.name || (fbUser && fbUser.displayName) || 'Mytholis Patron';
+    const displayName = u.name || (fbUser && fbUser.displayName) || 'Mytholis Collector';
     const email = (fbUser && fbUser.email) || u.email || '';
     const photoURL = u.photoURL || (fbUser && fbUser.photoURL) || null;
     const initial = displayName.charAt(0).toUpperCase() || 'M';
@@ -2670,7 +2670,7 @@ const Components = {
               ${photoURL ? `
                 <img src="${photoURL}" alt="${displayName}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />
               ` : initial}
-              <label for="patron-page-avatar-upload" class="avatar-camera-btn" title="Upload Patron Portrait">
+              <label for="patron-page-avatar-upload" class="avatar-camera-btn" title="Upload Collector Portrait">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                 <input type="file" id="patron-page-avatar-upload" accept="image/*" style="display:none;" onchange="app.handleProfilePhotoUpload(event)" />
               </label>
@@ -2678,13 +2678,13 @@ const Components = {
             <div>
               <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
                 <h2 class="profile-welcome-title" style="margin: 0; font-size: clamp(1.4rem, 2.8vw, 2rem);">${displayName}</h2>
-                <button type="button" class="btn-edit-inline-name" onclick="app.promptEditPatronName()" title="Edit Patron Name / Title" style="background: rgba(212, 175, 55, 0.12); border: 1px solid rgba(212, 175, 55, 0.4); color: var(--gold-primary); cursor: pointer; font-size: 0.8rem; padding: 0.22rem 0.55rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.35rem; transition: all 0.2s;">
+                <button type="button" class="btn-edit-inline-name" onclick="app.promptEditPatronName()" title="Edit Collector Name / Title" style="background: rgba(212, 175, 55, 0.12); border: 1px solid rgba(212, 175, 55, 0.4); color: var(--gold-primary); cursor: pointer; font-size: 0.8rem; padding: 0.22rem 0.55rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.35rem; transition: all 0.2s;">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                   <span>Edit Name</span>
                 </button>
                 <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-light);">${currentTier.name}</span>
               </div>
-              <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">${email} • Circle of Legends Patron</p>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">${email} • Circle of Legends Collector</p>
             </div>
           </div>
           <div style="display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center;">
@@ -2783,7 +2783,7 @@ const Components = {
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.8rem;">
             <div>
               <h3 class="font-title" style="margin: 0; color: var(--gold-light);">Vault Consignment History</h3>
-              <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0.2rem 0 0;">Recent orders linked to your patron profile.</p>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0.2rem 0 0;">Recent orders linked to your collector profile.</p>
             </div>
             <button class="btn btn-glass" style="font-size: 0.75rem; padding: 0.4rem 0.9rem;" onclick="app.navigateTo('track-order')">
               Track Consignment
@@ -2842,7 +2842,7 @@ const Components = {
         <!-- Session Status & Sign Out -->
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 1.5rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; margin-top: 1.5rem; flex-wrap: wrap; gap: 1rem;">
           <div>
-            <div style="font-size: 0.85rem; font-weight: 600; color: var(--gold-light);">Active Patron Session</div>
+            <div style="font-size: 0.85rem; font-weight: 600; color: var(--gold-light);">Active Collector Session</div>
             <div style="font-size: 0.78rem; color: var(--text-muted);">Authenticated as <strong style="color: var(--text-main);">${email}</strong></div>
           </div>
           <button type="button" class="btn btn-glass" style="border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1.1rem; font-size: 0.8rem;" onclick="app.logoutUser()">
@@ -2866,7 +2866,7 @@ const Components = {
     const tab = activeTab || (typeof app !== 'undefined' && app.activeDossierTab) || 'overview';
     const u = store.user;
     const fbUser = store.firebaseUser;
-    const displayName = u.name || (fbUser && fbUser.displayName) || 'Mytholis Patron';
+    const displayName = u.name || (fbUser && fbUser.displayName) || 'Mytholis Collector';
     const email = u.email || (fbUser && fbUser.email) || '';
     const phone = u.phone || (fbUser && fbUser.phone) || '';
     const photoURL = u.photoURL || (fbUser && fbUser.photoURL) || null;
@@ -2892,7 +2892,7 @@ const Components = {
             ${photoURL ? `<img src="${photoURL}" alt="${displayName}" class="profile-avatar-img" />` : initial}
           </div>
           <div>
-            <h3 class="modal-title font-title">Patron Dossier</h3>
+            <h3 class="modal-title font-title">Collector Dossier</h3>
             <p class="modal-subtitle">House Mytholis • ${currentTier.name}</p>
           </div>
         </div>
@@ -2908,7 +2908,7 @@ const Components = {
             ` : `
               <span>${initial}</span>
             `}
-            <label for="patron-avatar-upload" class="avatar-camera-btn" title="Upload Patron Portrait / Photo">
+            <label for="patron-avatar-upload" class="avatar-camera-btn" title="Upload Collector Portrait / Photo">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
               <input type="file" id="patron-avatar-upload" accept="image/*" style="display:none;" onchange="app.handleProfilePhotoUpload(event)" />
             </label>
@@ -2917,7 +2917,7 @@ const Components = {
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap;">
               <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
                 <h4 class="profile-user-name">${displayName}</h4>
-                <button type="button" class="btn-edit-inline-name" onclick="app.promptEditPatronName()" title="Edit Patron Name / Title" style="background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.35); color: var(--gold-primary); cursor: pointer; font-size: 0.72rem; padding: 0.15rem 0.45rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.25rem; transition: all 0.2s;">
+                <button type="button" class="btn-edit-inline-name" onclick="app.promptEditPatronName()" title="Edit Collector Name / Title" style="background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.35); color: var(--gold-primary); cursor: pointer; font-size: 0.72rem; padding: 0.15rem 0.45rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.25rem; transition: all 0.2s;">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                   <span>Edit</span>
                 </button>
@@ -2933,7 +2933,7 @@ const Components = {
                 </label>
               `}
             </div>
-            <p class="profile-user-email">${isPhoneUser ? `Mobile Patron (${phone || email.replace('@phone.mytholis.com','')})` : email}</p>
+            <p class="profile-user-email">${isPhoneUser ? `Mobile Collector (${phone || email.replace('@phone.mytholis.com','')})` : email}</p>
             <div class="profile-points-pill">
               <strong>${(store.loyalty ? store.loyalty.spendable_mythos : 0).toLocaleString()}</strong> Spendable Mythos &nbsp;|&nbsp; <strong>${(store.loyalty ? store.loyalty.legacy_mythos : 0).toLocaleString()}</strong> Legacy M
             </div>
@@ -2971,7 +2971,7 @@ const Components = {
             <div style="display: flex; align-items: center; gap: 0.6rem;">
               <svg width="16" height="16" fill="none" stroke="#10B981" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
               <div>
-                <span class="glass-pill" style="font-size: 0.6rem; color: #10B981; border-color: #10B981; padding: 0.1rem 0.4rem;">Connected Patron</span>
+                <span class="glass-pill" style="font-size: 0.6rem; color: #10B981; border-color: #10B981; padding: 0.1rem 0.4rem;">Connected Collector</span>
                 <p style="font-size: 0.78rem; color: var(--gold-light); margin: 0.15rem 0 0;">${email}</p>
               </div>
             </div>
@@ -3122,7 +3122,7 @@ const Components = {
 
               <div style="display: flex; gap: 0.6rem; margin-top: 0.6rem;">
                 <button type="submit" id="btn-save-dossier" class="btn btn-gold" style="flex: 1.5; padding: 0.75rem 1rem; font-size: 0.85rem; font-weight: 700;">
-                  Save Patron Coordinates
+                  Save Collector Coordinates
                 </button>
                 <button type="button" class="btn btn-glass" style="flex: 1; padding: 0.75rem 1rem; font-size: 0.8rem;" onclick="app.setDossierTab('overview')">
                   Cancel
@@ -3206,8 +3206,8 @@ const Components = {
 
                 <form onsubmit="app.handleLinkEmailPassword(event)" style="display: flex; flex-direction: column; gap: 0.8rem;">
                   <div>
-                    <label style="font-size: 0.72rem; color: var(--gold-primary); display: block; margin-bottom: 0.3rem;">Patron Email Address</label>
-                    <input type="email" id="security-link-email" class="engraving-input" placeholder="patron@mytholis.com" required />
+                    <label style="font-size: 0.72rem; color: var(--gold-primary); display: block; margin-bottom: 0.3rem;">Collector Email Address</label>
+                    <input type="email" id="security-link-email" class="engraving-input" placeholder="collector@mytholis.com" required />
                   </div>
                   <div>
                     <label style="font-size: 0.72rem; color: var(--gold-primary); display: block; margin-bottom: 0.3rem;">Create Password (min 6 characters)</label>
@@ -3701,7 +3701,7 @@ const Components = {
                   <thead>
                     <tr>
                       <th>Order ID & Date</th>
-                      <th>Patron & Delivery Coordinates</th>
+                      <th>Collector & Delivery Coordinates</th>
                       <th>Items Purchased</th>
                       <th>Attached Vault Gift</th>
                       <th>Total & Status</th>
@@ -3711,7 +3711,7 @@ const Components = {
                   <tbody>
                     ${ordersList.map(order => {
                       const orderId = order.orderId || order.id || 'MYTH-UNKNOWN';
-                      const patronName = order.name || order.shipping?.name || order.userEmail || 'Mytholis Patron';
+                      const patronName = order.name || order.shipping?.name || order.userEmail || 'Mytholis Collector';
                       const patronPhone = order.phone || order.shipping?.phone || '';
                       const patronAddress = order.address || order.shipping?.address || order.city || 'India Express Delivery';
                       const items = Array.isArray(order.items) ? order.items : [];
@@ -3804,7 +3804,7 @@ const Components = {
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
               <div>
                 <h3 style="font-size: 1.3rem; color: var(--gold-light); margin: 0 0 0.2rem;">Mythos Society VIP Ledger</h3>
-                <p style="color: var(--text-muted); font-size: 0.82rem; margin: 0;">Inspect patron tiers, spendable/legacy points, bottle purchase milestones, and illuminate Pantheon Codex scents.</p>
+                <p style="color: var(--text-muted); font-size: 0.82rem; margin: 0;">Inspect collector tiers, spendable/legacy points, bottle purchase milestones, and illuminate Pantheon Codex scents.</p>
               </div>
               <div style="min-width: 260px;">
                 <input type="text" id="admin-user-search" class="admin-input-compact" style="width: 100%; padding: 0.6rem 0.9rem;" placeholder="Search by name, email, or UID..." oninput="app.filterAdminUsers(this.value)" />
@@ -3813,10 +3813,10 @@ const Components = {
 
             <!-- Quick Adjust Modal / Form -->
             <div class="liquid-glass-card" style="margin-bottom: 2rem; padding: 1.5rem; border: 1px solid rgba(212, 175, 55, 0.35);">
-              <h4 style="font-size: 1rem; color: var(--gold-light); margin-bottom: 0.8rem;">Adjust Patron Loyalty Ledger</h4>
+              <h4 style="font-size: 1rem; color: var(--gold-light); margin-bottom: 0.8rem;">Adjust Collector Loyalty Ledger</h4>
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.8rem; align-items: end;">
                 <div>
-                  <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Target Patron UID / Email</label>
+                  <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Target Collector UID / Email</label>
                   <input type="text" id="adjust-uid-input" class="admin-input-compact" style="width: 100%;" placeholder="Paste user UID or select below" />
                 </div>
                 <div>
@@ -3851,11 +3851,11 @@ const Components = {
               </div>
             </div>
 
-            <!-- Patron Cards Grid -->
+            <!-- Collector Cards Grid -->
             <div class="admin-card-grid" id="admin-users-list">
               ${usersList.length === 0 ? `
                 <div class="liquid-glass-card" style="grid-column: 1 / -1; padding: 2.5rem; text-align: center;">
-                  <p style="color: var(--text-muted); font-size: 0.9rem;">No patrons found in cloud database. Patrons will automatically register upon sign-in.</p>
+                  <p style="color: var(--text-muted); font-size: 0.9rem;">No collectors found in cloud database. Collectors will automatically register upon sign-in.</p>
                 </div>
               ` : usersList.map(u => {
                 const profile = u.profile || {};
@@ -3866,7 +3866,7 @@ const Components = {
                   <div class="admin-user-card liquid-glass-card" data-username="${(profile.name || '').toLowerCase()}" data-email="${(profile.email || u.uid || '').toLowerCase()}">
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.8rem;">
                       <div>
-                        <h4 style="font-size: 1.05rem; color: var(--text-main); margin: 0 0 0.2rem;">${profile.name || 'Patron'}</h4>
+                        <h4 style="font-size: 1.05rem; color: var(--text-main); margin: 0 0 0.2rem;">${profile.name || 'Collector'}</h4>
                         <div style="font-size: 0.75rem; color: var(--gold-light); font-family: monospace;">${profile.email || 'No email attached'}</div>
                       </div>
                       <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-primary);">
@@ -3999,7 +3999,7 @@ const Components = {
                 </div>
                 <div>
                   <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Target Email (Optional)</label>
-                  <input type="email" id="mint-email-input" class="admin-input-compact" style="width: 100%;" placeholder="vip@patron.com" />
+                  <input type="email" id="mint-email-input" class="admin-input-compact" style="width: 100%;" placeholder="vip@collector.com" />
                 </div>
                 <div style="grid-column: 1 / -1; display: flex; gap: 0.8rem; align-items: center;">
                   <input type="text" id="mint-note-input" class="admin-input-compact" style="flex: 1;" placeholder="Internal Reference Note (e.g. Granted to Alexander for VIP concierge request)" />
@@ -4019,7 +4019,7 @@ const Components = {
                     <th>Perk & Concession</th>
                     <th>Order Threshold</th>
                     <th>Uses Remaining</th>
-                    <th>Target / Patron Note</th>
+                    <th>Target / Collector Note</th>
                     <th>Date Minted</th>
                   </tr>
                 </thead>

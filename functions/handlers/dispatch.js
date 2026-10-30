@@ -218,7 +218,7 @@ export default async function handler(req, res) {
 
               updateData.rewardsGranted = { spendEarned, legacyEarned, bottleCount };
               loyaltyCredited = true;
-              console.log(`[Dispatch Webhook] Granted ${spendEarned}M to patron ${uid} upon COD delivery.`);
+              console.log(`[Dispatch Webhook] Granted ${spendEarned}M to collector ${uid} upon COD delivery.`);
             }
           }
         }

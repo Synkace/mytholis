@@ -83,7 +83,7 @@ const LOYALTY_TIERS = [
   },
   {
     level: 5,
-    name: "The Patron",
+    name: "The Sovereign",
     tagline: "High Sovereign of Mythos",
     minLegacy: 20000,
     minBottles: 12,
@@ -230,7 +230,7 @@ class MytholisStore {
       pincode: "",
       city: "",
       state: "",
-      role: "patron",
+      role: "collector",
       isAdmin: false,
       tier: "Level 1: The Initiate",
       points: 0,
@@ -350,7 +350,7 @@ class MytholisStore {
     });
   }
 
-  /* Patron Referral Architecture */
+  /* Collector Referral Architecture */
   getUserReferralCode() {
     if (this.user && this.user.referralCode && this.user.referralCode.trim()) {
       return this.user.referralCode.trim().toUpperCase();
@@ -868,7 +868,7 @@ class MytholisStore {
     if (!rawCode) return { success: false, error: "Please enter a voucher code." };
     const codeStr = rawCode.trim().toUpperCase();
 
-    // Check Patron personalized Circle of Legends vouchers
+    // Check Collector personalized Circle of Legends vouchers
     let existing = this.loyalty.active_reward_codes.find(
       c => c.code.toUpperCase() === codeStr
     );
@@ -891,7 +891,7 @@ class MytholisStore {
       }
     }
 
-    // Check if it's a valid patron referral invitation key (e.g. MYTH-...)
+    // Check if it's a valid collector referral invitation key (e.g. MYTH-...)
     if (!existing && codeStr.startsWith('MYTH-')) {
       const myCode = this.getUserReferralCode();
       if (myCode && myCode.toUpperCase() === codeStr) {
@@ -899,7 +899,7 @@ class MytholisStore {
       }
       existing = {
         code: codeStr,
-        title: "Patron Referral Invitation Privilege",
+        title: "Collector Referral Invitation Privilege",
         type: 'discount',
         amount: 500,
         minOrder: 1999,

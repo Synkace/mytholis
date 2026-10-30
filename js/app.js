@@ -1901,7 +1901,7 @@ class MytholisApp {
 
       // 2. Verified or Demo/SMS Passcode
       const cleanPhone = this.patronAuthPhone || '9876543210';
-      const patronName = `Patron (${cleanPhone.slice(0, 4)}***)`;
+      const patronName = `Collector (${cleanPhone.slice(0, 4)}***)`;
 
       await this.handlePatronLoginSuccess({
         phone: cleanPhone,
@@ -1989,7 +1989,7 @@ class MytholisApp {
 
       const phone = userData.phone || userData.mobile || userData.phone_number || userData.contact || '';
       const cleanPhone = phone ? String(phone).replace(/\s+/g, '') : '';
-      const name = userData.name || [userData.first_name, userData.last_name].filter(Boolean).join(' ') || (cleanPhone ? `Patron (${cleanPhone})` : 'Mytholis Patron');
+      const name = userData.name || [userData.first_name, userData.last_name].filter(Boolean).join(' ') || (cleanPhone ? `Collector (${cleanPhone})` : 'Mytholis Collector');
       const email = userData.email || (cleanPhone ? `${cleanPhone.replace(/\D/g, '')}@phone.mytholis.com` : '');
 
       const patronProfile = {
@@ -2205,7 +2205,7 @@ class MytholisApp {
     const txnid = `MYTH-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
     const formattedAmount = parseFloat(amount).toFixed(2);
     const productInfo = (store.cart.length ? store.cart.map(i => i.name).join(', ') : 'Mytholis Extrait de Parfum').substring(0, 100).replace(/[^a-zA-Z0-9 _-]/g, ' ').trim() || 'Mytholis Perfume';
-    const firstName = (customerName.split(' ')[0] || customerName || 'Patron').substring(0, 50).trim();
+    const firstName = (customerName.split(' ')[0] || customerName || 'Collector').substring(0, 50).trim();
     const patronEmail = store.user.email || (typeof firebaseService !== 'undefined' && firebaseService.currentUser?.email) || 'concierge@mytholis.com';
     const cleanPhone = customerPhone.replace(/\D/g, '').slice(-10);
 
@@ -2606,7 +2606,7 @@ class MytholisApp {
     const isAdminUser = store.isAdmin();
 
     if (isLogged && user) {
-      const displayName = store.user?.name || user.displayName || user.name || user.email || 'Patron';
+      const displayName = store.user?.name || user.displayName || user.name || user.email || 'Collector';
       const initial = displayName.charAt(0).toUpperCase();
       const photoURL = store.user?.photoURL || user.photoURL || null;
       const adminCrown = isAdminUser ? `
@@ -2925,7 +2925,7 @@ class MytholisApp {
       return;
     }
 
-    this.showToast('Processing patron portrait...');
+    this.showToast('Processing collector portrait...');
 
     try {
       const reader = new FileReader();
@@ -2965,7 +2965,7 @@ class MytholisApp {
             if (store.currentView === 'profile' || store.currentView === 'user-profile') {
               this.renderCurrentView();
             }
-            this.showToast('Patron portrait updated successfully.');
+            this.showToast('Collector portrait updated successfully.');
           } catch (procErr) {
             console.error('[ProfilePhoto] Processing failed:', procErr);
             this.showToast('Failed to process image portrait.');
@@ -3000,7 +3000,7 @@ class MytholisApp {
     if (store.currentView === 'profile' || store.currentView === 'user-profile') {
       this.renderCurrentView();
     }
-    this.showToast('Patron portrait removed.');
+    this.showToast('Collector portrait removed.');
   }
 
   async handleSaveDossierProfile(event) {
@@ -3047,7 +3047,7 @@ class MytholisApp {
       });
     }
 
-    this.showToast('Patron coordinates & profile saved.');
+    this.showToast('Collector coordinates & profile saved.');
     this.updateNavAuth();
     this.setDossierTab('overview');
     this.renderProfileModalContent();
@@ -3058,11 +3058,11 @@ class MytholisApp {
 
   async promptEditPatronName() {
     const currentName = store.user?.name || store.firebaseUser?.displayName || '';
-    const newName = prompt('Enter your preferred patron name / title:', currentName);
+    const newName = prompt('Enter your preferred collector name / title:', currentName);
     if (newName === null) return;
     const trimmed = newName.trim();
     if (!trimmed) {
-      this.showToast('Patron name cannot be empty.');
+      this.showToast('Collector name cannot be empty.');
       return;
     }
 
@@ -3082,7 +3082,7 @@ class MytholisApp {
     if (store.currentView === 'profile' || store.currentView === 'user-profile') {
       this.renderCurrentView();
     }
-    this.showToast(`Patron title updated to: ${trimmed}`);
+    this.showToast(`Collector title updated to: ${trimmed}`);
   }
 
   async handleChangePassword(event) {
@@ -3304,7 +3304,7 @@ class MytholisApp {
     const emailEl = document.getElementById('auth-email-input');
     let email = emailEl ? emailEl.value.trim() : '';
     if (!email) {
-      email = prompt('Enter your registered Patron email to receive a password reset link:');
+      email = prompt('Enter your registered Collector email to receive a password reset link:');
     }
     if (!email) return;
 
@@ -3339,7 +3339,7 @@ class MytholisApp {
     const pass = passEl ? passEl.value : '';
 
     if (!email || !pass) {
-      this.showToast('Please provide both patron email and password.');
+      this.showToast('Please provide both collector email and password.');
       return;
     }
 
@@ -3368,7 +3368,7 @@ class MytholisApp {
     const pass = passEl ? passEl.value : '';
 
     if (!email || !pass) {
-      this.showToast('Please provide both patron email and password.');
+      this.showToast('Please provide both collector email and password.');
       return;
     }
     if (pass.length < 6) {
@@ -3376,7 +3376,7 @@ class MytholisApp {
       return;
     }
 
-    this.showToast('Registering new VIP Patron Account...');
+    this.showToast('Registering new VIP Collector Account...');
     const result = await firebaseService.signUpWithEmail(email, pass, name);
     if (result.success) {
       if (name) store.user.name = name;
@@ -3736,7 +3736,7 @@ class MytholisApp {
         if (order) order.paymentStatus = newStatus;
 
         if (newStatus === 'Paid') {
-          this.showToast(`Order #${orderId} marked as Paid. Patron loyalty processed.`);
+          this.showToast(`Order #${orderId} marked as Paid. Collector loyalty processed.`);
         } else {
           this.showToast(`Order #${orderId} marked as Pending.`);
         }
@@ -3798,11 +3798,11 @@ class MytholisApp {
     }
 
     if (!cleanPhone) {
-      this.showToast('No valid WhatsApp phone number found for this patron.');
+      this.showToast('No valid WhatsApp phone number found for this collector.');
       return;
     }
     const total = totalArg || order.finalPayable || order.total || order.subtotal || 0;
-    const msg = `Dear Patron,\n\nThis is Mytholis Haute Parfumerie regarding your bespoke fragrance order #${orderId} with Cash on Delivery (Payable: ₹${total}).\n\nTo initiate hand-crafted bottling and obsidian wax sealing of your flacon, please reply *CONFIRM* to this message.\n\nWarmest regards,\nThe Sovereign Sanctum | Mytholis Haute Parfumerie`;
+    const msg = `Dear Collector,\n\nThis is Mytholis Haute Parfumerie regarding your bespoke fragrance order #${orderId} with Cash on Delivery (Payable: ₹${total}).\n\nTo initiate hand-crafted bottling and obsidian wax sealing of your flacon, please reply *CONFIRM* to this message.\n\nWarmest regards,\nThe Sovereign Sanctum | Mytholis Haute Parfumerie`;
     window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
   }
 
@@ -3820,7 +3820,7 @@ class MytholisApp {
     }
 
     if (!cleanPhone) {
-      this.showToast('No valid WhatsApp phone number found for this patron.');
+      this.showToast('No valid WhatsApp phone number found for this collector.');
       return;
     }
 
@@ -3828,7 +3828,7 @@ class MytholisApp {
     const awb = order.trackingNumber || 'Active in Transit';
     const trackingUrl = order.trackingUrl || 'https://mytholis.com/#track-order';
 
-    const msg = `Dear Patron,\n\nYour Mytholis Haute Parfumerie consignment (Order #${orderId}) has been sealed with our obsidian wax crest and dispatched via ${courier}.\n\nArmored Tracking AWB: ${awb}\nTrack live at: ${trackingUrl}\n\nWear your legend.\n— The Mytholis Sovereign Desk`;
+    const msg = `Dear Collector,\n\nYour Mytholis Haute Parfumerie consignment (Order #${orderId}) has been sealed with our obsidian wax crest and dispatched via ${courier}.\n\nArmored Tracking AWB: ${awb}\nTrack live at: ${trackingUrl}\n\nWear your legend.\n— The Mytholis Sovereign Desk`;
     window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
   }
 
@@ -4120,14 +4120,18 @@ class MytholisApp {
     }
   }
 
-  // --- Module E: Patrons, Mythos & Tiers Handlers ---
+  // --- Module E: Collectors, Mythos & Tiers Handlers ---
   filterAdminPatrons() {
-    const input = document.getElementById('admin-patron-search');
-    const filterSelect = document.getElementById('admin-patron-filter-type');
+    return this.filterAdminCollectors();
+  }
+
+  filterAdminCollectors() {
+    const input = document.getElementById('admin-patron-search') || document.getElementById('admin-collector-search');
+    const filterSelect = document.getElementById('admin-patron-filter-type') || document.getElementById('admin-collector-filter-type');
     const query = (input?.value || '').toLowerCase().trim();
     const filterType = (filterSelect?.value || 'ALL').toUpperCase();
 
-    const rows = document.querySelectorAll('.admin-patron-row, .sovereign-patron-card');
+    const rows = document.querySelectorAll('.admin-patron-row, .sovereign-patron-card, .admin-collector-row, .sovereign-collector-card');
     rows.forEach(row => {
       const name = (row.getAttribute('data-name') || '').toLowerCase();
       const email = (row.getAttribute('data-email') || '').toLowerCase();
@@ -4168,11 +4172,15 @@ class MytholisApp {
   }
 
   openPatronDossier(uid) {
+    return this.openCollectorDossier(uid);
+  }
+
+  openCollectorDossier(uid) {
     if (!uid) return;
     const patron = (this.adminData?.users || []).find(u => u.uid === uid || u.id === uid) ||
                    (this.adminData?.users || []).find(u => (u.profile?.email && u.profile.email.toLowerCase() === uid.toLowerCase()) || (u.email && u.email.toLowerCase() === uid.toLowerCase()));
     if (!patron) {
-      this.showToast('Patron dossier not found in live cloud registry.');
+      this.showToast('Collector dossier not found in live cloud registry.');
       return;
     }
     const modalHtml = AdminComponents.renderPatronDossierModal(patron);
@@ -4193,7 +4201,7 @@ class MytholisApp {
       const reason = document.getElementById('adjust-mythos-reason')?.value?.trim() || 'Sovereign adjustment';
 
       if (!uid) {
-        this.showToast('Error: Missing patron UID.');
+        this.showToast('Error: Missing collector UID.');
         return;
       }
       if (!delta && delta !== 0) {
@@ -4231,15 +4239,15 @@ class MytholisApp {
       const bottles = Number(bottlesInput?.value || 0);
 
       if (!uid) {
-        this.showToast('Error: Missing patron UID.');
+        this.showToast('Error: Missing collector UID.');
         return;
       }
 
-      this.showToast(`Setting patron standing to Level ${tier}...`);
+      this.showToast(`Setting collector standing to Level ${tier}...`);
       const res = await firebaseService.overridePatronTier(uid, tier, bottles);
       if (res.success) {
         this.closeAdminModal();
-        this.showToast(`Patron standing updated to Level ${tier}.`);
+        this.showToast(`Collector standing updated to Level ${tier}.`);
         await this.loadAdminDashboard();
       } else {
         this.showToast(`Override failed: ${res.error}`);
@@ -4251,14 +4259,14 @@ class MytholisApp {
   }
 
   async togglePatronAdmin(uid, makeAdmin) {
-    const label = makeAdmin ? 'Promote patron to Sovereign Administrator' : 'Revoke Sovereign Administrator privileges';
+    const label = makeAdmin ? 'Promote collector to Sovereign Administrator' : 'Revoke Sovereign Administrator privileges';
     if (!confirm(`Are you certain you wish to ${label.toLowerCase()}?`)) {
       return;
     }
     try {
       const res = await firebaseService.togglePatronAdmin(uid, makeAdmin);
       if (res.success) {
-        this.showToast(`Permissions updated: ${makeAdmin ? 'Admin Granted' : 'Patron Standing'}`);
+        this.showToast(`Permissions updated: ${makeAdmin ? 'Admin Granted' : 'Collector Standing'}`);
         await this.loadAdminDashboard();
       } else {
         this.showToast(`Permission change failed: ${res.error}`);
