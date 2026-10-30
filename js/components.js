@@ -239,11 +239,11 @@ const Components = {
           </div>
 
           <h1 class="small-team" id="smallTeam">
-            <span class="word"><span>Six</span></span>&nbsp;<span class="word"><span>elements,</span></span>
+            <span class="word"><span>SIX</span></span>&nbsp;<span class="word"><span>ELEMENTS,</span></span>
           </h1>
         </div>
 
-        <!-- Giant Faded Background Wordmark -->
+        <!-- Regal Gold Sub-Headline (One House) -->
         <div class="big-results-wrap">
           <div class="big-results" id="bigResults">
             <span class="letter">O</span><span class="letter">N</span><span class="letter">E</span><span class="letter">&nbsp;</span><span class="letter">H</span><span class="letter">O</span><span class="letter">U</span><span class="letter">S</span><span class="letter">E</span>
@@ -2438,44 +2438,54 @@ const Components = {
   renderSignupBonusModal(points = 200) {
     const pts = Number(points) || 200;
     return `
-      <div class="modal-header" style="justify-content: flex-end; padding: 0.75rem 1rem 0 1rem; border-bottom: none;">
-        <button class="icon-btn modal-close-btn" onclick="app.closeSignupBonusModal()" title="Close Notification" style="font-size: 1.25rem;">✕</button>
+      <div class="modal-header" style="justify-content: flex-end; padding: 0.85rem 1rem 0 1rem; border-bottom: none;">
+        <button class="icon-btn modal-close-btn" onclick="app.closeSignupBonusModal()" title="Close Notification" style="width: 32px; height: 32px; font-size: 1.1rem; border-radius: 50%; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(212, 175, 55, 0.3); color: var(--gold-light); display: flex; align-items: center; justify-content: center; cursor: pointer;">✕</button>
       </div>
-      <div style="padding: 0 1.5rem 1.85rem 1.5rem; text-align: center;">
-        <div style="width: 76px; height: 76px; margin: 0 auto 1.2rem auto; border-radius: 50%; background: radial-gradient(circle, rgba(212, 175, 55, 0.3) 0%, rgba(13, 15, 20, 0.95) 75%); border: 2px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 35px rgba(212, 175, 55, 0.45);">
-          <span style="font-size: 2.2rem; filter: drop-shadow(0 2px 8px rgba(212,175,55,0.7));">🪙</span>
+      <div style="padding: 0 1.5rem 2rem 1.5rem; text-align: center;">
+        <!-- Imperial Favicon Seal Medallion -->
+        <div style="width: 82px; height: 82px; margin: 0 auto 1.1rem auto; border-radius: 50%; background: radial-gradient(circle at 35% 35%, rgba(212, 175, 55, 0.28) 0%, rgba(14, 32, 24, 0.95) 65%, #050a08 100%); border: 1.8px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 35px rgba(212, 175, 55, 0.45), inset 0 0 18px rgba(212, 175, 55, 0.25);">
+          <img src="/favicon.svg" onerror="this.onerror=null; this.src='/favicon-96x96.png';" alt="Mytholis Crest" style="width: 50px; height: 50px; object-fit: contain; filter: drop-shadow(0 4px 14px rgba(212, 175, 55, 0.75));" />
         </div>
 
-        <span class="glass-pill" style="font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 0.75rem; display: inline-block; padding: 0.35rem 0.9rem; border-color: rgba(212,175,55,0.45);">
-          Initiate Welcome Honor
+        <span class="glass-pill" style="font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 0.75rem; display: inline-block; padding: 0.35rem 1rem; border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 20px; background: rgba(212, 175, 55, 0.08);">
+          ✦ Initiate Welcome Honor ✦
         </span>
 
-        <h2 class="font-title gold-shimmer-text" style="font-size: 1.8rem; margin: 0 0 0.5rem 0; font-family: var(--font-serif-title);">
-          Congratulations!
+        <h2 class="font-title gold-shimmer-text" style="font-family: var(--font-serif-title, 'Cinzel', serif); font-size: clamp(1.28rem, 5.2vw, 1.7rem); letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 0.5rem 0; line-height: 1.25; word-break: break-word;">
+          Congratulations
         </h2>
 
-        <div style="font-size: 1.25rem; font-weight: 700; color: #FFF; margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
-          <span>You have received</span>
-          <span style="color: var(--gold-light); background: rgba(212, 175, 55, 0.16); padding: 0.25rem 0.75rem; border-radius: 6px; border: 1px solid rgba(212, 175, 55, 0.4);">+${pts} Mythos</span>
+        <!-- Prestige Vault Deposit Plaque -->
+        <div style="margin: 0.9rem auto 1.15rem auto; padding: 0.85rem 1.25rem; background: linear-gradient(135deg, rgba(212, 175, 55, 0.14) 0%, rgba(14, 66, 51, 0.32) 50%, rgba(212, 175, 55, 0.1) 100%); border: 1px solid rgba(212, 175, 55, 0.5); border-radius: 14px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15); max-width: 310px;">
+          <div style="font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 0.3rem; font-weight: 600;">
+            Collector Vault Credited
+          </div>
+          <div style="font-family: var(--font-serif-title, 'Cinzel', serif); font-size: 1.85rem; font-weight: 700; color: #FFF; line-height: 1.2; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <span class="gold-shimmer-text">+${pts} Mythos</span>
+          </div>
+          <div style="font-size: 0.78rem; color: rgba(255, 255, 255, 0.85); margin-top: 0.25rem; font-weight: 500;">
+            ₹${pts} Instant Concession Value
+          </div>
         </div>
 
-        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin: 0 auto 1.35rem auto; max-width: 380px;">
-          Your Initiate Dossier has been forged. <strong style="color: #fff;">${pts} Spendable Mythos (₹${pts} Concession Value)</strong> have been deposited directly into your private Collector Vault.
+        <p style="font-size: 0.86rem; color: rgba(255, 255, 255, 0.75); line-height: 1.6; margin: 0 auto 1.35rem auto; max-width: 370px;">
+          Your Initiate Dossier has been forged. <strong style="color: #FFF;">${pts} Spendable Mythos</strong> have been deposited directly into your private Collector Vault.
         </p>
 
-        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 1.5rem; text-align: left; display: flex; gap: 0.75rem; align-items: center;">
-          <div style="font-size: 1.4rem;">✨</div>
-          <div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.45;">
-            <strong style="color: var(--gold-light);">Instant Concession:</strong> Redeem your ${pts} Mythos at checkout for an immediate ₹${pts} order reduction, or accumulate them towards higher tiers.
+        <!-- Emerald Filigree Instant Concession Benefit -->
+        <div style="background: rgba(14, 66, 51, 0.22); border: 1px solid rgba(212, 175, 55, 0.25); border-left: 3px solid var(--gold-primary); border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 1.45rem; text-align: left; display: flex; gap: 0.75rem; align-items: center;">
+          <div style="width: 28px; height: 28px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(212, 175, 55, 0.15); border: 1px solid rgba(212, 175, 55, 0.4); font-size: 0.85rem; color: var(--gold-light);">✦</div>
+          <div style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.75); line-height: 1.45;">
+            <strong style="color: var(--gold-light);">Instant Concession:</strong> Redeem your ${pts} Mythos at checkout for an immediate ₹${pts} order reduction.
           </div>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-          <button class="btn btn-gold" style="width: 100%; padding: 0.85rem; font-size: 0.92rem; font-weight: 600; letter-spacing: 0.04em;" onclick="app.closeSignupBonusModal(); app.navigateTo('collections');">
+          <button class="btn btn-gold" style="width: 100%; padding: 0.9rem 1rem; font-size: 0.88rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 10px; box-shadow: 0 4px 18px rgba(212, 175, 55, 0.35); cursor: pointer;" onclick="app.closeSignupBonusModal(); app.navigateTo('collections');">
             Acquire Haute Parfumerie
           </button>
-          <button class="btn btn-glass" style="width: 100%; padding: 0.75rem; font-size: 0.85rem;" onclick="app.closeSignupBonusModal(); app.navigateTo('circle-of-legends');">
-            Inspect Collector Vault & Perks
+          <button class="btn btn-glass" style="width: 100%; padding: 0.8rem 1rem; font-size: 0.82rem; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 10px; border-color: rgba(212, 175, 55, 0.3); cursor: pointer;" onclick="app.closeSignupBonusModal(); app.navigateTo('circle-of-legends');">
+            Inspect Collector Vault &amp; Perks
           </button>
         </div>
       </div>
@@ -3011,8 +3021,8 @@ const Components = {
     ];
 
     // Ensure points are properly reflected and self-heal 0-points initiate state
-    let spendablePts = Number(store.loyalty?.spendable_mythos) || 0;
-    let legacyPts = Number(store.loyalty?.legacy_mythos) || 0;
+    let spendablePts = Number(store.loyalty?.spendable_mythos) || Number(store.user?.points) || 0;
+    let legacyPts = Number(store.loyalty?.legacy_mythos) || Number(store.user?.points) || 0;
     if (store.isUserLoggedIn() && spendablePts === 0 && legacyPts === 0) {
       const bonusPts = Number(store.globalSettings?.signupBonusMythos) || 200;
       spendablePts = bonusPts;
@@ -3025,6 +3035,14 @@ const Components = {
       if (store.user) {
         store.user.points = bonusPts;
         store.saveLocalStorage('mytholis_user', store.user);
+      }
+      if (typeof window !== 'undefined' && window.firebaseService && typeof window.firebaseService.reconcileAndSavePatron === 'function') {
+        const uid = store.firebaseUser?.uid || store.user?.uid;
+        if (uid) {
+          window.firebaseService.reconcileAndSavePatron(uid, {
+            loyalty: store.loyalty
+          }).catch(() => {});
+        }
       }
     }
 

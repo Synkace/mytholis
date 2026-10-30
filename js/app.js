@@ -2868,8 +2868,12 @@ class MytholisApp {
       modalBody.className = 'modal-card glass-panel';
       modalBody.id = 'signup-bonus-modal-body';
       modalBody.style.maxWidth = '460px';
-      modalBody.style.border = '1px solid rgba(212, 175, 55, 0.4)';
-      modalBody.style.boxShadow = '0 25px 70px rgba(0, 0, 0, 0.85), 0 0 40px rgba(212, 175, 55, 0.25)';
+      modalBody.style.width = '92%';
+      modalBody.style.borderRadius = '20px';
+      modalBody.style.overflow = 'hidden';
+      modalBody.style.border = '1px solid rgba(212, 175, 55, 0.45)';
+      modalBody.style.background = 'radial-gradient(circle at 50% 0%, rgba(20, 42, 32, 0.98) 0%, rgba(7, 14, 11, 0.99) 75%, #030705 100%)';
+      modalBody.style.boxShadow = '0 25px 70px rgba(0, 0, 0, 0.9), 0 0 50px rgba(212, 175, 55, 0.3)';
 
       overlay.appendChild(modalBody);
       document.body.appendChild(overlay);
