@@ -1786,7 +1786,7 @@ export const AdminComponents = {
   },
 
   /* ==========================================================================
-     METHOD 3: SHIPROCKET PDF THERMAL LABEL REBRANDER STUDIO MODAL
+     METHOD 3: LOGISTICS THERMAL LABEL REBRANDER STUDIO MODAL
      ========================================================================== */
   renderLabelRebranderModal(targetOrder = null, config = {}) {
     const orderId = targetOrder ? (targetOrder.orderId || targetOrder.id || '') : '';

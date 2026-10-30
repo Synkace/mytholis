@@ -66,10 +66,10 @@ export const LABEL_PRESETS = {
 };
 
 /**
- * Shiprocket Order Payload Generator (Defense-in-Depth)
+ * Sovereign Courier Order Payload Generator (Defense-in-Depth)
  * Enforces Mytholis Luxury Parfums company branding across all outgoing shipments
  */
-export function generateShiprocketOrderPayload(order, config = {}) {
+export function generateCourierOrderPayload(order, config = {}) {
   const items = Array.isArray(order.items) ? order.items : [];
   const orderId = order.orderId || order.id || `MYTH-${Date.now()}`;
   const subtotal = Number(order.finalPayable || order.total || order.subtotal || 3999);
@@ -145,7 +145,7 @@ export async function rebrandLabelPdf(pdfData, options = {}) {
     const buf = await pdfData.arrayBuffer();
     pdfBytes = new Uint8Array(buf);
   } else {
-    throw new Error('Unsupported PDF data format provided to rebrandShiprocketLabelPdf');
+    throw new Error('Unsupported PDF data format provided to rebrandLabelPdf');
   }
 
   const pdfDoc = await PDFDocument.load(pdfBytes);
@@ -310,10 +310,9 @@ export async function rebrandLabelPdf(pdfData, options = {}) {
   };
 }
 
-export const rebrandShiprocketLabelPdf = rebrandLabelPdf;
 
 /**
- * Utility: Generate a realistic 4x6 Shiprocket courier label PDF for testing & calibration
+ * Utility: Generate a realistic 4x6 courier thermal label PDF for testing & calibration
  */
 export async function generateSampleThermalLabelPdf() {
   const pdfDoc = await PDFDocument.create();
@@ -392,7 +391,7 @@ export async function generateSampleThermalLabelPdf() {
   page.drawText('GSTIN: 07AAACH0000A1Z5 | CIN: U74999DL2021PTC123456', { x: 14, y: 70, size: 7, font: fontRegular, color: rgb(0, 0, 0) });
   page.drawText('Shed 12B, Industrial Area Ph 1, Okhla, New Delhi 110020', { x: 14, y: 58, size: 7, font: fontRegular, color: rgb(0, 0, 0) });
   page.drawText('Return Care: returns@courier-logistics-hub.in', { x: 14, y: 46, size: 7, font: fontRegular, color: rgb(0, 0, 0) });
-  page.drawText('Authorized Shiprocket Merchant Dispatch Hub', { x: 14, y: 34, size: 6.5, font: fontRegular, color: rgb(0.4, 0.4, 0.4) });
+  page.drawText('Authorized Merchant Dispatch Hub', { x: 14, y: 34, size: 6.5, font: fontRegular, color: rgb(0.4, 0.4, 0.4) });
 
   return await pdfDoc.save();
 }

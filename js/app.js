@@ -8,10 +8,10 @@ import { AdminComponents } from './adminComponents.js';
 import { firebaseService, db, collection, getDocs, doc, getDoc, setDoc, firebaseConfig } from './firebase.js';
 import { 
   LABEL_PRESETS, 
-  rebrandShiprocketLabelPdf, 
+  rebrandLabelPdf, 
   downloadPdfBlob, 
   printPdfBlob, 
-  generateShiprocketOrderPayload,
+  generateCourierOrderPayload,
   generateSampleThermalLabelPdf
 } from './labelRebrander.js';
 
@@ -1460,7 +1460,7 @@ class MytholisApp {
               <div>
                 <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">Live Consignment Telemetry</span>
                 <p style="font-size: 0.84rem; color: var(--text-main); margin: 0.35rem 0 0;">
-                  ${foundOrder.lastActivity || foundOrder.logisticsRawStatus || foundOrder.shiprocketRawStatus || `Status: ${foundOrder.status || 'Dispatched'}`}
+                  ${foundOrder.lastActivity || foundOrder.logisticsRawStatus || foundOrder.rawStatus || `Status: ${foundOrder.status || 'Dispatched'}`}
                   ${foundOrder.lastLocation ? ` &bull; Location: <strong style="color: var(--gold-light);">${foundOrder.lastLocation}</strong>` : ''}
                 </p>
               </div>
@@ -1630,15 +1630,15 @@ class MytholisApp {
   }
 
   /* Instant Checkout Routing */
-  async buyNowFastrr(productId, event) {
+  async buyNowInstant(productId, event) {
     return this.buyNow(productId, event);
   }
 
-  async checkoutCartFastrr(event) {
+  async checkoutCartInstant(event) {
     return this.checkoutCart(event);
   }
 
-  async initiateFastrrCheckout(items, event, fallbackUrl) {
+  async initiateDirectCheckout(items, event, fallbackUrl) {
     return this.openPayUModal();
   }
 
@@ -1649,25 +1649,25 @@ class MytholisApp {
     if (typeof firebaseService !== 'undefined' && firebaseService.currentUser) return;
 
     // If auto-prompted on site visit and already closed in this session, do not re-prompt automatically
-    if (!force && sessionStorage.getItem('mytholis_fastrr_prompted') === 'true') {
+    if (!force && sessionStorage.getItem('mytholis_patron_prompted') === 'true') {
       return;
     }
 
     this.closeAllModals(false);
-    this.closeFastrrPopup();
+    this.closePatronPopup();
 
     const root = document.createElement('div');
-    root.id = 'fastrr-login-modal-root';
+    root.id = 'patron-login-modal-root';
     root.innerHTML = `
-      <div class="fastrr-popup-backdrop" onclick="if(event.target === this) app.closeFastrrPopup();" style="position: fixed; inset: 0; z-index: 2147483647; background: rgba(0, 0, 0, 0.68); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; overflow-y: auto;">
+      <div class="patron-popup-backdrop" onclick="if(event.target === this) app.closePatronPopup();" style="position: fixed; inset: 0; z-index: 2147483647; background: rgba(0, 0, 0, 0.68); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; overflow-y: auto;">
         
         <!-- Top Circular Close Button -->
-        <button type="button" class="fastrr-popup-close-btn" onclick="app.closeFastrrPopup()" aria-label="Close" style="width: 36px; height: 36px; min-height: 36px; border-radius: 50%; background: #ffffff; color: #1f2937; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.35); margin-bottom: 14px; transition: transform 0.15s ease; outline: none;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+        <button type="button" class="patron-popup-close-btn" onclick="app.closePatronPopup()" aria-label="Close" style="width: 36px; height: 36px; min-height: 36px; border-radius: 50%; background: #ffffff; color: #1f2937; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.35); margin-bottom: 14px; transition: transform 0.15s ease; outline: none;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
           ✕
         </button>
 
         <!-- Main Card Container -->
-        <div class="fastrr-popup-card" style="width: 100%; max-width: 350px; border-radius: 26px; background: linear-gradient(180deg, #d8d6ce 0%, #b8b19a 100%); padding: 22px 18px 20px 18px; box-shadow: 0 25px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.2); display: flex; flex-direction: column; box-sizing: border-box; position: relative;">
+        <div class="patron-popup-card" style="width: 100%; max-width: 350px; border-radius: 26px; background: linear-gradient(180deg, #d8d6ce 0%, #b8b19a 100%); padding: 22px 18px 20px 18px; box-shadow: 0 25px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.2); display: flex; flex-direction: column; box-sizing: border-box; position: relative;">
           
           <!-- Inner White Form Container -->
           <div style="background: #ffffff; border-radius: 16px; padding: 24px 18px 20px 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.12); margin-top: 14px; margin-bottom: 16px;">
@@ -1676,7 +1676,7 @@ class MytholisApp {
             </h3>
 
             <!-- STEP 1: PHONE NUMBER ENTRY -->
-            <div id="fastrr-popup-phone-pane">
+            <div id="patron-popup-phone-pane">
               <div style="display: flex; align-items: stretch; border: 1.5px solid #6366f1; border-radius: 10px; overflow: hidden; background: #ffffff; box-shadow: 0 1px 3px rgba(99,102,241,0.1);">
                 <!-- Flag & Country Prefix -->
                 <div style="display: flex; align-items: center; gap: 6px; padding: 0 10px; border-right: 1px solid #e2e8f0; font-weight: 600; font-size: 0.95rem; color: #1e293b; user-select: none; flex-shrink: 0; background: #f8fafc;">
@@ -1684,50 +1684,50 @@ class MytholisApp {
                   <span>+91</span>
                 </div>
                 <!-- 10-Digit Mobile Input -->
-                <input type="tel" id="fastrr-popup-phone-input" placeholder="10-digit phone number" inputmode="numeric" pattern="[0-9]*" maxlength="10" autocomplete="tel-national" style="flex: 1; border: none; outline: none; padding: 0.8rem 0.65rem; font-size: 0.95rem; color: #0f172a; min-width: 0; background: transparent; font-weight: 500;" oninput="this.value = this.value.replace(/[^0-9]/g, '');" onkeydown="if(event.key === 'Enter') app.submitFastrrPopupPhone();" />
+                <input type="tel" id="patron-popup-phone-input" placeholder="10-digit phone number" inputmode="numeric" pattern="[0-9]*" maxlength="10" autocomplete="tel-national" style="flex: 1; border: none; outline: none; padding: 0.8rem 0.65rem; font-size: 0.95rem; color: #0f172a; min-width: 0; background: transparent; font-weight: 500;" oninput="this.value = this.value.replace(/[^0-9]/g, '');" onkeydown="if(event.key === 'Enter') app.submitPatronPopupPhone();" />
                 <!-- Login Button -->
-                <button type="button" id="fastrr-popup-login-btn" onclick="app.submitFastrrPopupPhone()" style="background: #6366f1; color: #ffffff; border: none; padding: 0 20px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: background 0.2s; flex-shrink: 0; display: flex; align-items: center; justify-content: center; letter-spacing: 0.01em;">
+                <button type="button" id="patron-popup-login-btn" onclick="app.submitPatronPopupPhone()" style="background: #6366f1; color: #ffffff; border: none; padding: 0 20px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: background 0.2s; flex-shrink: 0; display: flex; align-items: center; justify-content: center; letter-spacing: 0.01em;">
                   Login
                 </button>
               </div>
               
               <!-- Validation Error Alert -->
-              <div id="fastrr-popup-phone-error" style="display: none; color: #dc2626; font-size: 0.72rem; margin-top: 0.45rem; text-align: center; font-weight: 500;"></div>
+              <div id="patron-popup-phone-error" style="display: none; color: #dc2626; font-size: 0.72rem; margin-top: 0.45rem; text-align: center; font-weight: 500;"></div>
 
               <!-- Disclaimer -->
               <div style="margin-top: 0.95rem; font-size: 0.69rem; color: #64748b; line-height: 1.45; text-align: center;">
                 <span style="font-size: 0.75rem; color: #94a3b8; margin-right: 3px;">ⓘ</span>
-                <span>By proceeding, you agree to House Mytholis <a href="#privacy" onclick="app.closeFastrrPopup(); app.navigateTo('privacy');" style="color: #475569; text-decoration: underline;">T&C</a> and <a href="#privacy" onclick="app.closeFastrrPopup(); app.navigateTo('privacy');" style="color: #475569; text-decoration: underline;">Privacy Policy</a>.</span>
+                <span>By proceeding, you agree to House Mytholis <a href="#privacy" onclick="app.closePatronPopup(); app.navigateTo('privacy');" style="color: #475569; text-decoration: underline;">T&C</a> and <a href="#privacy" onclick="app.closePatronPopup(); app.navigateTo('privacy');" style="color: #475569; text-decoration: underline;">Privacy Policy</a>.</span>
               </div>
             </div>
 
             <!-- STEP 2: OTP VERIFICATION -->
-            <div id="fastrr-popup-otp-pane" style="display: none;">
+            <div id="patron-popup-otp-pane" style="display: none;">
               <p style="font-size: 0.82rem; color: #64748b; text-align: center; margin: 0 0 1.1rem 0; line-height: 1.45;">
-                Enter the 6-digit verification code sent to<br><strong id="fastrr-otp-display-phone" style="color: #0f172a; font-size: 0.9rem;"></strong>
+                Enter the 6-digit verification code sent to<br><strong id="patron-otp-display-phone" style="color: #0f172a; font-size: 0.9rem;"></strong>
               </p>
               
               <div style="display: flex; gap: 6px; justify-content: center; margin-bottom: 1.1rem;">
-                <input type="tel" class="fastrr-otp-digit" maxlength="1" pattern="[0-9]*" inputmode="numeric" style="width: 40px; height: 48px; text-align: center; font-size: 1.35rem; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; background: #f8fafc; color: #0f172a;" oninput="app.handleOtpDigitInput(this, 0)" onkeydown="app.handleOtpDigitKeydown(event, 0)" onpaste="app.handleOtpPaste(event)" />
-                <input type="tel" class="fastrr-otp-digit" maxlength="1" pattern="[0-9]*" inputmode="numeric" style="width: 40px; height: 48px; text-align: center; font-size: 1.35rem; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; background: #f8fafc; color: #0f172a;" oninput="app.handleOtpDigitInput(this, 1)" onkeydown="app.handleOtpDigitKeydown(event, 1)" onpaste="app.handleOtpPaste(event)" />
-                <input type="tel" class="fastrr-otp-digit" maxlength="1" pattern="[0-9]*" inputmode="numeric" style="width: 40px; height: 48px; text-align: center; font-size: 1.35rem; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; background: #f8fafc; color: #0f172a;" oninput="app.handleOtpDigitInput(this, 2)" onkeydown="app.handleOtpDigitKeydown(event, 2)" onpaste="app.handleOtpPaste(event)" />
-                <input type="tel" class="fastrr-otp-digit" maxlength="1" pattern="[0-9]*" inputmode="numeric" style="width: 40px; height: 48px; text-align: center; font-size: 1.35rem; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; background: #f8fafc; color: #0f172a;" oninput="app.handleOtpDigitInput(this, 3)" onkeydown="app.handleOtpDigitKeydown(event, 3)" onpaste="app.handleOtpPaste(event)" />
-                <input type="tel" class="fastrr-otp-digit" maxlength="1" pattern="[0-9]*" inputmode="numeric" style="width: 40px; height: 48px; text-align: center; font-size: 1.35rem; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; background: #f8fafc; color: #0f172a;" oninput="app.handleOtpDigitInput(this, 4)" onkeydown="app.handleOtpDigitKeydown(event, 4)" onpaste="app.handleOtpPaste(event)" />
-                <input type="tel" class="fastrr-otp-digit" maxlength="1" pattern="[0-9]*" inputmode="numeric" style="width: 40px; height: 48px; text-align: center; font-size: 1.35rem; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; background: #f8fafc; color: #0f172a;" oninput="app.handleOtpDigitInput(this, 5)" onkeydown="app.handleOtpDigitKeydown(event, 5)" onpaste="app.handleOtpPaste(event)" />
+                <input type="tel" class="patron-otp-digit" maxlength="1" pattern="[0-9]*" inputmode="numeric" style="width: 40px; height: 48px; text-align: center; font-size: 1.35rem; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; background: #f8fafc; color: #0f172a;" oninput="app.handleOtpDigitInput(this, 0)" onkeydown="app.handleOtpDigitKeydown(event, 0)" onpaste="app.handleOtpPaste(event)" />
+                <input type="tel" class="patron-otp-digit" maxlength="1" pattern="[0-9]*" inputmode="numeric" style="width: 40px; height: 48px; text-align: center; font-size: 1.35rem; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; background: #f8fafc; color: #0f172a;" oninput="app.handleOtpDigitInput(this, 1)" onkeydown="app.handleOtpDigitKeydown(event, 1)" onpaste="app.handleOtpPaste(event)" />
+                <input type="tel" class="patron-otp-digit" maxlength="1" pattern="[0-9]*" inputmode="numeric" style="width: 40px; height: 48px; text-align: center; font-size: 1.35rem; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; background: #f8fafc; color: #0f172a;" oninput="app.handleOtpDigitInput(this, 2)" onkeydown="app.handleOtpDigitKeydown(event, 2)" onpaste="app.handleOtpPaste(event)" />
+                <input type="tel" class="patron-otp-digit" maxlength="1" pattern="[0-9]*" inputmode="numeric" style="width: 40px; height: 48px; text-align: center; font-size: 1.35rem; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; background: #f8fafc; color: #0f172a;" oninput="app.handleOtpDigitInput(this, 3)" onkeydown="app.handleOtpDigitKeydown(event, 3)" onpaste="app.handleOtpPaste(event)" />
+                <input type="tel" class="patron-otp-digit" maxlength="1" pattern="[0-9]*" inputmode="numeric" style="width: 40px; height: 48px; text-align: center; font-size: 1.35rem; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; background: #f8fafc; color: #0f172a;" oninput="app.handleOtpDigitInput(this, 4)" onkeydown="app.handleOtpDigitKeydown(event, 4)" onpaste="app.handleOtpPaste(event)" />
+                <input type="tel" class="patron-otp-digit" maxlength="1" pattern="[0-9]*" inputmode="numeric" style="width: 40px; height: 48px; text-align: center; font-size: 1.35rem; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; background: #f8fafc; color: #0f172a;" oninput="app.handleOtpDigitInput(this, 5)" onkeydown="app.handleOtpDigitKeydown(event, 5)" onpaste="app.handleOtpPaste(event)" />
               </div>
 
               <!-- OTP Error Alert -->
-              <div id="fastrr-popup-otp-error" style="display: none; color: #dc2626; font-size: 0.72rem; margin-bottom: 0.65rem; text-align: center; font-weight: 500;"></div>
+              <div id="patron-popup-otp-error" style="display: none; color: #dc2626; font-size: 0.72rem; margin-bottom: 0.65rem; text-align: center; font-weight: 500;"></div>
 
               <!-- Verify Button -->
-              <button type="button" id="fastrr-verify-btn" onclick="app.verifyFastrrPopupOtp()" style="width: 100%; background: #6366f1; color: #ffffff; border: none; padding: 0.85rem; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: opacity 0.2s;">
+              <button type="button" id="patron-verify-btn" onclick="app.verifyPatronPopupOtp()" style="width: 100%; background: #6366f1; color: #ffffff; border: none; padding: 0.85rem; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: opacity 0.2s;">
                 Verify &amp; Continue
               </button>
 
               <!-- Footer Options: Change Number / Resend -->
               <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.85rem; font-size: 0.78rem;">
-                <button type="button" onclick="app.editFastrrPopupPhone()" style="background: none; border: none; color: #6366f1; cursor: pointer; text-decoration: underline; padding: 0; font-weight: 500;">Change number</button>
-                <button type="button" id="fastrr-resend-btn" onclick="app.resendFastrrPopupOtp()" style="background: none; border: none; color: #64748b; cursor: pointer; padding: 0; font-weight: 500;">Resend OTP</button>
+                <button type="button" onclick="app.editPatronPopupPhone()" style="background: none; border: none; color: #6366f1; cursor: pointer; text-decoration: underline; padding: 0; font-weight: 500;">Change number</button>
+                <button type="button" id="patron-resend-btn" onclick="app.resendPatronPopupOtp()" style="background: none; border: none; color: #64748b; cursor: pointer; padding: 0; font-weight: 500;">Resend OTP</button>
               </div>
             </div>
 
@@ -1750,31 +1750,23 @@ class MytholisApp {
 
     // Auto-focus phone input
     setTimeout(() => {
-      document.getElementById('fastrr-popup-phone-input')?.focus();
+      document.getElementById('patron-popup-phone-input')?.focus();
     }, 150);
   }
 
   /* Close Patron Popup */
-  closeFastrrPopup() {
-    sessionStorage.setItem('mytholis_fastrr_prompted', 'true');
-    document.getElementById('fastrr-login-modal-root')?.remove();
-    document.body.style.overflow = 'auto';
-    clearInterval(this.fastrrResendTimer);
-  }
-
   closePatronPopup() {
-    return this.closeFastrrPopup();
-  }
-
-  openFastrrLogin(event = null, force = true) {
-    return this.openPatronLogin(event, force);
+    sessionStorage.setItem('mytholis_patron_prompted', 'true');
+    document.getElementById('patron-login-modal-root')?.remove();
+    document.body.style.overflow = 'auto';
+    clearInterval(this.patronResendTimer);
   }
 
   /* Step 1: Submit Phone Number */
-  async submitFastrrPopupPhone() {
-    const input = document.getElementById('fastrr-popup-phone-input');
-    const err = document.getElementById('fastrr-popup-phone-error');
-    const btn = document.getElementById('fastrr-popup-login-btn');
+  async submitPatronPopupPhone() {
+    const input = document.getElementById('patron-popup-phone-input');
+    const err = document.getElementById('patron-popup-phone-error');
+    const btn = document.getElementById('patron-popup-login-btn');
     if (!input || !btn) return;
 
     const raw = input.value.trim().replace(/\D/g, '');
@@ -1788,7 +1780,7 @@ class MytholisApp {
     }
 
     if (err) err.style.display = 'none';
-    this.fastrrAuthPhone = raw;
+    this.patronAuthPhone = raw;
 
     btn.disabled = true;
     btn.textContent = '...';
@@ -1799,31 +1791,31 @@ class MytholisApp {
         try {
           const res = await firebaseService.sendPhoneOtp('+91' + raw, 'recaptcha-container');
           if (!res || !res.success) {
-            console.warn('[Fastrr Popup OTP dispatch]:', res?.error);
+            console.warn('[Patron Popup OTP dispatch]:', res?.error);
           }
         } catch (otpErr) {
-          console.warn('[Fastrr Popup OTP fallback active]:', otpErr.message);
+          console.warn('[Patron Popup OTP fallback active]:', otpErr.message);
         }
       }
 
       // Transition to OTP screen
-      const phonePane = document.getElementById('fastrr-popup-phone-pane');
-      const otpPane = document.getElementById('fastrr-popup-otp-pane');
-      const phoneDisplay = document.getElementById('fastrr-otp-display-phone');
+      const phonePane = document.getElementById('patron-popup-phone-pane');
+      const otpPane = document.getElementById('patron-popup-otp-pane');
+      const phoneDisplay = document.getElementById('patron-otp-display-phone');
 
       if (phoneDisplay) phoneDisplay.textContent = `+91 ${raw.slice(0, 5)} ${raw.slice(5)}`;
       if (phonePane) phonePane.style.display = 'none';
       if (otpPane) otpPane.style.display = 'block';
 
-      this.startFastrrResendCountdown();
+      this.startPatronResendCountdown();
 
       // Focus first digit
       setTimeout(() => {
-        const digits = document.querySelectorAll('.fastrr-otp-digit');
+        const digits = document.querySelectorAll('.patron-otp-digit');
         if (digits && digits[0]) digits[0].focus();
       }, 100);
     } catch (e) {
-      console.error('[Fastrr Submit Phone Error]:', e);
+      console.error('[Patron Submit Phone Error]:', e);
       if (err) {
         err.textContent = 'Could not send verification code. Please try again.';
         err.style.display = 'block';
@@ -1837,7 +1829,7 @@ class MytholisApp {
   /* Handle Individual OTP Digit Input */
   handleOtpDigitInput(el, index) {
     el.value = el.value.replace(/\D/g, '');
-    const digits = document.querySelectorAll('.fastrr-otp-digit');
+    const digits = document.querySelectorAll('.patron-otp-digit');
     if (el.value.length === 1 && index < digits.length - 1) {
       digits[index + 1]?.focus();
     }
@@ -1845,13 +1837,13 @@ class MytholisApp {
     // Check if all filled
     const code = Array.from(digits).map(d => d.value).join('');
     if (code.length === 6) {
-      this.verifyFastrrPopupOtp();
+      this.verifyPatronPopupOtp();
     }
   }
 
   /* Handle Backspace in OTP Input */
   handleOtpDigitKeydown(event, index) {
-    const digits = document.querySelectorAll('.fastrr-otp-digit');
+    const digits = document.querySelectorAll('.patron-otp-digit');
     if (event.key === 'Backspace' && !event.target.value && index > 0) {
       digits[index - 1]?.focus();
     }
@@ -1862,22 +1854,22 @@ class MytholisApp {
     event.preventDefault();
     const paste = (event.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
     if (!paste) return;
-    const digits = document.querySelectorAll('.fastrr-otp-digit');
+    const digits = document.querySelectorAll('.patron-otp-digit');
     paste.split('').slice(0, 6).forEach((char, i) => {
       if (digits[i]) digits[i].value = char;
     });
     if (paste.length >= 6) {
-      this.verifyFastrrPopupOtp();
+      this.verifyPatronPopupOtp();
     } else if (digits[paste.length]) {
       digits[paste.length].focus();
     }
   }
 
   /* Step 2: Verify OTP */
-  async verifyFastrrPopupOtp() {
-    const digits = document.querySelectorAll('.fastrr-otp-digit');
-    const err = document.getElementById('fastrr-popup-otp-error');
-    const btn = document.getElementById('fastrr-verify-btn');
+  async verifyPatronPopupOtp() {
+    const digits = document.querySelectorAll('.patron-otp-digit');
+    const err = document.getElementById('patron-popup-otp-error');
+    const btn = document.getElementById('patron-verify-btn');
     const otp = Array.from(digits).map(d => d.value).join('');
 
     if (otp.length < 4) {
@@ -1908,19 +1900,19 @@ class MytholisApp {
       }
 
       // 2. Verified or Demo/SMS Passcode
-      const cleanPhone = this.fastrrAuthPhone || '9876543210';
+      const cleanPhone = this.patronAuthPhone || '9876543210';
       const patronName = `Patron (${cleanPhone.slice(0, 4)}***)`;
 
-      await this.handleFastrrLoginSuccess({
+      await this.handlePatronLoginSuccess({
         phone: cleanPhone,
         mobile: cleanPhone,
         name: patronName,
         email: `${cleanPhone}@phone.mytholis.com`
       });
 
-      this.closeFastrrPopup();
+      this.closePatronPopup();
     } catch (verifyErr) {
-      console.error('[Fastrr Verify Error]:', verifyErr);
+      console.error('[Patron Verify Error]:', verifyErr);
       if (err) {
         err.textContent = 'Invalid verification code. Please check and try again.';
         err.style.display = 'block';
@@ -1933,47 +1925,49 @@ class MytholisApp {
   }
 
   /* Edit Phone Number */
-  editFastrrPopupPhone() {
-    clearInterval(this.fastrrResendTimer);
-    const phonePane = document.getElementById('fastrr-popup-phone-pane');
-    const otpPane = document.getElementById('fastrr-popup-otp-pane');
+  editPatronPopupPhone() {
+    clearInterval(this.patronResendTimer);
+    const phonePane = document.getElementById('patron-popup-phone-pane');
+    const otpPane = document.getElementById('patron-popup-otp-pane');
     if (otpPane) otpPane.style.display = 'none';
     if (phonePane) phonePane.style.display = 'block';
     setTimeout(() => {
-      document.getElementById('fastrr-popup-phone-input')?.focus();
+      const input = document.getElementById('patron-popup-phone-input');
+      input?.focus();
     }, 100);
   }
 
   /* Resend OTP */
-  async resendFastrrPopupOtp() {
-    const resendBtn = document.getElementById('fastrr-resend-btn');
+  async resendPatronPopupOtp() {
+    const resendBtn = document.getElementById('patron-resend-btn');
     if (resendBtn && resendBtn.disabled) return;
     this.showToast('Resending verification code...');
-    if (typeof firebaseService !== 'undefined' && this.fastrrAuthPhone) {
+    const phone = this.patronAuthPhone;
+    if (typeof firebaseService !== 'undefined' && phone) {
       try {
-        await firebaseService.sendPhoneOtp('+91' + this.fastrrAuthPhone, 'recaptcha-container');
+        await firebaseService.sendPhoneOtp('+91' + phone, 'recaptcha-container');
       } catch (e) {
-        console.warn('[Fastrr Resend]:', e);
+        console.warn('[Patron Resend]:', e);
       }
     }
-    this.startFastrrResendCountdown();
+    this.startPatronResendCountdown();
   }
 
   /* Resend Countdown Timer (30s) */
-  startFastrrResendCountdown() {
-    clearInterval(this.fastrrResendTimer);
+  startPatronResendCountdown() {
+    clearInterval(this.patronResendTimer);
     let seconds = 30;
-    const btn = document.getElementById('fastrr-resend-btn');
+    const btn = document.getElementById('patron-resend-btn');
     if (!btn) return;
     btn.disabled = true;
     btn.style.color = '#94a3b8';
     btn.style.cursor = 'default';
     btn.textContent = `Resend in ${seconds}s`;
 
-    this.fastrrResendTimer = setInterval(() => {
+    this.patronResendTimer = setInterval(() => {
       seconds--;
       if (seconds <= 0) {
-        clearInterval(this.fastrrResendTimer);
+        clearInterval(this.patronResendTimer);
         btn.disabled = false;
         btn.style.color = '#6366f1';
         btn.style.cursor = 'pointer';
@@ -1984,14 +1978,13 @@ class MytholisApp {
     }, 1000);
   }
 
-  /* Handle Fastrr Login Completion */
-  async handleFastrrLoginSuccess(userData) {
+  /* Handle Patron Login Completion */
+  async handlePatronLoginSuccess(userData) {
     if (!userData) return;
     try {
-      // Remove any lingering Fastrr modal frames
+      // Remove any lingering modal frames
       document.getElementById('headless-container')?.remove();
-      document.getElementById('fastrr-main-container')?.remove();
-      document.getElementById('fastrr-pre-loader')?.remove();
+      document.getElementById('patron-login-modal-root')?.remove();
       document.body.style.overflow = 'auto';
 
       const phone = userData.phone || userData.mobile || userData.phone_number || userData.contact || '';
@@ -1999,7 +1992,7 @@ class MytholisApp {
       const name = userData.name || [userData.first_name, userData.last_name].filter(Boolean).join(' ') || (cleanPhone ? `Patron (${cleanPhone})` : 'Mytholis Patron');
       const email = userData.email || (cleanPhone ? `${cleanPhone.replace(/\D/g, '')}@phone.mytholis.com` : '');
 
-      const fastrrPatron = {
+      const patronProfile = {
         name,
         email,
         phone: cleanPhone,
@@ -2010,8 +2003,8 @@ class MytholisApp {
         pincode: userData.pincode || (userData.addresses && userData.addresses[0]?.pincode) || ''
       };
 
-      if (typeof firebaseService !== 'undefined' && typeof firebaseService.syncFastrrUserData === 'function') {
-        await firebaseService.syncFastrrUserData(fastrrPatron);
+      if (typeof firebaseService !== 'undefined' && typeof firebaseService.syncPhoneUserData === 'function') {
+        await firebaseService.syncPhoneUserData(patronProfile);
       } else if (typeof store !== 'undefined') {
         store.user = {
           ...store.user,
@@ -2019,7 +2012,7 @@ class MytholisApp {
           name,
           email,
           phone: cleanPhone,
-          authProvider: 'fastrr'
+          authProvider: 'phone'
         };
         store.saveLocalStorage('mytholis_user', store.user);
         store.notify();
@@ -2035,7 +2028,7 @@ class MytholisApp {
 
       this.showToast(`✨ Welcome to House Mytholis, ${name}!`);
     } catch (err) {
-      console.error('[Fastrr Login Handler Error]:', err);
+      console.error('[Patron Login Handler Error]:', err);
     }
   }
 
@@ -2817,7 +2810,7 @@ class MytholisApp {
   /* Close All Modals */
   closeAllModals(restoreScroll = true) {
     document.querySelectorAll('.modal-overlay').forEach(el => el.classList.remove('active'));
-    document.getElementById('fastrr-login-modal-root')?.remove();
+    document.getElementById('patron-login-modal-root')?.remove();
     document.getElementById('headless-container')?.remove();
     if (restoreScroll) {
       document.body.style.overflow = '';
@@ -4568,7 +4561,7 @@ class MytholisApp {
   }
 
   /* ==========================================================================
-     METHOD 3: SHIPROCKET PDF THERMAL LABEL REBRANDER CONTROLLER
+     METHOD 3: LOGISTICS THERMAL LABEL REBRANDER CONTROLLER
      Client-side vector rebranding with 100% courier barcode integrity
      ========================================================================== */
 
@@ -4788,7 +4781,7 @@ class MytholisApp {
     this.updateRebranderStatus('Stamping vector brand...', 'var(--gold-primary)');
     try {
       const options = this.getRebranderFormOptions();
-      const result = await rebrandShiprocketLabelPdf(this.currentRebranderPdfBytes, options);
+      const result = await rebrandLabelPdf(this.currentRebranderPdfBytes, options);
       this.activeRebrandedResult = result;
 
       const iframe = document.getElementById('rebrander-preview-frame');
@@ -4866,8 +4859,9 @@ class MytholisApp {
     this.showToast('Archiving rebrand metadata to Order #' + orderId + '...');
     try {
       const options = this.getRebranderFormOptions();
-      if (typeof firebaseService !== 'undefined' && firebaseService.saveShiprocketOrderDetails) {
-        await firebaseService.saveShiprocketOrderDetails(orderId, {
+      if (typeof firebaseService !== 'undefined' && (firebaseService.saveLogisticsOrderDetails || firebaseService.saveShippingOrderDetails)) {
+        const saveFn = firebaseService.saveLogisticsOrderDetails || firebaseService.saveShippingOrderDetails;
+        await saveFn.call(firebaseService, orderId, {
           rebrandedAt: new Date().toISOString(),
           rebrandedBy: firebaseService.currentUser?.email || 'admin',
           labelConfig: options

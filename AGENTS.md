@@ -8,7 +8,7 @@ All automated coding agents and contributors MUST adhere strictly to the followi
 - If an environment secret is not configured, the endpoint must **fail closed** (reject or throw a configuration error), never fall back to hardcoded dummy or production credentials in code.
 
 ## 2. Fail-Closed Cryptographic Verification
-- For all payment gateway callbacks (PayU, Razorpay) and webhooks (Fastrr, Shiprocket):
+- For all payment gateway callbacks (PayU, Razorpay) and webhooks (e.g. Courier / Logistics):
   - Signature and HMAC validation must default to `isHashValid = false`.
   - Check that both the shared secret AND the incoming signature header exist before calculation.
   - If the signature is missing or does not match, immediately reject with `401 Unauthorized`.

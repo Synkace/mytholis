@@ -685,20 +685,20 @@ export class FirebaseService {
     this.store.user.name = patronName;
     this.store.user.authProvider = 'phone';
 
-    // Parse addresses if Fastrr returned shipping address
-    if (fastrrUser.addresses && Array.isArray(fastrrUser.addresses) && fastrrUser.addresses.length > 0) {
-      const primaryAddr = fastrrUser.addresses[0];
+    // Parse addresses if patron profile provided shipping address
+    if (userData.addresses && Array.isArray(userData.addresses) && userData.addresses.length > 0) {
+      const primaryAddr = userData.addresses[0];
       if (primaryAddr.address1 || primaryAddr.address) {
         this.store.user.address = primaryAddr.address1 || primaryAddr.address || this.store.user.address;
       }
       if (primaryAddr.city) this.store.user.city = primaryAddr.city;
       if (primaryAddr.state || primaryAddr.province) this.store.user.state = primaryAddr.state || primaryAddr.province;
       if (primaryAddr.pincode || primaryAddr.zip) this.store.user.pincode = primaryAddr.pincode || primaryAddr.zip;
-    } else if (fastrrUser.address && !this.store.user.address) {
-      this.store.user.address = fastrrUser.address;
-      if (fastrrUser.city) this.store.user.city = fastrrUser.city;
-      if (fastrrUser.pincode) this.store.user.pincode = fastrrUser.pincode;
-      if (fastrrUser.state) this.store.user.state = fastrrUser.state;
+    } else if (userData.address && !this.store.user.address) {
+      this.store.user.address = userData.address;
+      if (userData.city) this.store.user.city = userData.city;
+      if (userData.pincode) this.store.user.pincode = userData.pincode;
+      if (userData.state) this.store.user.state = userData.state;
     }
 
     this.store.saveLocalStorage('mytholis_user', this.store.user);
@@ -774,7 +774,7 @@ export class FirebaseService {
     }
   }
 
-  syncFastrrUserData(userData) {
+  syncPatronUserData(userData) {
     return this.syncPhoneUserData(userData);
   }
 
@@ -866,6 +866,45 @@ export class FirebaseService {
         });
       } catch (err) {
         console.warn("[Mytholis Admin] Could not fetch users:", err.message);
+      }
+
+      // Ad-blocker & Permission Resilient Fallback: If client direct Firestore was blocked by client or empty, query sovereign admin API
+      if (data.orders.length === 0 && data.users.length === 0) {
+        try {
+          const idToken = this.currentUser && typeof this.currentUser.getIdToken === 'function'
+            ? await this.currentUser.getIdToken().catch(() => null)
+            : null;
+          if (idToken) {
+            const apiRes = await fetch('/api/admin', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`
+              },
+              body: JSON.stringify({ action: 'GET_DASHBOARD_DATA' })
+            }).then(r => r.ok ? r.json() : null).catch(() => null);
+
+            if (apiRes && apiRes.success && apiRes.data) {
+              if (Array.isArray(apiRes.data.orders) && apiRes.data.orders.length > 0) {
+                data.orders = apiRes.data.orders;
+              }
+              if (Array.isArray(apiRes.data.users) && apiRes.data.users.length > 0) {
+                data.users = apiRes.data.users;
+              }
+              if (Array.isArray(apiRes.data.products) && apiRes.data.products.length > 0 && (!data.products || data.products.length === 0)) {
+                data.products = apiRes.data.products;
+              }
+              if (Array.isArray(apiRes.data.posts) && apiRes.data.posts.length > 0 && (!data.posts || data.posts.length === 0)) {
+                data.posts = apiRes.data.posts;
+              }
+              if (apiRes.data.settings && Object.keys(apiRes.data.settings).length > 0 && Object.keys(data.settings).length === 0) {
+                data.settings = apiRes.data.settings;
+              }
+            }
+          }
+        } catch (apiErr) {
+          console.warn("[Mytholis Admin] Serverless admin fallback note:", apiErr.message);
+        }
       }
 
       // Cross-reference & enrich Patrons with real order coordinates, shipping addresses, phone numbers, and LTV
@@ -1350,7 +1389,7 @@ export class FirebaseService {
   // Save Shipping & Rebranded Label Metadata
   async saveShippingOrderDetails(orderId, details = {}) {
     return this.updateOrderStatus(orderId, {
-      logisticsOrderId: details.logisticsOrderId || details.order_id || details.shiprocketOrderId || '',
+      logisticsOrderId: details.logisticsOrderId || details.order_id || details.courierOrderId || '',
       shipmentId: details.shipmentId || details.shipment_id || '',
       awbCode: details.awbCode || details.awb_code || details.trackingNumber || '',
       trackingNumber: details.awbCode || details.awb_code || details.trackingNumber || '',
@@ -1363,7 +1402,7 @@ export class FirebaseService {
     });
   }
 
-  saveShiprocketOrderDetails(orderId, details = {}) {
+  saveLogisticsOrderDetails(orderId, details = {}) {
     return this.saveShippingOrderDetails(orderId, details);
   }
 

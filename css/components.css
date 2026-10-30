@@ -269,7 +269,7 @@
 }
 
 /* VIP 1-Click Mobile OTP Access Button */
-.btn-fastrr,
+.btn-instant-pay,
 .btn-otp-login {
   width: 100%;
   display: flex;
@@ -292,18 +292,21 @@
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.btn-fastrr:hover {
+.btn-instant-pay:hover,
+.btn-otp-login:hover {
   border-color: #F9E7B9;
   background: linear-gradient(135deg, rgba(24, 60, 46, 0.95) 0%, rgba(10, 40, 29, 0.98) 100%);
   box-shadow: 0 0 25px rgba(212, 175, 55, 0.45);
   transform: translateY(-1px);
 }
 
-.btn-fastrr:active {
+.btn-instant-pay:active,
+.btn-otp-login:active {
   transform: translateY(0);
 }
 
-.btn-fastrr .fastrr-bolt {
+.btn-instant-pay .patron-bolt,
+.btn-otp-login .patron-bolt {
   color: var(--gold-primary);
   filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.5));
 }
@@ -6690,36 +6693,36 @@ div#cardsRow {
 /* ==============================================================================
    VIP PATRON POPUP LOGIN STYLES (APP & PHONE)
    ============================================================================== */
-.fastrr-popup-backdrop {
-  animation: fastrrFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.patron-popup-backdrop {
+  animation: patronFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.fastrr-popup-card {
-  animation: fastrrScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.patron-popup-card {
+  animation: patronScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   will-change: transform, opacity;
 }
 
-@keyframes fastrrFadeIn {
+@keyframes patronFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-@keyframes fastrrScaleUp {
+@keyframes patronScaleUp {
   from { opacity: 0; transform: scale(0.92) translateY(12px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-.fastrr-otp-digit:focus {
+.patron-otp-digit:focus {
   border-color: #6366f1 !important;
   background: #ffffff !important;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18) !important;
 }
 
-#fastrr-popup-login-btn:hover {
+#patron-popup-login-btn:hover {
   background: #4f46e5 !important;
 }
 
-#fastrr-verify-btn:hover {
+#patron-verify-btn:hover {
   background: #4f46e5 !important;
 }
 

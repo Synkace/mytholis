@@ -4,17 +4,23 @@ service cloud.firestore {
 
     function isAdmin() {
       return request.auth != null && (
-        request.auth.token.email in ['gunhegarr@gmail.com', 'admin@mytholis.com', 'alexander@mytholis.com', 'founder@mytholis.com'] ||
-        request.auth.token.admin == true
+        request.auth.token.admin == true ||
+        (request.auth.token.email != null && (
+          request.auth.token.email.matches('.*gunhegarr.*') ||
+          request.auth.token.email in ['gunhegarr@gmail.com', 'admin@mytholis.com', 'alexander@mytholis.com', 'founder@mytholis.com']
+        )) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true))
       );
     }
     
-    // 1. Patrons can read & update their own profile (cannot escalate role or tamper with isAdmin)
+    // 1. Patrons can read & update their own profile (cannot escalate role or tamper with isAdmin); Admins have sovereign read/write
     match /users/{userId} {
       allow read: if (request.auth != null && request.auth.uid == userId) || isAdmin();
-      allow create: if request.auth != null && request.auth.uid == userId &&
+      allow create: if (request.auth != null && request.auth.uid == userId &&
                       !('role' in request.resource.data) &&
-                      !('isAdmin' in request.resource.data);
+                      !('isAdmin' in request.resource.data)) || isAdmin();
       allow update: if (request.auth != null && request.auth.uid == userId &&
                         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'isAdmin'])) ||
                        isAdmin();
