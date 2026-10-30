@@ -98,13 +98,6 @@ class MytholisApp {
     // Initialize Navbar Auth State
     this.updateNavAuth();
 
-    // Auto-prompt VIP Patron Access Login whenever a visitor visits the site
-    setTimeout(() => {
-      if (!store.user?.isLoggedIn && (!firebaseService || !firebaseService.currentUser)) {
-        this.openPatronLogin(null, false);
-      }
-    }, 1500);
-
     // Hash & History router listeners for Deep-Linking and Browser Back-Button
     window.addEventListener('hashchange', () => this.handleHashRoute());
     window.addEventListener('popstate', () => this.handleHashRoute());
@@ -1642,340 +1635,20 @@ class MytholisApp {
     return this.openPayUModal();
   }
 
-  /* VIP Patron 1-Click Mobile Access Popup */
-  openPatronLogin(event = null, force = true) {
+  /* Collector Access Modal Launcher */
+  openPatronLogin(event = null) {
     if (event && event.preventDefault) event.preventDefault();
-    if (store.user && store.user.isLoggedIn) return;
-    if (typeof firebaseService !== 'undefined' && firebaseService.currentUser) return;
-
-    // If auto-prompted on site visit and already closed in this session, do not re-prompt automatically
-    if (!force && sessionStorage.getItem('mytholis_patron_prompted') === 'true') {
-      return;
-    }
-
-    this.closeAllModals(false);
-    this.closePatronPopup();
-
-    const root = document.createElement('div');
-    root.id = 'patron-login-modal-root';
-    root.innerHTML = `
-      <div class="patron-popup-backdrop" onclick="if(event.target === this) app.closePatronPopup();" style="position: fixed; inset: 0; z-index: 2147483647; background: rgba(0, 0, 0, 0.68); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; overflow-y: auto;">
-        
-        <!-- Top Circular Close Button -->
-        <button type="button" class="patron-popup-close-btn" onclick="app.closePatronPopup()" aria-label="Close" style="width: 36px; height: 36px; min-height: 36px; border-radius: 50%; background: #ffffff; color: #1f2937; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.35); margin-bottom: 14px; transition: transform 0.15s ease; outline: none;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
-          ✕
-        </button>
-
-        <!-- Main Card Container -->
-        <div class="patron-popup-card" style="width: 100%; max-width: 350px; border-radius: 26px; background: linear-gradient(180deg, #d8d6ce 0%, #b8b19a 100%); padding: 22px 18px 20px 18px; box-shadow: 0 25px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.2); display: flex; flex-direction: column; box-sizing: border-box; position: relative;">
-          
-          <!-- Inner White Form Container -->
-          <div style="background: #ffffff; border-radius: 16px; padding: 24px 18px 20px 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.12); margin-top: 14px; margin-bottom: 16px;">
-            <h3 style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 700; font-size: 1.12rem; color: #111827; text-align: center; margin: 0 0 1.25rem 0; letter-spacing: 0.01em;">
-              Welcome to the MYTHOLIS
-            </h3>
-
-            <!-- STEP 1: PHONE NUMBER ENTRY -->
-            <div id="patron-popup-phone-pane">
-              <div style="display: flex; align-items: stretch; border: 1.5px solid #6366f1; border-radius: 10px; overflow: hidden; background: #ffffff; box-shadow: 0 1px 3px rgba(99,102,241,0.1);">
-                <!-- Flag & Country Prefix -->
-                <div style="display: flex; align-items: center; gap: 6px; padding: 0 10px; border-right: 1px solid #e2e8f0; font-weight: 600; font-size: 0.95rem; color: #1e293b; user-select: none; flex-shrink: 0; background: #f8fafc;">
-                  <span style="font-size: 1.15rem; line-height: 1;">🇮🇳</span>
-                  <span>+91</span>
-                </div>
-                <!-- 10-Digit Mobile Input -->
-                <input type="tel" id="patron-popup-phone-input" placeholder="10-digit phone number" inputmode="numeric" pattern="[0-9]*" maxlength="10" autocomplete="tel-national" style="flex: 1; border: none; outline: none; padding: 0.8rem 0.65rem; font-size: 0.95rem; color: #0f172a; min-width: 0; background: transparent; font-weight: 500;" oninput="this.value = this.value.replace(/[^0-9]/g, '');" onkeydown="if(event.key === 'Enter') app.submitPatronPopupPhone();" />
-                <!-- Login Button -->
-                <button type="button" id="patron-popup-login-btn" onclick="app.submitPatronPopupPhone()" style="background: #6366f1; color: #ffffff; border: none; padding: 0 20px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: background 0.2s; flex-shrink: 0; display: flex; align-items: center; justify-content: center; letter-spacing: 0.01em;">
-                  Login
-                </button>
-              </div>
-              
-              <!-- Validation Error Alert -->
-              <div id="patron-popup-phone-error" style="display: none; color: #dc2626; font-size: 0.72rem; margin-top: 0.45rem; text-align: center; font-weight: 500;"></div>
-
-              <!-- Disclaimer -->
-              <div style="margin-top: 0.95rem; font-size: 0.69rem; color: #64748b; line-height: 1.45; text-align: center;">
-                <span style="font-size: 0.75rem; color: #94a3b8; margin-right: 3px;">ⓘ</span>
-                <span>By proceeding, you agree to House Mytholis <a href="#privacy" onclick="app.closePatronPopup(); app.navigateTo('privacy');" style="color: #475569; text-decoration: underline;">T&C</a> and <a href="#privacy" onclick="app.closePatronPopup(); app.navigateTo('privacy');" style="color: #475569; text-decoration: underline;">Privacy Policy</a>.</span>
-              </div>
-            </div>
-
-            <!-- STEP 2: OTP VERIFICATION -->
-            <div id="patron-popup-otp-pane" style="display: none;">
-              <p style="font-size: 0.82rem; color: #64748b; text-align: center; margin: 0 0 1.1rem 0; line-height: 1.45;">
-                Enter the 6-digit verification code sent to<br><strong id="patron-otp-display-phone" style="color: #0f172a; font-size: 0.9rem;"></strong>
-              </p>
-              
-              <div style="display: flex; gap: 6px; justify-content: center; margin-bottom: 1.1rem;">
-                <input type="tel" class="patron-otp-digit" maxlength="1" pattern="[0-9]*" inputmode="numeric" style="width: 40px; height: 48px; text-align: center; font-size: 1.35rem; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; background: #f8fafc; color: #0f172a;" oninput="app.handleOtpDigitInput(this, 0)" onkeydown="app.handleOtpDigitKeydown(event, 0)" onpaste="app.handleOtpPaste(event)" />
-                <input type="tel" class="patron-otp-digit" maxlength="1" pattern="[0-9]*" inputmode="numeric" style="width: 40px; height: 48px; text-align: center; font-size: 1.35rem; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; background: #f8fafc; color: #0f172a;" oninput="app.handleOtpDigitInput(this, 1)" onkeydown="app.handleOtpDigitKeydown(event, 1)" onpaste="app.handleOtpPaste(event)" />
-                <input type="tel" class="patron-otp-digit" maxlength="1" pattern="[0-9]*" inputmode="numeric" style="width: 40px; height: 48px; text-align: center; font-size: 1.35rem; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; background: #f8fafc; color: #0f172a;" oninput="app.handleOtpDigitInput(this, 2)" onkeydown="app.handleOtpDigitKeydown(event, 2)" onpaste="app.handleOtpPaste(event)" />
-                <input type="tel" class="patron-otp-digit" maxlength="1" pattern="[0-9]*" inputmode="numeric" style="width: 40px; height: 48px; text-align: center; font-size: 1.35rem; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; background: #f8fafc; color: #0f172a;" oninput="app.handleOtpDigitInput(this, 3)" onkeydown="app.handleOtpDigitKeydown(event, 3)" onpaste="app.handleOtpPaste(event)" />
-                <input type="tel" class="patron-otp-digit" maxlength="1" pattern="[0-9]*" inputmode="numeric" style="width: 40px; height: 48px; text-align: center; font-size: 1.35rem; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; background: #f8fafc; color: #0f172a;" oninput="app.handleOtpDigitInput(this, 4)" onkeydown="app.handleOtpDigitKeydown(event, 4)" onpaste="app.handleOtpPaste(event)" />
-                <input type="tel" class="patron-otp-digit" maxlength="1" pattern="[0-9]*" inputmode="numeric" style="width: 40px; height: 48px; text-align: center; font-size: 1.35rem; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; background: #f8fafc; color: #0f172a;" oninput="app.handleOtpDigitInput(this, 5)" onkeydown="app.handleOtpDigitKeydown(event, 5)" onpaste="app.handleOtpPaste(event)" />
-              </div>
-
-              <!-- OTP Error Alert -->
-              <div id="patron-popup-otp-error" style="display: none; color: #dc2626; font-size: 0.72rem; margin-bottom: 0.65rem; text-align: center; font-weight: 500;"></div>
-
-              <!-- Verify Button -->
-              <button type="button" id="patron-verify-btn" onclick="app.verifyPatronPopupOtp()" style="width: 100%; background: #6366f1; color: #ffffff; border: none; padding: 0.85rem; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: opacity 0.2s;">
-                Verify &amp; Continue
-              </button>
-
-              <!-- Footer Options: Change Number / Resend -->
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.85rem; font-size: 0.78rem;">
-                <button type="button" onclick="app.editPatronPopupPhone()" style="background: none; border: none; color: #6366f1; cursor: pointer; text-decoration: underline; padding: 0; font-weight: 500;">Change number</button>
-                <button type="button" id="patron-resend-btn" onclick="app.resendPatronPopupOtp()" style="background: none; border: none; color: #64748b; cursor: pointer; padding: 0; font-weight: 500;">Resend OTP</button>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Card Footer Branding -->
-          <div style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.75rem; color: #475569; font-weight: 500; user-select: none;">
-            <span>Protected by</span>
-            <span style="font-weight: 700; display: inline-flex; align-items: center; gap: 4px; color: #1e293b;">
-              256-Bit SSL Encrypted Vault
-            </span>
-          </div>
-
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(root);
-    document.body.style.overflow = 'hidden';
-
-    // Auto-focus phone input
-    setTimeout(() => {
-      document.getElementById('patron-popup-phone-input')?.focus();
-    }, 150);
+    this.openAuthModal('signin');
   }
 
-  /* Close Patron Popup */
+  openCollectorLogin(event = null) {
+    if (event && event.preventDefault) event.preventDefault();
+    this.openAuthModal('signin');
+  }
+
   closePatronPopup() {
-    sessionStorage.setItem('mytholis_patron_prompted', 'true');
     document.getElementById('patron-login-modal-root')?.remove();
     document.body.style.overflow = 'auto';
-    clearInterval(this.patronResendTimer);
-  }
-
-  /* Step 1: Submit Phone Number */
-  async submitPatronPopupPhone() {
-    const input = document.getElementById('patron-popup-phone-input');
-    const err = document.getElementById('patron-popup-phone-error');
-    const btn = document.getElementById('patron-popup-login-btn');
-    if (!input || !btn) return;
-
-    const raw = input.value.trim().replace(/\D/g, '');
-    if (raw.length !== 10 || !/^[6-9]\d{9}$/.test(raw)) {
-      if (err) {
-        err.textContent = 'Please enter a valid 10-digit mobile number';
-        err.style.display = 'block';
-      }
-      input.focus();
-      return;
-    }
-
-    if (err) err.style.display = 'none';
-    this.patronAuthPhone = raw;
-
-    btn.disabled = true;
-    btn.textContent = '...';
-
-    try {
-      // Dispatch OTP via Firebase Phone Auth if initialized
-      if (typeof firebaseService !== 'undefined' && typeof firebaseService.sendPhoneOtp === 'function') {
-        try {
-          const res = await firebaseService.sendPhoneOtp('+91' + raw, 'recaptcha-container');
-          if (!res || !res.success) {
-            console.warn('[Patron Popup OTP dispatch]:', res?.error);
-          }
-        } catch (otpErr) {
-          console.warn('[Patron Popup OTP fallback active]:', otpErr.message);
-        }
-      }
-
-      // Transition to OTP screen
-      const phonePane = document.getElementById('patron-popup-phone-pane');
-      const otpPane = document.getElementById('patron-popup-otp-pane');
-      const phoneDisplay = document.getElementById('patron-otp-display-phone');
-
-      if (phoneDisplay) phoneDisplay.textContent = `+91 ${raw.slice(0, 5)} ${raw.slice(5)}`;
-      if (phonePane) phonePane.style.display = 'none';
-      if (otpPane) otpPane.style.display = 'block';
-
-      this.startPatronResendCountdown();
-
-      // Focus first digit
-      setTimeout(() => {
-        const digits = document.querySelectorAll('.patron-otp-digit');
-        if (digits && digits[0]) digits[0].focus();
-      }, 100);
-    } catch (e) {
-      console.error('[Patron Submit Phone Error]:', e);
-      if (err) {
-        err.textContent = 'Could not send verification code. Please try again.';
-        err.style.display = 'block';
-      }
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Login';
-    }
-  }
-
-  /* Handle Individual OTP Digit Input */
-  handleOtpDigitInput(el, index) {
-    el.value = el.value.replace(/\D/g, '');
-    const digits = document.querySelectorAll('.patron-otp-digit');
-    if (el.value.length === 1 && index < digits.length - 1) {
-      digits[index + 1]?.focus();
-    }
-
-    // Check if all filled
-    const code = Array.from(digits).map(d => d.value).join('');
-    if (code.length === 6) {
-      this.verifyPatronPopupOtp();
-    }
-  }
-
-  /* Handle Backspace in OTP Input */
-  handleOtpDigitKeydown(event, index) {
-    const digits = document.querySelectorAll('.patron-otp-digit');
-    if (event.key === 'Backspace' && !event.target.value && index > 0) {
-      digits[index - 1]?.focus();
-    }
-  }
-
-  /* Handle Paste in OTP Input */
-  handleOtpPaste(event) {
-    event.preventDefault();
-    const paste = (event.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
-    if (!paste) return;
-    const digits = document.querySelectorAll('.patron-otp-digit');
-    paste.split('').slice(0, 6).forEach((char, i) => {
-      if (digits[i]) digits[i].value = char;
-    });
-    if (paste.length >= 6) {
-      this.verifyPatronPopupOtp();
-    } else if (digits[paste.length]) {
-      digits[paste.length].focus();
-    }
-  }
-
-  /* Step 2: Verify OTP */
-  async verifyPatronPopupOtp() {
-    const digits = document.querySelectorAll('.patron-otp-digit');
-    const err = document.getElementById('patron-popup-otp-error');
-    const btn = document.getElementById('patron-verify-btn');
-    const otp = Array.from(digits).map(d => d.value).join('');
-
-    if (otp.length < 4) {
-      if (err) {
-        err.textContent = 'Please enter the complete verification code';
-        err.style.display = 'block';
-      }
-      return;
-    }
-
-    if (err) err.style.display = 'none';
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = 'Verifying...';
-    }
-
-    try {
-      let verified = false;
-
-      // 1. If Firebase confirmationResult exists, verify via Firebase
-      if (typeof firebaseService !== 'undefined' && firebaseService.phoneConfirmationResult) {
-        const verifyRes = await firebaseService.verifyPhoneOtp(otp);
-        if (verifyRes && verifyRes.success) {
-          verified = true;
-        } else {
-          console.warn('[Firebase Phone Verify]:', verifyRes?.error);
-        }
-      }
-
-      // 2. Verified or Demo/SMS Passcode
-      const cleanPhone = this.patronAuthPhone || '9876543210';
-      const patronName = `Collector (${cleanPhone.slice(0, 4)}***)`;
-
-      await this.handlePatronLoginSuccess({
-        phone: cleanPhone,
-        mobile: cleanPhone,
-        name: patronName,
-        email: `${cleanPhone}@phone.mytholis.com`
-      });
-
-      this.closePatronPopup();
-    } catch (verifyErr) {
-      console.error('[Patron Verify Error]:', verifyErr);
-      if (err) {
-        err.textContent = 'Invalid verification code. Please check and try again.';
-        err.style.display = 'block';
-      }
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = 'Verify & Continue';
-      }
-    }
-  }
-
-  /* Edit Phone Number */
-  editPatronPopupPhone() {
-    clearInterval(this.patronResendTimer);
-    const phonePane = document.getElementById('patron-popup-phone-pane');
-    const otpPane = document.getElementById('patron-popup-otp-pane');
-    if (otpPane) otpPane.style.display = 'none';
-    if (phonePane) phonePane.style.display = 'block';
-    setTimeout(() => {
-      const input = document.getElementById('patron-popup-phone-input');
-      input?.focus();
-    }, 100);
-  }
-
-  /* Resend OTP */
-  async resendPatronPopupOtp() {
-    const resendBtn = document.getElementById('patron-resend-btn');
-    if (resendBtn && resendBtn.disabled) return;
-    this.showToast('Resending verification code...');
-    const phone = this.patronAuthPhone;
-    if (typeof firebaseService !== 'undefined' && phone) {
-      try {
-        await firebaseService.sendPhoneOtp('+91' + phone, 'recaptcha-container');
-      } catch (e) {
-        console.warn('[Patron Resend]:', e);
-      }
-    }
-    this.startPatronResendCountdown();
-  }
-
-  /* Resend Countdown Timer (30s) */
-  startPatronResendCountdown() {
-    clearInterval(this.patronResendTimer);
-    let seconds = 30;
-    const btn = document.getElementById('patron-resend-btn');
-    if (!btn) return;
-    btn.disabled = true;
-    btn.style.color = '#94a3b8';
-    btn.style.cursor = 'default';
-    btn.textContent = `Resend in ${seconds}s`;
-
-    this.patronResendTimer = setInterval(() => {
-      seconds--;
-      if (seconds <= 0) {
-        clearInterval(this.patronResendTimer);
-        btn.disabled = false;
-        btn.style.color = '#6366f1';
-        btn.style.cursor = 'pointer';
-        btn.textContent = 'Resend OTP';
-      } else {
-        btn.textContent = `Resend in ${seconds}s`;
-      }
-    }, 1000);
   }
 
   /* Handle Patron Login Completion */
@@ -3328,6 +3001,106 @@ class MytholisApp {
       if (store.currentView === 'profile') this.renderCurrentView();
     } else {
       this.showToast(`Sign-in error: ${result.error}`);
+    }
+  }
+
+  async handleFacebookSignIn() {
+    if (typeof firebaseService === 'undefined') return;
+    this.showToast('Connecting to Facebook VIP Sign-In...');
+    const result = await firebaseService.signInWithFacebook();
+    if (result.success) {
+      this.showToast(`Welcome to House Mytholis, ${result.user.displayName || result.user.email || 'Collector'}!`);
+      this.updateNavAuth();
+      this.closeProfileModal();
+      if (store.currentView === 'profile') this.renderCurrentView();
+    } else {
+      this.showToast(`Sign-in error: ${result.error}`);
+    }
+  }
+
+  async handlePhoneSendOtp(event) {
+    if (event && event.preventDefault) event.preventDefault();
+    if (typeof firebaseService === 'undefined') return;
+
+    const phoneInput = document.getElementById('auth-phone-input');
+    const rawPhone = phoneInput ? phoneInput.value.replace(/\D/g, '') : (this.phoneAuthNumber || '');
+    if (!rawPhone || rawPhone.length !== 10) {
+      this.showToast('Please enter a valid 10-digit mobile phone number.');
+      return;
+    }
+
+    this.phoneAuthNumber = rawPhone;
+    const sendBtn = document.getElementById('btn-send-phone-otp');
+    if (sendBtn) {
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Dispatching SMS Passcode...';
+    }
+
+    this.showToast('Dispatching Firebase verification SMS...');
+    const fullPhone = '+91' + rawPhone;
+    const res = await firebaseService.sendPhoneOtp(fullPhone, 'recaptcha-container');
+
+    if (res.success) {
+      this.phoneOtpSent = true;
+      this.showToast('6-digit passcode dispatched via SMS.');
+      const modalBody = document.getElementById('profile-modal-body');
+      if (modalBody) {
+        modalBody.innerHTML = Components.renderAuthModal('phone');
+      }
+    } else {
+      this.showToast(res.error || 'Failed to dispatch SMS code. Please try again.');
+      if (sendBtn) {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Request SMS Passcode';
+      }
+    }
+  }
+
+  async handlePhoneVerifyOtp(event) {
+    if (event && event.preventDefault) event.preventDefault();
+    if (typeof firebaseService === 'undefined') return;
+
+    const otpInput = document.getElementById('auth-otp-input');
+    const otp = otpInput ? otpInput.value.trim().replace(/\D/g, '') : '';
+    if (!otp || otp.length < 6) {
+      this.showToast('Please enter the complete 6-digit passcode.');
+      return;
+    }
+
+    const verifyBtn = document.getElementById('btn-verify-phone-otp');
+    if (verifyBtn) {
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Verifying Passcode...';
+    }
+
+    this.showToast('Verifying SMS passcode...');
+    const res = await firebaseService.verifyPhoneOtp(otp);
+
+    if (res.success) {
+      const user = res.user;
+      this.phoneOtpSent = false;
+      this.phoneAuthNumber = '';
+      this.showToast(`Sanctum access granted: ${user.phoneNumber || user.displayName || 'Collector'}!`);
+      this.updateNavAuth();
+      this.closeProfileModal();
+      if (store.currentView === 'profile') this.renderCurrentView();
+    } else {
+      this.showToast(res.error || 'Invalid passcode. Please verify and try again.');
+      if (verifyBtn) {
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = 'Verify & Enter Sanctum';
+      }
+    }
+  }
+
+  handlePhoneReset() {
+    this.phoneOtpSent = false;
+    if (typeof firebaseService !== 'undefined') {
+      firebaseService.clearRecaptcha();
+    }
+    const modalBody = document.getElementById('profile-modal-body');
+    if (modalBody) {
+      modalBody.innerHTML = Components.renderAuthModal('phone');
     }
   }
 

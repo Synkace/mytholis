@@ -6690,42 +6690,6 @@ div#cardsRow {
   color: var(--gold-light) !important;
 }
 
-/* ==============================================================================
-   VIP PATRON POPUP LOGIN STYLES (APP & PHONE)
-   ============================================================================== */
-.patron-popup-backdrop {
-  animation: patronFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.patron-popup-card {
-  animation: patronScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  will-change: transform, opacity;
-}
-
-@keyframes patronFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes patronScaleUp {
-  from { opacity: 0; transform: scale(0.92) translateY(12px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-.patron-otp-digit:focus {
-  border-color: #6366f1 !important;
-  background: #ffffff !important;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18) !important;
-}
-
-#patron-popup-login-btn:hover {
-  background: #4f46e5 !important;
-}
-
-#patron-verify-btn:hover {
-  background: #4f46e5 !important;
-}
-
 
 
 

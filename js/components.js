@@ -2457,10 +2457,11 @@ const Components = {
     `;
   },
 
-  /* Render Dedicated Luxury Collector Auth Modal (1-Click OTP & Email) */
+  /* Render Dedicated Luxury Collector Auth Modal (Google, Facebook, Phone OTP & Email) */
   renderAuthModal(activeTab = 'signin') {
     const isRegister = activeTab === 'register';
-    const isSignIn = !isRegister;
+    const isPhone = activeTab === 'phone';
+    const isSignIn = !isRegister && !isPhone;
 
     return `
       <div class="modal-header">
@@ -2475,25 +2476,51 @@ const Components = {
       </div>
 
       <div class="modal-scroll-body" style="padding: 1.25rem;">
+        <!-- Social OAuth One-Click Buttons -->
+        <div class="auth-social-buttons" style="display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 1.1rem;">
+          <!-- Google Sign In -->
+          <button type="button" class="btn btn-glass" onclick="app.handleGoogleSignIn()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 0.7rem; border-color: rgba(212, 175, 55, 0.35); font-size: 0.85rem; font-weight: 600; color: var(--gold-light);">
+            <svg width="18" height="18" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>Continue with Google</span>
+          </button>
+
+          <!-- Facebook Sign In -->
+          <button type="button" class="btn btn-glass" onclick="app.handleFacebookSignIn()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 0.7rem; border-color: rgba(24, 119, 242, 0.4); background: rgba(24, 119, 242, 0.08); font-size: 0.85rem; font-weight: 600; color: #93c5fd;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+            <span>Continue with Facebook</span>
+          </button>
+        </div>
+
+        <!-- Divider -->
+        <div style="display: flex; align-items: center; margin: 1.1rem 0; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;">
+          <span style="flex: 1; height: 1px; background: rgba(212, 175, 55, 0.2);"></span>
+          <span style="padding: 0 0.8rem;">or continue with</span>
+          <span style="flex: 1; height: 1px; background: rgba(212, 175, 55, 0.2);"></span>
+        </div>
+
         <!-- Auth Navigation Tabs -->
-        <div class="auth-nav-tabs" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1.2rem;">
-          <button class="auth-nav-tab-btn ${isSignIn ? 'active' : ''}" onclick="app.switchAuthTab('signin')" style="font-size: 0.82rem; padding: 0.65rem 0.5rem; font-weight: 600;">
+        <div class="auth-nav-tabs" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; margin-bottom: 1.2rem;">
+          <button class="auth-nav-tab-btn ${isSignIn ? 'active' : ''}" onclick="app.switchAuthTab('signin')" style="font-size: 0.76rem; padding: 0.55rem 0.3rem; font-weight: 600;">
             ✉️ Sign In
           </button>
-          <button class="auth-nav-tab-btn ${isRegister ? 'active' : ''}" onclick="app.switchAuthTab('register')" style="font-size: 0.82rem; padding: 0.65rem 0.5rem; font-weight: 600;">
+          <button class="auth-nav-tab-btn ${isRegister ? 'active' : ''}" onclick="app.switchAuthTab('register')" style="font-size: 0.76rem; padding: 0.55rem 0.3rem; font-weight: 600;">
             ✨ Register
+          </button>
+          <button class="auth-nav-tab-btn ${isPhone ? 'active' : ''}" onclick="app.switchAuthTab('phone')" style="font-size: 0.76rem; padding: 0.55rem 0.3rem; font-weight: 600;">
+            📱 Phone OTP
           </button>
         </div>
 
         ${isSignIn ? `
-          <!-- TAB 1: 1-CLICK & EMAIL SIGN IN -->
+          <!-- TAB 1: EMAIL SIGN IN -->
           <div class="auth-tab-pane">
-            <button type="button" class="btn btn-gold" style="margin-bottom: 0.9rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" onclick="app.openPatronLogin(event)">
-              <span>⚡ 1-Click Mobile OTP Access</span>
-            </button>
-
-            <div class="auth-divider-line">or sign in with email</div>
-
             <form onsubmit="event.preventDefault(); app.handleEmailSignIn();" style="display: flex; flex-direction: column; gap: 0.85rem;">
               <div>
                 <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.35rem;">Collector Email</label>
@@ -2522,21 +2549,15 @@ const Components = {
               </p>
             </div>
           </div>
-        ` : `
-          <!-- TAB 2: 1-CLICK & EMAIL REGISTER -->
+        ` : isRegister ? `
+          <!-- TAB 2: EMAIL REGISTER -->
           <div class="auth-tab-pane">
-            <button type="button" class="btn btn-gold" style="margin-bottom: 0.9rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" onclick="app.openPatronLogin(event)">
-              <span>⚡ 1-Click Mobile OTP Access</span>
-            </button>
-
-            <div style="background: rgba(4, 24, 18, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px; padding: 0.75rem 0.9rem; margin-bottom: 1rem;">
+            <div style="background: rgba(4, 24, 18, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px; padding: 0.75rem 0.9rem; margin-bottom: 1.2rem;">
               <span class="glass-pill" style="font-size: 0.62rem; color: var(--gold-light); margin-bottom: 0.3rem;">Circle of Legends Privilege</span>
               <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.45; margin: 0.2rem 0 0;">
                 Unlock Level 1 Initiate standing, earn 3% cashback on acquisitions, and check out instantly across web and mobile.
               </p>
             </div>
-
-            <div class="auth-divider-line">or register with email</div>
 
             <form onsubmit="event.preventDefault(); app.handleEmailSignUp();" style="display: flex; flex-direction: column; gap: 0.85rem;">
               <div>
@@ -2568,7 +2589,72 @@ const Components = {
               </p>
             </div>
           </div>
+        ` : `
+          <!-- TAB 3: FIREBASE PHONE OTP AUTH -->
+          <div class="auth-tab-pane">
+            ${(typeof app !== 'undefined' && app.phoneOtpSent) ? `
+              <div style="text-align: center; margin-bottom: 1.2rem;">
+                <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0 0 0.4rem;">
+                  6-Digit SMS passcode dispatched to:
+                </p>
+                <strong style="color: var(--gold-light); font-size: 1.05rem; font-family: monospace;">+91 ${app.phoneAuthNumber || ''}</strong>
+              </div>
+
+              <form onsubmit="app.handlePhoneVerifyOtp(event)" style="display: flex; flex-direction: column; gap: 0.9rem;">
+                <div>
+                  <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.35rem;">Enter 6-Digit Passcode</label>
+                  <input type="text" id="auth-otp-input" class="engraving-input" placeholder="123456" maxlength="6" inputmode="numeric" pattern="[0-9]*" style="width: 100%; text-align: center; font-size: 1.3rem; font-weight: 700; letter-spacing: 0.25em;" required autofocus />
+                </div>
+
+                <button type="submit" id="btn-verify-phone-otp" class="btn btn-gold" style="width: 100%; padding: 0.75rem; font-size: 0.85rem; font-weight: 600;">
+                  Verify &amp; Enter Sanctum
+                </button>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; font-size: 0.75rem;">
+                  <button type="button" style="background: none; border: none; color: var(--gold-light); cursor: pointer; text-decoration: underline; padding: 0;" onclick="app.handlePhoneReset()">
+                    ← Change Number
+                  </button>
+                  <button type="button" style="background: none; border: none; color: var(--text-muted); cursor: pointer; text-decoration: underline; padding: 0;" onclick="app.handlePhoneSendOtp(event)">
+                    Resend Passcode
+                  </button>
+                </div>
+              </form>
+            ` : `
+              <div style="background: rgba(4, 24, 18, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px; padding: 0.75rem 0.9rem; margin-bottom: 1.1rem;">
+                <p style="font-size: 0.76rem; color: var(--text-muted); line-height: 1.45; margin: 0;">
+                  Authenticate securely using your mobile phone. We will dispatch a 6-digit security code via Firebase SMS.
+                </p>
+              </div>
+
+              <form onsubmit="app.handlePhoneSendOtp(event)" style="display: flex; flex-direction: column; gap: 0.9rem;">
+                <div>
+                  <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.35rem;">Mobile Phone Number</label>
+                  <div style="display: flex; align-items: stretch; border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 6px; overflow: hidden; background: rgba(0, 0, 0, 0.35);">
+                    <div style="display: flex; align-items: center; gap: 4px; padding: 0 10px; background: rgba(212, 175, 55, 0.1); border-right: 1px solid rgba(212, 175, 55, 0.3); font-weight: 600; font-size: 0.85rem; color: var(--gold-light); user-select: none;">
+                      <span>🇮🇳</span>
+                      <span>+91</span>
+                    </div>
+                    <input type="tel" id="auth-phone-input" class="engraving-input" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric" pattern="[0-9]*" style="border: none; border-radius: 0; background: transparent; flex: 1; padding: 0.75rem 0.7rem; font-size: 0.95rem;" value="${(typeof app !== 'undefined' && app.phoneAuthNumber) || ''}" required autofocus />
+                  </div>
+                </div>
+
+                <button type="submit" id="btn-send-phone-otp" class="btn btn-gold" style="width: 100%; padding: 0.75rem; font-size: 0.85rem; margin-top: 0.2rem; font-weight: 600;">
+                  Request SMS Passcode
+                </button>
+              </form>
+            `}
+          </div>
         `}
+
+        <!-- Compliance & Legal Terms Notice -->
+        <div class="auth-legal-notice" style="text-align: center; margin-top: 1.25rem; padding-top: 0.85rem; border-top: 1px solid rgba(212, 175, 55, 0.15);">
+          <p style="font-size: 0.69rem; color: var(--text-muted); line-height: 1.55; margin: 0;">
+            By entering the Sanctum, you acknowledge and accept House Mytholis 
+            <a href="/terms" target="_blank" rel="noopener noreferrer" style="color: var(--gold-light); text-decoration: underline; font-weight: 500;">Terms of Service</a>, 
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" style="color: var(--gold-light); text-decoration: underline; font-weight: 500;">Privacy Policy</a>, and 
+            <a href="/data-deletion" target="_blank" rel="noopener noreferrer" style="color: var(--gold-light); text-decoration: underline; font-weight: 500;">Data Deletion Policy</a>.
+          </p>
+        </div>
       </div>
 
       <div class="modal-footer" style="display: flex; gap: 0.8rem;">
@@ -2598,6 +2684,9 @@ const Components = {
               </button>
               <button type="button" class="btn btn-glass" style="font-size: 0.74rem; padding: 0.5rem 0.7rem; text-align: left; justify-content: flex-start; gap: 0.35rem;" onclick="app.openPolicyModal('terms')">
                 <span>📜</span> Terms of Service
+              </button>
+              <button type="button" class="btn btn-glass" style="font-size: 0.74rem; padding: 0.5rem 0.7rem; text-align: left; justify-content: flex-start; gap: 0.35rem;" onclick="window.open('/data-deletion', '_blank')">
+                <span>🗑️</span> Data Deletion
               </button>
               <button type="button" class="btn btn-glass" style="font-size: 0.74rem; padding: 0.5rem 0.7rem; text-align: left; justify-content: flex-start; gap: 0.35rem;" onclick="app.openPolicyModal('shipping')">
                 <span>🚚</span> Shipping Policy
@@ -2637,13 +2726,10 @@ const Components = {
               Sign in to access your personal Collector Dossier, manage delivery coordinates, view consignment tracking, and claim Circle of Legends rewards.
             </p>
             <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-              <button class="btn btn-gold" style="width: auto; padding: 0.8rem 1.8rem; font-size: 0.9rem; margin-bottom: 0; display: inline-flex; align-items: center; gap: 0.5rem;" onclick="app.openPatronLogin(event)">
-                <span>⚡ 1-Click Mobile Access</span>
-              </button>
-              <button class="btn btn-glass" style="padding: 0.8rem 2rem; font-size: 0.9rem;" onclick="app.openAuthModal('signin')">
+              <button class="btn btn-gold" style="padding: 0.8rem 2.2rem; font-size: 0.9rem;" onclick="app.openAuthModal('signin')">
                 Sign In to Sanctum
               </button>
-              <button class="btn btn-glass" style="padding: 0.8rem 1.8rem; font-size: 0.9rem;" onclick="app.openAuthModal('register')">
+              <button class="btn btn-glass" style="padding: 0.8rem 2rem; font-size: 0.9rem;" onclick="app.openAuthModal('register')">
                 Become a Collector
               </button>
             </div>

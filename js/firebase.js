@@ -9,6 +9,7 @@ import {
   getAuth, 
   signInWithPopup, 
   GoogleAuthProvider, 
+  FacebookAuthProvider,
   signInWithCredential,
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
@@ -59,9 +60,9 @@ export function checkIsAdmin(user, profile = {}) {
   return false;
 }
 
-// Standard Firebase Auth Domain (whitelisted by default in Google Cloud Console OAuth)
-// If you want custom white-label domain (mytholis.com), set VITE_FIREBASE_AUTH_DOMAIN=mytholis.com AND add https://mytholis.com/__/auth/handler to Google Cloud Console OAuth Authorized Redirect URIs
-const resolvedAuthDomain = (import.meta.env && import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) || "mytholis-1.firebaseapp.com";
+// White-label Custom Auth Domain (mytholis.com)
+// Ensure https://mytholis.com/__/auth/handler is registered in Google Cloud Console / Meta Developer OAuth redirect URIs
+const resolvedAuthDomain = (import.meta.env && import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) || "mytholis.com";
 
 // Your web app's Firebase configuration with Vite environment variable support
 export const firebaseConfig = {
@@ -92,6 +93,14 @@ googleProvider.addScope('email');
 googleProvider.addScope('profile');
 googleProvider.setCustomParameters({
   prompt: 'select_account'
+});
+
+// Facebook OAuth Provider
+const facebookProvider = new FacebookAuthProvider();
+facebookProvider.addScope('email');
+facebookProvider.addScope('public_profile');
+facebookProvider.setCustomParameters({
+  display: 'popup'
 });
 
 export class FirebaseService {
@@ -181,6 +190,21 @@ export class FirebaseService {
       return { success: true, user: result.user };
     } catch (error) {
       console.error("[Mytholis Firebase] Google Sign-In Error:", error);
+      const friendly = this.formatAuthError(error.code);
+      return { success: false, error: friendly || error.message };
+    }
+  }
+
+  // Facebook OAuth Popup Sign-In
+  async signInWithFacebook() {
+    try {
+      const result = await signInWithPopup(auth, facebookProvider);
+      if (result && result.user) {
+        await this.syncUserDataOnLogin(result.user);
+      }
+      return { success: true, user: result.user };
+    } catch (error) {
+      console.error("[Mytholis Firebase] Facebook Sign-In Error:", error);
       const friendly = this.formatAuthError(error.code);
       return { success: false, error: friendly || error.message };
     }
@@ -489,6 +513,7 @@ export class FirebaseService {
       case 'auth/email-already-in-use': return 'An account already exists with this email address. Please sign in instead.';
       case 'auth/weak-password': return 'Password must be at least 6 characters.';
       case 'auth/popup-closed-by-user': return 'Sign-in cancelled.';
+      case 'auth/account-exists-with-different-credential': return 'An account already exists with this email using a different sign-in method. Please sign in using your original method.';
       case 'auth/configuration-not-found': return 'Sign-In provider is not enabled yet in your Firebase Console. Please register with Email & Password, or enable the provider in Firebase Console under Authentication > Sign-in method.';
       case 'auth/operation-not-allowed': return 'Phone Authentication is not enabled in Firebase Console. Please go to Firebase Console > Authentication > Sign-in method and enable "Phone".';
       case 'auth/app-not-authorized': return 'This domain is not authorized for Phone Auth. Please add it to Firebase Console > Authentication > Settings > Authorized domains.';
