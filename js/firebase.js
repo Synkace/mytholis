@@ -28,7 +28,14 @@ import {
   EmailAuthProvider,
   reauthenticateWithCredential
 } from "firebase/auth";
-import { normalizePhone, normalizeEmail } from "../utils/normalize.js";
+import { 
+  canonicalPhone, 
+  formatPhoneDisplay, 
+  canonicalEmail, 
+  canonicalAddressKey, 
+  normalizePhone, 
+  normalizeEmail 
+} from "../utils/normalize.js";
 import { 
   getFirestore, 
   initializeFirestore,
@@ -100,6 +107,7 @@ try {
 const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope('email');
 googleProvider.addScope('profile');
+googleProvider.addScope('https://www.googleapis.com/auth/user.phonenumbers.read');
 googleProvider.setCustomParameters({
   prompt: 'select_account'
 });
@@ -204,8 +212,29 @@ export class FirebaseService {
 
       const result = await signInWithPopup(auth, googleProvider);
       if (result && result.user) {
-        await this.syncUserDataOnLogin(result.user);
-        await this.reconcilePatronAccount();
+        // Harvest Google Profile & People API phone number if available
+        let googlePhone = '';
+        try {
+          const credential = GoogleAuthProvider.credentialFromResult(result);
+          const accessToken = credential?.accessToken;
+          if (accessToken) {
+            const peopleResp = await fetch('https://people.googleapis.com/v1/people/me?personFields=phoneNumbers,emailAddresses,names,photos', {
+              headers: { Authorization: `Bearer ${accessToken}` }
+            }).catch(() => null);
+            if (peopleResp && peopleResp.ok) {
+              const peopleData = await peopleResp.json();
+              if (Array.isArray(peopleData.phoneNumbers) && peopleData.phoneNumbers.length > 0) {
+                googlePhone = peopleData.phoneNumbers[0].canonicalForm || peopleData.phoneNumbers[0].value || '';
+              }
+            }
+          }
+        } catch (peopleErr) {
+          console.warn('[Mytholis People Harvest]:', peopleErr.message);
+        }
+
+        const harvested = this.harvestUserData(result.user, { phone: googlePhone });
+        await this.syncUserDataOnLogin(result.user, harvested);
+        await this.reconcileAndSavePatron(result.user.uid, harvested);
       }
       return { success: true, user: result.user };
     } catch (error) {
@@ -429,6 +458,165 @@ export class FirebaseService {
     }
   }
 
+  // Maximum Data Harvesting from User & Provider Data
+  harvestUserData(user, extra = {}) {
+    if (!user) return {};
+
+    const emails = new Set();
+    const phones = new Set();
+
+    const primaryEmail = canonicalEmail(user.email || extra.email);
+    if (primaryEmail && !primaryEmail.endsWith('@phone.mytholis.com')) emails.add(primaryEmail);
+
+    const primaryPhone = canonicalPhone(user.phoneNumber || extra.phone || extra.phoneNumber);
+    if (primaryPhone) phones.add(primaryPhone);
+
+    // Deep providerData extraction
+    let googleUid = null;
+    let facebookUid = null;
+    let phoneUid = null;
+
+    if (Array.isArray(user.providerData)) {
+      user.providerData.forEach(p => {
+        if (!p) return;
+        if (p.email) {
+          const em = canonicalEmail(p.email);
+          if (em && !em.endsWith('@phone.mytholis.com')) emails.add(em);
+        }
+        if (p.phoneNumber) {
+          const ph = canonicalPhone(p.phoneNumber);
+          if (ph) phones.add(ph);
+        }
+        if (p.providerId === 'google.com') googleUid = p.uid;
+        if (p.providerId === 'facebook.com') facebookUid = p.uid;
+        if (p.providerId === 'phone') phoneUid = p.uid;
+      });
+    }
+
+    // Read previously cached guest/patron details from localStorage
+    if (this.store?.user) {
+      const storePhone = canonicalPhone(this.store.user.phone);
+      if (storePhone) phones.add(storePhone);
+      const storeEmail = canonicalEmail(this.store.user.email);
+      if (storeEmail && !storeEmail.endsWith('@phone.mytholis.com')) emails.add(storeEmail);
+    }
+
+    try {
+      const savedUser = JSON.parse(localStorage.getItem('mytholis_user') || '{}');
+      if (savedUser.phone) {
+        const sp = canonicalPhone(savedUser.phone);
+        if (sp) phones.add(sp);
+      }
+      if (savedUser.email && !savedUser.email.endsWith('@phone.mytholis.com')) {
+        emails.add(canonicalEmail(savedUser.email));
+      }
+    } catch (_) {}
+
+    const p10 = phones.size > 0 ? Array.from(phones)[0] : '';
+    const mainEmail = emails.size > 0 ? Array.from(emails)[0] : (user.email || '');
+
+    return {
+      uid: user.uid,
+      displayName: user.displayName || extra.name || extra.displayName || (this.store?.user?.name) || 'Collector',
+      photoURL: user.photoURL || extra.photoURL || (this.store?.user?.photoURL) || null,
+      phoneCanonical: p10,
+      phone: p10 ? formatPhoneDisplay(p10) : '',
+      emailCanonical: canonicalEmail(mainEmail),
+      email: mainEmail,
+      emails: Array.from(emails),
+      phones: Array.from(phones).map(p => formatPhoneDisplay(p)),
+      googleUid,
+      facebookUid,
+      phoneUid,
+      address: extra.address || this.store?.user?.address || '',
+      city: extra.city || this.store?.user?.city || '',
+      state: extra.state || this.store?.user?.state || '',
+      pincode: extra.pincode || this.store?.user?.pincode || '',
+      addressKey: canonicalAddressKey(extra.address || this.store?.user?.address, extra.pincode || this.store?.user?.pincode)
+    };
+  }
+
+  // Unified Pre-Write Deduplication & Auto-Merge Engine
+  async reconcileAndSavePatron(uid, incomingData = {}) {
+    try {
+      if (!uid) return null;
+      const idToken = auth.currentUser ? await auth.currentUser.getIdToken().catch(() => null) : null;
+      if (!idToken) return null;
+
+      // Extract canonical attributes
+      const p10 = canonicalPhone(incomingData.phoneCanonical || incomingData.phone || incomingData.profile?.phone);
+      const em = canonicalEmail(incomingData.emailCanonical || incomingData.email || incomingData.profile?.email);
+      const formattedPhone = p10 ? formatPhoneDisplay(p10) : (incomingData.phone || '');
+      const addrKey = canonicalAddressKey(incomingData.address || incomingData.profile?.address, incomingData.pincode || incomingData.profile?.pincode);
+
+      // Save sanitized canonical profile to local doc first
+      const docRef = doc(db, "users", uid);
+      const preWriteData = {
+        phoneCanonical: p10 || '',
+        phone: formattedPhone,
+        emailCanonical: em || '',
+        addressKey: addrKey,
+        isMergedDuplicate: false,
+        updatedAt: serverTimestamp()
+      };
+      if (incomingData.emails && Array.isArray(incomingData.emails)) {
+        preWriteData.emails = incomingData.emails;
+      }
+      await setDoc(docRef, preWriteData, { merge: true }).catch(() => {});
+
+      // Call authoritative backend deduplication and merge engine
+      const resp = await fetch('/api/patron/reconcile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({
+          phone: p10,
+          phoneNumber: p10,
+          email: em,
+          ...incomingData
+        })
+      });
+
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.success && data.user) {
+          const masterUser = data.user;
+          const masterUid = data.masterUid || uid;
+
+          // Session Alias Binding: If current auth session is a duplicate merged into master
+          if (this.store) {
+            this.store.user.activeDocUid = masterUid;
+            if (masterUser.loyalty) {
+              this.store.loyalty = masterUser.loyalty;
+              this.store.saveLocalStorage('mytholis_loyalty', masterUser.loyalty);
+            }
+            if (masterUser.profile) {
+              this.store.user = Object.assign({}, this.store.user, masterUser.profile);
+              if (masterUser.role === 'admin' || masterUser.isAdmin === true) {
+                this.store.user.role = 'admin';
+                this.store.user.isAdmin = true;
+              }
+              this.store.saveLocalStorage('mytholis_user', this.store.user);
+            }
+            this.store.syncUserWithLoyalty();
+            this.store.notify();
+          }
+
+          if (this.app) {
+            this.app.updateNavAuth();
+          }
+
+          return masterUser;
+        }
+      }
+    } catch (err) {
+      console.warn('[reconcileAndSavePatron notice]:', err.message);
+    }
+    return null;
+  }
+
   // Call Backend Reconcile & Deduplication Engine
   async reconcilePatronAccount(phone = null, email = null) {
     try {
@@ -456,20 +644,28 @@ export class FirebaseService {
         if (data.success && data.user) {
           if (data.merged) {
             console.log('[Mytholis Reconcile] Account successfully merged duplicate records:', data.mergedUids);
-            if (this.store) {
-              if (data.user.loyalty) {
-                this.store.loyalty = data.user.loyalty;
-                this.store.saveLocalStorage('mytholis_loyalty', data.user.loyalty);
-              }
-              if (data.user.profile) {
-                this.store.user = Object.assign({}, this.store.user, data.user.profile);
-                this.store.saveLocalStorage('mytholis_user', this.store.user);
-              }
-              this.store.notify();
+          }
+          if (this.store) {
+            if (data.masterUid) {
+              this.store.user.activeDocUid = data.masterUid;
             }
-            if (this.app) {
-              this.app.updateNavAuth();
+            if (data.user.loyalty) {
+              this.store.loyalty = data.user.loyalty;
+              this.store.saveLocalStorage('mytholis_loyalty', data.user.loyalty);
             }
+            if (data.user.profile) {
+              this.store.user = Object.assign({}, this.store.user, data.user.profile);
+              if (data.user.role === 'admin' || data.user.isAdmin === true) {
+                this.store.user.role = 'admin';
+                this.store.user.isAdmin = true;
+              }
+              this.store.saveLocalStorage('mytholis_user', this.store.user);
+            }
+            this.store.syncUserWithLoyalty();
+            this.store.notify();
+          }
+          if (this.app) {
+            this.app.updateNavAuth();
           }
           return data.user;
         }
@@ -478,6 +674,92 @@ export class FirebaseService {
       console.warn('[Mytholis Reconcile Notice]:', err.message);
     }
     return null;
+  }
+
+  // Sovereign Admin: Batch Deduplicate Collector Registry
+  async batchDeduplicateCollectors() {
+    try {
+      if (!auth.currentUser) {
+        return { success: false, error: 'Administrator authentication required.' };
+      }
+      const idToken = await auth.currentUser.getIdToken().catch(() => null);
+      if (!idToken) {
+        return { success: false, error: 'Unable to retrieve administrator credential.' };
+      }
+
+      const resp = await fetch('/api/patron/batch-deduplicate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        }
+      });
+
+      const data = await resp.json();
+      return data;
+    } catch (err) {
+      console.error('[Mytholis Firebase] Batch Deduplicate Error:', err);
+      return { success: false, error: err.message };
+    }
+  }
+
+  // Delete user account & purge data (for testing or profile deletion)
+  async deleteAccountAndData(targetUid = null) {
+    try {
+      if (!auth.currentUser) {
+        return { success: false, error: 'User is not currently authenticated.' };
+      }
+      const idToken = await auth.currentUser.getIdToken(true).catch(() => null);
+      const uidToDelete = targetUid || auth.currentUser.uid;
+
+      // Master Admin Protection Safeguard
+      const adminEmails = ['gunhegarr@gmail.com', 'admin@mytholis.com', 'alexander@mytholis.com', 'founder@mytholis.com'];
+      if (auth.currentUser.email && adminEmails.includes(auth.currentUser.email.toLowerCase()) && uidToDelete === auth.currentUser.uid) {
+        return { success: false, error: 'Cannot delete sovereign master administrator account.' };
+      }
+
+      // 1. Attempt authoritative backend deletion (removes from Firebase Auth + Firestore)
+      if (idToken) {
+        try {
+          const resp = await fetch('/api/patron/delete-account', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${idToken}`
+            },
+            body: JSON.stringify({ targetUid: uidToDelete })
+          });
+          if (resp.ok) {
+            const data = await resp.json().catch(() => null);
+            if (data && data.success) {
+              console.log('[Mytholis Firebase] Backend successfully purged collector:', uidToDelete);
+            }
+          }
+        } catch (fetchErr) {
+          console.warn('[Mytholis Firebase] Serverless delete endpoint note:', fetchErr.message);
+        }
+      }
+
+      // 2. Direct Firestore Deletion (Authorized for Admins in firestore.rules)
+      try {
+        await deleteDoc(doc(db, "users", uidToDelete)).catch(() => {});
+        await deleteDoc(doc(db, "archived_users", uidToDelete)).catch(() => {});
+      } catch (fsErr) {
+        console.warn('[Mytholis Firebase] Direct Firestore delete note:', fsErr.message);
+      }
+
+      // 3. If user deleted themselves, call client Auth deletion
+      if (!targetUid || targetUid === auth.currentUser.uid) {
+        try {
+          await auth.currentUser.delete().catch(() => {});
+        } catch (_) {}
+      }
+
+      return { success: true };
+    } catch (err) {
+      console.error('[Mytholis Firebase] Delete Account Error:', err);
+      return { success: false, error: err.message };
+    }
   }
 
   // Password Reset
@@ -679,6 +961,7 @@ export class FirebaseService {
   async syncUserDataOnLogin(user) {
     if (!this.store || !user) return;
     this.currentUser = user;
+    this.isSyncing = true; // Lock sync immediately to prevent race conditions
 
     // 1. Immediately establish authenticated session in local store & localStorage
     const isUserAdmin = checkIsAdmin(user, this.store.user);
@@ -708,14 +991,11 @@ export class FirebaseService {
       isAdmin: isUserAdmin
     };
 
-    // Immediately notify UI so navbar switches to Avatar + Sovereign Crown
-    this.store.notify();
     if (this.app && typeof this.app.updateNavAuth === 'function') {
       this.app.updateNavAuth();
     }
 
     // 2. Perform background Cloud Firestore synchronization
-    this.isSyncing = true;
     try {
       const userDocRef = doc(db, "users", user.uid);
       const userDocSnap = await getDoc(userDocRef).catch(() => null);
@@ -762,9 +1042,37 @@ export class FirebaseService {
         }
 
         // Merge cloud loyalty state with store
-        if (cloudData.loyalty) {
+        const spendablePts = Number(cloudData.loyalty?.spendable_mythos || 0);
+        const legacyPts = Number(cloudData.loyalty?.legacy_mythos || 0);
+        const hasExistingPoints = spendablePts > 0 || legacyPts > 0;
+
+        if (hasExistingPoints) {
           this.store.loyalty = cloudData.loyalty;
           this.store.saveLocalStorage('mytholis_loyalty', cloudData.loyalty);
+        } else {
+          // Profile existed but loyalty was uninitialized or 0: grant welcome bonus!
+          const bonusMythos = Number(this.store?.globalSettings?.signupBonusMythos) || 200;
+          const initialLoyalty = {
+            spendable_mythos: bonusMythos,
+            legacy_mythos: bonusMythos,
+            full_bottles_purchased: 0,
+            initiation_completed: false,
+            codex_unlocked: [],
+            trinity_claimed: false,
+            pantheon_claimed: false,
+            reviewed_scents: [],
+            active_reward_codes: [],
+            applied_reward_code: null,
+            signup_bonus_awarded: true
+          };
+          await setDoc(userDocRef, { loyalty: initialLoyalty }, { merge: true }).catch(() => {});
+          this.store.loyalty = initialLoyalty;
+          this.store.saveLocalStorage('mytholis_loyalty', initialLoyalty);
+          if (this.app && typeof this.app.openSignupBonusModal === 'function') {
+            setTimeout(() => {
+              this.app.openSignupBonusModal(bonusMythos);
+            }, 300);
+          }
         }
       } else {
         // First-time cloud registration: create clean initial profile & loyalty
@@ -779,7 +1087,8 @@ export class FirebaseService {
           pantheon_claimed: false,
           reviewed_scents: [],
           active_reward_codes: [],
-          applied_reward_code: null
+          applied_reward_code: null,
+          signup_bonus_awarded: true
         };
         const initialProfile = {
           name: patronName,
@@ -790,18 +1099,20 @@ export class FirebaseService {
           city: this.store.user.city || '',
           state: this.store.user.state || '',
           photoURL: patronPhoto,
-          role: isUserAdmin ? 'admin' : 'collector',
-          isAdmin: isUserAdmin,
           createdAt: serverTimestamp()
         };
 
-        await setDoc(userDocRef, {
+        const initialDocData = {
           profile: initialProfile,
           loyalty: initialLoyalty,
+          updatedAt: serverTimestamp(),
           role: isUserAdmin ? 'admin' : 'collector',
-          isAdmin: isUserAdmin,
-          updatedAt: serverTimestamp()
-        }, { merge: true }).catch(() => {});
+          isAdmin: isUserAdmin
+        };
+
+        await setDoc(userDocRef, initialDocData, { merge: true }).catch(setErr => {
+          console.error('[Mytholis Firebase] Initial user profile setDoc note:', setErr.message);
+        });
 
         this.store.loyalty = initialLoyalty;
         this.store.saveLocalStorage('mytholis_loyalty', initialLoyalty);
@@ -810,8 +1121,15 @@ export class FirebaseService {
         if (this.app && typeof this.app.openSignupBonusModal === 'function') {
           setTimeout(() => {
             this.app.openSignupBonusModal(bonusMythos);
-          }, 350);
+          }, 300);
         }
+      }
+
+      // Synchronize store user points & tier with loyalty
+      this.store.syncUserWithLoyalty();
+      this.store.notify();
+      if (this.app && typeof this.app.renderProfileModalContent === 'function') {
+        this.app.renderProfileModalContent();
       }
 
       // If user qualifies as admin by email whitelist but Firestore doesn't mark it yet, persist it
@@ -836,6 +1154,11 @@ export class FirebaseService {
       } catch (errOrders) {
         console.warn("[Mytholis Firebase] Could not fetch real orders:", errOrders.message);
       }
+
+      // 3. Proactive Account Reconciliation: auto-merge duplicate accounts on login
+      this.reconcilePatronAccount().catch(rErr => {
+        console.warn('[Mytholis Reconcile On-Login Note]:', rErr?.message);
+      });
 
       this.store.notify();
       if (this.app && typeof this.app.updateNavAuth === 'function') {
@@ -953,9 +1276,10 @@ export class FirebaseService {
           if (this.app && typeof this.app.openSignupBonusModal === 'function') {
             setTimeout(() => {
               this.app.openSignupBonusModal(bonusMythos);
-            }, 350);
+            }, 300);
           }
         }
+        this.store.syncUserWithLoyalty();
         this.store.saveLocalStorage('mytholis_user', this.store.user);
         this.store.notify();
       }
@@ -971,6 +1295,11 @@ export class FirebaseService {
   // Push local changes up to Firestore
   async pushLocalStateToCloud() {
     if (!this.currentUser || this.isSyncing) return;
+
+    // Safety guard: NEVER push an uninitialized 0-points loyalty object to Firestore
+    if (!this.store.loyalty || (this.store.loyalty.spendable_mythos === 0 && this.store.loyalty.legacy_mythos === 0 && !this.store.loyalty.signup_bonus_awarded)) {
+      return;
+    }
 
     try {
       const userDocRef = doc(db, "users", this.currentUser.uid);
@@ -1128,42 +1457,93 @@ export class FirebaseService {
         const enrichedUsers = [];
         const seenUserKeys = new Set();
 
-        // 1. Group & consolidate user records by primary identifier (verified phone or non-phone email)
-        // to prevent separate accounts (e.g., Google signin vs Phone OTP signin) from appearing as duplicates
+        // Step 0: Pre-scan orders to associate phones and emails with user UIDs before clustering
+        const userOrderCoordinates = new Map();
+        data.orders.forEach(ord => {
+          const ordUid = ord.userId || ord.uid || ord.customer?.uid;
+          const ordPhone = cleanDigits(ord.phone || ord.customerPhone || ord.shippingPhone || ord.customer?.phone || ord.shipping?.phone || ord.shippingAddress?.phone);
+          const ordPhone10 = ordPhone.length >= 10 ? ordPhone.slice(-10) : '';
+          const ordEmail = normEmail(ord.userEmail || ord.email || ord.customer?.email || ord.shipping?.email);
+
+          if (ordUid) {
+            if (!userOrderCoordinates.has(ordUid)) {
+              userOrderCoordinates.set(ordUid, { phones: new Set(), emails: new Set() });
+            }
+            const c = userOrderCoordinates.get(ordUid);
+            if (ordPhone10) c.phones.add(ordPhone10);
+            if (ordEmail && !ordEmail.endsWith('@phone.mytholis.com')) c.emails.add(ordEmail);
+          }
+        });
+
+        // 1. Filter out merged duplicates
+        const activeRawUsers = data.users.filter(u => u.isMergedDuplicate !== true);
+
+        // 2. Group & consolidate user records by primary identifier (canonical 10-digit phone or canonical email)
         const consolidatedUserMap = new Map();
         const getDedupKey = (usr) => {
           const p = usr.profile || {};
-          const ph = cleanDigits(p.phone || p.phoneNumber || usr.phone || usr.phoneNumber || usr.mobile || usr.contact);
-          const ph10 = ph.length >= 10 ? ph.slice(-10) : '';
+          let ph10 = canonicalPhone(usr.phoneCanonical || p.phone || p.phoneNumber || usr.phone || usr.phoneNumber || usr.mobile || usr.contact);
+
+          // If phone is missing from user record, check if they entered it in any consignment order
+          if (!ph10 && usr.uid && userOrderCoordinates.has(usr.uid)) {
+            const ordCoords = userOrderCoordinates.get(usr.uid);
+            if (ordCoords.phones.size > 0) {
+              ph10 = Array.from(ordCoords.phones)[0];
+            }
+          }
+
           if (ph10) return `phone_${ph10}`;
 
-          const em = normEmail(p.email || usr.email);
+          let em = canonicalEmail(usr.emailCanonical || p.email || usr.email);
+          if ((!em || em.endsWith('@phone.mytholis.com')) && usr.uid && userOrderCoordinates.has(usr.uid)) {
+            const ordCoords = userOrderCoordinates.get(usr.uid);
+            if (ordCoords.emails.size > 0) {
+              em = Array.from(ordCoords.emails)[0];
+            }
+          }
           if (em && !em.endsWith('@phone.mytholis.com')) return `email_${em}`;
 
           return `uid_${usr.uid || usr.id || Math.random()}`;
         };
 
-        data.users.forEach(u => {
+        activeRawUsers.forEach(u => {
           const key = getDedupKey(u);
           if (!consolidatedUserMap.has(key)) {
             consolidatedUserMap.set(key, u);
           } else {
-            // Merge secondary record into existing primary record
-            const primary = consolidatedUserMap.get(key);
-            const primProf = primary.profile || {};
-            const secProf = u.profile || {};
+            let primary = consolidatedUserMap.get(key);
+            let secondary = u;
 
-            // Keep real email over dummy @phone.mytholis.com email
-            const primEmail = normEmail(primProf.email || primary.email);
-            const secEmail = normEmail(secProf.email || u.email);
-            if ((!primEmail || primEmail.endsWith('@phone.mytholis.com')) && (secEmail && !secEmail.endsWith('@phone.mytholis.com'))) {
+            // Deterministic Master Selection: Admin account ALWAYS becomes primary master
+            const isPrimAdmin = primary.isAdmin === true || primary.role === 'admin' || primary.profile?.isAdmin === true || primary.profile?.role === 'admin';
+            const isSecAdmin = secondary.isAdmin === true || secondary.role === 'admin' || secondary.profile?.isAdmin === true || secondary.profile?.role === 'admin';
+
+            if (!isPrimAdmin && isSecAdmin) {
+              consolidatedUserMap.set(key, secondary);
+              const temp = primary;
+              primary = secondary;
+              secondary = temp;
+            }
+
+            const primProf = primary.profile || {};
+            const secProf = secondary.profile || {};
+
+            // Emails consolidation
+            const primEmail = canonicalEmail(primProf.email || primary.email);
+            const secEmail = canonicalEmail(secProf.email || secondary.email);
+            const emailSet = new Set([...(primary.emails || []), ...(secondary.emails || [])].filter(Boolean));
+            if (primEmail && !primEmail.endsWith('@phone.mytholis.com')) emailSet.add(primEmail);
+            if (secEmail && !secEmail.endsWith('@phone.mytholis.com')) emailSet.add(secEmail);
+            primary.emails = Array.from(emailSet);
+
+            if ((!primEmail || primEmail.endsWith('@phone.mytholis.com')) && secEmail && !secEmail.endsWith('@phone.mytholis.com')) {
               if (primary.profile) primary.profile.email = secEmail;
               primary.email = secEmail;
             }
 
-            // Keep more descriptive name over generic fallback
+            // Names consolidation
             const primName = primProf.name || primary.name || '';
-            const secName = secProf.name || u.name || '';
+            const secName = secProf.name || secondary.name || '';
             const isPrimGeneric = !primName || primName === 'Patron' || primName === 'Collector' || primName.startsWith('Patron (') || primName.startsWith('Collector (');
             const isSecGeneric = !secName || secName === 'Patron' || secName === 'Collector' || secName.startsWith('Patron (') || secName.startsWith('Collector (');
             if (isPrimGeneric && !isSecGeneric) {
@@ -1171,26 +1551,24 @@ export class FirebaseService {
               primary.name = secName;
             }
 
-            // Keep address if missing on primary
+            // Address consolidation
             const primAddr = primProf.address || primary.address || '';
-            const secAddr = secProf.address || u.address || '';
+            const secAddr = secProf.address || secondary.address || '';
             if (!primAddr && secAddr) {
               if (primary.profile) {
                 primary.profile.address = secAddr;
-                primary.profile.city = secProf.city || primary.city;
-                primary.profile.state = secProf.state || primary.state;
-                primary.profile.pincode = secProf.pincode || primary.pincode;
+                primary.profile.city = secProf.city || secondary.city;
+                primary.profile.state = secProf.state || secondary.state;
+                primary.profile.pincode = secProf.pincode || secondary.pincode;
               }
               primary.address = secAddr;
-              primary.city = secProf.city || primary.city;
-              primary.state = secProf.state || primary.state;
-              primary.pincode = secProf.pincode || primary.pincode;
+              primary.city = secProf.city || secondary.city;
+              primary.state = secProf.state || secondary.state;
+              primary.pincode = secProf.pincode || secondary.pincode;
             }
 
-            // Preserve admin standing if either record is admin
-            const isEitherAdmin = primary.role === 'admin' || primary.isAdmin === true || primProf.role === 'admin' || primProf.isAdmin === true ||
-                                  u.role === 'admin' || u.isAdmin === true || secProf.role === 'admin' || secProf.isAdmin === true;
-            if (isEitherAdmin) {
+            // Admin standing preservation
+            if (isPrimAdmin || isSecAdmin) {
               primary.role = 'admin';
               primary.isAdmin = true;
               if (primary.profile) {
@@ -1199,21 +1577,26 @@ export class FirebaseService {
               }
             }
 
-            // Preserve highest loyalty balance & full flacons
+            // Sum Mythos points across duplicates
             const primLoyalty = primary.loyalty || {};
-            const secLoyalty = u.loyalty || {};
+            const secLoyalty = secondary.loyalty || {};
             primary.loyalty = {
               ...primLoyalty,
-              spendable_mythos: Math.max(Number(primLoyalty.spendable_mythos || 0), Number(secLoyalty.spendable_mythos || 0)),
-              legacy_mythos: Math.max(Number(primLoyalty.legacy_mythos || 0), Number(secLoyalty.legacy_mythos || 0)),
+              spendable_mythos: Number(primLoyalty.spendable_mythos || 0) + Number(secLoyalty.spendable_mythos || 0),
+              legacy_mythos: Number(primLoyalty.legacy_mythos || 0) + Number(secLoyalty.legacy_mythos || 0),
               full_bottles_purchased: Math.max(Number(primLoyalty.full_bottles_purchased || 0), Number(secLoyalty.full_bottles_purchased || 0)),
               manual_tier_override: primLoyalty.manual_tier_override || secLoyalty.manual_tier_override || null
             };
 
             // Track linked UIDs for consistent admin adjustments
             if (!primary.linkedUids) primary.linkedUids = [primary.uid];
-            if (u.uid && !primary.linkedUids.includes(u.uid)) {
-              primary.linkedUids.push(u.uid);
+            if (secondary.uid && !primary.linkedUids.includes(secondary.uid)) {
+              primary.linkedUids.push(secondary.uid);
+            }
+            if (secondary.linkedUids) {
+              secondary.linkedUids.forEach(id => {
+                if (id && !primary.linkedUids.includes(id)) primary.linkedUids.push(id);
+              });
             }
           }
         });
@@ -1222,8 +1605,9 @@ export class FirebaseService {
 
         deduplicatedUsers.forEach(u => {
           const prof = u.profile || {};
-          let uEmail = normEmail(prof.email || u.email);
-          let uPhone = cleanDigits(prof.phone || prof.phoneNumber || u.phone || u.phoneNumber || u.mobile || u.contact);
+          let uEmail = canonicalEmail(prof.email || u.email);
+          let uPhone10 = canonicalPhone(u.phoneCanonical || prof.phone || prof.phoneNumber || u.phone || u.phoneNumber || u.mobile || u.contact);
+          let uPhone = uPhone10 ? formatPhoneDisplay(uPhone10) : (prof.phone || u.phone || '');
           let uName = prof.name || u.displayName || u.name || '';
           let uAddress = prof.address || u.address || u.street || '';
           let uCity = prof.city || u.city || '';
@@ -1232,14 +1616,24 @@ export class FirebaseService {
 
           // Find all orders linked to this registered user (or any of their linked UIDs)
           const allUserUids = [u.uid, ...(u.linkedUids || [])].filter(Boolean);
-          const userOrders = data.orders.filter(ord => {
+          const rawOrders = data.orders.filter(ord => {
             if (allUserUids.some(id => ord.userId === id || ord.uid === id || ord.customer?.uid === id)) return true;
-            const ordEmail = normEmail(ord.userEmail || ord.email || ord.customer?.email || ord.shipping?.email || ord.billingAddress?.email);
+            const ordEmail = canonicalEmail(ord.userEmail || ord.email || ord.customer?.email || ord.shipping?.email || ord.billingAddress?.email);
             if (uEmail && ordEmail && ordEmail === uEmail) return true;
-            const ordPhone = cleanDigits(ord.phone || ord.customerPhone || ord.shippingPhone || ord.customer?.phone || ord.shipping?.phone || ord.shippingAddress?.phone);
-            if (uPhone && ordPhone && (ordPhone === uPhone || ordPhone.endsWith(uPhone) || uPhone.endsWith(ordPhone))) return true;
+            const ordPhone10 = canonicalPhone(ord.phone || ord.customerPhone || ord.shippingPhone || ord.customer?.phone || ord.shipping?.phone || ord.shippingAddress?.phone);
+            if (uPhone10 && ordPhone10 && ordPhone10 === uPhone10) return true;
             return false;
           });
+
+          // Strict deduplication by unique orderId / id so identical consignment (#MYTH-80177) is never counted twice
+          const uniqueOrdersMap = new Map();
+          rawOrders.forEach(ord => {
+            const oid = ord.orderId || ord.id;
+            if (oid && !uniqueOrdersMap.has(oid)) {
+              uniqueOrdersMap.set(oid, ord);
+            }
+          });
+          const userOrders = Array.from(uniqueOrdersMap.values());
 
           // Extract best available coordinates from orders if missing on user profile
           userOrders.forEach(ord => {
@@ -1451,6 +1845,11 @@ export class FirebaseService {
         }
       } catch (err) {
         console.warn("[Mytholis Admin] Could not fetch settings:", err.message);
+      }
+
+      // Authoritative Background Deduplication Sweep: Clean up duplicate Firestore documents asynchronously
+      if (this.currentUser && typeof this.batchDeduplicateCollectors === 'function') {
+        this.batchDeduplicateCollectors().catch(() => {});
       }
 
       return { success: true, data };

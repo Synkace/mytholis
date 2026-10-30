@@ -708,6 +708,9 @@ export const AdminComponents = {
                 <option value="HAS_ORDERS">Has Placed Orders</option>
                 <option value="ADMINS">Admins Only</option>
               </select>
+              <button class="btn btn-gold" onclick="app.handleBatchDeduplicateUsers()" title="Permanently merge duplicate collector accounts sharing the same phone or email">
+                ⚡ Auto-Deduplicate Registry
+              </button>
               <button class="btn btn-glass" onclick="app.refreshAdminDashboard()">
                 ↻ Synchronize Collectors
               </button>
@@ -741,13 +744,19 @@ export const AdminComponents = {
                     const email = prof.email || u.email || 'N/A';
                     const rawPhone = prof.phone || u.phone || '';
                     const cleanPhone = (rawPhone || '').replace(/[^0-9]/g, '');
-                    const displayPhone = cleanPhone ? (cleanPhone.length === 10 ? `+91 ${cleanPhone}` : `+${cleanPhone}`) : (rawPhone || '');
+                    const p10 = u.phoneCanonical || (cleanPhone.length >= 10 ? cleanPhone.slice(-10) : '');
+                    const displayPhone = p10 && p10.length === 10 ? `+91 ${p10}` : (rawPhone || '');
                     const initial = name.charAt(0).toUpperCase();
                     const isAdmin = u.role === 'admin' || u.isAdmin === true || prof.role === 'admin' || prof.isAdmin === true;
-                    const spendable = Number(loyalty.spendable_mythos || 0);
+                    let spendable = Number(loyalty.spendable_mythos || 0);
                     const bottles = Number(loyalty.full_bottles_purchased || u.fullFlaconsOrdered || 0);
-                    const legacy = Number(loyalty.legacy_mythos || spendable || 0);
+                    let legacy = Number(loyalty.legacy_mythos || spendable || 0);
                     const ordersCount = Number(u.ordersCount !== undefined ? u.ordersCount : (Array.isArray(u.orders) ? u.orders.length : 0));
+                    // Self-heal initiate if 0 points and 0 orders
+                    if (spendable === 0 && legacy === 0 && ordersCount === 0) {
+                      spendable = 200;
+                      legacy = 200;
+                    }
                     const lifetimeSpend = Number(u.lifetimeSpend || 0);
                     const lastOrder = u.lastOrder || (Array.isArray(u.orders) && u.orders[0]) || null;
                     const lastOrderId = lastOrder ? (lastOrder.orderId || lastOrder.id || '') : '';
@@ -887,6 +896,9 @@ export const AdminComponents = {
                                 ${isAdmin ? 'Demote' : 'Admin'}
                               </button>
                             ` : ''}
+                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.handleAdminDeleteUser('${u.uid}', '${name.replace(/'/g, "\\'")}', '${email.replace(/'/g, "\\'")}')" title="Permanently delete user from Auth & Firestore (Dev Test)">
+                              🗑️ Delete
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -1606,13 +1618,19 @@ export const AdminComponents = {
     const email = prof.email || patron.email || 'N/A';
     const rawPhone = prof.phone || patron.phone || '';
     const cleanPhone = (rawPhone || '').replace(/[^0-9]/g, '');
-    const displayPhone = cleanPhone ? (cleanPhone.length === 10 ? `+91 ${cleanPhone}` : `+${cleanPhone}`) : (rawPhone || 'Not Provided');
+    const p10 = patron.phoneCanonical || (cleanPhone.length >= 10 ? cleanPhone.slice(-10) : '');
+    const displayPhone = p10 && p10.length === 10 ? `+91 ${p10}` : (rawPhone || 'Not Provided');
     const initial = name.charAt(0).toUpperCase();
     const isAdmin = patron.role === 'admin' || patron.isAdmin === true || prof.role === 'admin' || prof.isAdmin === true;
-    const spendable = Number(loyalty.spendable_mythos || 0);
+    let spendable = Number(loyalty.spendable_mythos || 0);
     const bottles = Number(loyalty.full_bottles_purchased || patron.fullFlaconsOrdered || 0);
-    const legacy = Number(loyalty.legacy_mythos || spendable || 0);
+    let legacy = Number(loyalty.legacy_mythos || spendable || 0);
     const orders = Array.isArray(patron.orders) ? patron.orders : [];
+    // Self-heal initiate if 0 points and 0 orders
+    if (spendable === 0 && legacy === 0 && orders.length === 0) {
+      spendable = 200;
+      legacy = 200;
+    }
     const lifetimeSpend = Number(patron.lifetimeSpend || 0);
     const address = patron.fullAddress || prof.fullAddress || patron.address || prof.address || '';
     const city = patron.city || prof.city || '';
@@ -1682,6 +1700,9 @@ export const AdminComponents = {
             ` : ''}
             <button type="button" class="btn btn-glass" style="font-size: 0.78rem; margin-left: auto;" onclick="navigator.clipboard.writeText('${addressCopyText.replace(/'/g, "\\'")}'); app.showToast('Copied full shipping label coordinates!');">
               📋 Copy Delivery Label Data
+            </button>
+            <button type="button" class="btn" style="background: #EF4444; color: white; font-weight: 700; font-size: 0.78rem; padding: 0.45rem 1rem; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;" onclick="app.closeAdminModal(); app.handleAdminDeleteUser('${patron.uid}', '${name.replace(/'/g, "\\'")}', '${email.replace(/'/g, "\\'")}')" title="Permanently delete user from Auth & Firestore (Dev Test)">
+              <span>🗑️</span> Purge User & Data
             </button>
           </div>
 
@@ -1801,12 +1822,15 @@ export const AdminComponents = {
 
           <!-- Footer Actions -->
           <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(212, 175, 55, 0.2); padding-top: 0.8rem;">
-            <div style="display: flex; gap: 0.5rem;">
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
               <button type="button" class="btn btn-glass" style="font-size: 0.75rem;" onclick="app.closeAdminModal(); app.openAdjustMythosModal('${patron.uid}', '${name.replace(/'/g, "\\'")}', ${spendable})">
                 &plusmn; Adjust Mythos
               </button>
               <button type="button" class="btn btn-glass" style="font-size: 0.75rem;" onclick="app.closeAdminModal(); app.openOverrideTierModal('${patron.uid}', '${name.replace(/'/g, "\\'")}', ${bottles}, ${currentTierLevel})">
                 Override Tier
+              </button>
+              <button type="button" class="btn btn-glass" style="font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.closeAdminModal(); app.handleAdminDeleteUser('${patron.uid}', '${name.replace(/'/g, "\\'")}', '${email.replace(/'/g, "\\'")}')" title="Permanently delete user from Auth & Firestore (Dev Test)">
+                🗑️ Purge User & Data
               </button>
             </div>
             <button type="button" class="btn btn-gold" style="font-size: 0.78rem; padding: 0.6rem 1.4rem;" onclick="app.closeAdminModal()">Close Dossier</button>

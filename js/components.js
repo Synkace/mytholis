@@ -14,19 +14,25 @@ const Components = {
   /* Helper to format item arrays into readable strings (e.g. Petralux (50ml) x 1) */
   formatOrderItemsSummary(items) {
     if (!items) return 'Extrait de Parfum';
-    if (typeof items === 'string') return items;
-    if (Array.isArray(items)) {
-      if (items.length === 0) return 'Extrait de Parfum';
-      return items.map(i => {
-        if (!i) return '';
-        if (typeof i === 'string') return i;
-        const name = i.name || i.id || 'Mytholis Extrait';
-        const sizeStr = i.size ? (String(i.size).toLowerCase().includes('ml') ? ` (${i.size})` : ` (${i.size}ml)`) : '';
-        const qty = i.quantity || i.qty || 1;
-        return `${name}${sizeStr}${qty > 1 ? ' × ' + qty : ''}`;
-      }).filter(Boolean).join(', ');
+    if (typeof items === 'string') {
+      try {
+        const parsed = JSON.parse(items);
+        if (Array.isArray(parsed) || typeof parsed === 'object') items = parsed;
+        else return items;
+      } catch (e) {
+        return items;
+      }
     }
-    return 'Extrait de Parfum';
+    const arr = Array.isArray(items) ? items : (typeof items === 'object' ? Object.values(items) : []);
+    if (arr.length === 0) return 'Extrait de Parfum';
+    return arr.map(i => {
+      if (!i) return '';
+      if (typeof i === 'string') return i;
+      const name = i.name || i.title || i.id || 'Mytholis Extrait';
+      const sizeStr = i.size ? (String(i.size).toLowerCase().includes('ml') ? ` (${i.size})` : ` (${i.size}ml)`) : '';
+      const qty = i.quantity || i.qty || 1;
+      return `${name}${sizeStr}${qty > 1 ? ' × ' + qty : ''}`;
+    }).filter(Boolean).join(', ');
   },
 
   /* Render Product Card with 3D Pop-out Overlap, Wear Metrics & Instant Quick Add */
@@ -2465,10 +2471,10 @@ const Components = {
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-          <button class="btn btn-gold" style="width: 100%; padding: 0.85rem; font-size: 0.92rem; font-weight: 600; letter-spacing: 0.04em;" onclick="app.closeSignupBonusModal(); app.navigateTo('catalog');">
+          <button class="btn btn-gold" style="width: 100%; padding: 0.85rem; font-size: 0.92rem; font-weight: 600; letter-spacing: 0.04em;" onclick="app.closeSignupBonusModal(); app.navigateTo('collections');">
             Acquire Haute Parfumerie
           </button>
-          <button class="btn btn-glass" style="width: 100%; padding: 0.75rem; font-size: 0.85rem;" onclick="app.closeSignupBonusModal(); app.navigateTo('loyalty');">
+          <button class="btn btn-glass" style="width: 100%; padding: 0.75rem; font-size: 0.85rem;" onclick="app.closeSignupBonusModal(); app.navigateTo('circle-of-legends');">
             Inspect Collector Vault & Perks
           </button>
         </div>
@@ -3004,6 +3010,24 @@ const Components = {
       { code: 'RUB', sym: '₽' }
     ];
 
+    // Ensure points are properly reflected and self-heal 0-points initiate state
+    let spendablePts = Number(store.loyalty?.spendable_mythos) || 0;
+    let legacyPts = Number(store.loyalty?.legacy_mythos) || 0;
+    if (store.isUserLoggedIn() && spendablePts === 0 && legacyPts === 0) {
+      const bonusPts = Number(store.globalSettings?.signupBonusMythos) || 200;
+      spendablePts = bonusPts;
+      legacyPts = bonusPts;
+      if (!store.loyalty) store.loyalty = {};
+      store.loyalty.spendable_mythos = bonusPts;
+      store.loyalty.legacy_mythos = bonusPts;
+      store.loyalty.signup_bonus_awarded = true;
+      store.saveLocalStorage('mytholis_loyalty', store.loyalty);
+      if (store.user) {
+        store.user.points = bonusPts;
+        store.saveLocalStorage('mytholis_user', store.user);
+      }
+    }
+
     // Determine auth mode
     const isPhoneUser = email.endsWith('@phone.mytholis.com') || (fbUser && fbUser.phone && !fbUser.email);
     const isGoogleUser = (photoURL && photoURL.includes('googleusercontent.com'));
@@ -3058,7 +3082,7 @@ const Components = {
             </div>
             <p class="profile-user-email">${isPhoneUser ? `Mobile Collector (${phone || email.replace('@phone.mytholis.com','')})` : email}</p>
             <div class="profile-points-pill">
-              <strong>${(store.loyalty ? store.loyalty.spendable_mythos : 0).toLocaleString()}</strong> Spendable Mythos &nbsp;|&nbsp; <strong>${(store.loyalty ? store.loyalty.legacy_mythos : 0).toLocaleString()}</strong> Legacy M
+              <strong>${spendablePts.toLocaleString()}</strong> Spendable Mythos &nbsp;|&nbsp; <strong>${legacyPts.toLocaleString()}</strong> Legacy M
             </div>
           </div>
         </div>
@@ -3365,14 +3389,14 @@ const Components = {
       </div>
 
       <div class="modal-footer" style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
-        <button type="button" class="btn btn-glass" style="flex: 1; min-width: 105px; font-size: 0.78rem; padding: 0.6rem 0.8rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; cursor: pointer;" onclick="app.logoutUser()" title="Sign Out of Account">
+        <button type="button" class="btn btn-glass" style="flex: 1; min-width: 90px; font-size: 0.78rem; padding: 0.6rem 0.8rem;" onclick="app.logoutUser()" title="Sign Out of Account">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
           <span>Sign Out</span>
         </button>
-        <button type="button" class="btn btn-glass" style="flex: 1; min-width: 90px; font-size: 0.78rem; padding: 0.6rem 0.8rem;" onclick="app.closeProfileModal()">
+        <button type="button" class="btn btn-glass" style="flex: 1; min-width: 75px; font-size: 0.78rem; padding: 0.6rem 0.8rem;" onclick="app.closeProfileModal()">
           Close
         </button>
-        <button type="button" class="btn btn-gold" style="flex: 1.2; min-width: 135px; font-size: 0.78rem; padding: 0.6rem 0.8rem;" onclick="app.closeProfileModal(); app.navigateTo('circle-of-legends');">
+        <button type="button" class="btn btn-gold" style="flex: 1.2; min-width: 125px; font-size: 0.78rem; padding: 0.6rem 0.8rem;" onclick="app.closeProfileModal(); app.navigateTo('circle-of-legends');">
           Circle of Legends
         </button>
       </div>
@@ -3635,7 +3659,7 @@ const Components = {
       </div>
 
       <div class="modal-footer" style="display: flex; gap: 0.8rem;">
-        <button class="btn btn-gold" style="flex: 1;" onclick="app.launchRazorpayCheckout(${finalAmount})">
+        <button id="btn-proceed-checkout" class="btn btn-gold" style="flex: 1;" onclick="app.launchRazorpayCheckout(${finalAmount})">
           Proceed to Payment Desk • ${store.formatPrice(finalAmount)}
         </button>
       </div>

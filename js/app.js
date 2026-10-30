@@ -52,6 +52,9 @@ class MytholisApp {
     this.currentRebranderPdfBytes = null;
     this.activeRebrandedResult = null;
     this.targetRebranderOrder = null;
+    this.cachedRazorpayOrderPromise = null;
+    this.cachedRazorpayOrderData = null;
+    this.cachedRazorpayOrderAmount = null;
   }
 
   init() {
@@ -1779,6 +1782,79 @@ class MytholisApp {
     }
     // Layer 1: Firestore Profile Prefill & Address Autofill
     this.autofillCheckoutFromProfile();
+
+    // Zero-latency optimization: pre-load SDK & pre-create backend order in background
+    this.precreateRazorpayOrder(target);
+  }
+
+  ensureRazorpaySdk() {
+    if (typeof window.Razorpay !== 'undefined') return Promise.resolve();
+    if (this._rzpSdkPromise) return this._rzpSdkPromise;
+    this._rzpSdkPromise = new Promise((resolve, reject) => {
+      const existing = document.querySelector('script[src*="checkout.razorpay.com"]');
+      if (existing) {
+        if (typeof window.Razorpay !== 'undefined') {
+          resolve();
+        } else {
+          existing.addEventListener('load', resolve);
+          existing.addEventListener('error', reject);
+        }
+        return;
+      }
+      const s = document.createElement('script');
+      s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      s.async = true;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+    return this._rzpSdkPromise;
+  }
+
+  precreateRazorpayOrder(productOrCart = null) {
+    // 1. Kick off SDK preloading in background immediately
+    this.ensureRazorpaySdk().catch(() => {});
+
+    // 2. Pre-calculate final amount
+    const target = productOrCart || (store.cart.length ? { id: null } : MYTHOLIS_CATALOG[0]);
+    const isSingleProduct = !!(target && target.id);
+    let chosenSize = this.selectedSize || 50;
+    let singlePrice = this.selectedPrice;
+    if (isSingleProduct && target.sizes) {
+      const sObj = target.sizes.find(s => s.ml === chosenSize) || target.sizes[0];
+      singlePrice = sObj.price;
+    }
+    const baseSubtotal = isSingleProduct ? (singlePrice || target.price) : store.getCartTotal();
+    const discount = isSingleProduct ? 0 : store.getDiscountAmount(baseSubtotal);
+    const finalAmount = Math.max(0, baseSubtotal - discount);
+
+    if (finalAmount <= 0) return;
+
+    this.cachedRazorpayOrderAmount = finalAmount;
+    this.cachedRazorpayOrderData = null;
+
+    // 3. Initiate order creation on backend so it is ready before user clicks "Proceed"
+    this.cachedRazorpayOrderPromise = fetch('/api/razorpay/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: finalAmount,
+        currency: 'INR',
+        receipt: `MYTH-${Date.now().toString().slice(-6)}`
+      })
+    })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && data.orderId) {
+          this.cachedRazorpayOrderData = data;
+          return data;
+        }
+        return null;
+      })
+      .catch(err => {
+        console.warn('[Razorpay Order Pre-creation Notice]:', err.message);
+        return null;
+      });
   }
 
   /* Backward Compatibility Alias */
@@ -1985,6 +2061,19 @@ class MytholisApp {
 
   /* Execute Razorpay Standard Checkout Popup / COD Order Placement */
   async launchRazorpayCheckout(amount) {
+    const proceedBtn = document.getElementById('btn-proceed-checkout');
+    const originalBtnText = proceedBtn ? proceedBtn.innerHTML : '';
+    if (proceedBtn) {
+      proceedBtn.disabled = true;
+      proceedBtn.innerHTML = `<span style="display:inline-block; animation:spin 1s linear infinite;">✦</span> Opening Payment Vault...`;
+    }
+    const restoreProceedBtn = () => {
+      if (proceedBtn) {
+        proceedBtn.disabled = false;
+        proceedBtn.innerHTML = originalBtnText;
+      }
+    };
+
     const nameInput = document.getElementById('checkout-name');
     const emailInput = document.getElementById('checkout-email');
     const phoneInput = document.getElementById('checkout-phone');
@@ -2004,30 +2093,35 @@ class MytholisApp {
     const customerState = (stateInput ? stateInput.value.trim() : '') || store.user.state || '';
 
     if (!customerName || customerName === 'Mytholis Patron' || customerName === 'Mytholis Collector') {
+      restoreProceedBtn();
       this.showToast('Please provide your full delivery name.');
       if (nameInput) nameInput.focus();
       return;
     }
 
     if (!customerEmail || !customerEmail.includes('@')) {
+      restoreProceedBtn();
       this.showToast('Please provide a valid email address for order notifications.');
       if (emailInput) emailInput.focus();
       return;
     }
 
     if (!customerPhone || customerPhone.length !== 10) {
+      restoreProceedBtn();
       this.showToast('Please provide a valid 10-digit Indian mobile number for order delivery.');
       if (phoneInput) phoneInput.focus();
       return;
     }
 
     if (!customerPincode || customerPincode.length !== 6) {
+      restoreProceedBtn();
       this.showToast('Please provide a valid 6-digit postal PIN code.');
       if (pincodeInput) pincodeInput.focus();
       return;
     }
 
     if (!customerAddress || customerAddress.length < 5) {
+      restoreProceedBtn();
       this.showToast('Please provide your complete street delivery address.');
       if (addressInput) addressInput.focus();
       return;
@@ -2062,6 +2156,7 @@ class MytholisApp {
 
     // If Cash on Delivery is selected
     if (isCOD) {
+      restoreProceedBtn();
       this.finalizeOrderPlacement(amount, {
         customerName,
         customerPhone,
@@ -2077,68 +2172,77 @@ class MytholisApp {
     }
 
     // Prepaid Order: Razorpay Standard Checkout
-    const razorpayKey = (store.globalSettings && store.globalSettings.razorpayKeyId && store.globalSettings.razorpayKeyId.trim()) ||
-                        (import.meta.env && import.meta.env.VITE_RAZORPAY_KEY_ID && import.meta.env.VITE_RAZORPAY_KEY_ID.trim()) ||
-                        '';
+    let razorpayKey = (store.globalSettings && store.globalSettings.razorpayKeyId && store.globalSettings.razorpayKeyId.trim()) ||
+                      (import.meta.env && import.meta.env.VITE_RAZORPAY_KEY_ID && import.meta.env.VITE_RAZORPAY_KEY_ID.trim()) ||
+                      '';
 
-    if (!razorpayKey) {
-      console.warn("[Mytholis Payment] Razorpay Key ID not configured.");
-      this.showToast('Razorpay Gateway is pending setup in Sovereign Admin Settings (or select Cash on Delivery).');
+    // Ensure Razorpay SDK is loaded (fast resolution via preloaded SDK promise)
+    try {
+      await this.ensureRazorpaySdk();
+    } catch (sdkErr) {
+      restoreProceedBtn();
+      this.showToast('Could not load payment gateway. Please check your connection or choose COD.');
       return;
     }
-
-    // Ensure Razorpay SDK is loaded
-    if (typeof window.Razorpay === 'undefined') {
-      this.showToast('Initializing secure Razorpay gateway...');
-      try {
-        await new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-          script.onload = resolve;
-          script.onerror = () => reject(new Error('Failed to load Razorpay SDK'));
-          document.body.appendChild(script);
-        });
-      } catch (sdkErr) {
-        this.showToast('Could not load payment gateway. Please check your connection or choose COD.');
-        return;
-      }
-    }
-
-    this.showToast('Opening Encrypted Payment Desk...');
 
     let rzpOrderId = null;
     let rzpAmount = Math.round(Number(amount) * 100);
 
-    // Call serverless /api/razorpay/create-order
-    try {
-      const orderResp = await fetch('/api/razorpay/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount,
-          currency: 'INR',
-          receipt: `MYTH-${Date.now().toString().slice(-6)}`,
-          notes: {
-            customerName,
-            customerPhone,
-            customerEmail,
-            customerAddress,
-            customerPincode,
-            customerCity,
-            customerState
-          }
-        })
-      });
-
-      if (orderResp.ok) {
-        const orderData = await orderResp.json();
-        if (orderData && orderData.orderId) {
-          rzpOrderId = orderData.orderId;
-          if (orderData.amount) rzpAmount = orderData.amount;
-        }
+    // Consume pre-created order if ready, or wait with a short timeout, or fetch on demand
+    let orderData = null;
+    if (this.cachedRazorpayOrderAmount === amount && this.cachedRazorpayOrderData) {
+      orderData = this.cachedRazorpayOrderData;
+    } else if (this.cachedRazorpayOrderAmount === amount && this.cachedRazorpayOrderPromise) {
+      try {
+        orderData = await Promise.race([
+          this.cachedRazorpayOrderPromise,
+          new Promise(resolve => setTimeout(() => resolve(null), 3000))
+        ]);
+      } catch (raceErr) {
+        orderData = null;
       }
-    } catch (createErr) {
-      console.warn('[Razorpay Order API Notice]: Serverless order creation fallback:', createErr);
+    }
+
+    if (!orderData || !orderData.orderId) {
+      try {
+        const orderResp = await fetch('/api/razorpay/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount,
+            currency: 'INR',
+            receipt: `MYTH-${Date.now().toString().slice(-6)}`,
+            notes: {
+              customerName,
+              customerPhone,
+              customerEmail,
+              customerAddress,
+              customerPincode,
+              customerCity,
+              customerState
+            }
+          })
+        });
+
+        if (orderResp.ok) {
+          orderData = await orderResp.json();
+        }
+      } catch (createErr) {
+        console.warn('[Razorpay Order API Notice]: Serverless order creation fallback:', createErr);
+      }
+    }
+
+    if (orderData && orderData.orderId) {
+      rzpOrderId = orderData.orderId;
+      if (orderData.amount) rzpAmount = orderData.amount;
+      if (!razorpayKey && orderData.key) razorpayKey = orderData.key;
+    }
+
+    if (!razorpayKey) {
+      restoreProceedBtn();
+      console.warn("[Mytholis Payment] Razorpay Key ID not configured.");
+      this.showToast('Razorpay Gateway is pending setup in Sovereign Admin Settings (or select Cash on Delivery).');
+      return;
     }
 
     const patronEmail = customerEmail || 'concierge@mytholis.com';
@@ -2168,6 +2272,7 @@ class MytholisApp {
       },
       modal: {
         ondismiss: () => {
+          restoreProceedBtn();
           this.showToast('Payment window closed. Order remains pending.');
         }
       },
@@ -2216,17 +2321,7 @@ class MytholisApp {
           }
         } catch (verErr) {
           console.error('[Razorpay Verification Error]:', verErr);
-          this.finalizeOrderPlacement(amount, {
-            customerName,
-            customerPhone: cleanPhone,
-            customerEmail: patronEmail,
-            customerAddress,
-            customerPincode,
-            customerCity,
-            customerState,
-            paymentMethod: 'Razorpay Instant',
-            paymentId: response.razorpay_payment_id
-          });
+          this.showToast(`Network error during payment verification. Please contact support with Payment ID: ${response.razorpay_payment_id}`);
         }
       }
     };
@@ -2238,8 +2333,15 @@ class MytholisApp {
     try {
       this.closeRazorpayModal();
       const rzpInstance = new window.Razorpay(options);
+      rzpInstance.on('payment.failed', (response) => {
+        restoreProceedBtn();
+        console.error('[Razorpay Payment Failed]:', response.error);
+        this.showToast(`Payment declined: ${response.error?.description || 'Please retry.'}`);
+      });
       rzpInstance.open();
+      setTimeout(restoreProceedBtn, 1000);
     } catch (openErr) {
+      restoreProceedBtn();
       console.error('[Razorpay Open Error]:', openErr);
       this.showToast(`Failed to launch payment window: ${openErr.message}`);
     }
@@ -2558,7 +2660,7 @@ class MytholisApp {
       ` : '';
 
       slot.innerHTML = `
-        <div style="display: flex; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 0.4rem;">
           ${adminCrown}
           <button class="icon-btn vip-profile-btn" onclick="app.openProfileModal()" title="Client Profile (${displayName})" style="padding: 0; overflow: hidden; width: 38px; height: 38px; border-radius: 50%;">
             ${photoURL ? `
@@ -2753,6 +2855,7 @@ class MytholisApp {
      NEW COLLECTOR REGISTRATION BONUS CELEBRATION MODAL
      ========================================================================== */
   openSignupBonusModal(points = 200) {
+    const pts = Number(points) || Number(store.globalSettings?.signupBonusMythos) || 200;
     let overlay = document.getElementById('signup-bonus-modal-overlay');
     let modalBody = document.getElementById('signup-bonus-modal-body');
     if (!overlay) {
@@ -2773,10 +2876,12 @@ class MytholisApp {
     }
 
     if (modalBody && typeof Components !== 'undefined' && typeof Components.renderSignupBonusModal === 'function') {
-      modalBody.innerHTML = Components.renderSignupBonusModal(points);
+      modalBody.innerHTML = Components.renderSignupBonusModal(pts);
     }
 
-    this.closeAllModals(false);
+    // Close underlying auth / profile modals
+    this.closeProfileModal();
+    overlay.style.zIndex = '99999';
     overlay.classList.add('active');
     document.body.style.overflow = 'hidden';
   }
@@ -2791,8 +2896,11 @@ class MytholisApp {
 
   /* Close All Modals */
   closeAllModals(restoreScroll = true) {
-    document.querySelectorAll('.modal-overlay').forEach(el => el.classList.remove('active'));
-    document.getElementById('signup-bonus-modal-overlay')?.classList.remove('active');
+    document.querySelectorAll('.modal-overlay').forEach(el => {
+      if (el.id !== 'signup-bonus-modal-overlay') {
+        el.classList.remove('active');
+      }
+    });
     document.getElementById('patron-login-modal-root')?.remove();
     document.getElementById('headless-container')?.remove();
     if (restoreScroll) {
@@ -3462,16 +3570,33 @@ class MytholisApp {
     this.showToast('Registering new VIP Collector Account...');
     const result = await firebaseService.signUpWithEmail(email, pass, name);
     if (result.success) {
+      const bonusPts = Number(store.globalSettings?.signupBonusMythos) || 200;
       if (name) store.user.name = name;
       if (phone) store.user.phone = phone;
       store.user.email = email;
       store.user.isLoggedIn = true;
+      // Guarantee initial 200 welcome bonus Mythos immediately in local state
+      store.loyalty = {
+        spendable_mythos: bonusPts,
+        legacy_mythos: bonusPts,
+        full_bottles_purchased: 0,
+        initiation_completed: false,
+        codex_unlocked: [],
+        trinity_claimed: false,
+        pantheon_claimed: false,
+        reviewed_scents: [],
+        active_reward_codes: [],
+        applied_reward_code: null
+      };
+      store.syncUserWithLoyalty();
       store.saveLocalStorage('mytholis_user', store.user);
+      store.saveLocalStorage('mytholis_loyalty', store.loyalty);
       store.notify();
+
       this.showToast(`VIP Dossier Account Activated for ${result.user.email}!`);
       this.updateNavAuth();
       this.closeProfileModal();
-      this.openSignupBonusModal(store.globalSettings?.signupBonusMythos || 200);
+      this.openSignupBonusModal(bonusPts);
       if (store.currentView === 'profile') this.renderCurrentView();
     } else {
       this.showToast(result.error);
@@ -3499,6 +3624,85 @@ class MytholisApp {
       this.navigateTo('home');
     } else {
       this.renderCurrentView();
+    }
+  }
+
+  /* Dev Test: Purge Current Authenticated Account & Data */
+  async handlePurgeCurrentAccount() {
+    const userEmail = store.user?.email || (firebaseService?.currentUser?.email) || '';
+    const confirm = window.confirm(
+      `⚠️ PERMANENT ACCOUNT DELETION (DEV TEST)\n\n` +
+      `Are you sure you want to permanently delete your account (${userEmail || 'current user'}) and all its data?\n\n` +
+      `This will:\n` +
+      `1. Delete the user from Firebase Authentication\n` +
+      `2. Delete the user profile & loyalty documents from Firestore\n` +
+      `3. Clear all local browser caches\n\n` +
+      `You will then be able to immediately test signing up again to verify the 200 Mythos welcome bonus popup.`
+    );
+    if (!confirm) return;
+
+    this.showToast('Deleting account & purging data from Firebase...');
+    try {
+      if (typeof firebaseService === 'undefined') {
+        this.showToast('Firebase service not available.');
+        return;
+      }
+      const res = await firebaseService.deleteAccountAndData();
+      if (res && res.success) {
+        store.logout();
+        try {
+          if (firebaseService.auth && firebaseService.auth.currentUser) {
+            await firebaseService.signOut();
+          }
+        } catch (_) {}
+        this.closeProfileModal();
+        this.closeAllModals(false);
+        this.updateNavAuth();
+        this.showToast('Account permanently purged! You can now test signing up fresh.');
+        setTimeout(() => {
+          this.openProfileModal();
+          this.activeAuthTab = 'signup';
+          const modalBody = document.getElementById('profile-modal-body');
+          if (modalBody && typeof Components !== 'undefined') {
+            modalBody.innerHTML = Components.renderAuthModal('signup');
+          }
+        }, 500);
+      } else {
+        this.showToast(res?.error || 'Failed to delete account.');
+      }
+    } catch (err) {
+      console.error('[Mytholis] Error purging account:', err);
+      this.showToast('Error deleting account: ' + err.message);
+    }
+  }
+
+  /* Sovereign Admin: Purge Test Collector Account & Data */
+  async handleAdminDeleteUser(targetUid, name = 'Collector', email = '') {
+    if (!targetUid) return;
+    const confirm = window.confirm(
+      `⚠️ PURGE COLLECTOR (ADMIN TEST TOOL)\n\n` +
+      `Are you sure you want to permanently delete collector "${name}" (${email || targetUid})?\n\n` +
+      `This will remove the user profile and data from Firestore so they can register again as a fresh initiate.`
+    );
+    if (!confirm) return;
+
+    this.showToast(`Purging collector ${name}...`);
+    try {
+      if (typeof firebaseService === 'undefined') {
+        this.showToast('Firebase service not initialized.');
+        return;
+      }
+      this.closeAdminModal();
+      const res = await firebaseService.deleteAccountAndData(targetUid);
+      if (res && res.success) {
+        this.showToast(`Collector "${name}" successfully purged.`);
+        await this.refreshAdminDashboard();
+      } else {
+        this.showToast(res?.error || 'Failed to purge collector.');
+      }
+    } catch (err) {
+      console.error('[Mytholis Admin] Error purging collector:', err);
+      this.showToast('Error purging collector: ' + err.message);
     }
   }
 
@@ -3788,6 +3992,32 @@ class MytholisApp {
     this.showToast('Synchronizing Sovereign cloud ledger with Firestore...');
     await this.loadAdminDashboard();
     this.showToast('Sovereign Command: Live cloud ledger synchronized.');
+  }
+
+  async handleBatchDeduplicateUsers() {
+    const isConfirmed = window.confirm(
+      "⚡ Run Sovereign Registry Deduplication?\n\n" +
+      "This will scan all collectors and past orders across Firestore, permanently merge duplicate accounts sharing the same phone or email into authoritative primary vaults, sum their Mythos balances, and prune redundant records."
+    );
+    if (!isConfirmed) return;
+
+    this.showToast("Initiating Sovereign Registry Deduplication...");
+    try {
+      if (typeof firebaseService === 'undefined') {
+        this.showToast("Firebase service not initialized.");
+        return;
+      }
+      const res = await firebaseService.batchDeduplicateCollectors();
+      if (res && res.success) {
+        this.showToast(`Deduplication Complete: ${res.clustersMerged || 0} duplicate cluster(s) consolidated, ${res.duplicatesRemoved || 0} redundant record(s) pruned.`);
+        await this.refreshAdminDashboard();
+      } else {
+        this.showToast(res?.error || "Batch deduplication completed with notice.");
+      }
+    } catch (err) {
+      console.error("[Sovereign Command] Deduplication error:", err);
+      this.showToast("Deduplication error: " + err.message);
+    }
   }
 
   // --- Module B: Order, Payment & COD Command Handlers ---

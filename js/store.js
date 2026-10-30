@@ -487,6 +487,10 @@ class MytholisStore {
   saveUser() {
     this.saveLocalStorage('mytholis_user', this.user);
     this.notify();
+    if (typeof window !== 'undefined' && window.firebaseService && this.user?.uid) {
+      const activeUid = this.user.activeDocUid || this.user.uid;
+      window.firebaseService.reconcileAndSavePatron(activeUid, this.user).catch(() => {});
+    }
   }
 
   subscribe(listener) {

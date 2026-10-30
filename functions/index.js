@@ -11,6 +11,8 @@ import redeemRewardHandler from "./handlers/redeem-reward.js";
 
 // Patron & Collector Deduplication & Reconciliation
 import patronReconcileHandler from "./handlers/patron/reconcile.js";
+import patronBatchDeduplicateHandler from "./handlers/patron/batch-deduplicate.js";
+import patronDeleteAccountHandler from "./handlers/patron/delete-account.js";
 
 // Razorpay handlers
 import razorpayCreateOrderHandler from "./handlers/razorpay/create-order.js";
@@ -62,6 +64,10 @@ router.all("/redeem-reward", redeemRewardHandler);
 // Patron Account Deduplication & Reconciliation
 router.all("/patron/reconcile", patronReconcileHandler);
 router.all("/collector/reconcile", patronReconcileHandler);
+router.all("/patron/batch-deduplicate", patronBatchDeduplicateHandler);
+router.all("/collector/batch-deduplicate", patronBatchDeduplicateHandler);
+router.all("/patron/delete-account", patronDeleteAccountHandler);
+router.all("/collector/delete-account", patronDeleteAccountHandler);
 
 // Razorpay Payment Gateway APIs
 router.all("/razorpay/create-order", razorpayCreateOrderHandler);

@@ -18,8 +18,8 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if (request.auth != null && request.auth.uid == userId) || isAdmin();
       allow create: if (request.auth != null && request.auth.uid == userId &&
-                      !('role' in request.resource.data) &&
-                      !('isAdmin' in request.resource.data)) || isAdmin();
+                      request.resource.data.get('isAdmin', false) == false &&
+                      request.resource.data.get('role', 'collector') == 'collector') || isAdmin();
       allow update: if (request.auth != null && request.auth.uid == userId &&
                         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'isAdmin'])) ||
                        isAdmin();
