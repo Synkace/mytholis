@@ -32,9 +32,14 @@ service cloud.firestore {
       }
     }
 
-    // 2. Orders collection: Created by checkout. Only order owner or admin can read; only admin can update/delete.
+    // 2. Orders collection: Direct client creation restricted to authenticated users with non-paid status.
+    // Paid orders and points are strictly server-authoritative via Cloud Functions Admin SDK.
     match /orders/{orderId} {
-      allow create: if true;
+      allow create: if isAdmin() || (
+        request.auth != null &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.get('paymentStatus', 'Pending') != 'Paid'
+      );
       allow read: if isAdmin() || (request.auth != null && (resource.data.userId == request.auth.uid || resource.data.userEmail == request.auth.token.email));
       allow update, delete: if isAdmin();
     }

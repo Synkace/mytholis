@@ -39,16 +39,18 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Security Check: Enforce secret verification if configured (fail-closed)
-    const webhookSecret = process.env.DISPATCH_WEBHOOK_SECRET || process.env.WEBHOOK_SECRET;
+    // Security Check: Enforce secret verification (Strict Fail-Closed per AGENTS.md Rule 2)
+    const webhookSecret = (process.env.DISPATCH_WEBHOOK_SECRET || process.env.WEBHOOK_SECRET || '').trim();
+    if (!webhookSecret) {
+      console.error('[Dispatch Webhook] Rejected: Webhook secret is not configured on server.');
+      return res.status(401).json({ success: false, error: 'Unauthorized: Webhook authentication secret unconfigured.' });
+    }
+
     const providedSecret = req.headers['x-api-key'] || req.headers['x-webhook-token'] || req.headers['authorization'];
-    
-    if (webhookSecret) {
-      const cleanProvided = providedSecret ? String(providedSecret).replace(/^Bearer\s+/i, '').trim() : '';
-      if (!cleanProvided || cleanProvided !== webhookSecret.trim()) {
-        console.warn('[Dispatch Webhook] Unauthorized attempt with invalid or missing secret.');
-        return res.status(401).json({ success: false, error: 'Unauthorized webhook request' });
-      }
+    const cleanProvided = providedSecret ? String(providedSecret).replace(/^Bearer\s+/i, '').trim() : '';
+    if (!cleanProvided || cleanProvided !== webhookSecret) {
+      console.warn('[Dispatch Webhook] Unauthorized attempt with invalid or missing secret.');
+      return res.status(401).json({ success: false, error: 'Unauthorized webhook request' });
     }
 
     const payload = req.body || {};

@@ -56,8 +56,6 @@ const router = express.Router();
 router.all("/admin", adminHandler);
 router.all("/complete-order", completeOrderHandler);
 router.all("/dispatch", dispatchHandler);
-router.all("/dispatch-event", dispatchHandler);
-router.all("/webhook", dispatchHandler);
 router.all("/health", healthHandler);
 router.all("/redeem-reward", redeemRewardHandler);
 

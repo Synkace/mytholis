@@ -3672,11 +3672,6 @@ const Components = {
     `;
   },
 
-  /* Backward Compatibility Alias for PayU invocation */
-  renderPayUModal(productOrCart) {
-    return this.renderRazorpayModal(productOrCart);
-  },
-
   /* ==========================================================================
      SANCTUM COMMAND - LIVE BACKEND INTEGRATION DIAGNOSTICS BAR
      ========================================================================== */

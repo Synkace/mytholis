@@ -1,4 +1,5 @@
 import { adminAuth, adminDb } from './_firebaseAdmin.js';
+import { calculateServerOrderTotal } from '../catalog.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -19,68 +20,70 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing orderData' });
   }
 
-  // Optional authentication
-  let uid = null;
-  let userEmail = null;
+  // Authoritative authentication
+  let uid = 'guest';
+  let userEmail = (orderData.userEmail || orderData.email || 'guest@mytholis.com').toLowerCase();
   const authHeader = req.headers.authorization || req.headers.Authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.replace('Bearer ', '').trim();
     try {
       const decoded = await adminAuth.verifyIdToken(token);
       uid = decoded.uid;
-      userEmail = decoded.email;
+      if (decoded.email) userEmail = decoded.email.toLowerCase();
     } catch (e) {
-      // Allow guest checkout if token invalid
       console.warn("[Mytholis API] Guest checkout (unverified token)");
     }
   }
 
   try {
+    // Validate order items against official server catalog
+    const items = Array.isArray(orderData.items) ? orderData.items : [];
+    const serverCalc = calculateServerOrderTotal(items, orderData.appliedVoucherCode || orderData.promoCode, orderData.mythosRedeemed || 0);
+
+    const validatedTotal = serverCalc.finalTotal > 0 ? serverCalc.finalTotal : Number(orderData.total || 0);
+
+    // Per AGENTS.md Rule 3: Client cannot claim unverified "Paid" status or award points directly via complete-order
+    const isCOD = orderData.paymentMethod && orderData.paymentMethod.toLowerCase().includes('cash on delivery');
+    const paymentStatus = isCOD ? 'COD Pending' : 'Payment Pending';
+    const orderStatus = isCOD ? 'Order Placed (COD)' : 'Payment Pending';
+
     const orderDoc = {
       ...orderData,
-      userId: uid || orderData.userId || 'guest',
-      userEmail: userEmail || orderData.userEmail || orderData.email || 'guest@mytholis.com',
+      total: validatedTotal,
+      subtotal: serverCalc.subtotal || validatedTotal,
+      userId: uid,
+      userEmail,
+      paymentStatus,
+      status: orderStatus,
       createdAt: new Date().toISOString()
     };
 
     const orderRef = await adminDb.collection('orders').add(orderDoc);
 
-    // If registered user, update loyalty points and order history
-    if (uid) {
-      const userRef = adminDb.collection('users').doc(uid);
-      const userSnap = await userRef.get();
-      if (userSnap.exists) {
-        const userData = userSnap.data();
-        const loyalty = userData.loyalty || {};
-        const profile = userData.profile || {};
-
-        // Per AGENTS.md Rule 3: Points and tiers may only be credited after verified payment confirmation
-        const isVerifiedPaid = orderData.paymentStatus === 'Paid';
-        if (isVerifiedPaid) {
-          const earnedPoints = Math.round((Number(orderData.total) || 0) * 0.03);
-          loyalty.spendable_mythos = (loyalty.spendable_mythos || 0) + earnedPoints;
-          loyalty.legacy_mythos = (loyalty.legacy_mythos || 0) + earnedPoints;
-
-          // Count full bottles
-          const items = Array.isArray(orderData.items) ? orderData.items : [];
-          const fullBottles = items.filter(i => (Number(i.size) === 50 || Number(i.size) === 100)).reduce((sum, i) => sum + (Number(i.qty) || 1), 0);
-          loyalty.full_bottles_purchased = (loyalty.full_bottles_purchased || 0) + fullBottles;
+    // Vouchers: If a voucher was redeemed, mark it used on user profile
+    if (uid !== 'guest' && orderData.appliedVoucherCode) {
+      try {
+        const userRef = adminDb.collection('users').doc(uid);
+        const userSnap = await userRef.get();
+        if (userSnap.exists) {
+          const userData = userSnap.data();
+          const loyalty = userData.loyalty || {};
+          if (Array.isArray(loyalty.active_reward_codes)) {
+            loyalty.active_reward_codes = loyalty.active_reward_codes.map(c => 
+              c.code === orderData.appliedVoucherCode ? { ...c, used: true } : c
+            );
+            await userRef.set({ loyalty, updatedAt: new Date().toISOString() }, { merge: true });
+          }
         }
-
-        // If voucher used, mark as used
-        if (orderData.appliedVoucherCode && Array.isArray(loyalty.active_reward_codes)) {
-          loyalty.active_reward_codes = loyalty.active_reward_codes.map(c => 
-            c.code === orderData.appliedVoucherCode ? { ...c, used: true } : c
-          );
-        }
-
-        await userRef.set({ loyalty, updatedAt: new Date().toISOString() }, { merge: true });
+      } catch (vErr) {
+        console.warn("[Mytholis API] Voucher consumption note:", vErr.message);
       }
     }
 
     return res.status(200).json({
       success: true,
       orderId: orderRef.id,
+      total: validatedTotal,
       message: 'Order completed and recorded in cloud ledger.'
     });
   } catch (err) {

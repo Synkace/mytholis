@@ -77,7 +77,7 @@ export default async function handler(req, res) {
   }
 
   // Secret header fallback
-  const expectedSecret = process.env.ADMIN_API_KEY || process.env.RAZORPAY_KEY_SECRET;
+  const expectedSecret = process.env.ADMIN_API_KEY;
   if (!isAdminAuthorized && xAdminKey && expectedSecret && xAdminKey === expectedSecret) {
     isAdminAuthorized = true;
   }

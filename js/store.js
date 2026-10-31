@@ -260,7 +260,6 @@ class MytholisStore {
       freeShippingThreshold: 3000,
       standardShippingFee: 150,
       razorpayKeyId: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_RAZORPAY_KEY_ID) || '',
-      razorpayKeySecret: '',
       supportPhone: '+91 777000 9170',
       supportWhatsApp: '917770009170',
       supportEmail: 'concierge@mytholis.com',
@@ -407,7 +406,6 @@ class MytholisStore {
     if (settings && typeof settings === 'object') {
       const merged = Object.assign({}, this.globalSettings, settings);
       if (!merged.razorpayKeyId && this.globalSettings?.razorpayKeyId) merged.razorpayKeyId = this.globalSettings.razorpayKeyId;
-      if (!merged.razorpayKeySecret && this.globalSettings?.razorpayKeySecret) merged.razorpayKeySecret = this.globalSettings.razorpayKeySecret;
       this.globalSettings = merged;
       this.saveLocalStorage('mytholis_global_settings', this.globalSettings);
       this.notify();

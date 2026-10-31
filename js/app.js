@@ -250,7 +250,7 @@ class MytholisApp {
   handleHashRoute() {
     const rawHash = (window.location.hash || '').replace(/^#\/?/, '').trim();
 
-    // Handle PayU Payment Return Parameters (?payment=success or ?payment=failed)
+    // Handle Payment Return Parameters (?payment=success or ?payment=failed)
     const fullSearch = window.location.search || (rawHash.includes('?') ? '?' + rawHash.split('?')[1] : '');
     if (fullSearch) {
       const searchParams = new URLSearchParams(fullSearch);
@@ -1749,10 +1749,6 @@ class MytholisApp {
     return this.openRazorpayModal(product);
   }
 
-  buyNowPayU(productId, event) {
-    return this.buyNow(productId, event);
-  }
-
   buyNowRazorpay(productId, event) {
     return this.buyNow(productId, event);
   }
@@ -1771,11 +1767,11 @@ class MytholisApp {
     this.closeAllModals(false);
     this.trackMetaEvent('InitiateCheckout', { currency: 'INR' });
     const target = productOrCart || (store.cart.length ? { id: null } : MYTHOLIS_CATALOG[0]);
-    const modalBody = document.getElementById('razorpay-modal-body') || document.getElementById('payu-modal-body');
+    const modalBody = document.getElementById('razorpay-modal-body');
     if (modalBody) {
       modalBody.innerHTML = Components.renderRazorpayModal(target);
     }
-    const overlay = document.getElementById('razorpay-modal-overlay') || document.getElementById('payu-modal-overlay');
+    const overlay = document.getElementById('razorpay-modal-overlay');
     if (overlay) {
       overlay.classList.add('active');
       document.body.style.overflow = 'hidden';
@@ -1858,26 +1854,14 @@ class MytholisApp {
       });
   }
 
-  /* Backward Compatibility Alias */
-  openPayUModal(productOrCart = null) {
-    return this.openRazorpayModal(productOrCart);
-  }
-
   closeRazorpayModal() {
-    const overlays = [document.getElementById('razorpay-modal-overlay'), document.getElementById('payu-modal-overlay')];
-    overlays.forEach(overlay => {
-      if (overlay) overlay.classList.remove('active');
-    });
+    const overlay = document.getElementById('razorpay-modal-overlay');
+    if (overlay) overlay.classList.remove('active');
     document.body.style.overflow = '';
   }
 
-  /* Backward Compatibility Alias */
-  closePayUModal() {
-    return this.closeRazorpayModal();
-  }
-
   selectPaymentMethod(el, method) {
-    document.querySelectorAll('.razorpay-method-pill, .payu-method-pill').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.razorpay-method-pill').forEach(p => p.classList.remove('active'));
     if (el) el.classList.add('active');
 
     const codNotice = document.getElementById('cod-guardrail-notice');
@@ -2151,7 +2135,7 @@ class MytholisApp {
     }
 
     // Check payment method
-    const activeMethodPill = document.querySelector('.razorpay-method-pill.active, .payu-method-pill.active');
+    const activeMethodPill = document.querySelector('.razorpay-method-pill.active');
     const paymentMethod = activeMethodPill ? activeMethodPill.textContent.trim() : 'Prepaid (Cards / UPI)';
     const isCOD = paymentMethod.toLowerCase().includes('cash on delivery') || paymentMethod.toLowerCase().includes('cod');
 
@@ -2349,11 +2333,6 @@ class MytholisApp {
     }
   }
 
-  /* Backward Compatibility Aliases */
-  launchPayUCheckout(amount) {
-    return this.launchRazorpayCheckout(amount);
-  }
-
   completeRazorpayPayment(amount) {
     return this.launchRazorpayCheckout(amount);
   }
@@ -2464,7 +2443,7 @@ class MytholisApp {
       this.showToast(`Code ${code} applied to checkout.`);
       this.renderCartModalContent();
       this.renderProfileModalContent();
-      const modalBody = document.getElementById('razorpay-modal-body') || document.getElementById('payu-modal-body');
+      const modalBody = document.getElementById('razorpay-modal-body');
       if (modalBody) {
         modalBody.innerHTML = Components.renderRazorpayModal(store.cart.length ? { id: null } : MYTHOLIS_CATALOG[0]);
       }
@@ -2533,7 +2512,7 @@ class MytholisApp {
     this.showToast("Reward code removed from checkout.");
     this.renderCartModalContent();
     this.renderProfileModalContent();
-    const modalBody = document.getElementById('razorpay-modal-body') || document.getElementById('payu-modal-body');
+    const modalBody = document.getElementById('razorpay-modal-body');
     if (modalBody) {
       modalBody.innerHTML = Components.renderRazorpayModal(store.cart.length ? { id: null } : MYTHOLIS_CATALOG[0]);
     }
@@ -4756,7 +4735,6 @@ class MytholisApp {
       const freeShip = getNum('setting-free-ship-threshold') ?? getNum('set-free-shipping-threshold') ?? 3000;
       const shipFee = getNum('setting-standard-ship-fee') ?? getNum('set-shipping-fee') ?? 150;
       const razorpayKey = getStr('setting-razorpay-key-id') || currentSettings.razorpayKeyId || '';
-      const razorpaySecret = getStr('setting-razorpay-key-secret') || currentSettings.razorpayKeySecret || '';
       const metaPixelId = getStr('setting-meta-pixel-id') || currentSettings.metaPixelId || '';
       const supportPhone = getStr('setting-support-phone') || currentSettings.supportPhone || '+91 777000 9170';
       const supportEmail = getStr('setting-support-email') || currentSettings.supportEmail || 'concierge@mytholis.com';
@@ -4781,7 +4759,6 @@ class MytholisApp {
         standardShippingFee: shipFee,
         shippingFee: shipFee,
         razorpayKeyId: razorpayKey,
-        razorpayKeySecret: razorpaySecret,
         metaPixelId: metaPixelId,
         supportPhone: supportPhone,
         supportWhatsApp: supportPhone.replace(/\D/g, ''),

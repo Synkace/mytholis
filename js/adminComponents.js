@@ -1055,7 +1055,6 @@ export const AdminComponents = {
                 <!-- Razorpay Standard & UPI Payment Gateway Configuration -->
                 ${(() => {
                   const activeKey = (globalSettings.razorpayKeyId || '').trim() || (typeof import.meta !== 'undefined' && import.meta.env?.VITE_RAZORPAY_KEY_ID) || '';
-                  const activeSecret = (globalSettings.razorpayKeySecret || '').trim() || '';
                   return `
                 <div class="liquid-glass-card" style="padding: 1.5rem; grid-column: 1 / -1;">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem;">
@@ -1065,7 +1064,7 @@ export const AdminComponents = {
                     <div>
                       ${activeKey ? `
                         <span class="glass-pill" style="font-size: 0.72rem; color: #10B981; border-color: #10B981; background: rgba(16, 185, 129, 0.1);">
-                          ● Razorpay Gateway Active (${activeKey.startsWith('rzp_live') ? 'Production Live' : 'Test Mode'})
+                          ● Razorpay Active (${activeKey.startsWith('rzp_live') ? 'Production Live' : 'Test Mode'})
                         </span>
                       ` : `
                         <span class="glass-pill" style="font-size: 0.72rem; color: #F59E0B; border-color: #F59E0B; background: rgba(245, 158, 11, 0.1);">
@@ -1077,27 +1076,20 @@ export const AdminComponents = {
 
                   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem;">
                     <div>
-                      <label class="sovereign-field-label">Razorpay Key ID</label>
+                      <label class="sovereign-field-label">Razorpay Key ID (Client-Facing)</label>
                       <input type="text" id="setting-razorpay-key-id" class="sovereign-form-input" style="font-family: monospace;" placeholder="rzp_test_... or rzp_live_..." value="${activeKey}" />
                       <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
-                        Found in Razorpay Dashboard &gt; Settings &gt; API Keys.
+                        Public Key ID from Razorpay Dashboard &gt; Settings &gt; API Keys.
                       </div>
                     </div>
 
                     <div>
-                      <label class="sovereign-field-label">Razorpay Key Secret</label>
-                      <div style="display: flex; gap: 0.5rem;">
-                        <input type="password" id="setting-razorpay-key-secret" class="sovereign-form-input" style="font-family: monospace; flex: 1;" placeholder="Enter Razorpay Key Secret" value="${activeSecret}" />
-                        <button type="button" class="btn btn-glass" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;" onclick="
-                          const secretInput = document.getElementById('setting-razorpay-key-secret');
-                          if (secretInput) {
-                            secretInput.type = secretInput.type === 'password' ? 'text' : 'password';
-                            this.textContent = secretInput.type === 'password' ? 'Reveal' : 'Hide';
-                          }
-                        ">Reveal</button>
+                      <label class="sovereign-field-label">Razorpay Key Secret (Server-Only)</label>
+                      <div style="padding: 0.65rem 0.85rem; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 8px; font-size: 0.8rem; color: var(--gold-light); font-family: monospace;">
+                        🔒 Protected: RAZORPAY_KEY_SECRET in server environment
                       </div>
-                      <div style="font-size: 0.72rem; color: ${activeSecret ? 'var(--text-muted)' : '#F59E0B'}; margin-top: 0.35rem;">
-                        ${activeSecret ? 'Secret is securely configured for server-side HMAC validation.' : '⚠️ Action: Enter your Key Secret to enable server-side signature validation.'}
+                      <div style="font-size: 0.72rem; color: #10B981; margin-top: 0.35rem;">
+                        Key Secret is strictly isolated in server runtime environment (never stored in client Firestore).
                       </div>
                     </div>
                   </div>
