@@ -234,32 +234,32 @@ const Components = {
         <!-- 3D Fan Array of Flacon Products (Top Arc) -->
         <div class="cards-row" id="cardsRow">
           <!-- Bottle 1: King Scar -->
-          <div class="card flacon-card card-1" data-rot="-8" data-depth="14" data-name="King Scar" data-note="Aromatic · Men" data-rest-rot="-8" onclick="app.handleFlaconCardClick(0, 'king-scar')" title="King Scar Extrait · Aromatic · Men">
+          <div class="card flacon-card card-1" data-rot="-10" data-depth="14" data-name="King Scar" data-note="Aromatic · Men" data-rest-rot="-10" onclick="app.handleFlaconCardClick(0, 'king-scar')" title="King Scar Extrait · Aromatic · Men">
             <img src="assets/product/1kingscar.webp" alt="King Scar Extrait" class="bottle-png" loading="eager" />
           </div>
 
           <!-- Bottle 2: Petralux -->
-          <div class="card flacon-card card-2" data-rot="-4" data-depth="10" data-name="Petralux" data-note="Fruity · Unisex" data-rest-rot="-4" onclick="app.handleFlaconCardClick(1, 'petralux')" title="Petralux Extrait · Fruity · Unisex">
+          <div class="card flacon-card card-2" data-rot="-6" data-depth="10" data-name="Petralux" data-note="Fruity · Unisex" data-rest-rot="-6" onclick="app.handleFlaconCardClick(1, 'petralux')" title="Petralux Extrait · Fruity · Unisex">
             <img src="assets/product/2petralux.webp" alt="Petralux Extrait" class="bottle-png" loading="eager" />
           </div>
 
           <!-- Bottle 3: Oud Rion -->
-          <div class="card flacon-card card-3" data-rot="-1" data-depth="8" data-name="Oud Rion" data-note="Woody · Men" data-rest-rot="-1" onclick="app.handleFlaconCardClick(2, 'oud-rion')" title="Oud Rion Extrait · Woody · Men">
+          <div class="card flacon-card card-3" data-rot="-2" data-depth="8" data-name="Oud Rion" data-note="Woody · Men" data-rest-rot="-2" onclick="app.handleFlaconCardClick(2, 'oud-rion')" title="Oud Rion Extrait · Woody · Men">
             <img src="assets/product/3oudrion.webp" alt="Oud Rion Extrait" class="bottle-png" loading="eager" />
           </div>
 
           <!-- Bottle 4: Spark -->
-          <div class="card flacon-card card-4" data-rot="1" data-depth="8" data-name="Spark" data-note="Aromatic · Unisex" data-rest-rot="1" onclick="app.handleFlaconCardClick(3, 'spark')" title="Spark Extrait · Aromatic · Unisex">
+          <div class="card flacon-card card-4" data-rot="2" data-depth="8" data-name="Spark" data-note="Aromatic · Unisex" data-rest-rot="2" onclick="app.handleFlaconCardClick(3, 'spark')" title="Spark Extrait · Aromatic · Unisex">
             <img src="assets/product/4spark.webp" alt="Spark Extrait" class="bottle-png" loading="eager" />
           </div>
 
           <!-- Bottle 5: Wood Sera -->
-          <div class="card flacon-card card-5" data-rot="4" data-depth="10" data-name="Wood Sera" data-note="Woody · Unisex" data-rest-rot="4" onclick="app.handleFlaconCardClick(4, 'wood-sera')" title="Wood Sera Extrait · Woody · Unisex">
+          <div class="card flacon-card card-5" data-rot="6" data-depth="10" data-name="Wood Sera" data-note="Woody · Unisex" data-rest-rot="6" onclick="app.handleFlaconCardClick(4, 'wood-sera')" title="Wood Sera Extrait · Woody · Unisex">
             <img src="assets/product/5woodsera.webp" alt="Wood Sera Extrait" class="bottle-png" loading="eager" />
           </div>
 
           <!-- Bottle 6: Ash -->
-          <div class="card flacon-card card-6" data-rot="8" data-depth="14" data-name="Ash" data-note="Woody · Unisex" data-rest-rot="8" onclick="app.handleFlaconCardClick(5, 'ash')" title="Ash Extrait · Woody · Unisex">
+          <div class="card flacon-card card-6" data-rot="10" data-depth="14" data-name="Ash" data-note="Woody · Unisex" data-rest-rot="10" onclick="app.handleFlaconCardClick(5, 'ash')" title="Ash Extrait · Woody · Unisex">
             <img src="assets/product/6ash.webp" alt="Ash Extrait" class="bottle-png" loading="eager" />
           </div>
         </div>

@@ -788,6 +788,8 @@ class MytholisApp {
       }
       const spans = heroEl.querySelectorAll('.small-team .word > span');
       spans.forEach(s => s.style.transform = 'translateY(0)');
+      const fallbackLetters = heroEl.querySelectorAll('.big-results .letter');
+      fallbackLetters.forEach(l => { l.style.opacity = '1'; l.style.transform = 'translateY(0)'; });
     }
 
     if (isMobile) {
@@ -2305,7 +2307,9 @@ class MytholisApp {
 
     rzpOrderId = orderData.orderId;
     rzpAmount = orderData.amount;
-    if (!razorpayKey && orderData.key) razorpayKey = orderData.key;
+    if (orderData.key || orderData.keyId) {
+      razorpayKey = (orderData.key || orderData.keyId).trim();
+    }
 
     if (!razorpayKey) {
       restoreProceedBtn();

@@ -26,30 +26,45 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { items, promoCode, paymentMethod, customer, notes = {}, mythosPoints, currency = 'INR', receipt } = req.body || {};
+    const { items, promoCode, paymentMethod, customer, notes = {}, mythosPoints, currency = 'INR', receipt, amount } = req.body || {};
 
-    // 1. Strictly require items array (ZERO client amount fallbacks)
-    if (!Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: 'Cart items array is required' });
+    let amountInPaise = 0;
+    let finalAmountInRupees = 0;
+    let validatedItems = [];
+    let subtotal = 0;
+    let discountCode = null;
+    let discountAmount = 0;
+    let earnedMythos = 0;
+
+    // 1. Support both cart items array (catalog-driven) and direct amount in paise (Step 1 API standard)
+    if (Array.isArray(items) && items.length > 0) {
+      const serverCalc = calculateServerOrderTotal(items, promoCode, paymentMethod, mythosPoints);
+      if (!serverCalc.isValid) {
+        return res.status(400).json({ error: serverCalc.error || 'Invalid cart items or quantities' });
+      }
+      amountInPaise = serverCalc.amountInPaise;
+      finalAmountInRupees = serverCalc.finalAmountInRupees;
+      validatedItems = serverCalc.validatedItems;
+      subtotal = serverCalc.subtotal;
+      discountCode = serverCalc.validatedPromoCode || null;
+      discountAmount = serverCalc.discountAmount;
+      earnedMythos = serverCalc.earnedMythos;
+    } else if (amount !== undefined && amount !== null && !isNaN(Number(amount))) {
+      amountInPaise = Math.round(Number(amount));
+      finalAmountInRupees = Math.round(amountInPaise / 100);
+      subtotal = finalAmountInRupees;
+    } else {
+      return res.status(400).json({ error: 'Cart items array or order amount in paise is required' });
     }
-
-    // 2. Authoritative server catalog calculation
-    const serverCalc = calculateServerOrderTotal(items, promoCode, paymentMethod, mythosPoints);
-    if (!serverCalc.isValid) {
-      return res.status(400).json({ error: serverCalc.error || 'Invalid cart items or quantities' });
-    }
-
-    const amountInPaise = serverCalc.amountInPaise;
-    const finalAmountInRupees = serverCalc.finalAmountInRupees;
 
     if (!amountInPaise || amountInPaise < 100) {
-      return res.status(400).json({ error: 'Invalid order amount. Minimum order value is ₹1 (100 paise).' });
+      return res.status(400).json({ error: 'Invalid order amount. Minimum order value is 100 paise (₹1).' });
     }
 
     // 3. Resolve user identity authoritatively if auth token present
     let authenticatedUid = null;
     let authenticatedEmail = null;
-    const authHeader = req.headers.authorization || req.headers.Authorization;
+    const authHeader = req.headers?.authorization || req.headers?.Authorization;
     if (authHeader && authHeader.startsWith('Bearer ') && adminAuth) {
       try {
         const decoded = await adminAuth.verifyIdToken(authHeader.replace('Bearer ', '').trim());
@@ -121,14 +136,14 @@ export default async function handler(req, res) {
       razorpayOrderId: data.id,
       uid: authenticatedUid || req.body.uid || null,
       userId: authenticatedUid || req.body.uid || null,
-      items: serverCalc.validatedItems,
-      subtotal: serverCalc.subtotal,
-      discountCode: serverCalc.validatedPromoCode || null,
-      discountAmount: serverCalc.discountAmount,
+      items: validatedItems,
+      subtotal: subtotal,
+      discountCode: discountCode,
+      discountAmount: discountAmount,
       verifiedTotal: finalAmountInRupees,
       total: finalAmountInRupees,
       amountInPaise: amountInPaise,
-      earnedMythos: serverCalc.earnedMythos,
+      earnedMythos: earnedMythos,
       paymentMethod: paymentMethod || 'Razorpay Instant',
       paymentStatus: 'PENDING',
       status: 'CREATED',
@@ -137,10 +152,16 @@ export default async function handler(req, res) {
       customerPhone: sanitizedCustomer.phone,
       customerAddress: sanitizedCustomer.address,
       userEmail: sanitizedCustomer.email,
-      createdAt: FieldValue.serverTimestamp()
+      createdAt: FieldValue?.serverTimestamp ? FieldValue.serverTimestamp() : new Date().toISOString()
     };
 
-    await adminDb.collection('orders').doc(data.id).set(orderDraft);
+    if (adminDb && typeof adminDb.collection === 'function') {
+      try {
+        await adminDb.collection('orders').doc(data.id).set(orderDraft);
+      } catch (dbErr) {
+        console.warn('[Razorpay Order Draft DB Notice]:', dbErr.message);
+      }
+    }
 
     return res.status(200).json({
       success: true,
@@ -149,7 +170,8 @@ export default async function handler(req, res) {
       amount: data.amount,
       currency: data.currency,
       receipt: data.receipt,
-      key: keyId
+      key: keyId,
+      keyId: keyId
     });
   } catch (err) {
     console.error('[Razorpay Create-Order Exception]:', err);

@@ -356,7 +356,7 @@
 #hero-section {
   position: relative;
   min-height: 100vh;
-  padding: 110px 24px 60px;
+  padding: 105px 24px 50px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -413,6 +413,7 @@
   text-align: center;
   text-transform: uppercase;
   text-shadow: 0 4px 30px rgba(0, 0, 0, 0.7);
+  margin: 0;
 }
 
 .small-team .word {
@@ -430,8 +431,8 @@
   position: relative;
   width: 100%;
   max-width: 100%;
-  overflow: hidden;
-  margin-top: 6px;
+  overflow: visible;
+  margin-top: 4px;
   display: flex;
   justify-content: center;
   z-index: 8;
@@ -443,7 +444,7 @@
 .big-results {
   font-family: var(--font-serif-title);
   font-weight: 700;
-  font-size: clamp(2rem, 5vw, 4.4rem);
+  font-size: clamp(2rem, 5.2vw, 4.4rem);
   letter-spacing: 0.14em;
   line-height: 1.15;
   background: linear-gradient(135deg, #FFF1C5 0%, #D4AF37 50%, #AA820A 100%);
@@ -461,20 +462,20 @@
 .big-results .letter {
   display: inline-block;
   transform-origin: bottom;
+  opacity: 1 !important;
 }
 
 /* ============ 3D FAN ARRAY OF FLACON CARDS (TOP ARC) ============ */
 .cards-row,
 div#cardsRow {
-  position: relative;
+  position: relative !important;
   width: 100%;
   max-width: 1380px;
-  height: 290px;
-  margin: 0 auto 12px;
+  height: 330px;
+  margin: 0 auto 10px;
   z-index: 6;
   pointer-events: none;
   display: block;
-  perspective: 1200px;
   overflow: visible !important;
 }
 
@@ -498,12 +499,10 @@ div#cardsRow {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.85)) drop-shadow(0 4px 15px rgba(212, 175, 55, 0.2)) !important;
+  filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.85)) drop-shadow(0 4px 15px rgba(212, 175, 55, 0.2)) !important;
   transition: filter 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
   padding: 0 !important;
   margin: 0 !important;
-  width: 190px !important;
-  height: 280px !important;
 }
 
 .cards-row .card::before,
@@ -550,24 +549,30 @@ div#cardsRow {
   transform: translateY(-8px) scale(1.05) !important;
 }
 
-/* Symmetrical 6 Flacon Positions (Gentle Royal Arc) */
+/* Symmetrical 6 Flacon Positions (Convex Luxury Fan Arc) */
 .cards-row .card-1, #cardsRow .card-1, .flacon-card.card-1 {
+  width: 215px;
+  height: 320px;
   left: 3%;
-  top: 14px;
+  top: 16px;
   position: absolute;
   z-index: 2;
   transform: rotate(-8deg);
 }
 
 .cards-row .card-2, #cardsRow .card-2, .flacon-card.card-2 {
+  width: 230px;
+  height: 330px;
   left: 19%;
-  top: 6px;
+  top: 8px;
   position: absolute;
   z-index: 3;
   transform: rotate(-4deg);
 }
 
 .cards-row .card-3, #cardsRow .card-3, .flacon-card.card-3 {
+  width: 240px;
+  height: 340px;
   left: 35%;
   top: 0px;
   position: absolute;
@@ -576,6 +581,8 @@ div#cardsRow {
 }
 
 .cards-row .card-4, #cardsRow .card-4, .flacon-card.card-4 {
+  width: 240px;
+  height: 340px;
   left: 51%;
   top: 0px;
   position: absolute;
@@ -584,16 +591,20 @@ div#cardsRow {
 }
 
 .cards-row .card-5, #cardsRow .card-5, .flacon-card.card-5 {
+  width: 230px;
+  height: 330px;
   left: 67%;
-  top: 6px;
+  top: 8px;
   position: absolute;
   z-index: 3;
   transform: rotate(4deg);
 }
 
 .cards-row .card-6, #cardsRow .card-6, .flacon-card.card-6 {
+  width: 215px;
+  height: 320px;
   left: 83%;
-  top: 14px;
+  top: 16px;
   position: absolute;
   z-index: 2;
   transform: rotate(8deg);
@@ -601,7 +612,7 @@ div#cardsRow {
 
 /* ============ SUBLINE & ACTION PILL ============ */
 .subline {
-  margin-top: 22px;
+  margin-top: 18px;
   text-align: center;
   z-index: 8;
   position: relative;
@@ -674,28 +685,19 @@ div#cardsRow {
 @media (max-width: 992px) {
   .cards-row,
   div#cardsRow {
-    height: 240px;
+    height: 260px;
     margin: 0 auto 8px;
   }
 
-  .cards-row .card,
-  #cardsRow .card,
-  .cards-row .flacon-card,
-  #cardsRow .flacon-card,
-  .flacon-card {
-    width: 150px !important;
-    height: 230px !important;
-  }
-
-  .cards-row .card-1, #cardsRow .card-1, .flacon-card.card-1 { left: 2%; top: 12px; }
-  .cards-row .card-2, #cardsRow .card-2, .flacon-card.card-2 { left: 18%; top: 5px; }
-  .cards-row .card-3, #cardsRow .card-3, .flacon-card.card-3 { left: 34%; top: 0px; }
-  .cards-row .card-4, #cardsRow .card-4, .flacon-card.card-4 { left: 50%; top: 0px; }
-  .cards-row .card-5, #cardsRow .card-5, .flacon-card.card-5 { left: 66%; top: 5px; }
-  .cards-row .card-6, #cardsRow .card-6, .flacon-card.card-6 { left: 82%; top: 12px; }
+  .cards-row .card-1, #cardsRow .card-1, .flacon-card.card-1 { width: 160px; height: 250px; left: 2%; top: 12px; }
+  .cards-row .card-2, #cardsRow .card-2, .flacon-card.card-2 { width: 170px; height: 260px; left: 18%; top: 6px; }
+  .cards-row .card-3, #cardsRow .card-3, .flacon-card.card-3 { width: 180px; height: 270px; left: 34%; top: 0px; }
+  .cards-row .card-4, #cardsRow .card-4, .flacon-card.card-4 { width: 180px; height: 270px; left: 50%; top: 0px; }
+  .cards-row .card-5, #cardsRow .card-5, .flacon-card.card-5 { width: 170px; height: 260px; left: 66%; top: 6px; }
+  .cards-row .card-6, #cardsRow .card-6, .flacon-card.card-6 { width: 160px; height: 250px; left: 82%; top: 12px; }
 
   .subline {
-    margin-top: 18px;
+    margin-top: 16px;
   }
 }
 
@@ -714,7 +716,6 @@ div#cardsRow {
   }
 
   .hero-header-wrap {
-    order: 1;
     margin-bottom: 0;
   }
 
@@ -734,24 +735,20 @@ div#cardsRow {
   }
 
   .small-team {
-    font-size: clamp(28px, 6.8vw, 38px);
+    font-size: clamp(24px, 6.2vw, 36px);
     letter-spacing: 0.06em;
-    line-height: 1.1;
+    line-height: 1.15;
     text-transform: uppercase;
   }
 
   .big-results-wrap {
-    order: 2;
     margin-top: 4px;
   }
 
   .big-results {
-    font-size: clamp(1.6rem, 5.8vw, 2.8rem);
+    font-size: clamp(1.4rem, 5.2vw, 2.4rem);
     letter-spacing: 0.1em;
     line-height: 1.15;
-    background: linear-gradient(135deg, #FFF1C5 0%, #D4AF37 50%, #AA820A 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     -webkit-text-stroke: 0 !important;
     padding: 0 0.5rem;
     box-sizing: border-box;
@@ -759,7 +756,6 @@ div#cardsRow {
 
   .cards-row,
   div#cardsRow {
-    order: 3;
     position: relative !important;
     top: auto !important;
     left: auto !important;
@@ -885,18 +881,15 @@ div#cardsRow {
   }
 
   .small-team {
-    font-size: clamp(24px, 6.5vw, 32px);
+    font-size: clamp(22px, 6vw, 30px);
   }
 
   .big-results-wrap {
-    margin-top: 3px;
+    margin-top: 2px;
   }
 
   .big-results {
-    font-size: clamp(1.3rem, 5.2vw, 2.2rem);
-    background: linear-gradient(135deg, #FFF1C5 0%, #D4AF37 50%, #AA820A 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-size: clamp(1.2rem, 5vw, 1.9rem);
     -webkit-text-stroke: 0 !important;
     padding: 0 0.5rem;
     box-sizing: border-box;
@@ -964,10 +957,7 @@ div#cardsRow {
     margin-top: 2px;
   }
   .big-results {
-    font-size: 1.15rem;
-    background: linear-gradient(135deg, #FFF1C5 0%, #D4AF37 50%, #AA820A 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-size: 18px;
     -webkit-text-stroke: 0 !important;
   }
   .cards-row,
@@ -3834,7 +3824,8 @@ div#cardsRow {
   justify-content: center;
 }
 
-/* Gateway Modal Payment Pills */
+/* PayU & Gateway Modal Payment Pills */
+.payu-method-pill,
 .razorpay-method-pill {
   display: flex;
   flex-direction: column;
@@ -3852,6 +3843,8 @@ div#cardsRow {
   transition: all 0.3s ease;
 }
 
+.payu-method-pill:hover,
+.payu-method-pill.active,
 .razorpay-method-pill:hover,
 .razorpay-method-pill.active {
   background: rgba(212, 175, 55, 0.15);
@@ -6372,7 +6365,7 @@ div#cardsRow {
 
 /* ==========================================================================
    CAPACITOR NATIVE ANDROID APP - FOOTER SUPPRESSION & CLEAN BOTTOM PADDING
-   (Keeps full footer on Desktop/Mobile Web for Razorpay KYC compliance)
+   (Keeps full footer on Desktop/Mobile Web for PayU/Razorpay KYC compliance)
    ========================================================================== */
 .is-native-app footer,
 .is-native-app .site-footer,

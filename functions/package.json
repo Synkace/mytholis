@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "serve": "firebase emulators:start --only functions",
+    "serve:local": "node --env-file=.env server.js",
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions"

@@ -108,7 +108,8 @@ app.use((req, res) => {
   res.status(404).json({ error: "Endpoint not found", path: req.originalUrl || req.url });
 });
 
-// Export 2nd Gen Cloud Function
+// Export Express App & 2nd Gen Cloud Function
+export { app };
 export const api = onRequest({
   region: "us-central1",
   cors: true,
