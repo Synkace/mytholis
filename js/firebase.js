@@ -1080,11 +1080,17 @@ export class FirebaseService {
         const legacyPts = Number(cloudData.loyalty?.legacy_mythos || 0);
         const hasExistingPoints = spendablePts > 0 || legacyPts > 0;
 
+        // Existing profile in Firestore: mark as having already seen signup bonus
+        localStorage.setItem('mytholis_welcome_seen_' + user.uid, 'true');
+        if (patronEmail) localStorage.setItem('mytholis_welcome_seen_' + patronEmail, 'true');
+        if (user.phoneNumber) localStorage.setItem('mytholis_welcome_seen_' + user.phoneNumber.replace(/\D/g, '').slice(-10), 'true');
+
         if (hasExistingPoints) {
           this.store.loyalty = cloudData.loyalty;
-          this.store.saveLocalStorage('mytholis_loyalty', cloudData.loyalty);
+          if (this.store.loyalty) this.store.loyalty.signup_bonus_popup_seen = true;
+          this.store.saveLocalStorage('mytholis_loyalty', this.store.loyalty);
         } else {
-          // Profile existed but loyalty was uninitialized or 0: grant welcome bonus!
+          // Profile existed but loyalty was uninitialized or 0: grant welcome bonus silently
           const bonusMythos = Number(this.store?.globalSettings?.signupBonusMythos) || 200;
           const initialLoyalty = {
             spendable_mythos: bonusMythos,
@@ -1097,16 +1103,12 @@ export class FirebaseService {
             reviewed_scents: [],
             active_reward_codes: [],
             applied_reward_code: null,
-            signup_bonus_awarded: true
+            signup_bonus_awarded: true,
+            signup_bonus_popup_seen: true // Existing profile: NEVER show welcome popup on login
           };
           await setDoc(userDocRef, { loyalty: initialLoyalty }, { merge: true }).catch(() => {});
           this.store.loyalty = initialLoyalty;
           this.store.saveLocalStorage('mytholis_loyalty', initialLoyalty);
-          if (this.app && typeof this.app.openSignupBonusModal === 'function') {
-            setTimeout(() => {
-              this.app.openSignupBonusModal(bonusMythos);
-            }, 300);
-          }
         }
       } else {
         // First-time cloud registration: create clean initial profile & loyalty
@@ -1122,7 +1124,8 @@ export class FirebaseService {
           reviewed_scents: [],
           active_reward_codes: [],
           applied_reward_code: null,
-          signup_bonus_awarded: true
+          signup_bonus_awarded: true,
+          signup_bonus_popup_seen: false
         };
         const initialProfile = {
           name: patronName,
@@ -1151,11 +1154,16 @@ export class FirebaseService {
         this.store.loyalty = initialLoyalty;
         this.store.saveLocalStorage('mytholis_loyalty', initialLoyalty);
 
-        // Announce welcome bonus celebration popup
-        if (this.app && typeof this.app.openSignupBonusModal === 'function') {
+        // Announce welcome bonus celebration popup ONLY ONCE strictly upon first signup
+        const alreadySeen = (this.store.loyalty && this.store.loyalty.signup_bonus_popup_seen === true) ||
+                            localStorage.getItem('mytholis_welcome_seen_' + user.uid) === 'true' ||
+                            (patronEmail && localStorage.getItem('mytholis_welcome_seen_' + patronEmail) === 'true') ||
+                            (user.phoneNumber && localStorage.getItem('mytholis_welcome_seen_' + user.phoneNumber.replace(/\D/g, '').slice(-10)) === 'true');
+
+        if (!alreadySeen && this.app && typeof this.app.openSignupBonusModal === 'function') {
           setTimeout(() => {
-            this.app.openSignupBonusModal(bonusMythos);
-          }, 300);
+            this.app.openSignupBonusModal(bonusMythos, user.uid);
+          }, 350);
         }
       }
 
@@ -1270,8 +1278,11 @@ export class FirebaseService {
           }
           if (cloudData.loyalty) {
             this.store.loyalty = cloudData.loyalty;
+            if (this.store.loyalty) this.store.loyalty.signup_bonus_popup_seen = true;
             this.store.saveLocalStorage('mytholis_loyalty', cloudData.loyalty);
           }
+          localStorage.setItem('mytholis_welcome_seen_' + uid, 'true');
+          if (cleanPhone) localStorage.setItem('mytholis_welcome_seen_' + cleanPhone, 'true');
         } else {
           const bonusMythos = Number(this.store?.globalSettings?.signupBonusMythos) || 200;
           const initialLoyalty = {
@@ -1284,7 +1295,9 @@ export class FirebaseService {
             pantheon_claimed: false,
             reviewed_scents: [],
             active_reward_codes: [],
-            applied_reward_code: null
+            applied_reward_code: null,
+            signup_bonus_awarded: true,
+            signup_bonus_popup_seen: false
           };
           await setDoc(userDocRef, {
             profile: {
@@ -1307,10 +1320,14 @@ export class FirebaseService {
           this.store.loyalty = initialLoyalty;
           this.store.saveLocalStorage('mytholis_loyalty', initialLoyalty);
 
-          if (this.app && typeof this.app.openSignupBonusModal === 'function') {
+          const alreadySeen = (this.store.loyalty && this.store.loyalty.signup_bonus_popup_seen === true) ||
+                              localStorage.getItem('mytholis_welcome_seen_' + uid) === 'true' ||
+                              (cleanPhone && localStorage.getItem('mytholis_welcome_seen_' + cleanPhone) === 'true');
+
+          if (!alreadySeen && this.app && typeof this.app.openSignupBonusModal === 'function') {
             setTimeout(() => {
-              this.app.openSignupBonusModal(bonusMythos);
-            }, 300);
+              this.app.openSignupBonusModal(bonusMythos, uid);
+            }, 350);
           }
         }
         this.store.syncUserWithLoyalty();
@@ -1319,6 +1336,21 @@ export class FirebaseService {
       }
     } catch (syncErr) {
       console.warn('[Mytholis Firebase] Phone cloud profile sync note:', syncErr.message);
+    }
+  }
+
+  // Persist that the user has seen their signup bonus modal
+  async markSignupBonusSeen(uid) {
+    if (!uid) return;
+    try {
+      const userDocRef = doc(db, "users", uid);
+      await setDoc(userDocRef, {
+        signup_bonus_popup_seen: true,
+        loyalty: { signup_bonus_popup_seen: true },
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    } catch (e) {
+      console.warn("[Mytholis Firebase] markSignupBonusSeen note:", e.message);
     }
   }
 

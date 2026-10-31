@@ -209,7 +209,8 @@ class MytholisStore {
       pantheon_claimed: false,
       reviewed_scents: [],
       active_reward_codes: [],
-      applied_reward_code: null
+      applied_reward_code: null,
+      signup_bonus_popup_seen: false
     };
 
     const loadedLoyalty = this.loadLocalStorage('mytholis_loyalty', defaultLoyalty);
@@ -220,6 +221,9 @@ class MytholisStore {
     if (typeof this.loyalty.spendable_mythos !== 'number') this.loyalty.spendable_mythos = 0;
     if (typeof this.loyalty.legacy_mythos !== 'number') this.loyalty.legacy_mythos = 0;
     if (typeof this.loyalty.full_bottles_purchased !== 'number') this.loyalty.full_bottles_purchased = 0;
+    if (this.loyalty.signup_bonus_popup_seen === undefined) {
+      this.loyalty.signup_bonus_popup_seen = Boolean(this.loyalty.spendable_mythos > 0 || this.loyalty.legacy_mythos > 0);
+    }
 
     const defaultUser = {
       isLoggedIn: false,

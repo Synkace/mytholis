@@ -2853,8 +2853,44 @@ class MytholisApp {
 
   /* ==========================================================================
      NEW COLLECTOR REGISTRATION BONUS CELEBRATION MODAL
+     STRICT RULE: Appears ONLY ONCE, strictly when customer first signs up.
      ========================================================================== */
-  openSignupBonusModal(points = 200) {
+  openSignupBonusModal(points = 200, uid = null) {
+    const activeUid = uid || store.firebaseUser?.uid || store.user?.uid || (typeof firebaseService !== 'undefined' && firebaseService.currentUser?.uid);
+    const email = (store.user?.email || (typeof firebaseService !== 'undefined' && firebaseService.currentUser?.email) || '').trim().toLowerCase();
+    const phone = (store.user?.phone || (typeof firebaseService !== 'undefined' && firebaseService.currentUser?.phoneNumber) || '').replace(/\D/g, '').slice(-10);
+
+    // STRICT CHECK: The 200 Mythos welcome popup must appear ONLY ONCE, strictly upon first signup
+    if (store.loyalty && store.loyalty.signup_bonus_popup_seen === true) {
+      console.log('[Mytholis Bonus] Welcome popup already marked seen on loyalty profile. Suppressing.');
+      return;
+    }
+    if (activeUid && localStorage.getItem('mytholis_welcome_seen_' + activeUid) === 'true') {
+      console.log('[Mytholis Bonus] Welcome popup already seen for UID:', activeUid);
+      return;
+    }
+    if (email && !email.endsWith('@phone.mytholis.com') && localStorage.getItem('mytholis_welcome_seen_' + email) === 'true') {
+      console.log('[Mytholis Bonus] Welcome popup already seen for email:', email);
+      return;
+    }
+    if (phone && localStorage.getItem('mytholis_welcome_seen_' + phone) === 'true') {
+      console.log('[Mytholis Bonus] Welcome popup already seen for phone:', phone);
+      return;
+    }
+
+    // Immediately mark as seen across all local and cloud state so it can NEVER trigger again
+    if (!store.loyalty) store.loyalty = {};
+    store.loyalty.signup_bonus_popup_seen = true;
+    store.saveLocalStorage('mytholis_loyalty', store.loyalty);
+
+    if (activeUid) localStorage.setItem('mytholis_welcome_seen_' + activeUid, 'true');
+    if (email && !email.endsWith('@phone.mytholis.com')) localStorage.setItem('mytholis_welcome_seen_' + email, 'true');
+    if (phone) localStorage.setItem('mytholis_welcome_seen_' + phone, 'true');
+
+    if (typeof firebaseService !== 'undefined' && typeof firebaseService.markSignupBonusSeen === 'function' && activeUid) {
+      firebaseService.markSignupBonusSeen(activeUid).catch(() => {});
+    }
+
     const pts = Number(points) || Number(store.globalSettings?.signupBonusMythos) || 200;
     let overlay = document.getElementById('signup-bonus-modal-overlay');
     let modalBody = document.getElementById('signup-bonus-modal-body');
@@ -2896,6 +2932,11 @@ class MytholisApp {
       overlay.classList.remove('active');
       document.body.style.overflow = '';
     }
+    if (!store.loyalty) store.loyalty = {};
+    store.loyalty.signup_bonus_popup_seen = true;
+    store.saveLocalStorage('mytholis_loyalty', store.loyalty);
+    const activeUid = store.firebaseUser?.uid || store.user?.uid;
+    if (activeUid) localStorage.setItem('mytholis_welcome_seen_' + activeUid, 'true');
   }
 
   /* Close All Modals */
@@ -3600,7 +3641,7 @@ class MytholisApp {
       this.showToast(`VIP Dossier Account Activated for ${result.user.email}!`);
       this.updateNavAuth();
       this.closeProfileModal();
-      this.openSignupBonusModal(bonusPts);
+      this.openSignupBonusModal(bonusPts, result.user?.uid);
       if (store.currentView === 'profile') this.renderCurrentView();
     } else {
       this.showToast(result.error);
