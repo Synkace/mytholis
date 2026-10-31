@@ -231,7 +231,26 @@ const Components = {
     return `
       <!-- ============ 3D FAN ARRAY FLACON HERO SECTION ============ -->
       <section class="hero hero-section" id="hero-section">
-        <!-- 3D Fan Array of Flacon Products (Top Arc) -->
+        <div class="hero-header-wrap">
+          <div class="hero-kicker">
+            <span class="kicker-line"></span>
+            <span class="kicker-text">HAUTE PARFUMERIE · 40% EXTRAIT CONCENTRATION</span>
+            <span class="kicker-line"></span>
+          </div>
+
+          <h1 class="small-team" id="smallTeam">
+            <span class="word"><span>SIX</span></span>&nbsp;<span class="word"><span>ELEMENTS,</span></span>
+          </h1>
+        </div>
+
+        <!-- Regal Gold Sub-Headline (One Sanctuary) -->
+        <div class="big-results-wrap">
+          <div class="big-results" id="bigResults">
+            <span class="letter">O</span><span class="letter">N</span><span class="letter">E</span><span class="letter">&nbsp;</span><span class="letter">S</span><span class="letter">A</span><span class="letter">N</span><span class="letter">C</span><span class="letter">T</span><span class="letter">U</span><span class="letter">A</span><span class="letter">R</span><span class="letter">Y</span>
+          </div>
+        </div>
+
+        <!-- 3D Fan Array of Flacon Products -->
         <div class="cards-row" id="cardsRow">
           <!-- Bottle 1: King Scar -->
           <div class="card flacon-card card-1" data-rot="-10" data-depth="14" data-name="King Scar" data-note="Aromatic · Men" data-rest-rot="-10" onclick="app.handleFlaconCardClick(0, 'king-scar')" title="King Scar Extrait · Aromatic · Men">
@@ -261,25 +280,6 @@ const Components = {
           <!-- Bottle 6: Ash -->
           <div class="card flacon-card card-6" data-rot="10" data-depth="14" data-name="Ash" data-note="Woody · Unisex" data-rest-rot="10" onclick="app.handleFlaconCardClick(5, 'ash')" title="Ash Extrait · Woody · Unisex">
             <img src="assets/product/6ash.webp" alt="Ash Extrait" class="bottle-png" loading="eager" />
-          </div>
-        </div>
-
-        <div class="hero-header-wrap">
-          <div class="hero-kicker">
-            <span class="kicker-line"></span>
-            <span class="kicker-text">HAUTE PARFUMERIE · 40% EXTRAIT CONCENTRATION</span>
-            <span class="kicker-line"></span>
-          </div>
-
-          <h1 class="small-team" id="smallTeam">
-            <span class="word"><span>SIX</span></span>&nbsp;<span class="word"><span>ELEMENTS,</span></span>
-          </h1>
-        </div>
-
-        <!-- Regal Gold Sub-Headline (One Sanctuary) -->
-        <div class="big-results-wrap">
-          <div class="big-results" id="bigResults">
-            <span class="letter">O</span><span class="letter">N</span><span class="letter">E</span><span class="letter">&nbsp;</span><span class="letter">S</span><span class="letter">A</span><span class="letter">N</span><span class="letter">C</span><span class="letter">T</span><span class="letter">U</span><span class="letter">A</span><span class="letter">R</span><span class="letter">Y</span>
           </div>
         </div>
 

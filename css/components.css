@@ -356,11 +356,11 @@
 #hero-section {
   position: relative;
   min-height: 100vh;
-  padding: 105px 24px 50px;
+  padding: 110px 24px 50px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   z-index: 10;
   overflow: hidden;
   width: 100%;
@@ -373,7 +373,6 @@
   text-align: center;
   position: relative;
   z-index: 8;
-  margin-top: 8px;
   margin-bottom: 0px;
 }
 
@@ -413,7 +412,6 @@
   text-align: center;
   text-transform: uppercase;
   text-shadow: 0 4px 30px rgba(0, 0, 0, 0.7);
-  margin: 0;
 }
 
 .small-team .word {
@@ -426,16 +424,16 @@
   display: inline-block;
 }
 
-/* Regal Gold Sub-Headline (ONE SANCTUARY) */
+/* Regal Gold Sub-Headline (One House) */
 .big-results-wrap {
   position: relative;
   width: 100%;
   max-width: 100%;
-  overflow: visible;
-  margin-top: 4px;
+  overflow: hidden;
+  margin-top: 6px;
   display: flex;
   justify-content: center;
-  z-index: 8;
+  z-index: 2;
   pointer-events: none;
   padding: 0 1.5rem;
   box-sizing: border-box;
@@ -444,7 +442,7 @@
 .big-results {
   font-family: var(--font-serif-title);
   font-weight: 700;
-  font-size: clamp(2rem, 5.2vw, 4.4rem);
+  font-size: clamp(1.8rem, 4.5vw, 4.2rem);
   letter-spacing: 0.14em;
   line-height: 1.15;
   background: linear-gradient(135deg, #FFF1C5 0%, #D4AF37 50%, #AA820A 100%);
@@ -454,7 +452,8 @@
   text-align: center;
   white-space: nowrap;
   user-select: none;
-  filter: drop-shadow(0 2px 14px rgba(212, 175, 55, 0.4));
+  text-shadow: none;
+  filter: drop-shadow(0 2px 14px rgba(212, 175, 55, 0.35));
   padding: 0 0.5rem;
   box-sizing: border-box;
 }
@@ -462,17 +461,16 @@
 .big-results .letter {
   display: inline-block;
   transform-origin: bottom;
-  opacity: 1 !important;
 }
 
-/* ============ 3D FAN ARRAY OF FLACON CARDS (TOP ARC) ============ */
+/* ============ 3D FAN ARRAY OF FLACON CARDS ============ */
 .cards-row,
 div#cardsRow {
-  position: relative !important;
-  width: 100%;
-  max-width: 1380px;
-  height: 330px;
-  margin: 0 auto 10px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 28%; /* Shifted slightly lower across the watermark */
+  height: 480px;
   z-index: 6;
   pointer-events: none;
   display: block;
@@ -551,68 +549,68 @@ div#cardsRow {
 
 /* Symmetrical 6 Flacon Positions (Convex Luxury Fan Arc) */
 .cards-row .card-1, #cardsRow .card-1, .flacon-card.card-1 {
-  width: 215px;
-  height: 320px;
-  left: 3%;
-  top: 16px;
+  width: 250px;
+  height: 420px;
+  left: 4%;
+  top: 40px;
   position: absolute;
   z-index: 2;
-  transform: rotate(-8deg);
+  transform: rotate(-10deg);
 }
 
 .cards-row .card-2, #cardsRow .card-2, .flacon-card.card-2 {
-  width: 230px;
-  height: 330px;
+  width: 275px;
+  height: 450px;
   left: 19%;
-  top: 8px;
+  top: 20px;
   position: absolute;
   z-index: 3;
-  transform: rotate(-4deg);
+  transform: rotate(-6deg);
 }
 
 .cards-row .card-3, #cardsRow .card-3, .flacon-card.card-3 {
-  width: 240px;
-  height: 340px;
-  left: 35%;
+  width: 295px;
+  height: 480px;
+  left: 34.5%;
   top: 0px;
   position: absolute;
   z-index: 4;
-  transform: rotate(-1deg);
+  transform: rotate(-2deg);
 }
 
 .cards-row .card-4, #cardsRow .card-4, .flacon-card.card-4 {
-  width: 240px;
-  height: 340px;
-  left: 51%;
+  width: 295px;
+  height: 480px;
+  left: 50.5%;
   top: 0px;
   position: absolute;
   z-index: 4;
-  transform: rotate(1deg);
+  transform: rotate(2deg);
 }
 
 .cards-row .card-5, #cardsRow .card-5, .flacon-card.card-5 {
-  width: 230px;
-  height: 330px;
-  left: 67%;
-  top: 8px;
+  width: 275px;
+  height: 450px;
+  left: 66%;
+  top: 20px;
   position: absolute;
   z-index: 3;
-  transform: rotate(4deg);
+  transform: rotate(6deg);
 }
 
 .cards-row .card-6, #cardsRow .card-6, .flacon-card.card-6 {
-  width: 215px;
-  height: 320px;
-  left: 83%;
-  top: 16px;
+  width: 250px;
+  height: 420px;
+  left: 81%;
+  top: 40px;
   position: absolute;
   z-index: 2;
-  transform: rotate(8deg);
+  transform: rotate(10deg);
 }
 
 /* ============ SUBLINE & ACTION PILL ============ */
 .subline {
-  margin-top: 18px;
+  margin-top: 395px;
   text-align: center;
   z-index: 8;
   position: relative;
@@ -685,19 +683,19 @@ div#cardsRow {
 @media (max-width: 992px) {
   .cards-row,
   div#cardsRow {
-    height: 260px;
-    margin: 0 auto 8px;
+    height: 380px;
+    top: 30%;
   }
 
-  .cards-row .card-1, #cardsRow .card-1, .flacon-card.card-1 { width: 160px; height: 250px; left: 2%; top: 12px; }
-  .cards-row .card-2, #cardsRow .card-2, .flacon-card.card-2 { width: 170px; height: 260px; left: 18%; top: 6px; }
-  .cards-row .card-3, #cardsRow .card-3, .flacon-card.card-3 { width: 180px; height: 270px; left: 34%; top: 0px; }
-  .cards-row .card-4, #cardsRow .card-4, .flacon-card.card-4 { width: 180px; height: 270px; left: 50%; top: 0px; }
-  .cards-row .card-5, #cardsRow .card-5, .flacon-card.card-5 { width: 170px; height: 260px; left: 66%; top: 6px; }
-  .cards-row .card-6, #cardsRow .card-6, .flacon-card.card-6 { width: 160px; height: 250px; left: 82%; top: 12px; }
+  .cards-row .card-1, #cardsRow .card-1, .flacon-card.card-1 { width: 175px; height: 300px; left: 2%; top: 30px; }
+  .cards-row .card-2, #cardsRow .card-2, .flacon-card.card-2 { width: 195px; height: 330px; left: 18%; top: 15px; }
+  .cards-row .card-3, #cardsRow .card-3, .flacon-card.card-3 { width: 215px; height: 360px; left: 34%; top: 0px; }
+  .cards-row .card-4, #cardsRow .card-4, .flacon-card.card-4 { width: 215px; height: 360px; left: 50%; top: 0px; }
+  .cards-row .card-5, #cardsRow .card-5, .flacon-card.card-5 { width: 195px; height: 330px; left: 66%; top: 15px; }
+  .cards-row .card-6, #cardsRow .card-6, .flacon-card.card-6 { width: 175px; height: 300px; left: 82%; top: 30px; }
 
   .subline {
-    margin-top: 16px;
+    margin-top: 310px;
   }
 }
 
