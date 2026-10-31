@@ -580,8 +580,10 @@ export class FirebaseService {
       });
 
       if (resp.ok) {
-        const data = await resp.json();
-        if (data.success && data.user) {
+        const text = await resp.text();
+        let data = null;
+        try { data = JSON.parse(text); } catch (_) {}
+        if (data && data.success && data.user) {
           const masterUser = data.user;
           const masterUid = data.masterUid || uid;
 
@@ -640,8 +642,10 @@ export class FirebaseService {
       });
 
       if (resp.ok) {
-        const data = await resp.json();
-        if (data.success && data.user) {
+        const text = await resp.text();
+        let data = null;
+        try { data = JSON.parse(text); } catch (_) {}
+        if (data && data.success && data.user) {
           if (data.merged) {
             console.log('[Mytholis Reconcile] Account successfully merged duplicate records:', data.mergedUids);
           }
@@ -695,8 +699,10 @@ export class FirebaseService {
         }
       });
 
-      const data = await resp.json();
-      return data;
+      const text = await resp.text();
+      let data = null;
+      try { data = JSON.parse(text); } catch (_) {}
+      return data || { success: resp.ok };
     } catch (err) {
       console.error('[Mytholis Firebase] Batch Deduplicate Error:', err);
       return { success: false, error: err.message };

@@ -356,11 +356,11 @@
 #hero-section {
   position: relative;
   min-height: 100vh;
-  padding: 120px 24px 60px;
+  padding: 110px 24px 50px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   z-index: 10;
   overflow: hidden;
   width: 100%;
@@ -405,12 +405,11 @@
 .small-team {
   font-family: var(--font-serif-title);
   font-weight: 700;
-  font-size: clamp(34px, 5.5vw, 76px);
-  letter-spacing: 0.08em;
-  line-height: 1.1;
+  font-size: clamp(38px, 6vw, 84px);
+  letter-spacing: 0.06em;
+  line-height: 1.05;
   color: #F8FDFB;
   text-align: center;
-  text-transform: uppercase;
   text-shadow: 0 4px 30px rgba(0, 0, 0, 0.7);
 }
 
@@ -424,13 +423,13 @@
   display: inline-block;
 }
 
-/* Regal Gold Sub-Headline (One House) */
+/* Big Faded Wordmark in Background */
 .big-results-wrap {
   position: relative;
   width: 100%;
   max-width: 100%;
   overflow: hidden;
-  margin-top: 6px;
+  margin-top: -15px;
   display: flex;
   justify-content: center;
   z-index: 2;
@@ -441,19 +440,17 @@
 
 .big-results {
   font-family: var(--font-serif-title);
-  font-weight: 700;
-  font-size: clamp(1.8rem, 4.5vw, 4.2rem);
-  letter-spacing: 0.14em;
-  line-height: 1.15;
-  background: linear-gradient(135deg, #FFF1C5 0%, #D4AF37 50%, #AA820A 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: 0 !important;
+  font-weight: 900;
+  font-size: clamp(2.8rem, 8.5vw, 7.5rem);
+  letter-spacing: 0.08em;
+  line-height: 0.85;
+  color: rgba(212, 175, 55, 0.08);
+  -webkit-text-stroke: 1.2px rgba(212, 175, 55, 0.22);
   text-align: center;
   white-space: nowrap;
   user-select: none;
-  text-shadow: none;
-  filter: drop-shadow(0 2px 14px rgba(212, 175, 55, 0.35));
+  text-shadow: 0 0 60px rgba(212, 175, 55, 0.06), 0 20px 40px rgba(0, 0, 0, 0.8);
+  filter: drop-shadow(0 0 30px rgba(14, 66, 51, 0.15));
   padding: 0 0.5rem;
   box-sizing: border-box;
 }
@@ -466,11 +463,11 @@
 /* ============ 3D FAN ARRAY OF FLACON CARDS ============ */
 .cards-row,
 div#cardsRow {
-  position: relative !important;
-  width: 100%;
-  max-width: 1440px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 28%; /* Shifted slightly lower across the watermark */
   height: 480px;
-  margin: 15px auto 0;
   z-index: 6;
   pointer-events: none;
   display: block;
@@ -610,7 +607,7 @@ div#cardsRow {
 
 /* ============ SUBLINE & ACTION PILL ============ */
 .subline {
-  margin-top: 25px;
+  margin-top: 395px;
   text-align: center;
   z-index: 8;
   position: relative;
@@ -684,7 +681,7 @@ div#cardsRow {
   .cards-row,
   div#cardsRow {
     height: 380px;
-    margin: 10px auto 0;
+    top: 30%;
   }
 
   .cards-row .card-1, #cardsRow .card-1, .flacon-card.card-1 { width: 175px; height: 300px; left: 2%; top: 30px; }
@@ -695,7 +692,7 @@ div#cardsRow {
   .cards-row .card-6, #cardsRow .card-6, .flacon-card.card-6 { width: 175px; height: 300px; left: 82%; top: 30px; }
 
   .subline {
-    margin-top: 20px;
+    margin-top: 310px;
   }
 }
 
@@ -733,9 +730,9 @@ div#cardsRow {
   }
 
   .small-team {
-    font-size: clamp(24px, 6.2vw, 36px);
+    font-size: clamp(28px, 6.8vw, 38px);
     letter-spacing: 0.06em;
-    line-height: 1.15;
+    line-height: 1.1;
     text-transform: uppercase;
   }
 
@@ -744,10 +741,11 @@ div#cardsRow {
   }
 
   .big-results {
-    font-size: clamp(1.4rem, 5.2vw, 2.4rem);
-    letter-spacing: 0.1em;
-    line-height: 1.15;
-    -webkit-text-stroke: 0 !important;
+    font-size: clamp(1.8rem, 6.5vw, 3.2rem);
+    letter-spacing: 0.08em;
+    line-height: 1;
+    color: rgba(212, 175, 55, 0.12);
+    -webkit-text-stroke: 1px rgba(212, 175, 55, 0.28);
     padding: 0 0.5rem;
     box-sizing: border-box;
   }
@@ -879,16 +877,17 @@ div#cardsRow {
   }
 
   .small-team {
-    font-size: clamp(22px, 6vw, 30px);
+    font-size: clamp(24px, 6.5vw, 32px);
   }
 
   .big-results-wrap {
-    margin-top: 2px;
+    margin-top: 3px;
   }
 
   .big-results {
-    font-size: clamp(1.2rem, 5vw, 1.9rem);
-    -webkit-text-stroke: 0 !important;
+    font-size: clamp(1.5rem, 5.8vw, 2.4rem);
+    color: rgba(212, 175, 55, 0.12);
+    -webkit-text-stroke: 0.8px rgba(212, 175, 55, 0.28);
     padding: 0 0.5rem;
     box-sizing: border-box;
   }
@@ -955,9 +954,9 @@ div#cardsRow {
     margin-top: 2px;
   }
   .big-results {
-    font-size: 18px;
-    -webkit-text-stroke: 0 !important;
-  }
+    font-size: 1.25rem;
+    color: rgba(212, 175, 55, 0.12);
+    -webkit-text-stroke: 0.8px rgba(212, 175, 55, 0.28);
   }
   .cards-row,
   div#cardsRow {

@@ -3752,6 +3752,21 @@ class MytholisApp {
       const p10 = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : cleanPhone;
       const cleanEmail = (email || '').trim().toLowerCase();
 
+      // Collect all associated order IDs from in-memory adminData before filtering
+      if (this.adminData && Array.isArray(this.adminData.orders)) {
+        this.adminData.orders.forEach(o => {
+          const oMail = (o.userEmail || o.email || o.customer?.email || '').trim().toLowerCase();
+          const oPhoneDigits = (o.phone || o.customerPhone || o.shippingPhone || '').replace(/\D/g, '');
+          const oP10 = oPhoneDigits.length >= 10 ? oPhoneDigits.slice(-10) : oPhoneDigits;
+          if (o.userId === targetUid || o.uid === targetUid || o.id === targetUid ||
+              (cleanEmail && cleanEmail !== 'n/a' && oMail === cleanEmail) ||
+              (p10 && oP10 === p10)) {
+            if (o.id && !orderIds.includes(o.id)) orderIds.push(o.id);
+            if (o.orderId && !orderIds.includes(o.orderId)) orderIds.push(o.orderId);
+          }
+        });
+      }
+
       if (this.adminData) {
         if (Array.isArray(this.adminData.users)) {
           this.adminData.users = this.adminData.users.filter(u => {
