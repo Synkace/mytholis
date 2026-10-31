@@ -424,16 +424,16 @@
   display: inline-block;
 }
 
-/* Regal Gold Sub-Headline (ONE SANCTUARY) */
+/* Big Hollow Neon Halo Wordmark (ONE SANCTUARY) - Underlaps Behind Flacons */
 .big-results-wrap {
   position: relative;
   width: 100%;
   max-width: 100%;
   overflow: visible;
-  margin-top: 6px;
+  margin-top: -15px;
   display: flex;
   justify-content: center;
-  z-index: 8;
+  z-index: 2; /* Underlaps strictly behind flacons at z-index: 6 */
   pointer-events: none;
   padding: 0 1.5rem;
   box-sizing: border-box;
@@ -441,19 +441,17 @@
 
 .big-results {
   font-family: var(--font-serif-title);
-  font-weight: 700;
-  font-size: clamp(2rem, 5.2vw, 4.4rem);
-  letter-spacing: 0.14em;
-  line-height: 1.15;
-  color: #D4AF37;
-  background: linear-gradient(135deg, #FFF1C5 0%, #D4AF37 50%, #AA820A 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: 0 !important;
+  font-weight: 900;
+  font-size: clamp(2.4rem, 7.2vw, 6.8rem);
+  letter-spacing: 0.08em;
+  line-height: 0.85;
+  color: rgba(212, 175, 55, 0.08);
+  -webkit-text-stroke: 1.4px rgba(212, 175, 55, 0.35);
   text-align: center;
   white-space: nowrap;
   user-select: none;
-  filter: drop-shadow(0 2px 14px rgba(212, 175, 55, 0.4));
+  text-shadow: 0 0 45px rgba(212, 175, 55, 0.2), 0 0 90px rgba(212, 175, 55, 0.08), 0 20px 40px rgba(0, 0, 0, 0.8);
+  filter: drop-shadow(0 0 25px rgba(14, 66, 51, 0.15));
   padding: 0 0.5rem;
   box-sizing: border-box;
 }
@@ -461,10 +459,8 @@
 .big-results .letter {
   display: inline-block;
   transform-origin: bottom;
-  background: inherit;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: #D4AF37;
+  color: inherit;
+  -webkit-text-stroke: inherit;
 }
 
 /* ============ 3D FAN ARRAY OF FLACON CARDS ============ */
@@ -748,10 +744,11 @@ div#cardsRow {
   }
 
   .big-results {
-    font-size: clamp(1.4rem, 5.2vw, 2.4rem);
-    letter-spacing: 0.1em;
-    line-height: 1.15;
-    -webkit-text-stroke: 0 !important;
+    font-size: clamp(1.8rem, 6.5vw, 3.2rem);
+    letter-spacing: 0.08em;
+    line-height: 1;
+    color: rgba(212, 175, 55, 0.12);
+    -webkit-text-stroke: 1px rgba(212, 175, 55, 0.28);
     padding: 0 0.5rem;
     box-sizing: border-box;
   }
@@ -887,12 +884,13 @@ div#cardsRow {
   }
 
   .big-results-wrap {
-    margin-top: 2px;
+    margin-top: 3px;
   }
 
   .big-results {
-    font-size: clamp(1.2rem, 5vw, 1.9rem);
-    -webkit-text-stroke: 0 !important;
+    font-size: clamp(1.5rem, 5.8vw, 2.4rem);
+    color: rgba(212, 175, 55, 0.12);
+    -webkit-text-stroke: 0.8px rgba(212, 175, 55, 0.28);
     padding: 0 0.5rem;
     box-sizing: border-box;
   }
@@ -959,8 +957,9 @@ div#cardsRow {
     margin-top: 2px;
   }
   .big-results {
-    font-size: 18px;
-    -webkit-text-stroke: 0 !important;
+    font-size: 1.25rem;
+    color: rgba(212, 175, 55, 0.12);
+    -webkit-text-stroke: 0.8px rgba(212, 175, 55, 0.28);
   }
   .cards-row,
   div#cardsRow {
