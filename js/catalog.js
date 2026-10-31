@@ -2,7 +2,7 @@
    MYTHOLIS LUXURY PERFUME - CATALOG DATA
    Sequence: 1. King Scar, 2. Petralux, 3. Oud Rion, 4. Spark, 5. Wood Sera, 6. Ash, 7. The Sixth Sense
    Brand tagline: "Wear Your Legend."
-   Collection line: "Six elements. Six legends. One house."
+   Collection line: "Six elements. Six legends. One sanctuary."
    Formulated in Mayfair, London UK · Handcrafted & Bottled in Ahmedabad, India
    ========================================================================== */
 

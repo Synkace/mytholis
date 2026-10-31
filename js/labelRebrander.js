@@ -180,7 +180,7 @@ export async function rebrandLabelPdf(pdfData, options = {}) {
 
   const brandTitle = options.brandTitle || 'MYTHOLIS LUXURY PARFUMS';
   const subtitle = options.subtitle || 'Extrait de Parfum | Luxury Olfactory House';
-  const returnLine = options.returnLine || 'House of Mytholis • www.mytholis.com • concierge@mytholis.com';
+  const returnLine = options.returnLine || 'Sanctuary of Mytholis • www.mytholis.com • concierge@mytholis.com';
   const originLine = options.originLine || 'Manufactured & Dispatched by Mytholis Parfumerie';
 
   const pages = pdfDoc.getPages();

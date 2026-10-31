@@ -1709,7 +1709,7 @@ class MytholisApp {
         this.renderCurrentView();
       }
 
-      this.showToast(`✨ Welcome to House Mytholis, ${name}!`);
+      this.showToast(`✨ Welcome to Sanctuary Mytholis, ${name}!`);
     } catch (err) {
       console.error('[Patron Login Handler Error]:', err);
     }
@@ -2871,7 +2871,7 @@ class MytholisApp {
   shareReferralWhatsApp() {
     const code = store.getUserReferralCode();
     const link = store.getUserReferralLink();
-    const text = `Step into House Mytholis Haute Parfumerie. Use my private invitation key *${code}* to claim ₹500 off your first extrait de parfum flacon:\n\n${link}`;
+    const text = `Step into Sanctuary Mytholis Haute Parfumerie. Use my private invitation key *${code}* to claim ₹500 off your first extrait de parfum flacon:\n\n${link}`;
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
   }
 
@@ -2882,7 +2882,7 @@ class MytholisApp {
       try {
         await navigator.share({
           title: 'Mytholis Haute Parfumerie — Exclusive Invitation',
-          text: `Step into House Mytholis Haute Parfumerie. Use my private invitation key [${code}] for ₹500 off your first artisanal extrait de parfum:`,
+          text: `Step into Sanctuary Mytholis Haute Parfumerie. Use my private invitation key [${code}] for ₹500 off your first artisanal extrait de parfum:`,
           url: link
         });
         this.showToast('Invitation shared successfully.');
@@ -2899,8 +2899,8 @@ class MytholisApp {
   shareReferralEmail() {
     const code = store.getUserReferralCode();
     const link = store.getUserReferralLink();
-    const subject = 'Exclusive Invitation to House Mytholis Haute Parfumerie';
-    const body = `Greetings,\n\nI invite you to experience House Mytholis Haute Parfumerie — artisanal extraits de parfum formulated in Mayfair, London and distilled in India at 40% pure concentration.\n\nUse my private invitation key [${code}] to claim ₹500 off your first order:\n${link}\n\nWear Your Legend.`;
+    const subject = 'Exclusive Invitation to Sanctuary Mytholis Haute Parfumerie';
+    const body = `Greetings,\n\nI invite you to experience Sanctuary Mytholis Haute Parfumerie — artisanal extraits de parfum formulated in Mayfair, London and distilled in India at 40% pure concentration.\n\nUse my private invitation key [${code}] to claim ₹500 off your first order:\n${link}\n\nWear Your Legend.`;
     window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
   }
 
@@ -3458,7 +3458,7 @@ class MytholisApp {
     const res = await firebaseService.verifyPhoneOtp(otp);
 
     if (res.success) {
-      this.showToast(`Welcome to House Mytholis! Signed in via Mobile.`);
+      this.showToast(`Welcome to Sanctuary Mytholis! Signed in via Mobile.`);
       this.phoneOtpSent = false;
       this.authPhoneNumber = '';
       this.updateNavAuth();
@@ -3514,7 +3514,7 @@ class MytholisApp {
     this.showToast('Connecting to Google VIP Sign-In...');
     const result = await firebaseService.signInWithGoogle(idToken);
     if (result.success) {
-      this.showToast(`Welcome to House Mytholis, ${result.user.displayName || result.user.email}!`);
+      this.showToast(`Welcome to Sanctuary Mytholis, ${result.user.displayName || result.user.email}!`);
       this.updateNavAuth();
       this.closeProfileModal();
       if (store.currentView === 'profile') this.renderCurrentView();
@@ -3528,7 +3528,7 @@ class MytholisApp {
     this.showToast('Connecting to Facebook VIP Sign-In...');
     const result = await firebaseService.signInWithFacebook();
     if (result.success) {
-      this.showToast(`Welcome to House Mytholis, ${result.user.displayName || result.user.email || 'Collector'}!`);
+      this.showToast(`Welcome to Sanctuary Mytholis, ${result.user.displayName || result.user.email || 'Collector'}!`);
       this.updateNavAuth();
       this.closeProfileModal();
       if (store.currentView === 'profile') this.renderCurrentView();
@@ -5336,7 +5336,7 @@ class MytholisApp {
       topMaskHeight: 45,
       brandTitle: getStr('rebrander-title', 'MYTHOLIS LUXURY PARFUMS'),
       brandSubtitle: getStr('rebrander-subtitle', 'Extrait de Parfum | Luxury Olfactory House'),
-      returnAddressLine: getStr('rebrander-return', 'House of Mytholis • www.mytholis.com • concierge@mytholis.com'),
+      returnAddressLine: getStr('rebrander-return', 'Sanctuary of Mytholis • www.mytholis.com • concierge@mytholis.com'),
       logoUrl: '/logo.png'
     };
   }

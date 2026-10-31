@@ -231,6 +231,39 @@ const Components = {
     return `
       <!-- ============ 3D FAN ARRAY FLACON HERO SECTION ============ -->
       <section class="hero hero-section" id="hero-section">
+        <!-- 3D Fan Array of Flacon Products (Top Arc) -->
+        <div class="cards-row" id="cardsRow">
+          <!-- Bottle 1: King Scar -->
+          <div class="card flacon-card card-1" data-rot="-8" data-depth="14" data-name="King Scar" data-note="Aromatic · Men" data-rest-rot="-8" onclick="app.handleFlaconCardClick(0, 'king-scar')" title="King Scar Extrait · Aromatic · Men">
+            <img src="assets/product/1kingscar.webp" alt="King Scar Extrait" class="bottle-png" loading="eager" />
+          </div>
+
+          <!-- Bottle 2: Petralux -->
+          <div class="card flacon-card card-2" data-rot="-4" data-depth="10" data-name="Petralux" data-note="Fruity · Unisex" data-rest-rot="-4" onclick="app.handleFlaconCardClick(1, 'petralux')" title="Petralux Extrait · Fruity · Unisex">
+            <img src="assets/product/2petralux.webp" alt="Petralux Extrait" class="bottle-png" loading="eager" />
+          </div>
+
+          <!-- Bottle 3: Oud Rion -->
+          <div class="card flacon-card card-3" data-rot="-1" data-depth="8" data-name="Oud Rion" data-note="Woody · Men" data-rest-rot="-1" onclick="app.handleFlaconCardClick(2, 'oud-rion')" title="Oud Rion Extrait · Woody · Men">
+            <img src="assets/product/3oudrion.webp" alt="Oud Rion Extrait" class="bottle-png" loading="eager" />
+          </div>
+
+          <!-- Bottle 4: Spark -->
+          <div class="card flacon-card card-4" data-rot="1" data-depth="8" data-name="Spark" data-note="Aromatic · Unisex" data-rest-rot="1" onclick="app.handleFlaconCardClick(3, 'spark')" title="Spark Extrait · Aromatic · Unisex">
+            <img src="assets/product/4spark.webp" alt="Spark Extrait" class="bottle-png" loading="eager" />
+          </div>
+
+          <!-- Bottle 5: Wood Sera -->
+          <div class="card flacon-card card-5" data-rot="4" data-depth="10" data-name="Wood Sera" data-note="Woody · Unisex" data-rest-rot="4" onclick="app.handleFlaconCardClick(4, 'wood-sera')" title="Wood Sera Extrait · Woody · Unisex">
+            <img src="assets/product/5woodsera.webp" alt="Wood Sera Extrait" class="bottle-png" loading="eager" />
+          </div>
+
+          <!-- Bottle 6: Ash -->
+          <div class="card flacon-card card-6" data-rot="8" data-depth="14" data-name="Ash" data-note="Woody · Unisex" data-rest-rot="8" onclick="app.handleFlaconCardClick(5, 'ash')" title="Ash Extrait · Woody · Unisex">
+            <img src="assets/product/6ash.webp" alt="Ash Extrait" class="bottle-png" loading="eager" />
+          </div>
+        </div>
+
         <div class="hero-header-wrap">
           <div class="hero-kicker">
             <span class="kicker-line"></span>
@@ -243,43 +276,10 @@ const Components = {
           </h1>
         </div>
 
-        <!-- Regal Gold Sub-Headline (One House) -->
+        <!-- Regal Gold Sub-Headline (One Sanctuary) -->
         <div class="big-results-wrap">
           <div class="big-results" id="bigResults">
-            <span class="letter">O</span><span class="letter">N</span><span class="letter">E</span><span class="letter">&nbsp;</span><span class="letter">H</span><span class="letter">O</span><span class="letter">U</span><span class="letter">S</span><span class="letter">E</span>
-          </div>
-        </div>
-
-        <!-- 3D Fan Array of Flacon Products -->
-        <div class="cards-row" id="cardsRow">
-          <!-- Bottle 1: King Scar -->
-          <div class="card flacon-card card-1" data-rot="-10" data-depth="14" data-name="King Scar" data-note="Aromatic · Men" data-rest-rot="-10" onclick="app.handleFlaconCardClick(0, 'king-scar')" title="King Scar Extrait · Aromatic · Men">
-            <img src="assets/product/1kingscar.webp" alt="King Scar Extrait" class="bottle-png" loading="eager" />
-          </div>
-
-          <!-- Bottle 2: Petralux -->
-          <div class="card flacon-card card-2" data-rot="-6" data-depth="10" data-name="Petralux" data-note="Fruity · Unisex" data-rest-rot="-6" onclick="app.handleFlaconCardClick(1, 'petralux')" title="Petralux Extrait · Fruity · Unisex">
-            <img src="assets/product/2petralux.webp" alt="Petralux Extrait" class="bottle-png" loading="eager" />
-          </div>
-
-          <!-- Bottle 3: Oud Rion -->
-          <div class="card flacon-card card-3" data-rot="-2" data-depth="8" data-name="Oud Rion" data-note="Woody · Men" data-rest-rot="-2" onclick="app.handleFlaconCardClick(2, 'oud-rion')" title="Oud Rion Extrait · Woody · Men">
-            <img src="assets/product/3oudrion.webp" alt="Oud Rion Extrait" class="bottle-png" loading="eager" />
-          </div>
-
-          <!-- Bottle 4: Spark -->
-          <div class="card flacon-card card-4" data-rot="2" data-depth="8" data-name="Spark" data-note="Aromatic · Unisex" data-rest-rot="2" onclick="app.handleFlaconCardClick(3, 'spark')" title="Spark Extrait · Aromatic · Unisex">
-            <img src="assets/product/4spark.webp" alt="Spark Extrait" class="bottle-png" loading="eager" />
-          </div>
-
-          <!-- Bottle 5: Wood Sera -->
-          <div class="card flacon-card card-5" data-rot="6" data-depth="10" data-name="Wood Sera" data-note="Woody · Unisex" data-rest-rot="6" onclick="app.handleFlaconCardClick(4, 'wood-sera')" title="Wood Sera Extrait · Woody · Unisex">
-            <img src="assets/product/5woodsera.webp" alt="Wood Sera Extrait" class="bottle-png" loading="eager" />
-          </div>
-
-          <!-- Bottle 6: Ash -->
-          <div class="card flacon-card card-6" data-rot="10" data-depth="14" data-name="Ash" data-note="Woody · Unisex" data-rest-rot="10" onclick="app.handleFlaconCardClick(5, 'ash')" title="Ash Extrait · Woody · Unisex">
-            <img src="assets/product/6ash.webp" alt="Ash Extrait" class="bottle-png" loading="eager" />
+            <span class="letter">O</span><span class="letter">N</span><span class="letter">E</span><span class="letter">&nbsp;</span><span class="letter">S</span><span class="letter">A</span><span class="letter">N</span><span class="letter">C</span><span class="letter">T</span><span class="letter">U</span><span class="letter">A</span><span class="letter">R</span><span class="letter">Y</span>
           </div>
         </div>
 
@@ -447,7 +447,7 @@ const Components = {
       <section class="container hero-cards-section" style="margin-bottom: 7rem;">
         <div class="section-header">
           <span class="tagline">Six Elements. Six Legends.</span>
-          <h2>The Signature House Collection</h2>
+          <h2>The Signature Sanctuary Collection</h2>
           <div class="divider"></div>
         </div>
 
@@ -623,7 +623,7 @@ const Components = {
     return `
       <div class="container" style="max-width: 900px;">
         <div class="section-header">
-          <span class="tagline">Six Elements. Six Legends. One House.</span>
+          <span class="tagline">Six Elements. Six Legends. One Sanctuary.</span>
           <h2>The Alchemy of Mytholis</h2>
           <div class="divider"></div>
         </div>
@@ -631,7 +631,7 @@ const Components = {
         <div class="liquid-glass-card craft-story-card">
           <h3 class="craft-story-title">"Wear Your Legend."</h3>
           <p class="craft-story-text">
-            Founded on the principle of uncompromised olfactory artistry, House Mytholis unites British formulation heritage with the richness of Indian distillation mastery. Designed in Mayfair, London and handcrafted in Ahmedabad, India.
+            Founded on the principle of uncompromised olfactory artistry, Sanctuary Mytholis unites British formulation heritage with the richness of Indian distillation mastery. Designed in Mayfair, London and handcrafted in Ahmedabad, India.
           </p>
           <p class="craft-story-text">
             Each composition is blended with 40% IFRA-certified fine perfume oils and undergoes 120 days of cold maceration inside dark emerald glass carboys before receiving hand-blown crystal encapsulation.
@@ -1870,7 +1870,7 @@ const Components = {
         <!-- Hero Header -->
         <div class="loyalty-rules-hero liquid-glass-card">
           <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-light); margin-bottom: 0.8rem; letter-spacing: 0.15em;">
-            HOUSE MYTHOLIS · OFFICIAL CONSTITUTION
+            SANCTUARY MYTHOLIS · OFFICIAL CONSTITUTION
           </span>
           <h1 class="gold-shimmer-text" style="font-size: clamp(2rem, 3.8vw, 3rem); font-family: var(--font-serif-title); margin-bottom: 0.6rem;">
             The Circle of Legends
@@ -1880,7 +1880,7 @@ const Components = {
           </p>
           <div class="divider" style="margin: 1.2rem auto;"></div>
           <p style="color: var(--text-muted); max-width: 680px; margin: 0 auto 1.5rem; font-size: 0.92rem; line-height: 1.7;">
-            Welcome to the official operational charter of <em>The Mythos Society</em>. This constitution governs points accrual, dual-key tier elevations, the Pantheon Codex, and the mathematical margin guardrails protecting House Mytholis Haute Parfumerie.
+            Welcome to the official operational charter of <em>The Mythos Society</em>. This constitution governs points accrual, dual-key tier elevations, the Pantheon Codex, and the mathematical margin guardrails protecting Sanctuary Mytholis Haute Parfumerie.
           </p>
 
           <!-- Current Member Status Header -->
@@ -1902,7 +1902,7 @@ const Components = {
           <a class="loyalty-anchor-pill" onclick="document.getElementById('art-3').scrollIntoView({ behavior: 'smooth' })">III. Dual-Key Tiers</a>
           <a class="loyalty-anchor-pill" onclick="document.getElementById('art-4').scrollIntoView({ behavior: 'smooth' })">IV. Points & Codex</a>
           <a class="loyalty-anchor-pill" onclick="document.getElementById('art-5').scrollIntoView({ behavior: 'smooth' })">V. Margin Guardrails</a>
-          <a class="loyalty-anchor-pill" onclick="document.getElementById('art-6').scrollIntoView({ behavior: 'smooth' })">VI. House Governance</a>
+          <a class="loyalty-anchor-pill" onclick="document.getElementById('art-6').scrollIntoView({ behavior: 'smooth' })">VI. Sanctuary Governance</a>
         </nav>
 
         <!-- ARTICLE I -->
@@ -1913,7 +1913,7 @@ const Components = {
           </div>
 
           <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 1.2rem;">
-            Enrollment into <strong>The Circle of Legends</strong> constitutes an exclusive privilege extended to collectors of House Mytholis. Membership is voluntary, automatic upon first qualification, and subject to adherence to these bylaws.
+            Enrollment into <strong>The Circle of Legends</strong> constitutes an exclusive privilege extended to collectors of Sanctuary Mytholis. Membership is voluntary, automatic upon first qualification, and subject to adherence to these bylaws.
           </p>
 
           <div class="loyalty-rule-grid">
@@ -1922,7 +1922,7 @@ const Components = {
                 § 1.1 Automatic Enrollment
               </div>
               <p class="loyalty-rule-subcard-desc">
-                Any client who completes a flacon acquisition through official House Mytholis channels or completes the Scent Finder Quiz is automatically inducted as a Level 1 Observer.
+                Any client who completes a flacon acquisition through official Sanctuary Mytholis channels or completes the Scent Finder Quiz is automatically inducted as a Level 1 Observer.
               </p>
             </div>
 
@@ -1954,7 +1954,7 @@ const Components = {
           </div>
 
           <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 1.5rem;">
-            House Mytholis operates a bifurcated loyalty accounting model. This ensures that enjoying your rewards never penalizes or diminishes your earned prestige and tier ranking.
+            Sanctuary Mytholis operates a bifurcated loyalty accounting model. This ensures that enjoying your rewards never penalizes or diminishes your earned prestige and tier ranking.
           </p>
 
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
@@ -1990,7 +1990,7 @@ const Components = {
                 Lifetime Status Score — NEVER Decreases
               </div>
               <ul style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.7; padding-left: 1.2rem; margin: 0;">
-                <li>Tracks the collector's lifetime journey and volume within House Mytholis.</li>
+                <li>Tracks the collector's lifetime journey and volume within Sanctuary Mytholis.</li>
                 <li><strong>Never decreases</strong> when Spendable Mythos is redeemed in the Vault.</li>
                 <li>Serves as Key 1 of the Dual-Key requirement to elevate your status through Levels 1 to 5.</li>
               </ul>
@@ -2006,7 +2006,7 @@ const Components = {
           </div>
 
           <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 1.2rem;">
-            Elevation in The Circle of Legends cannot be achieved merely through casual spend or volume alone. House Mytholis enforces a strict <strong>Dual-Key Protocol</strong>: advancing to the next tier requires satisfying <em>both</em> the Lifetime Legacy Mythos milestone and the Full Bottles count simultaneously.
+            Elevation in The Circle of Legends cannot be achieved merely through casual spend or volume alone. Sanctuary Mytholis enforces a strict <strong>Dual-Key Protocol</strong>: advancing to the next tier requires satisfying <em>both</em> the Lifetime Legacy Mythos milestone and the Full Bottles count simultaneously.
           </p>
 
           <div class="tier-perks-table-wrap" style="margin: 1.5rem 0;">
@@ -2060,7 +2060,7 @@ const Components = {
           </div>
 
           <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 1.2rem;">
-            Every acquisition from House Mytholis contributes transparently to your Spendable Mythos balance and Legacy status.
+            Every acquisition from Sanctuary Mytholis contributes transparently to your Spendable Mythos balance and Legacy status.
           </p>
 
           <div class="loyalty-rule-grid">
@@ -2229,7 +2229,7 @@ const Components = {
                 § 6.3 Anti-Fraud & Fair Use Protection
               </div>
               <p class="loyalty-rule-subcard-desc">
-                House Mytholis reserves the sole right to audit accounts, invalidate fraudulent vouchers, reverse points credited from cancelled or chargebacked orders, or revoke status in cases of unauthorized resale or automated exploitation.
+                Sanctuary Mytholis reserves the sole right to audit accounts, invalidate fraudulent vouchers, reverse points credited from cancelled or chargebacked orders, or revoke status in cases of unauthorized resale or automated exploitation.
               </p>
             </div>
 
@@ -2287,7 +2287,7 @@ const Components = {
               Collector Referral Sanctum
             </h3>
             <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; margin: 0; max-width: 620px;">
-              Invite discerning collectors to House Mytholis. Your invited guests receive <strong style="color: var(--gold-light);">₹500 off</strong> their first master extrait acquisition, and <strong style="color: var(--gold-light);">+250 Spendable Mythos &amp; +150 Legacy Mythos</strong> are credited to your vault.
+              Invite discerning collectors to Sanctuary Mytholis. Your invited guests receive <strong style="color: var(--gold-light);">₹500 off</strong> their first master extrait acquisition, and <strong style="color: var(--gold-light);">+250 Spendable Mythos &amp; +150 Legacy Mythos</strong> are credited to your vault.
             </p>
           </div>
           ${!isModal ? `
@@ -2403,7 +2403,7 @@ const Components = {
             </div>
             <div>
               <strong style="color: var(--gold-light); display: block; margin-bottom: 0.2rem;">3. Receive Vault Bounty</strong>
-              House Mytholis automatically deposits +250 Spendable &amp; +150 Legacy Mythos into your vault.
+              Sanctuary Mytholis automatically deposits +250 Spendable &amp; +150 Legacy Mythos into your vault.
             </div>
           </div>
         </div>
@@ -2422,7 +2422,7 @@ const Components = {
           </div>
           <div>
             <h3 class="modal-title font-title">Referral Sanctum</h3>
-            <p class="modal-subtitle">House Mytholis • Circle of Legends</p>
+            <p class="modal-subtitle">Sanctuary Mytholis • Circle of Legends</p>
           </div>
         </div>
         <button class="icon-btn modal-close-btn" onclick="app.closeReferralModal()" title="Close Referral Desk">✕</button>
@@ -2522,7 +2522,7 @@ const Components = {
           <div class="modal-crest-icon" style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(212, 175, 55, 0.15); border: 1px solid var(--gold-primary); font-family: var(--font-serif-title); font-size: 0.95rem; color: var(--gold-light);">M</div>
           <div>
             <h3 class="modal-title font-title">The Sanctum Gate</h3>
-            <p class="modal-subtitle">House Mytholis • Collector Authentication</p>
+            <p class="modal-subtitle">Sanctuary Mytholis • Collector Authentication</p>
           </div>
         </div>
         <button class="icon-btn modal-close-btn" onclick="app.closeProfileModal()" title="Close Sanctum Gate">✕</button>
@@ -2595,7 +2595,7 @@ const Components = {
 
             <div style="text-align: center; margin-top: 1.2rem;">
               <p style="font-size: 0.76rem; color: var(--text-muted); margin: 0;">
-                First time at House Mytholis? 
+                First time at Sanctuary Mytholis? 
                 <button type="button" style="background: none; border: none; color: var(--gold-light); font-weight: 600; cursor: pointer; text-decoration: underline; padding: 0;" onclick="app.switchAuthTab('register')">
                   Create Collector Account
                 </button>
@@ -2702,7 +2702,7 @@ const Components = {
         <!-- Compliance & Legal Terms Notice -->
         <div class="auth-legal-notice" style="text-align: center; margin-top: 1.25rem; padding-top: 0.85rem; border-top: 1px solid rgba(212, 175, 55, 0.15);">
           <p style="font-size: 0.69rem; color: var(--text-muted); line-height: 1.55; margin: 0;">
-            By entering the Sanctum, you acknowledge and accept House Mytholis 
+            By entering the Sanctum, you acknowledge and accept Sanctuary Mytholis 
             <a href="/terms" target="_blank" rel="noopener noreferrer" style="color: var(--gold-light); text-decoration: underline; font-weight: 500;">Terms of Service</a>, 
             <a href="/privacy" target="_blank" rel="noopener noreferrer" style="color: var(--gold-light); text-decoration: underline; font-weight: 500;">Privacy Policy</a>, and 
             <a href="/data-deletion" target="_blank" rel="noopener noreferrer" style="color: var(--gold-light); text-decoration: underline; font-weight: 500;">Data Deletion Policy</a>.
@@ -2773,7 +2773,7 @@ const Components = {
             <div style="width: 60px; height: 60px; margin: 0 auto 1.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(212, 175, 55, 0.15); border: 1.5px solid var(--gold-primary); font-family: var(--font-serif-title); font-size: 1.6rem; color: var(--gold-light);">
               M
             </div>
-            <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-light); margin-bottom: 0.8rem;">House Mytholis</span>
+            <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-light); margin-bottom: 0.8rem;">Sanctuary Mytholis</span>
             <h2 class="font-title" style="color: var(--gold-light); font-size: 2rem; margin-bottom: 0.8rem;">Enter The Sanctum</h2>
             <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; max-width: 480px; margin: 0 auto 2rem;">
               Sign in to access your personal Collector Dossier, manage delivery coordinates, view consignment tracking, and claim Circle of Legends rewards.
@@ -3053,7 +3053,7 @@ const Components = {
           </div>
           <div>
             <h3 class="modal-title font-title">Collector Dossier</h3>
-            <p class="modal-subtitle">House Mytholis • ${currentTier.name}</p>
+            <p class="modal-subtitle">Sanctuary Mytholis • ${currentTier.name}</p>
           </div>
         </div>
         <button class="icon-btn modal-close-btn" onclick="app.closeProfileModal()" title="Close Profile">✕</button>
@@ -3308,7 +3308,7 @@ const Components = {
               <div style="margin-bottom: 1rem;">
                 <h4 class="modal-section-title" style="font-size: 0.92rem; margin-bottom: 0.2rem;">Change Master Password</h4>
                 <p style="font-size: 0.76rem; color: var(--text-muted); margin: 0;">
-                  Update your authentication credentials for House Mytholis.
+                  Update your authentication credentials for Sanctuary Mytholis.
                 </p>
               </div>
 
@@ -3380,7 +3380,7 @@ const Components = {
                   Google VIP Authenticated
                 </p>
                 <p style="font-size: 0.76rem; color: var(--text-muted); line-height: 1.5; margin: 0 0 0.9rem;">
-                  Your login is managed securely by your Google Account. If you would like to set up a direct password for House Mytholis, click below.
+                  Your login is managed securely by your Google Account. If you would like to set up a direct password for Sanctuary Mytholis, click below.
                 </p>
                 <button type="button" class="btn btn-glass" style="font-size: 0.75rem; padding: 0.45rem 1rem; color: var(--gold-primary);" onclick="app.handleSendPasswordResetFromDossier()">
                   Send Password Setup Link to ${email}

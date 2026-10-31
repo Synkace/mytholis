@@ -356,11 +356,11 @@
 #hero-section {
   position: relative;
   min-height: 100vh;
-  padding: 110px 24px 50px;
+  padding: 110px 24px 60px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   z-index: 10;
   overflow: hidden;
   width: 100%;
@@ -373,6 +373,7 @@
   text-align: center;
   position: relative;
   z-index: 8;
+  margin-top: 8px;
   margin-bottom: 0px;
 }
 
@@ -405,11 +406,12 @@
 .small-team {
   font-family: var(--font-serif-title);
   font-weight: 700;
-  font-size: clamp(38px, 6vw, 84px);
-  letter-spacing: 0.06em;
-  line-height: 1.05;
+  font-size: clamp(34px, 5.5vw, 76px);
+  letter-spacing: 0.08em;
+  line-height: 1.1;
   color: #F8FDFB;
   text-align: center;
+  text-transform: uppercase;
   text-shadow: 0 4px 30px rgba(0, 0, 0, 0.7);
 }
 
@@ -423,16 +425,16 @@
   display: inline-block;
 }
 
-/* Big Faded Wordmark in Background */
+/* Regal Gold Sub-Headline (ONE SANCTUARY) */
 .big-results-wrap {
   position: relative;
   width: 100%;
   max-width: 100%;
   overflow: hidden;
-  margin-top: -15px;
+  margin-top: 6px;
   display: flex;
   justify-content: center;
-  z-index: 2;
+  z-index: 8;
   pointer-events: none;
   padding: 0 1.5rem;
   box-sizing: border-box;
@@ -440,17 +442,18 @@
 
 .big-results {
   font-family: var(--font-serif-title);
-  font-weight: 900;
-  font-size: clamp(2.8rem, 8.5vw, 7.5rem);
-  letter-spacing: 0.08em;
-  line-height: 0.85;
-  color: rgba(212, 175, 55, 0.08);
-  -webkit-text-stroke: 1.2px rgba(212, 175, 55, 0.22);
+  font-weight: 700;
+  font-size: clamp(2rem, 5vw, 4.4rem);
+  letter-spacing: 0.14em;
+  line-height: 1.15;
+  background: linear-gradient(135deg, #FFF1C5 0%, #D4AF37 50%, #AA820A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 0 !important;
   text-align: center;
   white-space: nowrap;
   user-select: none;
-  text-shadow: 0 0 60px rgba(212, 175, 55, 0.06), 0 20px 40px rgba(0, 0, 0, 0.8);
-  filter: drop-shadow(0 0 30px rgba(14, 66, 51, 0.15));
+  filter: drop-shadow(0 2px 14px rgba(212, 175, 55, 0.4));
   padding: 0 0.5rem;
   box-sizing: border-box;
 }
@@ -460,17 +463,18 @@
   transform-origin: bottom;
 }
 
-/* ============ 3D FAN ARRAY OF FLACON CARDS ============ */
+/* ============ 3D FAN ARRAY OF FLACON CARDS (TOP ARC) ============ */
 .cards-row,
 div#cardsRow {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 28%; /* Shifted slightly lower across the watermark */
-  height: 480px;
+  position: relative;
+  width: 100%;
+  max-width: 1380px;
+  height: 290px;
+  margin: 0 auto 12px;
   z-index: 6;
   pointer-events: none;
   display: block;
+  perspective: 1200px;
   overflow: visible !important;
 }
 
@@ -494,10 +498,12 @@ div#cardsRow {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.85)) drop-shadow(0 4px 15px rgba(212, 175, 55, 0.2)) !important;
+  filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.85)) drop-shadow(0 4px 15px rgba(212, 175, 55, 0.2)) !important;
   transition: filter 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
   padding: 0 !important;
   margin: 0 !important;
+  width: 190px !important;
+  height: 280px !important;
 }
 
 .cards-row .card::before,
@@ -544,70 +550,58 @@ div#cardsRow {
   transform: translateY(-8px) scale(1.05) !important;
 }
 
-/* Symmetrical 6 Flacon Positions (Convex Luxury Fan Arc) */
+/* Symmetrical 6 Flacon Positions (Gentle Royal Arc) */
 .cards-row .card-1, #cardsRow .card-1, .flacon-card.card-1 {
-  width: 250px;
-  height: 420px;
-  left: 4%;
-  top: 40px;
+  left: 3%;
+  top: 14px;
   position: absolute;
   z-index: 2;
-  transform: rotate(-10deg);
+  transform: rotate(-8deg);
 }
 
 .cards-row .card-2, #cardsRow .card-2, .flacon-card.card-2 {
-  width: 275px;
-  height: 450px;
   left: 19%;
-  top: 20px;
+  top: 6px;
   position: absolute;
   z-index: 3;
-  transform: rotate(-6deg);
+  transform: rotate(-4deg);
 }
 
 .cards-row .card-3, #cardsRow .card-3, .flacon-card.card-3 {
-  width: 295px;
-  height: 480px;
-  left: 34.5%;
+  left: 35%;
   top: 0px;
   position: absolute;
   z-index: 4;
-  transform: rotate(-2deg);
+  transform: rotate(-1deg);
 }
 
 .cards-row .card-4, #cardsRow .card-4, .flacon-card.card-4 {
-  width: 295px;
-  height: 480px;
-  left: 50.5%;
+  left: 51%;
   top: 0px;
   position: absolute;
   z-index: 4;
-  transform: rotate(2deg);
+  transform: rotate(1deg);
 }
 
 .cards-row .card-5, #cardsRow .card-5, .flacon-card.card-5 {
-  width: 275px;
-  height: 450px;
-  left: 66%;
-  top: 20px;
+  left: 67%;
+  top: 6px;
   position: absolute;
   z-index: 3;
-  transform: rotate(6deg);
+  transform: rotate(4deg);
 }
 
 .cards-row .card-6, #cardsRow .card-6, .flacon-card.card-6 {
-  width: 250px;
-  height: 420px;
-  left: 81%;
-  top: 40px;
+  left: 83%;
+  top: 14px;
   position: absolute;
   z-index: 2;
-  transform: rotate(10deg);
+  transform: rotate(8deg);
 }
 
 /* ============ SUBLINE & ACTION PILL ============ */
 .subline {
-  margin-top: 395px;
+  margin-top: 22px;
   text-align: center;
   z-index: 8;
   position: relative;
@@ -680,19 +674,28 @@ div#cardsRow {
 @media (max-width: 992px) {
   .cards-row,
   div#cardsRow {
-    height: 380px;
-    top: 30%;
+    height: 240px;
+    margin: 0 auto 8px;
   }
 
-  .cards-row .card-1, #cardsRow .card-1, .flacon-card.card-1 { width: 175px; height: 300px; left: 2%; top: 30px; }
-  .cards-row .card-2, #cardsRow .card-2, .flacon-card.card-2 { width: 195px; height: 330px; left: 18%; top: 15px; }
-  .cards-row .card-3, #cardsRow .card-3, .flacon-card.card-3 { width: 215px; height: 360px; left: 34%; top: 0px; }
-  .cards-row .card-4, #cardsRow .card-4, .flacon-card.card-4 { width: 215px; height: 360px; left: 50%; top: 0px; }
-  .cards-row .card-5, #cardsRow .card-5, .flacon-card.card-5 { width: 195px; height: 330px; left: 66%; top: 15px; }
-  .cards-row .card-6, #cardsRow .card-6, .flacon-card.card-6 { width: 175px; height: 300px; left: 82%; top: 30px; }
+  .cards-row .card,
+  #cardsRow .card,
+  .cards-row .flacon-card,
+  #cardsRow .flacon-card,
+  .flacon-card {
+    width: 150px !important;
+    height: 230px !important;
+  }
+
+  .cards-row .card-1, #cardsRow .card-1, .flacon-card.card-1 { left: 2%; top: 12px; }
+  .cards-row .card-2, #cardsRow .card-2, .flacon-card.card-2 { left: 18%; top: 5px; }
+  .cards-row .card-3, #cardsRow .card-3, .flacon-card.card-3 { left: 34%; top: 0px; }
+  .cards-row .card-4, #cardsRow .card-4, .flacon-card.card-4 { left: 50%; top: 0px; }
+  .cards-row .card-5, #cardsRow .card-5, .flacon-card.card-5 { left: 66%; top: 5px; }
+  .cards-row .card-6, #cardsRow .card-6, .flacon-card.card-6 { left: 82%; top: 12px; }
 
   .subline {
-    margin-top: 310px;
+    margin-top: 18px;
   }
 }
 
@@ -711,6 +714,7 @@ div#cardsRow {
   }
 
   .hero-header-wrap {
+    order: 1;
     margin-bottom: 0;
   }
 
@@ -737,21 +741,25 @@ div#cardsRow {
   }
 
   .big-results-wrap {
+    order: 2;
     margin-top: 4px;
   }
 
   .big-results {
-    font-size: clamp(1.8rem, 6.5vw, 3.2rem);
-    letter-spacing: 0.08em;
-    line-height: 1;
-    color: rgba(212, 175, 55, 0.12);
-    -webkit-text-stroke: 1px rgba(212, 175, 55, 0.28);
+    font-size: clamp(1.6rem, 5.8vw, 2.8rem);
+    letter-spacing: 0.1em;
+    line-height: 1.15;
+    background: linear-gradient(135deg, #FFF1C5 0%, #D4AF37 50%, #AA820A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 0 !important;
     padding: 0 0.5rem;
     box-sizing: border-box;
   }
 
   .cards-row,
   div#cardsRow {
+    order: 3;
     position: relative !important;
     top: auto !important;
     left: auto !important;
@@ -885,9 +893,11 @@ div#cardsRow {
   }
 
   .big-results {
-    font-size: clamp(1.5rem, 5.8vw, 2.4rem);
-    color: rgba(212, 175, 55, 0.12);
-    -webkit-text-stroke: 0.8px rgba(212, 175, 55, 0.28);
+    font-size: clamp(1.3rem, 5.2vw, 2.2rem);
+    background: linear-gradient(135deg, #FFF1C5 0%, #D4AF37 50%, #AA820A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 0 !important;
     padding: 0 0.5rem;
     box-sizing: border-box;
   }
@@ -954,9 +964,11 @@ div#cardsRow {
     margin-top: 2px;
   }
   .big-results {
-    font-size: 1.25rem;
-    color: rgba(212, 175, 55, 0.12);
-    -webkit-text-stroke: 0.8px rgba(212, 175, 55, 0.28);
+    font-size: 1.15rem;
+    background: linear-gradient(135deg, #FFF1C5 0%, #D4AF37 50%, #AA820A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 0 !important;
   }
   .cards-row,
   div#cardsRow {

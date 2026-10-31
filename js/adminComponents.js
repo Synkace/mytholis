@@ -666,7 +666,7 @@ export const AdminComponents = {
           <div class="sovereign-tab-content">
             <div class="liquid-glass-card" style="padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
               <div>
-                <h3 class="font-title" style="color: var(--gold-light); margin: 0 0 0.3rem;">House Chronicles & Scent Lore</h3>
+                <h3 class="font-title" style="color: var(--gold-light); margin: 0 0 0.3rem;">Sanctuary Chronicles & Scent Lore</h3>
                 <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Inscribe olfactory stories, launch announcements, behind-the-alchemy lore, and press pieces.</p>
               </div>
               <button class="btn btn-gold" onclick="app.openPostEditorModal()">
@@ -887,7 +887,7 @@ export const AdminComponents = {
                             ${displayPhone ? `
                               <strong style="color: var(--text-main); font-size: 0.85rem; letter-spacing: 0.02em;">${displayPhone}</strong>
                               <div style="display: flex; gap: 0.4rem; margin-top: 0.3rem; flex-wrap: wrap;">
-                                <a href="https://wa.me/91${cleanPhone}?text=${encodeURIComponent(`Hello ${name}, greetings from House of Mytholis!`)}" target="_blank" class="sovereign-pill" style="background: rgba(37, 211, 102, 0.15); border: 1px solid rgba(37, 211, 102, 0.4); color: #25D366; text-decoration: none; display: inline-flex; align-items: center; gap: 3px; font-size: 0.72rem; padding: 2px 7px;">
+                                <a href="https://wa.me/91${cleanPhone}?text=${encodeURIComponent(`Hello ${name}, greetings from Sanctuary of Mytholis!`)}" target="_blank" class="sovereign-pill" style="background: rgba(37, 211, 102, 0.15); border: 1px solid rgba(37, 211, 102, 0.4); color: #25D366; text-decoration: none; display: inline-flex; align-items: center; gap: 3px; font-size: 0.72rem; padding: 2px 7px;">
                                   <span>💬</span> WhatsApp
                                 </a>
                                 <a href="tel:+91${cleanPhone}" class="sovereign-pill" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 3px; font-size: 0.72rem; padding: 2px 6px;">
@@ -978,7 +978,7 @@ export const AdminComponents = {
         ${activeTab === 'economy' ? `
           <div class="sovereign-tab-content">
             <div class="liquid-glass-card" style="padding: 1.5rem; margin-bottom: 2rem;">
-              <h3 class="font-title" style="color: var(--gold-light); margin: 0 0 0.3rem;">House Economy & Checkout Settings</h3>
+              <h3 class="font-title" style="color: var(--gold-light); margin: 0 0 0.3rem;">Sanctuary Economy & Checkout Settings</h3>
               <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Configure loyalty cashback rates, coin redemptions, Cash on Delivery boundaries, and discount promo keys.</p>
             </div>
 
@@ -1519,7 +1519,7 @@ export const AdminComponents = {
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.4); padding: 0.8rem 1rem; border-radius: 8px;">
               <div>
                 <strong style="color: var(--gold-light); font-size: 0.85rem;">Publish Live to Storefront</strong>
-                <div style="font-size: 0.72rem; color: var(--text-muted);">When active, collectors will discover this entry in House Lore.</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">When active, collectors will discover this entry in Sanctuary Lore.</div>
               </div>
               <input type="checkbox" id="post-published" style="width: 20px; height: 20px; accent-color: var(--gold-primary);" ${p.isPublished !== false ? 'checked' : ''} />
             </div>
@@ -1739,7 +1739,7 @@ export const AdminComponents = {
           <!-- Quick Action Contact Bar -->
           <div style="display: flex; gap: 0.6rem; margin-bottom: 1.5rem; flex-wrap: wrap; background: rgba(0, 0, 0, 0.35); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.15); align-items: center;">
             ${cleanPhone ? `
-              <a href="https://wa.me/91${cleanPhone}?text=${encodeURIComponent(`Hello ${name}, greetings from House of Mytholis!`)}" target="_blank" class="btn btn-glass" style="background: rgba(37, 211, 102, 0.15); border-color: rgba(37, 211, 102, 0.5); color: #25D366; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+              <a href="https://wa.me/91${cleanPhone}?text=${encodeURIComponent(`Hello ${name}, greetings from Sanctuary of Mytholis!`)}" target="_blank" class="btn btn-glass" style="background: rgba(37, 211, 102, 0.15); border-color: rgba(37, 211, 102, 0.5); color: #25D366; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
                 <span>💬</span> Chat on WhatsApp (${displayPhone})
               </a>
               <a href="tel:+91${cleanPhone}" class="btn btn-glass" style="font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
@@ -2092,11 +2092,11 @@ export const AdminComponents = {
                   </div>
                   <div>
                     <label class="sovereign-field-label">Subtitle</label>
-                    <input type="text" id="rebrander-subtitle" class="sovereign-form-input" value="Extrait de Parfum | Luxury Olfactory House" oninput="app.triggerRebrandPreview()" />
+                    <input type="text" id="rebrander-subtitle" class="sovereign-form-input" value="Extrait de Parfum | Luxury Olfactory Sanctuary" oninput="app.triggerRebrandPreview()" />
                   </div>
                   <div>
                     <label class="sovereign-field-label">Return & Concierge Coordinates</label>
-                    <input type="text" id="rebrander-return" class="sovereign-form-input" value="House of Mytholis • www.mytholis.com • concierge@mytholis.com" oninput="app.triggerRebrandPreview()" />
+                    <input type="text" id="rebrander-return" class="sovereign-form-input" value="Sanctuary of Mytholis • www.mytholis.com • concierge@mytholis.com" oninput="app.triggerRebrandPreview()" />
                   </div>
                 </div>
               </div>

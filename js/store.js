@@ -135,7 +135,7 @@ const LOYALTY_REWARDS = [
   {
     id: "DISC_800",
     title: "₹800 Off Voucher",
-    desc: "Elite concession credit across the full house catalog.",
+    desc: "Elite concession credit across the full sanctuary catalog.",
     minLevel: 3,
     cost: 800,
     type: "discount",
