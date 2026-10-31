@@ -713,6 +713,7 @@ export class FirebaseService {
       const uidToDelete = targetUid || auth.currentUser.uid;
       const targetEmail = (options.email || '').trim().toLowerCase();
       const targetPhone = (options.phone || '').trim();
+      const explicitOrderIds = Array.isArray(options.orderIds) ? options.orderIds : [];
 
       // Master Admin Protection Safeguard
       const adminEmails = ['gunhegarr@gmail.com', 'admin@mytholis.com', 'alexander@mytholis.com', 'founder@mytholis.com'];
@@ -733,11 +734,14 @@ export class FirebaseService {
               targetUid: uidToDelete,
               purgeOrders: true,
               email: targetEmail,
-              phone: targetPhone
+              phone: targetPhone,
+              orderIds: explicitOrderIds
             })
           });
           if (resp.ok) {
-            const data = await resp.json().catch(() => null);
+            const text = await resp.text();
+            let data = null;
+            try { data = JSON.parse(text); } catch (_) {}
             if (data && data.success) {
               console.log('[Mytholis Firebase] Backend successfully purged collector:', uidToDelete);
             }
@@ -757,11 +761,18 @@ export class FirebaseService {
 
       // 3. Direct Firestore Orders Purge: Remove matching orders so user does not reappear as a [CONSIGNMENT] customer
       try {
-        const ordersToDelete = new Set();
-        if (uidToDelete && !uidToDelete.startsWith('guest_')) {
-          const qUid = query(collection(db, "orders"), where("userId", "==", uidToDelete));
-          const snapUid = await getDocs(qUid).catch(() => null);
-          if (snapUid) snapUid.forEach(d => ordersToDelete.add(d.id));
+        const ordersToDelete = new Set(explicitOrderIds);
+
+        // If targetUid is directly an order ID (e.g. from guest orders or Tawakkal Metelix)
+        if (uidToDelete) {
+          ordersToDelete.add(uidToDelete);
+          const qUid1 = query(collection(db, "orders"), where("userId", "==", uidToDelete));
+          const snapUid1 = await getDocs(qUid1).catch(() => null);
+          if (snapUid1) snapUid1.forEach(d => ordersToDelete.add(d.id));
+
+          const qUid2 = query(collection(db, "orders"), where("uid", "==", uidToDelete));
+          const snapUid2 = await getDocs(qUid2).catch(() => null);
+          if (snapUid2) snapUid2.forEach(d => ordersToDelete.add(d.id));
         }
 
         if (targetEmail && !targetEmail.endsWith('@phone.mytholis.com')) {
@@ -772,6 +783,14 @@ export class FirebaseService {
           const qEmail2 = query(collection(db, "orders"), where("email", "==", targetEmail));
           const snapEmail2 = await getDocs(qEmail2).catch(() => null);
           if (snapEmail2) snapEmail2.forEach(d => ordersToDelete.add(d.id));
+        }
+
+        const cleanPhone = (targetPhone || '').replace(/\D/g, '');
+        const p10 = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : cleanPhone;
+        if (p10 && p10.length === 10) {
+          const qPhone = query(collection(db, "orders"), where("phone", "==", targetPhone));
+          const snapPhone = await getDocs(qPhone).catch(() => null);
+          if (snapPhone) snapPhone.forEach(d => ordersToDelete.add(d.id));
         }
 
         for (const ordId of ordersToDelete) {
@@ -1155,12 +1174,15 @@ export class FirebaseService {
         this.store.saveLocalStorage('mytholis_loyalty', initialLoyalty);
 
         // Announce welcome bonus celebration popup ONLY ONCE strictly upon first signup
+        const isBrandNewUser = user.metadata && (
+          Math.abs(new Date(user.metadata.lastSignInTime || 0).getTime() - new Date(user.metadata.creationTime || 0).getTime()) < 45000
+        );
         const alreadySeen = (this.store.loyalty && this.store.loyalty.signup_bonus_popup_seen === true) ||
                             localStorage.getItem('mytholis_welcome_seen_' + user.uid) === 'true' ||
                             (patronEmail && localStorage.getItem('mytholis_welcome_seen_' + patronEmail) === 'true') ||
                             (user.phoneNumber && localStorage.getItem('mytholis_welcome_seen_' + user.phoneNumber.replace(/\D/g, '').slice(-10)) === 'true');
 
-        if (!alreadySeen && this.app && typeof this.app.openSignupBonusModal === 'function') {
+        if (isBrandNewUser && !alreadySeen && this.app && typeof this.app.openSignupBonusModal === 'function') {
           setTimeout(() => {
             this.app.openSignupBonusModal(bonusMythos, user.uid);
           }, 350);

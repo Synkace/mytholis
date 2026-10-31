@@ -2863,6 +2863,9 @@ class MytholisApp {
     const phone = (store.user?.phone || (typeof firebaseService !== 'undefined' && firebaseService.currentUser?.phoneNumber) || '').replace(/\D/g, '').slice(-10);
 
     // STRICT CHECK: The 200 Mythos welcome popup must appear ONLY ONCE, strictly upon first signup
+    if (sessionStorage.getItem('mytholis_welcome_session_suppress') === 'true') {
+      return;
+    }
     if (store.loyalty && store.loyalty.signup_bonus_popup_seen === true) {
       console.log('[Mytholis Bonus] Welcome popup already marked seen on loyalty profile. Suppressing.');
       return;
@@ -3724,7 +3727,7 @@ class MytholisApp {
   }
 
   /* Sovereign Admin: Purge Test Collector Account & Data */
-  async handleAdminDeleteUser(targetUid, name = 'Collector', email = '', phone = '') {
+  async handleAdminDeleteUser(targetUid, name = 'Collector', email = '', phone = '', orderIdsEncoded = '') {
     if (!targetUid) return;
     const confirm = window.confirm(
       `⚠️ PURGE COLLECTOR (ADMIN TEST TOOL)\n\n` +
@@ -3733,20 +3736,59 @@ class MytholisApp {
     );
     if (!confirm) return;
 
+    let orderIds = [];
+    if (orderIdsEncoded) {
+      try {
+        orderIds = JSON.parse(decodeURIComponent(orderIdsEncoded));
+      } catch (_) {}
+    }
+
     this.showToast(`Purging collector ${name}...`);
     try {
-      if (typeof firebaseService === 'undefined') {
-        this.showToast('Firebase service not initialized.');
-        return;
-      }
       this.closeAdminModal();
-      const res = await firebaseService.deleteAccountAndData(targetUid, { email, phone });
-      if (res && res.success) {
-        this.showToast(`Collector "${name}" and all records successfully purged.`);
-        await this.refreshAdminDashboard();
-      } else {
-        this.showToast(res?.error || 'Failed to purge collector.');
+
+      // Immediately remove from in-memory adminData so UI updates instantly
+      const cleanPhone = (phone || '').replace(/\D/g, '');
+      const p10 = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : cleanPhone;
+      const cleanEmail = (email || '').trim().toLowerCase();
+
+      if (this.adminData) {
+        if (Array.isArray(this.adminData.users)) {
+          this.adminData.users = this.adminData.users.filter(u => {
+            const uProf = u.profile || {};
+            const uMail = (uProf.email || u.email || '').trim().toLowerCase();
+            const uPhoneDigits = (uProf.phone || u.phone || '').replace(/\D/g, '');
+            const uP10 = uPhoneDigits.length >= 10 ? uPhoneDigits.slice(-10) : uPhoneDigits;
+            if (u.uid === targetUid) return false;
+            if (cleanEmail && cleanEmail !== 'n/a' && uMail === cleanEmail) return false;
+            if (p10 && uP10 === p10) return false;
+            return true;
+          });
+        }
+        if (Array.isArray(this.adminData.orders)) {
+          this.adminData.orders = this.adminData.orders.filter(o => {
+            const oMail = (o.userEmail || o.email || o.customer?.email || '').trim().toLowerCase();
+            const oPhoneDigits = (o.phone || o.customerPhone || o.shippingPhone || '').replace(/\D/g, '');
+            const oP10 = oPhoneDigits.length >= 10 ? oPhoneDigits.slice(-10) : oPhoneDigits;
+            if (o.userId === targetUid || o.uid === targetUid || o.id === targetUid) return false;
+            if (orderIds.includes(o.id) || orderIds.includes(o.orderId)) return false;
+            if (cleanEmail && cleanEmail !== 'n/a' && oMail === cleanEmail) return false;
+            if (p10 && oP10 === p10) return false;
+            return true;
+          });
+        }
       }
+      this.renderCurrentView();
+
+      if (typeof firebaseService !== 'undefined') {
+        const res = await firebaseService.deleteAccountAndData(targetUid, { email, phone, orderIds });
+        if (res && res.success) {
+          this.showToast(`Collector "${name}" and all records successfully purged.`);
+        } else {
+          this.showToast(res?.error || 'Collector purge finished.');
+        }
+      }
+      await this.refreshAdminDashboard();
     } catch (err) {
       console.error('[Mytholis Admin] Error purging collector:', err);
       this.showToast('Error purging collector: ' + err.message);

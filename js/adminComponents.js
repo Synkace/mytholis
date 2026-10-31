@@ -64,7 +64,68 @@ export const AdminComponents = {
     const activeTab = app.adminActiveTab || 'telemetry';
     const adminData = app.adminData || { orders: [], users: [], products: [], posts: [], settings: {} };
     const ordersList = adminData.orders || [];
-    const usersList = adminData.users || [];
+    
+    // Strict In-Memory Patron Deduplication: group duplicate records by canonical 10-digit phone or email
+    const deduplicatedUsers = [];
+    const seenPatronsMap = new Map();
+
+    (adminData.users || []).forEach(u => {
+      if (u.isMergedDuplicate === true) return;
+      const prof = u.profile || {};
+      const rawEmail = prof.email || u.email || '';
+      const normEmail = (rawEmail && !rawEmail.endsWith('@phone.mytholis.com') && rawEmail !== 'N/A') ? rawEmail.trim().toLowerCase() : '';
+      const rawPhone = prof.phone || u.phone || '';
+      const digits = (rawPhone || '').replace(/\D/g, '');
+      const p10 = u.phoneCanonical || (digits.length >= 10 ? digits.slice(-10) : (digits || ''));
+
+      const key = (p10 && p10.length === 10) ? `phone_${p10}` : (normEmail ? `email_${normEmail}` : `uid_${u.uid || Math.random()}`);
+
+      if (!seenPatronsMap.has(key)) {
+        const entry = { ...u, profile: { ...prof }, loyalty: { ...(u.loyalty || {}) }, orders: Array.isArray(u.orders) ? [...u.orders] : [] };
+        seenPatronsMap.set(key, entry);
+        deduplicatedUsers.push(entry);
+      } else {
+        const master = seenPatronsMap.get(key);
+        const masterIsAdmin = master.role === 'admin' || master.isAdmin === true || master.profile?.role === 'admin' || master.profile?.isAdmin === true;
+        const currentIsAdmin = u.role === 'admin' || u.isAdmin === true || prof.role === 'admin' || prof.isAdmin === true;
+
+        if (currentIsAdmin && !masterIsAdmin) {
+          master.role = 'admin';
+          master.isAdmin = true;
+          if (master.profile) {
+            master.profile.role = 'admin';
+            master.profile.isAdmin = true;
+          }
+        }
+
+        // Merge spendable and legacy mythos (transfer points from duplicate, e.g. 150M from firefox to Samar Khan)
+        const curSpendable = Number(u.loyalty?.spendable_mythos || 0);
+        const curLegacy = Number(u.loyalty?.legacy_mythos || 0);
+        if (curSpendable > 0) {
+          master.loyalty.spendable_mythos = Math.max(Number(master.loyalty?.spendable_mythos || 0), curSpendable);
+        }
+        if (curLegacy > 0) {
+          master.loyalty.legacy_mythos = Math.max(Number(master.loyalty?.legacy_mythos || 0), curLegacy);
+        }
+
+        // Merge orders without duplicates
+        const existingOrderIds = new Set((master.orders || []).map(o => o.orderId || o.id));
+        (u.orders || []).forEach(ord => {
+          const ordId = ord.orderId || ord.id;
+          if (ordId && !existingOrderIds.has(ordId)) {
+            existingOrderIds.add(ordId);
+            master.orders.push(ord);
+          }
+        });
+        master.ordersCount = master.orders.length;
+        master.lifetimeSpend = master.orders.reduce((sum, o) => sum + Number(o.finalPayable || o.total || o.subtotal || 0), 0);
+
+        if (!master.linkedUids) master.linkedUids = [master.uid];
+        if (u.uid && !master.linkedUids.includes(u.uid)) master.linkedUids.push(u.uid);
+      }
+    });
+
+    const usersList = deduplicatedUsers;
     const productsList = (adminData.products && adminData.products.length) ? adminData.products : store.getProducts();
     const postsList = adminData.posts || [];
     const globalSettings = adminData.settings || store.globalSettings || {};
@@ -787,6 +848,7 @@ export const AdminComponents = {
                     if (!tierObj && tiers.length > 0) tierObj = tiers[0];
                     const currentTierName = (tierObj ? `Level ${tierObj.level}: ${tierObj.name}` : null) || prof.tier || 'Level 1: The Observer';
                     const currentTierLevel = tierObj ? tierObj.level : 1;
+                    const patronOrderIds = encodeURIComponent(JSON.stringify((u.orders || []).map(o => o.orderId || o.id).filter(Boolean)));
 
                     return `
                       <tr class="admin-patron-row" 
@@ -896,7 +958,7 @@ export const AdminComponents = {
                                 ${isAdmin ? 'Demote' : 'Admin'}
                               </button>
                             ` : ''}
-                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.handleAdminDeleteUser('${u.uid}', '${name.replace(/'/g, "\\'")}', '${email.replace(/'/g, "\\'")}', '${cleanPhone}')" title="Permanently delete user and order records from database">
+                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.handleAdminDeleteUser('${u.uid}', '${name.replace(/'/g, "\\'")}', '${email.replace(/'/g, "\\'")}', '${cleanPhone}', '${patronOrderIds}')" title="Permanently delete user and order records from database">
                               🗑️ Delete
                             </button>
                           </div>
@@ -1637,6 +1699,7 @@ export const AdminComponents = {
     const state = patron.state || prof.state || '';
     const pincode = patron.pincode || prof.pincode || '';
     const addressCopyText = [name, displayPhone, address, city, state, pincode].filter(Boolean).join('\n');
+    const dossierOrderIds = encodeURIComponent(JSON.stringify((orders || []).map(o => o.orderId || o.id).filter(Boolean)));
 
     const tiers = (typeof store !== 'undefined' && store.LOYALTY_TIERS) || (typeof window !== 'undefined' && window.LOYALTY_TIERS) || [];
     let tierObj = null;
@@ -1701,7 +1764,7 @@ export const AdminComponents = {
             <button type="button" class="btn btn-glass" style="font-size: 0.78rem; margin-left: auto;" onclick="navigator.clipboard.writeText('${addressCopyText.replace(/'/g, "\\'")}'); app.showToast('Copied full shipping label coordinates!');">
               📋 Copy Delivery Label Data
             </button>
-            <button type="button" class="btn" style="background: #EF4444; color: white; font-weight: 700; font-size: 0.78rem; padding: 0.45rem 1rem; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;" onclick="app.closeAdminModal(); app.handleAdminDeleteUser('${patron.uid}', '${name.replace(/'/g, "\\'")}', '${email.replace(/'/g, "\\'")}', '${cleanPhone}')" title="Permanently delete user and order records from database">
+            <button type="button" class="btn" style="background: #EF4444; color: white; font-weight: 700; font-size: 0.78rem; padding: 0.45rem 1rem; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;" onclick="app.closeAdminModal(); app.handleAdminDeleteUser('${patron.uid}', '${name.replace(/'/g, "\\'")}', '${email.replace(/'/g, "\\'")}', '${cleanPhone}', '${dossierOrderIds}')" title="Permanently delete user and order records from database">
               <span>🗑️</span> Purge User & Data
             </button>
           </div>
@@ -1829,7 +1892,7 @@ export const AdminComponents = {
               <button type="button" class="btn btn-glass" style="font-size: 0.75rem;" onclick="app.closeAdminModal(); app.openOverrideTierModal('${patron.uid}', '${name.replace(/'/g, "\\'")}', ${bottles}, ${currentTierLevel})">
                 Override Tier
               </button>
-              <button type="button" class="btn btn-glass" style="font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.closeAdminModal(); app.handleAdminDeleteUser('${patron.uid}', '${name.replace(/'/g, "\\'")}', '${email.replace(/'/g, "\\'")}', '${cleanPhone}')" title="Permanently delete user and order records from database">
+              <button type="button" class="btn btn-glass" style="font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.closeAdminModal(); app.handleAdminDeleteUser('${patron.uid}', '${name.replace(/'/g, "\\'")}', '${email.replace(/'/g, "\\'")}', '${cleanPhone}', '${dossierOrderIds}')" title="Permanently delete user and order records from database">
                 🗑️ Purge User & Data
               </button>
             </div>

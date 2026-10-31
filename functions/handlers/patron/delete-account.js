@@ -103,11 +103,15 @@ export default async function handler(req, res) {
     // 6. Purge all orders for this user so they do not resurrect as a [CONSIGNMENT] row
     const purgeOrders = req.body?.purgeOrders !== false;
     if (purgeOrders) {
-      const ordersToPurge = new Set();
-      // Query by userId
+      const explicitOrderIds = Array.isArray(req.body?.orderIds) ? req.body.orderIds : [];
+      const ordersToPurge = new Set(explicitOrderIds);
+
+      // Query by userId or uid
       if (targetUid && !targetUid.startsWith('guest_')) {
         const ordersSnap1 = await adminDb.collection('orders').where('userId', '==', targetUid).get().catch(() => null);
         if (ordersSnap1) ordersSnap1.forEach(doc => ordersToPurge.add(doc.id));
+        const ordersSnapUid = await adminDb.collection('orders').where('uid', '==', targetUid).get().catch(() => null);
+        if (ordersSnapUid) ordersSnapUid.forEach(doc => ordersToPurge.add(doc.id));
       }
 
       // Query by email if available
@@ -117,6 +121,22 @@ export default async function handler(req, res) {
         if (ordersSnap2) ordersSnap2.forEach(doc => ordersToPurge.add(doc.id));
         const ordersSnap3 = await adminDb.collection('orders').where('email', '==', cleanTargetEmail).get().catch(() => null);
         if (ordersSnap3) ordersSnap3.forEach(doc => ordersToPurge.add(doc.id));
+      }
+
+      // Query by phone if available
+      const cleanPhone = String(req.body?.phone || '').replace(/\D/g, '');
+      const p10 = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : cleanPhone;
+      if (p10 && p10.length === 10) {
+        const ordersAll = await adminDb.collection('orders').get().catch(() => null);
+        if (ordersAll) {
+          ordersAll.forEach(doc => {
+            const data = doc.data() || {};
+            const oPhone = String(data.phone || data.customerPhone || data.shippingPhone || data.shippingAddress?.phone || '').replace(/\D/g, '');
+            if (oPhone.includes(p10)) {
+              ordersToPurge.add(doc.id);
+            }
+          });
+        }
       }
 
       // Query by order ID if targetUid is actually an order ID

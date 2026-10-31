@@ -2451,7 +2451,7 @@ const Components = {
           ✦ Initiate Welcome Honor ✦
         </span>
 
-        <h2 class="font-title gold-shimmer-text" style="font-family: var(--font-serif-title, 'Cinzel', serif); font-size: clamp(1.28rem, 5.2vw, 1.7rem); letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 0.5rem 0; line-height: 1.25; word-break: break-word;">
+        <h2 class="font-title gold-shimmer-text" style="font-family: var(--font-serif-title, 'Cinzel', serif); font-size: clamp(1.05rem, 4vw, 1.45rem); letter-spacing: 0.05em; text-transform: uppercase; margin: 0 0 0.4rem 0; line-height: 1.25; word-break: normal; white-space: normal; text-align: center;">
           Congratulations
         </h2>
 
@@ -2827,11 +2827,6 @@ const Components = {
             </div>
           </div>
           <div style="display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center;">
-            ${store.isAdmin() ? `
-              <button class="sovereign-admin-link" onclick="app.navigateTo('admin')">
-                👑 Sovereign Admin Desk
-              </button>
-            ` : ''}
             <button class="btn btn-gold" onclick="app.openReferralModal()">
               Invite & Earn (₹500 / 250M)
             </button>
