@@ -356,11 +356,12 @@
 #hero-section {
   position: relative;
   min-height: 100vh;
-  padding: 110px 24px 50px;
+  min-height: 100dvh;
+  padding: 110px 24px 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   z-index: 10;
   overflow: hidden;
   width: 100%;
@@ -609,15 +610,24 @@ div#cardsRow {
 }
 
 /* ============ SUBLINE & ACTION PILL ============ */
-.subline {
-  margin-top: 395px;
+.subline,
+div#subline {
+  position: absolute;
+  bottom: clamp(20px, 4vh, 44px);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
   text-align: center;
   z-index: 8;
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
+  gap: clamp(10px, 1.6vh, 15px);
+  width: 100%;
+  max-width: 100%;
+  padding: 0 1.5rem;
+  box-sizing: border-box;
+  pointer-events: auto;
 }
 
 .subline .arrow-pill {
@@ -694,8 +704,36 @@ div#cardsRow {
   .cards-row .card-5, #cardsRow .card-5, .flacon-card.card-5 { width: 195px; height: 330px; left: 66%; top: 15px; }
   .cards-row .card-6, #cardsRow .card-6, .flacon-card.card-6 { width: 175px; height: 300px; left: 82%; top: 30px; }
 
-  .subline {
-    margin-top: 310px;
+  .subline,
+  div#subline {
+    bottom: clamp(18px, 3.5vh, 36px);
+    gap: 12px;
+  }
+}
+
+/* Compact Height Scaling for Laptops & Small Desktops */
+@media (min-width: 769px) and (max-height: 740px) {
+  .hero,
+  #hero-section {
+    padding-top: calc(75px + var(--announcement-height, 0px));
+  }
+  .cards-row,
+  div#cardsRow {
+    top: 24%;
+    transform: scale(0.88);
+    transform-origin: center top;
+  }
+  .subline,
+  div#subline {
+    bottom: 16px;
+    gap: 8px;
+  }
+  .subline .arrow-pill {
+    padding: 10px 20px 10px 24px;
+    font-size: 12px;
+  }
+  .subline-text {
+    font-size: 11px;
   }
 }
 
@@ -708,8 +746,10 @@ div#cardsRow {
   .hero,
   #hero-section {
     padding-top: 85px;
-    padding-bottom: 35px;
-    min-height: auto;
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
     justify-content: flex-start;
   }
 
@@ -836,8 +876,14 @@ div#cardsRow {
 
   .subline,
   div#subline {
-    margin-top: 16px !important;
+    position: relative !important;
+    bottom: auto !important;
+    margin-top: auto !important;
+    margin-bottom: 0 !important;
+    padding-top: 14px;
+    padding-bottom: 0;
     gap: 12px;
+    width: 100%;
   }
 
   .subline .arrow-pill {
@@ -862,7 +908,7 @@ div#cardsRow {
   .hero,
   #hero-section {
     padding-top: 75px;
-    padding-bottom: 30px;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   }
 
   .hero-kicker {
@@ -918,7 +964,11 @@ div#cardsRow {
 
   .subline,
   div#subline {
-    margin-top: 14px !important;
+    position: relative !important;
+    bottom: auto !important;
+    margin-top: auto !important;
+    margin-bottom: 0 !important;
+    padding-top: 10px;
     gap: 10px;
   }
 
@@ -983,7 +1033,11 @@ div#cardsRow {
 
   .subline,
   div#subline {
-    margin-top: 12px !important;
+    position: relative !important;
+    bottom: auto !important;
+    margin-top: auto !important;
+    margin-bottom: 0 !important;
+    padding-top: 8px;
   }
   .subline-text {
     font-size: 9px;
