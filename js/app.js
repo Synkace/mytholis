@@ -643,20 +643,21 @@ class MytholisApp {
 
         if (kicker) gsap.set(kicker, { opacity: 0, y: -15 });
         if (words.length) gsap.set(words, { y: '105%' });
-        if (letters.length) gsap.set(letters, { y: 60, opacity: 0 });
+        if (letters.length) gsap.set(letters, { y: 30, opacity: 0 });
         if (subline) gsap.set(subline, { opacity: 0, y: 25 });
 
-        // 2. Intro timeline: Kicker -> Title -> ONE HOUSE -> BOTTLES DROP FALL -> Subline
+        // 2. Intro timeline: Kicker -> Title -> ONE SANCTUARY -> BOTTLES DROP FALL -> Subline
         const intro = gsap.timeline({
           defaults: { ease: 'power3.out' },
           onComplete: () => {
             this.isIntroAnimating = false;
+            if (letters.length) gsap.set(letters, { clearProps: 'all' });
           }
         });
 
         if (kicker) intro.to(kicker, { opacity: 1, y: 0, duration: 0.7 }, 0.2);
         if (words.length) intro.to(words, { y: '0%', duration: 0.95, stagger: 0.08, ease: 'power3.out' }, 0.35);
-        if (letters.length) intro.to(letters, { y: 0, opacity: 1, duration: 0.95, stagger: 0.04, ease: 'back.out(1.5)' }, 0.55);
+        if (letters.length) intro.to(letters, { y: 0, opacity: 1, duration: 0.85, stagger: 0.03, ease: 'back.out(1.5)' }, 0.5);
 
         if (isMobile) {
           // Mobile: scaled-up flacons drop into their overlapping carousel slots
@@ -694,7 +695,7 @@ class MytholisApp {
 
         if (kicker) gsap.set(kicker, { opacity: 1, y: 0 });
         if (words.length) gsap.set(words, { y: '0%' });
-        if (letters.length) gsap.set(letters, { y: 0, opacity: 1 });
+        if (letters.length) gsap.set(letters, { clearProps: 'all' });
         if (subline) gsap.set(subline, { opacity: 1, y: 0 });
 
         if (isMobile) {

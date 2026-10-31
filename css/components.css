@@ -424,16 +424,16 @@
   display: inline-block;
 }
 
-/* Regal Gold Sub-Headline (One House) */
+/* Regal Gold Sub-Headline (ONE SANCTUARY) */
 .big-results-wrap {
   position: relative;
   width: 100%;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
   margin-top: 6px;
   display: flex;
   justify-content: center;
-  z-index: 2;
+  z-index: 8;
   pointer-events: none;
   padding: 0 1.5rem;
   box-sizing: border-box;
@@ -442,9 +442,10 @@
 .big-results {
   font-family: var(--font-serif-title);
   font-weight: 700;
-  font-size: clamp(1.8rem, 4.5vw, 4.2rem);
+  font-size: clamp(2rem, 5.2vw, 4.4rem);
   letter-spacing: 0.14em;
   line-height: 1.15;
+  color: #D4AF37;
   background: linear-gradient(135deg, #FFF1C5 0%, #D4AF37 50%, #AA820A 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -452,8 +453,7 @@
   text-align: center;
   white-space: nowrap;
   user-select: none;
-  text-shadow: none;
-  filter: drop-shadow(0 2px 14px rgba(212, 175, 55, 0.35));
+  filter: drop-shadow(0 2px 14px rgba(212, 175, 55, 0.4));
   padding: 0 0.5rem;
   box-sizing: border-box;
 }
@@ -461,6 +461,10 @@
 .big-results .letter {
   display: inline-block;
   transform-origin: bottom;
+  background: inherit;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #D4AF37;
 }
 
 /* ============ 3D FAN ARRAY OF FLACON CARDS ============ */
