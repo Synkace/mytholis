@@ -1834,11 +1834,12 @@ class MytholisApp {
     this.cachedRazorpayOrderData = null;
 
     // 3. Initiate order creation on backend so it is ready before user clicks "Proceed"
-    this.cachedRazorpayOrderPromise = fetch('/api/razorpay/create-order', {
+    this.cachedRazorpayOrderPromise = fetch('/api/create-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        amount: finalAmount,
+        amount: Math.round(finalAmount * 100),
+        amountInRupees: finalAmount,
         currency: 'INR',
         receipt: `MYTH-${Date.now().toString().slice(-6)}`
       })
@@ -2205,11 +2206,12 @@ class MytholisApp {
 
     if (!orderData || !orderData.orderId) {
       try {
-        const orderResp = await fetch('/api/razorpay/create-order', {
+        const orderResp = await fetch('/api/create-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            amount,
+            amount: Math.round(amount * 100),
+            amountInRupees: amount,
             currency: 'INR',
             receipt: `MYTH-${Date.now().toString().slice(-6)}`,
             notes: {
@@ -2279,7 +2281,7 @@ class MytholisApp {
       handler: async (response) => {
         this.showToast('Verifying payment cryptographically...');
         try {
-          const verifyResp = await fetch('/api/razorpay/verify-payment', {
+          const verifyResp = await fetch('/api/verify-payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

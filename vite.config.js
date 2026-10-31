@@ -32,6 +32,11 @@ export default defineConfig({
     port: 3000,
     open: true,
     proxy: {
+      '/api': {
+        target: 'https://mytholis-1.web.app',
+        changeOrigin: true,
+        secure: true
+      },
       '/__/auth': {
         target: 'https://mytholis-1.firebaseapp.com',
         changeOrigin: true,
@@ -42,6 +47,11 @@ export default defineConfig({
   preview: {
     port: 3000,
     proxy: {
+      '/api': {
+        target: 'https://mytholis-1.web.app',
+        changeOrigin: true,
+        secure: true
+      },
       '/__/auth': {
         target: 'https://mytholis-1.firebaseapp.com',
         changeOrigin: true,

@@ -29,16 +29,29 @@ export default async function handler(req, res) {
   try {
     const { amount, currency = 'INR', receipt, notes = {} } = req.body || {};
 
-    if (!amount || Number(amount) <= 0) {
-      return res.status(400).json({ error: 'Invalid order amount specified.' });
+    let amountInPaise;
+    if (req.body.amountInPaise !== undefined) {
+      amountInPaise = Math.round(Number(req.body.amountInPaise));
+    } else if (req.body.amountInRupees !== undefined) {
+      amountInPaise = Math.round(Number(req.body.amountInRupees) * 100);
+    } else if (Number(amount) > 0 && Number(amount) < 100) {
+      // Amount under 100 was specified in rupees (e.g. 50 rupees)
+      amountInPaise = Math.round(Number(amount) * 100);
+    } else {
+      // Standard Razorpay amount in paise (minimum 100 paise)
+      amountInPaise = Math.round(Number(amount));
+    }
+
+    if (!amountInPaise || amountInPaise < 100) {
+      return res.status(400).json({ error: 'Invalid order amount. Minimum amount is 100 paise (₹1).' });
     }
 
     let authHeader = cachedAuthHeader;
     let keyId = cachedKeyId;
 
     if (!authHeader || !keyId) {
-      keyId = cachedKeyId;
-      let keySecret = cachedKeySecret;
+      keyId = (process.env.RAZORPAY_KEY_ID || '').trim();
+      let keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
 
       if ((!keyId || !keySecret) && adminDb) {
         try {
@@ -55,7 +68,7 @@ export default async function handler(req, res) {
 
       if (!keyId || !keySecret) {
         console.error('[Razorpay Create-Order] Missing Razorpay Key ID or Secret.');
-        return res.status(500).json({ error: 'Payment Gateway is not configured. Please configure in Sovereign Admin.' });
+        return res.status(500).json({ error: 'Payment Gateway is not configured. Missing Razorpay credentials.' });
       }
 
       cachedKeyId = keyId;
@@ -64,7 +77,6 @@ export default async function handler(req, res) {
       authHeader = cachedAuthHeader;
     }
 
-    const amountInPaise = Math.round(Number(amount) * 100);
     const orderReceipt = receipt || `MYTH-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
 
     const razorpayRes = await fetch('https://api.razorpay.com/v1/orders', {
@@ -85,7 +97,13 @@ export default async function handler(req, res) {
 
     if (!razorpayRes.ok) {
       console.error('[Razorpay Order Creation Failed]:', data);
-      return res.status(razorpayRes.status).json({
+      if (razorpayRes.status === 401) {
+        return res.status(401).json({
+          error: 'Authentication failed with Razorpay API. Verify Key ID and Secret.',
+          details: data
+        });
+      }
+      return res.status(500).json({
         error: data.error?.description || 'Failed to create Razorpay order.',
         details: data
       });
@@ -93,11 +111,12 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
+      order_id: data.id,
       orderId: data.id,
       amount: data.amount,
       currency: data.currency,
-      key: keyId,
-      receipt: data.receipt
+      receipt: data.receipt,
+      key: keyId
     });
   } catch (err) {
     console.error('[Razorpay Create-Order Exception]:', err);

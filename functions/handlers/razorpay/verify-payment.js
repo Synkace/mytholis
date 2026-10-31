@@ -16,18 +16,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-      orderDetails
-    } = req.body || {};
+    const orderId = req.body?.razorpay_order_id || req.body?.order_id;
+    const paymentId = req.body?.razorpay_payment_id || req.body?.payment_id;
+    const signature = req.body?.razorpay_signature || req.body?.signature;
+    const orderDetails = req.body?.orderDetails || {};
 
-    // Fail closed if mandatory parameters are missing
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return res.status(401).json({
+    // Fail closed if mandatory parameters are missing (Return 400 as per specification)
+    if (!orderId || !paymentId || !signature) {
+      return res.status(400).json({
         success: false,
-        error: 'Unauthorized: Missing required payment verification parameters.'
+        error: 'Missing required parameters: order_id, payment_id, and signature are required.'
       });
     }
 
@@ -54,17 +52,17 @@ export default async function handler(req, res) {
       });
     }
 
-    // Fail-closed HMAC-SHA256 signature calculation
+    // Fail-closed HMAC-SHA256 signature calculation: HMAC-SHA256(order_id + "|" + payment_id, KEY_SECRET)
     let isSignatureValid = false;
     try {
       const expectedSignature = crypto
         .createHmac('sha256', keySecret)
-        .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+        .update(`${orderId}|${paymentId}`)
         .digest('hex');
 
-      isSignatureValid = crypto.timingSafeEqual(
+      isSignatureValid = (expectedSignature.length === signature.length) && crypto.timingSafeEqual(
         Buffer.from(expectedSignature, 'utf-8'),
-        Buffer.from(razorpay_signature, 'utf-8')
+        Buffer.from(signature, 'utf-8')
       );
     } catch (cryptoErr) {
       console.error('[Razorpay Verify] Signature comparison error:', cryptoErr.message);
@@ -72,10 +70,10 @@ export default async function handler(req, res) {
     }
 
     if (!isSignatureValid) {
-      console.warn(`[Razorpay Security Alert] Invalid signature for order ${razorpay_order_id}!`);
-      return res.status(401).json({
+      console.warn(`[Razorpay Security Alert] Invalid signature for order ${orderId}!`);
+      return res.status(400).json({
         success: false,
-        error: 'Unauthorized: Invalid payment signature.'
+        error: 'Signature verification failed. Invalid signature.'
       });
     }
 

@@ -69,7 +69,9 @@ router.all("/collector/batch-deduplicate", patronBatchDeduplicateHandler);
 router.all("/patron/delete-account", patronDeleteAccountHandler);
 router.all("/collector/delete-account", patronDeleteAccountHandler);
 
-// Razorpay Payment Gateway APIs
+// Razorpay Payment Gateway APIs (support both /create-order and /razorpay/create-order)
+router.all("/create-order", razorpayCreateOrderHandler);
+router.all("/verify-payment", razorpayVerifyPaymentHandler);
 router.all("/razorpay/create-order", razorpayCreateOrderHandler);
 router.all("/razorpay/verify-payment", razorpayVerifyPaymentHandler);
 
