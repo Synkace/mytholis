@@ -356,11 +356,11 @@
 #hero-section {
   position: relative;
   min-height: 100vh;
-  padding: 110px 24px 50px;
+  padding: 120px 24px 60px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   z-index: 10;
   overflow: hidden;
   width: 100%;
@@ -466,11 +466,11 @@
 /* ============ 3D FAN ARRAY OF FLACON CARDS ============ */
 .cards-row,
 div#cardsRow {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 28%; /* Shifted slightly lower across the watermark */
+  position: relative !important;
+  width: 100%;
+  max-width: 1440px;
   height: 480px;
+  margin: 15px auto 0;
   z-index: 6;
   pointer-events: none;
   display: block;
@@ -610,7 +610,7 @@ div#cardsRow {
 
 /* ============ SUBLINE & ACTION PILL ============ */
 .subline {
-  margin-top: 395px;
+  margin-top: 25px;
   text-align: center;
   z-index: 8;
   position: relative;
@@ -684,7 +684,7 @@ div#cardsRow {
   .cards-row,
   div#cardsRow {
     height: 380px;
-    top: 30%;
+    margin: 10px auto 0;
   }
 
   .cards-row .card-1, #cardsRow .card-1, .flacon-card.card-1 { width: 175px; height: 300px; left: 2%; top: 30px; }
@@ -695,7 +695,7 @@ div#cardsRow {
   .cards-row .card-6, #cardsRow .card-6, .flacon-card.card-6 { width: 175px; height: 300px; left: 82%; top: 30px; }
 
   .subline {
-    margin-top: 310px;
+    margin-top: 20px;
   }
 }
 
