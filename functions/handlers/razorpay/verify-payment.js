@@ -84,8 +84,8 @@ export default async function handler(req, res) {
         const orderRef = adminDb.collection('orders').doc(internalOrderId);
         const orderRecord = {
           orderId: internalOrderId,
-          razorpayOrderId: razorpay_order_id,
-          paymentId: razorpay_payment_id,
+          razorpayOrderId: orderId,
+          paymentId: paymentId,
           status: 'Payment Authorized',
           paymentStatus: 'Paid',
           paymentMethod: 'Razorpay Instant (UPI / Cards / NetBanking)',
