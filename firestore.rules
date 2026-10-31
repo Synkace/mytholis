@@ -44,10 +44,13 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
-    // 3. Settings & Inventory Overrides: Publicly readable; writable ONLY by verified admin.
-    match /settings/{doc} {
+    // 3. Settings: Public storefront toggles in public_config only; all other settings strictly admin-only.
+    match /settings/public_config {
       allow read: if true;
       allow write: if isAdmin();
+    }
+    match /settings/{doc} {
+      allow read, write: if isAdmin();
     }
 
     // 4. Vault Reward Codes: Publicly readable; writable ONLY by verified admin or server.

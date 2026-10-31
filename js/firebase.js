@@ -2488,6 +2488,21 @@ export class FirebaseService {
         updatedAt: serverTimestamp()
       }, { merge: true }).catch(e => console.warn("[Mytholis Firebase] settings/global write notice:", e.message));
 
+      // Also mirror public non-sensitive config to settings/public_config
+      const publicConfig = {
+        signupBonusMythos: settingsData.signupBonusMythos !== undefined ? settingsData.signupBonusMythos : 200,
+        codEnabled: settingsData.codEnabled !== false,
+        codFee: Number(settingsData.codFee) || 0,
+        maxCodAmount: Number(settingsData.maxCodAmount) || 15000,
+        mythosEarnPct: Number(settingsData.mythosEarnPct) || 3,
+        redemptionRatio: Number(settingsData.redemptionRatio) || 1,
+        maxMythosRedemptionPct: Number(settingsData.maxMythosRedemptionPct) || 30,
+        razorpayKeyId: settingsData.razorpayKeyId || '',
+        promoCodes: settingsData.promoCodes || [],
+        updatedAt: serverTimestamp()
+      };
+      await setDoc(doc(db, "settings", "public_config"), publicConfig, { merge: true }).catch(() => {});
+
       // Also persist individual promo codes into reward_codes collection
       if (Array.isArray(settingsData.promoCodes)) {
         for (const pc of settingsData.promoCodes) {
@@ -2515,12 +2530,21 @@ export class FirebaseService {
 
   async fetchGlobalSettings() {
     try {
-      const snap = await getDoc(doc(db, "settings", "global"));
-      if (snap.exists() && this.store) {
-        this.store.setGlobalSettings(snap.data());
-        return snap.data();
+      // 1. Fetch public storefront toggles from settings/public_config (open to public read)
+      const pubSnap = await getDoc(doc(db, "settings", "public_config")).catch(() => null);
+      if (pubSnap && pubSnap.exists() && this.store) {
+        this.store.setGlobalSettings(pubSnap.data());
       }
-      return null;
+
+      // 2. If authenticated user is an administrator, fetch authoritative settings/global
+      if (this.store && this.store.isAdmin()) {
+        const snap = await getDoc(doc(db, "settings", "global")).catch(() => null);
+        if (snap && snap.exists() && this.store) {
+          this.store.setGlobalSettings(snap.data());
+          return snap.data();
+        }
+      }
+      return pubSnap && pubSnap.exists() ? pubSnap.data() : null;
     } catch (err) {
       console.warn("[Mytholis Firebase] Could not fetch global settings:", err.message);
       return null;

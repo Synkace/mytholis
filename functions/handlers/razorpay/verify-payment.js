@@ -1,5 +1,6 @@
 import crypto from 'crypto';
-import { adminAuth, adminDb } from '../_firebaseAdmin.js';
+import { adminDb } from '../_firebaseAdmin.js';
+import { FieldValue } from 'firebase-admin/firestore';
 
 export default async function handler(req, res) {
   // CORS configuration
@@ -19,7 +20,6 @@ export default async function handler(req, res) {
     const orderId = req.body?.razorpay_order_id || req.body?.order_id;
     const paymentId = req.body?.razorpay_payment_id || req.body?.payment_id;
     const signature = req.body?.razorpay_signature || req.body?.signature;
-    const orderDetails = req.body?.orderDetails || {};
 
     // Fail closed if mandatory parameters are missing
     if (!orderId || !paymentId || !signature) {
@@ -40,7 +40,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // Fail-closed HMAC-SHA256 signature calculation: HMAC-SHA256(order_id + "|" + payment_id, KEY_SECRET)
+    // 1. Fail-closed HMAC-SHA256 signature calculation: HMAC-SHA256(order_id + "|" + payment_id, KEY_SECRET)
     let isSignatureValid = false;
     try {
       const expectedSignature = crypto
@@ -65,28 +65,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // Authenticate user via token if provided (Never blindly trust client-supplied userId)
-    let authoritativeUserId = 'guest';
-    let authoritativeEmail = (orderDetails?.email || '').trim().toLowerCase();
-
-    const authHeader = req.headers.authorization || req.headers.Authorization;
-    if (authHeader && authHeader.startsWith('Bearer ') && adminAuth) {
-      try {
-        const decoded = await adminAuth.verifyIdToken(authHeader.replace('Bearer ', '').trim());
-        authoritativeUserId = decoded.uid;
-        if (decoded.email) {
-          authoritativeEmail = decoded.email.toLowerCase();
-        }
-      } catch (authErr) {
-        console.warn('[Razorpay Verify] Invalid client auth token, defaulting to guest checkout:', authErr.message);
-      }
-    } else if (orderDetails?.userId && orderDetails.userId.startsWith('guest_')) {
-      authoritativeUserId = orderDetails.userId;
-    }
-
-    // Payment signature verified! Record order in Firestore via Sovereign Admin SDK
-    const internalOrderId = orderDetails?.orderId || `MYTH-${Date.now().toString().slice(-5)}`;
-    
     if (!adminDb) {
       console.error('[Razorpay Verify] Firestore Admin SDK is not available.');
       return res.status(500).json({
@@ -95,63 +73,102 @@ export default async function handler(req, res) {
       });
     }
 
+    // 2. Atomic Transaction: Read strictly from server draft orders/{orderId}
+    // IGNORE all totals, items, paymentStatus, and points sent in req.body
+    let transactionResult;
     try {
-      const orderRef = adminDb.collection('orders').doc(internalOrderId);
-      const verifiedTotal = Number(orderDetails?.total || 0);
+      transactionResult = await adminDb.runTransaction(async (tx) => {
+        const orderRef = adminDb.collection('orders').doc(orderId);
+        const orderDoc = await tx.get(orderRef);
 
-      const orderRecord = {
-        orderId: internalOrderId,
-        razorpayOrderId: orderId,
-        paymentId: paymentId,
-        status: 'Payment Authorized',
-        paymentStatus: 'Paid',
-        paymentMethod: 'Razorpay Instant (UPI / Cards / NetBanking)',
-        total: verifiedTotal,
-        items: orderDetails?.items || [],
-        customerName: orderDetails?.customerName || 'Collector',
-        customerPhone: orderDetails?.customerPhone || '',
-        customerAddress: orderDetails?.customerAddress || '',
-        customerPincode: orderDetails?.customerPincode || '',
-        email: authoritativeEmail,
-        userId: authoritativeUserId,
-        verifiedAt: new Date().toISOString()
-      };
+        if (!orderDoc.exists) {
+          const notFoundErr = new Error('Order draft not found on server');
+          notFoundErr.code = 'ORDER_NOT_FOUND';
+          throw notFoundErr;
+        }
 
-      await orderRef.set(orderRecord, { merge: true });
+        const draftData = orderDoc.data() || {};
 
-      // If user is authenticated registered patron, credit loyalty points server-authoritatively
-      if (authoritativeUserId && !authoritativeUserId.startsWith('guest')) {
-        try {
-          const userRef = adminDb.collection('users').doc(authoritativeUserId);
-          const userSnap = await userRef.get();
-          if (userSnap.exists) {
-            const uData = userSnap.data() || {};
+        // Idempotency check: If already PAID, return without double-crediting
+        if (draftData.paymentStatus === 'PAID' || draftData.paymentStatus === 'Paid') {
+          return {
+            idempotent: true,
+            orderId: orderId,
+            verifiedTotal: draftData.verifiedTotal || draftData.total || 0
+          };
+        }
+
+        // Exclusively use server draft values
+        const verifiedTotal = draftData.verifiedTotal || draftData.total || 0;
+        const earnedMythos = Number(draftData.earnedMythos) || Math.round(verifiedTotal * 0.03);
+        const items = Array.isArray(draftData.items) ? draftData.items : [];
+        const uid = draftData.uid || draftData.userId || null;
+
+        // Update orders/{orderId} to confirmed PAID status
+        tx.update(orderRef, {
+          paymentStatus: 'PAID',
+          status: 'CONFIRMED',
+          razorpayPaymentId: paymentId,
+          paymentId: paymentId,
+          paidAt: FieldValue.serverTimestamp(),
+          verifiedAt: new Date().toISOString()
+        });
+
+        // Award earnedMythos to users/{uid}
+        if (uid && !uid.startsWith('guest')) {
+          const userRef = adminDb.collection('users').doc(uid);
+          const userDoc = await tx.get(userRef);
+          if (userDoc.exists) {
+            const uData = userDoc.data() || {};
             const currentLoyalty = uData.loyalty || {};
-            const earnedPts = Math.round(verifiedTotal * 0.03);
+            const fullBottles = items
+              .filter(i => (Number(i.size) === 50 || Number(i.size) === 100))
+              .reduce((sum, i) => sum + (Number(i.quantity || i.qty) || 1), 0);
 
-            // Count full bottles
-            const items = Array.isArray(orderDetails.items) ? orderDetails.items : [];
-            const fullBottles = items.filter(i => (Number(i.size) === 50 || Number(i.size) === 100)).reduce((sum, i) => sum + (Number(i.quantity || i.qty) || 1), 0);
-
-            await userRef.set({
+            tx.set(userRef, {
               loyalty: {
                 ...currentLoyalty,
-                spendable_mythos: (Number(currentLoyalty.spendable_mythos) || 0) + earnedPts,
-                legacy_mythos: (Number(currentLoyalty.legacy_mythos) || 0) + earnedPts,
+                spendable_mythos: (Number(currentLoyalty.spendable_mythos) || 0) + earnedMythos,
+                legacy_mythos: (Number(currentLoyalty.legacy_mythos) || 0) + earnedMythos,
                 full_bottles_purchased: (Number(currentLoyalty.full_bottles_purchased) || 0) + fullBottles
               }
             }, { merge: true });
           }
-        } catch (loyaltyErr) {
-          console.warn('[Razorpay Verify] User loyalty credit note:', loyaltyErr.message);
         }
+
+        // Decrement stock on products/{item.id}
+        for (const it of items) {
+          if (it.id) {
+            const prodRef = adminDb.collection('products').doc(it.id);
+            const prodDoc = await tx.get(prodRef);
+            if (prodDoc.exists) {
+              const pData = prodDoc.data() || {};
+              const currentStock = typeof pData.stock === 'number' ? pData.stock : 50;
+              const decQty = Number(it.quantity || it.qty) || 1;
+              tx.update(prodRef, {
+                stock: Math.max(0, currentStock - decQty)
+              });
+            }
+          }
+        }
+
+        return {
+          idempotent: false,
+          orderId,
+          verifiedTotal
+        };
+      });
+    } catch (txErr) {
+      console.error('[Razorpay Verify Transaction Error]:', txErr);
+      if (txErr.code === 'ORDER_NOT_FOUND' || txErr.message.includes('not found')) {
+        return res.status(404).json({
+          success: false,
+          error: 'Order draft not found on server'
+        });
       }
-    } catch (dbErr) {
-      console.error('[Razorpay Verify] Firestore order persistence failed:', dbErr);
-      // Fail closed: Do NOT return success if database write failed!
       return res.status(500).json({
         success: false,
-        error: 'Order registration failed during database write. Please contact support.'
+        error: 'Failed to persist verified payment'
       });
     }
 
@@ -159,9 +176,10 @@ export default async function handler(req, res) {
       success: true,
       message: 'Payment verified and order registered successfully.',
       order_id: orderId,
-      orderId: internalOrderId,
+      orderId: orderId,
       payment_id: paymentId,
-      paymentId: paymentId
+      paymentId: paymentId,
+      total: transactionResult.verifiedTotal
     });
   } catch (err) {
     console.error('[Razorpay Verify Exception]:', err);

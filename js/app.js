@@ -1811,31 +1811,48 @@ class MytholisApp {
     // 1. Kick off SDK preloading in background immediately
     this.ensureRazorpaySdk().catch(() => {});
 
-    // 2. Pre-calculate final amount
+    // 2. Structured items array for server catalog validation
     const target = productOrCart || (store.cart.length ? { id: null } : MYTHOLIS_CATALOG[0]);
     const isSingleProduct = !!(target && target.id);
     let chosenSize = this.selectedSize || 50;
-    let singlePrice = this.selectedPrice;
-    if (isSingleProduct && target.sizes) {
-      const sObj = target.sizes.find(s => s.ml === chosenSize) || target.sizes[0];
-      singlePrice = sObj.price;
+
+    let items = [];
+    if (isSingleProduct) {
+      items = [{
+        id: target.id,
+        sku: `${target.id}-${chosenSize}`,
+        size: Number(chosenSize),
+        qty: 1
+      }];
+    } else if (store.cart.length > 0) {
+      items = store.cart.map(item => ({
+        id: item.id || item.slug,
+        sku: item.sku || `${item.id}-${item.size || 100}`,
+        size: Number(item.size || 100),
+        qty: Number(item.qty || item.quantity || 1)
+      }));
+    } else {
+      items = [{
+        id: MYTHOLIS_CATALOG[0].id,
+        sku: `${MYTHOLIS_CATALOG[0].id}-50`,
+        size: 50,
+        qty: 1
+      }];
     }
-    const baseSubtotal = isSingleProduct ? (singlePrice || target.price) : store.getCartTotal();
-    const discount = isSingleProduct ? 0 : store.getDiscountAmount(baseSubtotal);
-    const finalAmount = Math.max(0, baseSubtotal - discount);
 
-    if (finalAmount <= 0) return;
+    const promoCode = store.appliedPromoCode || null;
+    const paymentMethod = 'Prepaid (Cards / UPI)';
 
-    this.cachedRazorpayOrderAmount = finalAmount;
     this.cachedRazorpayOrderData = null;
 
-    // 3. Initiate order creation on backend so it is ready before user clicks "Proceed"
+    // 3. Initiate order creation on backend sending structured items array
     this.cachedRazorpayOrderPromise = fetch('/api/create-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        amount: Math.round(finalAmount * 100),
-        amountInRupees: finalAmount,
+        items,
+        promoCode,
+        paymentMethod,
         currency: 'INR',
         receipt: `MYTH-${Date.now().toString().slice(-6)}`
       })
@@ -2139,20 +2156,80 @@ class MytholisApp {
     const paymentMethod = activeMethodPill ? activeMethodPill.textContent.trim() : 'Prepaid (Cards / UPI)';
     const isCOD = paymentMethod.toLowerCase().includes('cash on delivery') || paymentMethod.toLowerCase().includes('cod');
 
+    // Structured items array for server catalog calculation
+    const structuredItems = store.cart.length > 0
+      ? store.cart.map(item => ({
+          id: item.id || item.slug,
+          sku: item.sku || `${item.id}-${item.size || 100}`,
+          size: Number(item.size || 100),
+          qty: Number(item.qty || item.quantity || 1)
+        }))
+      : [{
+          id: (this.activeProduct && this.activeProduct.id) || MYTHOLIS_CATALOG[0].id,
+          sku: `${(this.activeProduct && this.activeProduct.id) || MYTHOLIS_CATALOG[0].id}-${this.selectedSize || 50}`,
+          size: Number(this.selectedSize || 50),
+          qty: 1
+        }];
+
+    const activePromoCode = store.appliedPromoCode || null;
+    const customerObj = {
+      name: customerName,
+      email: customerEmail,
+      phone: customerPhone,
+      address: customerAddress,
+      pincode: customerPincode,
+      city: customerCity,
+      state: customerState
+    };
+
     // If Cash on Delivery is selected
     if (isCOD) {
-      restoreProceedBtn();
-      this.finalizeOrderPlacement(amount, {
-        customerName,
-        customerPhone,
-        customerEmail,
-        customerAddress,
-        customerPincode,
-        customerCity,
-        customerState,
-        paymentMethod: 'Cash on Delivery (COD)',
-        paymentId: 'COD-PENDING'
-      });
+      try {
+        const codResp = await fetch('/api/complete-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items: structuredItems,
+            promoCode: activePromoCode,
+            paymentMethod: 'Cash on Delivery (COD)',
+            customer: customerObj,
+            orderData: {
+              items: structuredItems,
+              promoCode: activePromoCode,
+              paymentMethod: 'Cash on Delivery (COD)',
+              customer: customerObj,
+              customerName,
+              customerPhone,
+              customerEmail,
+              customerAddress,
+              customerPincode,
+              customerCity,
+              customerState
+            }
+          })
+        });
+
+        const codData = codResp.ok ? await codResp.json() : null;
+        const codOrderId = codData?.orderId || `MYTH-${Date.now().toString().slice(-6)}`;
+        const verifiedTotal = Number(codData?.total) || amount;
+
+        restoreProceedBtn();
+        this.finalizeOrderPlacement(verifiedTotal, {
+          orderId: codOrderId,
+          customerName,
+          customerPhone,
+          customerEmail,
+          customerAddress,
+          customerPincode,
+          customerCity,
+          customerState,
+          paymentMethod: 'Cash on Delivery (COD)',
+          paymentId: 'COD-PENDING'
+        });
+      } catch (codErr) {
+        restoreProceedBtn();
+        this.showToast('Could not complete COD order. Please try again.');
+      }
       return;
     }
 
@@ -2171,13 +2248,13 @@ class MytholisApp {
     }
 
     let rzpOrderId = null;
-    let rzpAmount = Math.round(Number(amount) * 100);
+    let rzpAmount = 0;
 
     // Consume pre-created order if ready, or wait with a short timeout, or fetch on demand
     let orderData = null;
-    if (this.cachedRazorpayOrderAmount === amount && this.cachedRazorpayOrderData) {
+    if (this.cachedRazorpayOrderData && this.cachedRazorpayOrderData.orderId) {
       orderData = this.cachedRazorpayOrderData;
-    } else if (this.cachedRazorpayOrderAmount === amount && this.cachedRazorpayOrderPromise) {
+    } else if (this.cachedRazorpayOrderPromise) {
       try {
         orderData = await Promise.race([
           this.cachedRazorpayOrderPromise,
@@ -2194,35 +2271,41 @@ class MytholisApp {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            amount: Math.round(amount * 100),
-            amountInRupees: amount,
+            items: structuredItems,
+            promoCode: activePromoCode,
+            paymentMethod: paymentMethod,
+            customer: customerObj,
             currency: 'INR',
-            receipt: `MYTH-${Date.now().toString().slice(-6)}`,
-            notes: {
-              customerName,
-              customerPhone,
-              customerEmail,
-              customerAddress,
-              customerPincode,
-              customerCity,
-              customerState
-            }
+            receipt: `MYTH-${Date.now().toString().slice(-6)}`
           })
         });
 
         if (orderResp.ok) {
           orderData = await orderResp.json();
+        } else {
+          const errData = await orderResp.json().catch(() => ({}));
+          console.error('[Razorpay Order API Failed]:', errData);
+          restoreProceedBtn();
+          this.showToast(errData.error || 'Failed to initialize payment vault.');
+          return;
         }
       } catch (createErr) {
-        console.warn('[Razorpay Order API Notice]: Serverless order creation fallback:', createErr);
+        console.error('[Razorpay Order API Exception]:', createErr);
+        restoreProceedBtn();
+        this.showToast('Network error initializing payment. Please try again.');
+        return;
       }
     }
 
-    if (orderData && orderData.orderId) {
-      rzpOrderId = orderData.orderId;
-      if (orderData.amount) rzpAmount = orderData.amount;
-      if (!razorpayKey && orderData.key) razorpayKey = orderData.key;
+    if (!orderData || !orderData.orderId) {
+      restoreProceedBtn();
+      this.showToast('Failed to create authoritative order on server.');
+      return;
     }
+
+    rzpOrderId = orderData.orderId;
+    rzpAmount = orderData.amount;
+    if (!razorpayKey && orderData.key) razorpayKey = orderData.key;
 
     if (!razorpayKey) {
       restoreProceedBtn();
@@ -2271,26 +2354,15 @@ class MytholisApp {
             body: JSON.stringify({
               razorpay_order_id: response.razorpay_order_id || rzpOrderId || '',
               razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature || '',
-              orderDetails: {
-                orderId: rzpOrderId || `MYTH-${Date.now().toString().slice(-6)}`,
-                total: amount,
-                items: store.cart.map(i => ({ id: i.id, name: i.name, size: i.size, price: i.price, qty: i.quantity || 1 })),
-                customerName,
-                customerPhone: cleanPhone,
-                email: patronEmail,
-                customerAddress,
-                customerPincode,
-                customerCity,
-                customerState,
-                userId: (typeof firebaseService !== 'undefined' && firebaseService.currentUser?.uid) || store.user.uid || ''
-              }
+              razorpay_signature: response.razorpay_signature || ''
             })
           });
 
           const verifyData = await verifyResp.json().catch(() => ({}));
           if (verifyResp.ok && verifyData.success) {
-            this.finalizeOrderPlacement(amount, {
+            const serverVerifiedTotal = verifyData.total || Math.round(rzpAmount / 100);
+            this.finalizeOrderPlacement(serverVerifiedTotal, {
+              orderId: verifyData.orderId || rzpOrderId,
               customerName,
               customerPhone: cleanPhone,
               customerEmail: patronEmail,
@@ -2349,10 +2421,10 @@ class MytholisApp {
     }
     this.showToast(toastMsg);
 
-    const generatedOrderId = `MYTH-${Math.floor(10000 + Math.random() * 90000)}`;
+    const authoritativeOrderId = details.orderId || `MYTH-${Math.floor(10000 + Math.random() * 90000)}`;
 
     const orderRecord = {
-      orderId: generatedOrderId,
+      orderId: authoritativeOrderId,
       items: purchasedItems.map(i => ({ id: i.id, name: i.name, size: i.size, price: i.price, qty: i.quantity || 1 })),
       total: amount,
       status: details.paymentMethod?.includes('COD') ? 'Placed (COD)' : 'Payment Authorized',
@@ -2411,7 +2483,7 @@ class MytholisApp {
     fetch('/api/complete-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ orderData: orderRecord })
+      body: JSON.stringify({ orderId: authoritativeOrderId, orderData: orderRecord })
     }).catch(() => {});
 
     if (store.cart.length > 0) {

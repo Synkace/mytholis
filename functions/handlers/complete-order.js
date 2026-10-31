@@ -1,5 +1,6 @@
 import { adminAuth, adminDb } from './_firebaseAdmin.js';
 import { calculateServerOrderTotal } from '../catalog.js';
+import { FieldValue } from 'firebase-admin/firestore';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -15,14 +16,12 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { orderData } = req.body || {};
-  if (!orderData) {
-    return res.status(400).json({ error: 'Missing orderData' });
-  }
+  const { orderId, orderData } = req.body || {};
+  const targetOrderId = orderId || orderData?.orderId || orderData?.id;
 
   // Authoritative authentication
   let uid = 'guest';
-  let userEmail = (orderData.userEmail || orderData.email || 'guest@mytholis.com').toLowerCase();
+  let userEmail = (orderData?.userEmail || orderData?.email || 'guest@mytholis.com').toLowerCase();
   const authHeader = req.headers.authorization || req.headers.Authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.replace('Bearer ', '').trim();
@@ -30,64 +29,101 @@ export default async function handler(req, res) {
       const decoded = await adminAuth.verifyIdToken(token);
       uid = decoded.uid;
       if (decoded.email) userEmail = decoded.email.toLowerCase();
-    } catch (e) {
-      console.warn("[Mytholis API] Guest checkout (unverified token)");
-    }
+    } catch (_) {}
   }
 
   try {
-    // Validate order items against official server catalog
-    const items = Array.isArray(orderData.items) ? orderData.items : [];
-    const serverCalc = calculateServerOrderTotal(items, orderData.appliedVoucherCode || orderData.promoCode, orderData.mythosRedeemed || 0);
+    // 1. If an authoritative server draft already exists in orders/{orderId}, read strictly from it
+    if (targetOrderId) {
+      const existingRef = adminDb.collection('orders').doc(targetOrderId);
+      const existingSnap = await existingRef.get();
 
-    const validatedTotal = serverCalc.finalTotal > 0 ? serverCalc.finalTotal : Number(orderData.total || 0);
+      if (existingSnap.exists) {
+        const draftData = existingSnap.data() || {};
+        const verifiedTotal = draftData.verifiedTotal || draftData.total;
+        const isCOD = (draftData.paymentMethod || orderData?.paymentMethod || '').toLowerCase().includes('cod') ||
+                      (draftData.paymentMethod || orderData?.paymentMethod || '').toLowerCase().includes('cash on delivery');
 
-    // Per AGENTS.md Rule 3: Client cannot claim unverified "Paid" status or award points directly via complete-order
-    const isCOD = orderData.paymentMethod && orderData.paymentMethod.toLowerCase().includes('cash on delivery');
-    const paymentStatus = isCOD ? 'COD Pending' : 'Payment Pending';
-    const orderStatus = isCOD ? 'Order Placed (COD)' : 'Payment Pending';
+        await existingRef.update({
+          paymentStatus: isCOD ? 'COD Pending' : (draftData.paymentStatus || 'Payment Pending'),
+          status: isCOD ? 'Order Placed (COD)' : (draftData.status || 'CREATED'),
+          placedAt: FieldValue.serverTimestamp()
+        });
 
-    const orderDoc = {
-      ...orderData,
-      total: validatedTotal,
-      subtotal: serverCalc.subtotal || validatedTotal,
-      userId: uid,
-      userEmail,
-      paymentStatus,
-      status: orderStatus,
-      createdAt: new Date().toISOString()
-    };
-
-    const orderRef = await adminDb.collection('orders').add(orderDoc);
-
-    // Vouchers: If a voucher was redeemed, mark it used on user profile
-    if (uid !== 'guest' && orderData.appliedVoucherCode) {
-      try {
-        const userRef = adminDb.collection('users').doc(uid);
-        const userSnap = await userRef.get();
-        if (userSnap.exists) {
-          const userData = userSnap.data();
-          const loyalty = userData.loyalty || {};
-          if (Array.isArray(loyalty.active_reward_codes)) {
-            loyalty.active_reward_codes = loyalty.active_reward_codes.map(c => 
-              c.code === orderData.appliedVoucherCode ? { ...c, used: true } : c
-            );
-            await userRef.set({ loyalty, updatedAt: new Date().toISOString() }, { merge: true });
-          }
-        }
-      } catch (vErr) {
-        console.warn("[Mytholis API] Voucher consumption note:", vErr.message);
+        return res.status(200).json({
+          success: true,
+          orderId: targetOrderId,
+          total: verifiedTotal,
+          message: 'Order draft confirmed and recorded in cloud ledger.'
+        });
       }
     }
 
+    // 2. If creating without prior Razorpay draft, strictly require items array and calculate via catalog
+    const items = Array.isArray(orderData?.items) ? orderData.items : (Array.isArray(req.body?.items) ? req.body.items : []);
+    if (!items.length) {
+      return res.status(400).json({ error: 'Cart items array is required to complete order' });
+    }
+
+    const promoCode = orderData?.appliedVoucherCode || orderData?.promoCode || req.body?.promoCode || '';
+    const paymentMethod = orderData?.paymentMethod || req.body?.paymentMethod || 'Cash on Delivery (COD)';
+    const mythosPoints = Number(orderData?.mythosRedeemed || req.body?.mythosPoints || 0);
+
+    const serverCalc = calculateServerOrderTotal(items, promoCode, paymentMethod, mythosPoints);
+    if (!serverCalc.isValid) {
+      return res.status(400).json({ error: serverCalc.error || 'Invalid order items' });
+    }
+
+    const isCOD = paymentMethod.toLowerCase().includes('cash on delivery') || paymentMethod.toLowerCase().includes('cod');
+    const paymentStatus = isCOD ? 'COD Pending' : 'Payment Pending';
+    const orderStatus = isCOD ? 'Order Placed (COD)' : 'Payment Pending';
+
+    const rawCustomer = orderData?.customer || req.body?.customer || {};
+    const sanitizedCustomer = {
+      name: (rawCustomer.name || orderData?.name || orderData?.customerName || 'Collector').trim(),
+      email: (userEmail || rawCustomer.email || '').trim().toLowerCase(),
+      phone: (rawCustomer.phone || orderData?.phone || orderData?.customerPhone || '').trim(),
+      address: (rawCustomer.address || orderData?.address || orderData?.customerAddress || '').trim(),
+      city: (rawCustomer.city || orderData?.city || orderData?.customerCity || '').trim(),
+      state: (rawCustomer.state || orderData?.state || orderData?.customerState || '').trim(),
+      pincode: (rawCustomer.pincode || orderData?.pincode || orderData?.customerPincode || '').trim()
+    };
+
+    const newOrderDoc = {
+      orderId: targetOrderId || `MYTH-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`,
+      items: serverCalc.validatedItems,
+      subtotal: serverCalc.subtotal,
+      discountCode: serverCalc.validatedPromoCode || null,
+      discountAmount: serverCalc.discountAmount,
+      total: serverCalc.finalAmountInRupees,
+      verifiedTotal: serverCalc.finalAmountInRupees,
+      earnedMythos: serverCalc.earnedMythos,
+      paymentMethod,
+      paymentStatus,
+      status: orderStatus,
+      customer: sanitizedCustomer,
+      customerName: sanitizedCustomer.name,
+      customerPhone: sanitizedCustomer.phone,
+      customerAddress: sanitizedCustomer.address,
+      userEmail,
+      userId: uid,
+      createdAt: FieldValue.serverTimestamp()
+    };
+
+    const docRef = targetOrderId 
+      ? adminDb.collection('orders').doc(targetOrderId)
+      : adminDb.collection('orders').doc(newOrderDoc.orderId);
+
+    await docRef.set(newOrderDoc, { merge: true });
+
     return res.status(200).json({
       success: true,
-      orderId: orderRef.id,
-      total: validatedTotal,
+      orderId: docRef.id,
+      total: serverCalc.finalAmountInRupees,
       message: 'Order completed and recorded in cloud ledger.'
     });
   } catch (err) {
-    console.error("[Mytholis API] complete-order error:", err);
+    console.error('[Mytholis API] complete-order error:', err);
     return res.status(500).json({ error: err.message });
   }
 }

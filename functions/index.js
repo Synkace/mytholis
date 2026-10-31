@@ -18,6 +18,32 @@ import patronDeleteAccountHandler from "./handlers/patron/delete-account.js";
 import razorpayCreateOrderHandler from "./handlers/razorpay/create-order.js";
 import razorpayVerifyPaymentHandler from "./handlers/razorpay/verify-payment.js";
 
+// Permanent server-side secret sanitization
+import { adminDb } from "./handlers/_firebaseAdmin.js";
+import { FieldValue } from "firebase-admin/firestore";
+
+let _settingsSanitized = false;
+async function purgeLegacySecretsFromFirestore() {
+  if (_settingsSanitized) return;
+  try {
+    const globalDocRef = adminDb.collection("settings").doc("global");
+    const snap = await globalDocRef.get();
+    if (snap.exists) {
+      const data = snap.data() || {};
+      if (data.razorpayKeySecret !== undefined) {
+        await globalDocRef.update({
+          razorpayKeySecret: FieldValue.delete()
+        });
+        console.log("[Security Startup] Permanently wiped legacy razorpayKeySecret from settings/global");
+      }
+    }
+    _settingsSanitized = true;
+  } catch (err) {
+    console.warn("[Security Startup] Firestore secret sanitization notice:", err.message);
+  }
+}
+purgeLegacySecretsFromFirestore().catch(() => {});
+
 const app = express();
 
 // Permissive CORS for cross-origin or local requests
