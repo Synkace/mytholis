@@ -132,8 +132,10 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       message: 'Payment verified and order registered successfully.',
+      order_id: orderId,
       orderId: internalOrderId,
-      paymentId: razorpay_payment_id
+      payment_id: paymentId,
+      paymentId: paymentId
     });
   } catch (err) {
     console.error('[Razorpay Verify Exception]:', err);
