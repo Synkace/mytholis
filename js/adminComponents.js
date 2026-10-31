@@ -1241,6 +1241,7 @@ export const AdminComponents = {
 
     const p = prod || {
       id: '',
+      sku: '',
       name: '',
       tagline: '',
       collection: 'Signature Men',
@@ -1252,12 +1253,28 @@ export const AdminComponents = {
       batchCode: 'MYTH-2026-X01',
       macerationDate: 'March 2026',
       image: 'assets/product/1kingscar.webp',
+      media: {
+        bottleImage: 'assets/product/1kingscar.webp',
+        cardImage: 'assets/product/1kingscarbox.webp',
+        backgroundImage: 'assets/hero/kingscarbg.webp',
+        gallery: ['assets/product/1kingscar.webp', 'assets/product/1kingscarbox.webp']
+      },
       description: '',
       notesTop: 'Bergamot, Pink Pepper',
       notesHeart: 'Lavender, Rose',
       notesBase: 'Vetiver, Amber, Musk',
       accords: 'Aromatic, Spicy, Woody'
     };
+
+    const media = (p && p.media) ? p.media : {
+      bottleImage: p.image || (catalogMatch?.media?.bottleImage) || 'assets/product/1kingscar.webp',
+      cardImage: (catalogMatch?.media?.cardImage) || p.image || 'assets/product/1kingscarbox.webp',
+      backgroundImage: (catalogMatch?.media?.backgroundImage) || 'assets/hero/kingscarbg.webp',
+      gallery: (p.gallery && Array.isArray(p.gallery)) ? p.gallery : (catalogMatch?.media?.gallery || [p.image || 'assets/product/1kingscar.webp'])
+    };
+    const galleryList = (Array.isArray(media.gallery) && media.gallery.length > 0)
+      ? media.gallery.filter(Boolean).slice(0, 10)
+      : [media.bottleImage || p.image || 'assets/product/1kingscar.webp'];
 
     return `
       <div class="sovereign-modal-backdrop" onclick="if(event.target === this) app.closeAdminModal()">
@@ -1311,9 +1328,83 @@ export const AdminComponents = {
                 <label class="sovereign-field-label">Maceration Date</label>
                 <input type="text" id="prod-maceration" class="sovereign-form-input" value="${p.macerationDate || 'March 2026'}" />
               </div>
-              <div style="grid-column: 1 / -1;">
-                <label class="sovereign-field-label">Bottle Image URL</label>
-                <input type="text" id="prod-image" class="sovereign-form-input" value="${p.image || 'assets/product/1kingscar.webp'}" required />
+              <div>
+                <label class="sovereign-field-label">Official SKU Code</label>
+                <input type="text" id="prod-sku" class="sovereign-form-input" value="${p.sku || catalogMatch?.sku || ''}" placeholder="e.g. MYTH-EDP-KS-50" />
+              </div>
+              <div>
+                <label class="sovereign-field-label">Primary Bottle Image URL</label>
+                <input type="text" id="prod-bottle-image" class="sovereign-form-input" value="${media.bottleImage || p.image || 'assets/product/1kingscar.webp'}" oninput="document.getElementById('prod-image').value = this.value; if(window.app) app.adminUpdateMediaThumb('prod-bottle-preview', this.value);" required />
+                <input type="hidden" id="prod-image" value="${media.bottleImage || p.image || 'assets/product/1kingscar.webp'}" />
+              </div>
+              <div>
+                <label class="sovereign-field-label">Packaging / Box Image URL</label>
+                <input type="text" id="prod-card-image" class="sovereign-form-input" value="${media.cardImage || ''}" oninput="if(window.app) app.adminUpdateMediaThumb('prod-card-preview', this.value);" placeholder="assets/product/1kingscarbox.webp" />
+              </div>
+              <div>
+                <label class="sovereign-field-label">Atmosphere / Background URL</label>
+                <input type="text" id="prod-bg-image" class="sovereign-form-input" value="${media.backgroundImage || ''}" oninput="if(window.app) app.adminUpdateMediaThumb('prod-bg-preview', this.value);" placeholder="assets/hero/kingscarbg.webp" />
+              </div>
+            </div>
+
+            <!-- 📸 Product Media Pipeline & 10-Photo Gallery Manager -->
+            <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.45); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="font-size: 0.78rem; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">
+                  📸 Product Media Pipeline (Up to 10 Gallery Photos)
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                  <button type="button" class="btn btn-glass" style="padding: 0.35rem 0.8rem; font-size: 0.72rem; color: var(--gold-light);" onclick="app.adminAutoMapMedia('${p.id || ''}')" title="Auto-Map Canonical Local Assets for this SKU">
+                    ⚡ Auto-Map SKU Assets
+                  </button>
+                  <span class="glass-pill" id="admin-gallery-badge" style="font-size: 0.68rem; color: var(--gold-light);">${galleryList.length}/10 Photos</span>
+                </div>
+              </div>
+
+              <!-- Live Preview Row for Primary Assets -->
+              <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.2rem; background: rgba(212, 175, 55, 0.05); padding: 0.8rem; border-radius: 6px; border: 1px dashed rgba(212, 175, 55, 0.25); flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <img id="prod-bottle-preview" src="${media.bottleImage || p.image || 'assets/product/1kingscar.webp'}" style="width: 44px; height: 44px; object-fit: contain; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.4); background: #041812;" onerror="this.src='assets/product/1kingscar.webp'" />
+                  <div>
+                    <div style="font-size: 0.72rem; color: var(--gold-light); font-weight: 600;">Bottle</div>
+                    <div style="font-size: 0.65rem; color: var(--text-muted);">Transparent Flacon</div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <img id="prod-card-preview" src="${media.cardImage || 'assets/product/1kingscarbox.webp'}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.4); background: #041812;" onerror="this.src='assets/product/1kingscarbox.webp'" />
+                  <div>
+                    <div style="font-size: 0.72rem; color: var(--gold-light); font-weight: 600;">Box / Packaging</div>
+                    <div style="font-size: 0.65rem; color: var(--text-muted);">Sovereign Coffret</div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <img id="prod-bg-preview" src="${media.backgroundImage || 'assets/hero/kingscarbg.webp'}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.4); background: #041812;" onerror="this.src='assets/hero/kingscarbg.webp'" />
+                  <div>
+                    <div style="font-size: 0.72rem; color: var(--gold-light); font-weight: 600;">Atmosphere</div>
+                    <div style="font-size: 0.65rem; color: var(--text-muted);">Hero Environment</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Ordered Storefront Gallery List (Up to 10 Photos) -->
+              <div style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
+                <span>Storefront Multi-Photo Carousel Order</span>
+                <button type="button" class="btn btn-gold" id="admin-add-photo-btn" style="padding: 0.25rem 0.7rem; font-size: 0.7rem;" onclick="app.adminAddGallerySlot()" ${galleryList.length >= 10 ? 'disabled' : ''}>
+                  + Add Photo Slot (<span id="admin-add-slot-count">${galleryList.length}</span>/10)
+                </button>
+              </div>
+
+              <div id="admin-gallery-slots" style="display: flex; flex-direction: column; gap: 0.6rem;">
+                ${galleryList.map((imgUrl, idx) => `
+                  <div class="admin-gallery-row" data-idx="${idx}" style="display: flex; align-items: center; gap: 0.6rem; background: rgba(0, 0, 0, 0.35); padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid rgba(212, 175, 55, 0.2);">
+                    <span class="admin-slot-num" style="font-size: 0.75rem; color: var(--gold-light); font-weight: 700; width: 22px;">#${idx + 1}</span>
+                    <img class="admin-slot-preview" src="${imgUrl}" style="width: 38px; height: 38px; object-fit: contain; border-radius: 4px; background: #041812; border: 1px solid rgba(212, 175, 55, 0.3);" onerror="this.src='assets/product/1kingscar.webp'" />
+                    <input type="text" class="sovereign-form-input admin-gallery-input" style="flex: 1; padding: 0.4rem 0.7rem; font-size: 0.8rem;" value="${imgUrl}" oninput="if(window.app) app.adminPreviewGalleryRow(this)" placeholder="assets/product/..." required />
+                    <button type="button" class="btn btn-glass" style="padding: 0.3rem 0.6rem; font-size: 0.7rem;" onclick="app.adminMoveGallerySlot(${idx}, -1)" title="Move Up" ${idx === 0 ? 'disabled' : ''}>↑</button>
+                    <button type="button" class="btn btn-glass" style="padding: 0.3rem 0.6rem; font-size: 0.7rem;" onclick="app.adminMoveGallerySlot(${idx}, 1)" title="Move Down" ${idx === galleryList.length - 1 ? 'disabled' : ''}>↓</button>
+                    <button type="button" class="btn btn-glass" style="padding: 0.3rem 0.6rem; font-size: 0.7rem; color: #FCA5A5; border-color: rgba(239, 68, 68, 0.4);" onclick="app.adminRemoveGallerySlot(${idx})" title="Remove Photo" ${galleryList.length <= 1 ? 'disabled' : ''}>✕</button>
+                  </div>
+                `).join('')}
               </div>
             </div>
 

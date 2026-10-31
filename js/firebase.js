@@ -1893,6 +1893,19 @@ export class FirebaseService {
         const prodSnap = await getDocs(collection(db, "products"));
         prodSnap.forEach(d => {
           const item = { id: d.id, ...d.data() };
+        // Ensure valid media schema with gallery array (up to 10 images)
+        if (!item.media || !Array.isArray(item.media.gallery) || item.media.gallery.length === 0) {
+          const catMatch = (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []).find(c => c.id === item.id);
+          item.media = (catMatch && catMatch.media) ? { ...catMatch.media } : {
+            bottleImage: item.image || 'assets/product/1kingscar.webp',
+            cardImage: item.image || 'assets/product/1kingscar.webp',
+            backgroundImage: item.image || 'assets/product/1kingscar.webp',
+            gallery: [item.image || 'assets/product/1kingscar.webp']
+          };
+        }
+        if (!item.image && item.media?.bottleImage) {
+          item.image = item.media.bottleImage;
+        }
           // Auto-heal discovery set / Sixth Sense if stale data exists in Firestore
           if (item.id === 'mytholis-discovery-set') {
             item.name = "Sixth Sense";
@@ -1967,6 +1980,12 @@ export class FirebaseService {
         if (!existing.exists()) {
           await setDoc(prodRef, {
             ...prod,
+            media: prod.media || {
+              bottleImage: prod.image || 'assets/product/1kingscar.webp',
+              cardImage: prod.image || 'assets/product/1kingscar.webp',
+              backgroundImage: prod.image || 'assets/product/1kingscar.webp',
+              gallery: [prod.image || 'assets/product/1kingscar.webp']
+            },
             sizes: prod.sizes || [
               { ml: 50, price: 3499 },
               { ml: 100, price: 5999 }
@@ -1982,9 +2001,16 @@ export class FirebaseService {
           });
           seededCount++;
         } else {
-          // Sync sizes and metadata to existing Firestore product if missing or incomplete
+          // Sync sizes, media, and metadata to existing Firestore product if missing or incomplete
           const existingData = existing.data() || {};
           const updates = {};
+
+          if (prod.media) {
+            updates.media = prod.media;
+          }
+          if (prod.sku) {
+            updates.sku = prod.sku;
+          }
 
           if (prod.id === 'mytholis-discovery-set') {
             updates.name = "Sixth Sense";
@@ -2031,8 +2057,22 @@ export class FirebaseService {
 
     try {
       const prodRef = doc(db, "products", prodData.id);
+      const media = prodData.media || {
+        bottleImage: prodData.image || 'assets/product/1kingscar.webp',
+        cardImage: prodData.cardImage || prodData.image || 'assets/product/1kingscar.webp',
+        backgroundImage: prodData.backgroundImage || prodData.image || 'assets/product/1kingscar.webp',
+        gallery: Array.isArray(prodData.gallery) ? prodData.gallery.slice(0, 10) : [prodData.image || 'assets/product/1kingscar.webp']
+      };
+
       await setDoc(prodRef, {
         ...prodData,
+        image: media.bottleImage || prodData.image || 'assets/product/1kingscar.webp',
+        media: {
+          bottleImage: media.bottleImage || prodData.image || 'assets/product/1kingscar.webp',
+          cardImage: media.cardImage || media.bottleImage || prodData.image || 'assets/product/1kingscar.webp',
+          backgroundImage: media.backgroundImage || media.bottleImage || prodData.image || 'assets/product/1kingscar.webp',
+          gallery: Array.isArray(media.gallery) ? media.gallery.filter(Boolean).slice(0, 10) : [media.bottleImage || prodData.image || 'assets/product/1kingscar.webp']
+        },
         price: Number(prodData.price) || 0,
         stock: Number(prodData.stock) || 0,
         inStock: Boolean(prodData.inStock),
@@ -2078,6 +2118,19 @@ export class FirebaseService {
       const list = [];
       snap.forEach(d => {
         const item = { id: d.id, ...d.data() };
+        // Ensure valid media schema with gallery array (up to 10 images)
+        if (!item.media || !Array.isArray(item.media.gallery) || item.media.gallery.length === 0) {
+          const catMatch = (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []).find(c => c.id === item.id);
+          item.media = (catMatch && catMatch.media) ? { ...catMatch.media } : {
+            bottleImage: item.image || 'assets/product/1kingscar.webp',
+            cardImage: item.image || 'assets/product/1kingscar.webp',
+            backgroundImage: item.image || 'assets/product/1kingscar.webp',
+            gallery: [item.image || 'assets/product/1kingscar.webp']
+          };
+        }
+        if (!item.image && item.media?.bottleImage) {
+          item.image = item.media.bottleImage;
+        }
         // Auto-heal discovery set / Sixth Sense if stale data exists in Firestore
         if (item.id === 'mytholis-discovery-set') {
           item.name = "Sixth Sense";

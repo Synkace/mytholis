@@ -9,6 +9,7 @@
 const MYTHOLIS_CATALOG = [
   {
     id: "king-scar",
+    sku: "MYTH-EDP-KS-50",
     name: "King Scar <br><span class=\"product-concentration-sub\">Extrait de Parfum</span>",
     subtitle: "Aromatic · Men",
     collection: "Aromatic · Men",
@@ -17,6 +18,18 @@ const MYTHOLIS_CATALOG = [
     rating: 5.0,
     reviewsCount: 178,
     image: "assets/product/1kingscar.webp",
+    media: {
+      bottleImage: "assets/product/1kingscar.webp",
+      cardImage: "assets/product/1kingscarbox.webp",
+      backgroundImage: "assets/hero/kingscarbg.webp",
+      gallery: [
+        "assets/product/1kingscar.webp",
+        "assets/product/1kingscarbox.webp",
+        "assets/hero/kingscarcard.webp",
+        "assets/hero/kingscarbg.webp",
+        "assets/product/1.webp"
+      ]
+    },
     tag: "Aromatic Luxe",
     gender: "Masculine",
     scentFamily: "Aromatic Spicy",
@@ -37,6 +50,7 @@ const MYTHOLIS_CATALOG = [
   },
   {
     id: "petralux",
+    sku: "MYTH-EDP-PX-50",
     name: "Petralux <br><span class=\"product-concentration-sub\">Extrait de Parfum</span>",
     subtitle: "Fruity · Unisex",
     collection: "Fruity · Unisex",
@@ -45,6 +59,18 @@ const MYTHOLIS_CATALOG = [
     rating: 5.0,
     reviewsCount: 194,
     image: "assets/product/2petralux.webp",
+    media: {
+      bottleImage: "assets/product/2petralux.webp",
+      cardImage: "assets/product/2petraluxbox.webp",
+      backgroundImage: "assets/hero/2bg.webp",
+      gallery: [
+        "assets/product/2petralux.webp",
+        "assets/product/2petraluxbox.webp",
+        "assets/hero/2.webp",
+        "assets/hero/2bg.webp",
+        "assets/product/2.webp"
+      ]
+    },
     tag: "Opulent Fruity",
     gender: "Unisex",
     scentFamily: "Fruity Chypre Amber",
@@ -65,6 +91,7 @@ const MYTHOLIS_CATALOG = [
   },
   {
     id: "oud-rion",
+    sku: "MYTH-EDP-OR-50",
     name: "Oud Rion <br><span class=\"product-concentration-sub\">Extrait de Parfum</span>",
     subtitle: "Woody · Men",
     collection: "Woody · Men",
@@ -73,6 +100,18 @@ const MYTHOLIS_CATALOG = [
     rating: 5.0,
     reviewsCount: 215,
     image: "assets/product/3oudrion.webp",
+    media: {
+      bottleImage: "assets/product/3oudrion.webp",
+      cardImage: "assets/product/3oudrionbox.webp",
+      backgroundImage: "assets/hero/oudrionbg.webp",
+      gallery: [
+        "assets/product/3oudrion.webp",
+        "assets/product/3oudrionbox.webp",
+        "assets/hero/oudrioncard.webp",
+        "assets/hero/oudrionbg.webp",
+        "assets/product/3.webp"
+      ]
+    },
     tag: "Crown Reserve",
     gender: "Masculine",
     scentFamily: "Resinous Royal Oud",
@@ -93,6 +132,7 @@ const MYTHOLIS_CATALOG = [
   },
   {
     id: "spark",
+    sku: "MYTH-EDP-SP-50",
     name: "Spark <br><span class=\"product-concentration-sub\">Extrait de Parfum</span>",
     subtitle: "Aromatic · Unisex",
     collection: "Aromatic · Unisex",
@@ -101,6 +141,18 @@ const MYTHOLIS_CATALOG = [
     rating: 4.9,
     reviewsCount: 128,
     image: "assets/product/4spark.webp",
+    media: {
+      bottleImage: "assets/product/4spark.webp",
+      cardImage: "assets/product/4sparkbox.webp",
+      backgroundImage: "assets/hero/sparkbg.webp",
+      gallery: [
+        "assets/product/4spark.webp",
+        "assets/product/4sparkbox.webp",
+        "assets/hero/sparkcard.webp",
+        "assets/hero/sparkbg.webp",
+        "assets/product/4.webp"
+      ]
+    },
     tag: "Electric Aromatic",
     gender: "Unisex",
     scentFamily: "Aromatic Fresh Leather",
@@ -121,6 +173,7 @@ const MYTHOLIS_CATALOG = [
   },
   {
     id: "wood-sera",
+    sku: "MYTH-EDP-WS-50",
     name: "Wood Sera <br><span class=\"product-concentration-sub\">Extrait de Parfum</span>",
     subtitle: "Woody · Unisex",
     collection: "Woody · Unisex",
@@ -129,6 +182,16 @@ const MYTHOLIS_CATALOG = [
     rating: 4.9,
     reviewsCount: 142,
     image: "assets/product/5woodsera.webp",
+    media: {
+      bottleImage: "assets/product/5woodsera.webp",
+      cardImage: "assets/product/5woodserabox.webp",
+      backgroundImage: "assets/product/5woodserabox.webp",
+      gallery: [
+        "assets/product/5woodsera.webp",
+        "assets/product/5woodserabox.webp",
+        "assets/product/5.webp"
+      ]
+    },
     tag: "Evening Woods",
     gender: "Unisex",
     scentFamily: "Warm Woody Amber Rose",
@@ -149,6 +212,7 @@ const MYTHOLIS_CATALOG = [
   },
   {
     id: "ash",
+    sku: "MYTH-EDP-AS-50",
     name: "Ash <br><span class=\"product-concentration-sub\">Extrait de Parfum</span>",
     subtitle: "Woody · Unisex",
     collection: "Woody · Unisex",
@@ -157,6 +221,18 @@ const MYTHOLIS_CATALOG = [
     rating: 5.0,
     reviewsCount: 168,
     image: "assets/product/6ash.webp",
+    media: {
+      bottleImage: "assets/product/6ash.webp",
+      cardImage: "assets/product/6ashbox.webp",
+      backgroundImage: "assets/hero/6bg.webp",
+      gallery: [
+        "assets/product/6ash.webp",
+        "assets/product/6ashbox.webp",
+        "assets/hero/6.webp",
+        "assets/hero/6bg.webp",
+        "assets/product/6.webp"
+      ]
+    },
     tag: "Obsidian Reserve",
     gender: "Unisex",
     scentFamily: "Smoky Woody Mineral",
@@ -177,6 +253,7 @@ const MYTHOLIS_CATALOG = [
   },
   {
     id: "mytholis-discovery-set",
+    sku: "MYTH-SET-6S-48",
     name: "Sixth Sense",
     subtitle: "Sixth Sense",
     collection: "Sixth Sense",
@@ -185,6 +262,21 @@ const MYTHOLIS_CATALOG = [
     rating: 5.0,
     reviewsCount: 240,
     image: "assets/coffret_banner.webp",
+    media: {
+      bottleImage: "assets/coffret_banner.webp",
+      cardImage: "assets/product/sixthsense.webp",
+      backgroundImage: "assets/coffret_banner.webp",
+      gallery: [
+        "assets/coffret_banner.webp",
+        "assets/product/sixthsense.webp",
+        "assets/product/1kingscar.webp",
+        "assets/product/2petralux.webp",
+        "assets/product/3oudrion.webp",
+        "assets/product/4spark.webp",
+        "assets/product/5woodsera.webp",
+        "assets/product/6ash.webp"
+      ]
+    },
     tag: "Sixth Sense",
     gender: "Unisex",
     scentFamily: "Complete Olfactory Wardrobe",

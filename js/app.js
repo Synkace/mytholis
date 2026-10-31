@@ -1307,6 +1307,42 @@ class MytholisApp {
     this.navigateTo('product', productId);
   }
 
+  switchProductGalleryImage(imgUrl, clickedEl, photoNum = null, totalPhotos = null) {
+    const mainImg = document.getElementById('transparent-bottle-img');
+    if (mainImg) {
+      mainImg.style.opacity = '0';
+      mainImg.style.transform = 'scale(0.96)';
+      setTimeout(() => {
+        mainImg.src = imgUrl;
+        mainImg.style.opacity = '1';
+        mainImg.style.transform = 'scale(1)';
+      }, 120);
+    }
+    const container = document.getElementById('product-gallery-thumbnails');
+    if (container) {
+      container.querySelectorAll('.gallery-thumb-btn').forEach(btn => btn.classList.remove('active'));
+    }
+    if (clickedEl) {
+      clickedEl.classList.add('active');
+    }
+    const captionEl = document.getElementById('gallery-photo-caption');
+    if (captionEl && photoNum && totalPhotos) {
+      captionEl.innerHTML = `<span class="gold-text">Photo ${photoNum} of ${totalPhotos}</span> · Sovereign Edition`;
+    }
+  }
+
+  stepProductGallery(direction) {
+    const container = document.getElementById('product-gallery-thumbnails');
+    if (!container) return;
+    const thumbs = Array.from(container.querySelectorAll('.gallery-thumb-btn'));
+    if (thumbs.length <= 1) return;
+    const activeIdx = thumbs.findIndex(b => b.classList.contains('active'));
+    let newIdx = (activeIdx >= 0 ? activeIdx : 0) + direction;
+    if (newIdx < 0) newIdx = thumbs.length - 1;
+    if (newIdx >= thumbs.length) newIdx = 0;
+    thumbs[newIdx].click();
+  }
+
   renderQuizStep(step) {
     if (step > 2 && !store.loyalty.initiation_completed) {
       store.completeInitiation('quiz');
@@ -4550,8 +4586,22 @@ class MytholisApp {
       const baseNotesRaw = getVal('prod-notes-base');
       const accordsRaw = getVal('prod-accords');
 
+      // Product Media Pipeline (up to 10 photos)
+      const bottleImage = getVal('prod-bottle-image') || getVal('prod-image') || 'assets/product/1kingscar.webp';
+      const cardImage = getVal('prod-card-image') || bottleImage;
+      const backgroundImage = getVal('prod-bg-image') || cardImage;
+      const galleryInputs = Array.from(document.querySelectorAll('.admin-gallery-input'));
+      let galleryUrls = galleryInputs.map(input => input.value.trim()).filter(Boolean);
+      // Fallback if none entered
+      if (galleryUrls.length === 0) {
+        galleryUrls = [bottleImage];
+      }
+      // Deduplicate while preserving order, max 10 photos
+      galleryUrls = Array.from(new Set(galleryUrls)).slice(0, 10);
+
       const prodData = {
         id: prodId,
+        sku: getVal('prod-sku') || '',
         name: isCoffret ? 'Sixth Sense' : getVal('prod-name'),
         tagline: getVal('prod-tagline'),
         category: getVal('prod-collection') || getVal('prod-category') || 'Aromatic · Men',
@@ -4572,7 +4622,13 @@ class MytholisApp {
         accords: accordsRaw ? accordsRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
         batchCode: getVal('prod-batch') || 'MYTH-2026-X01',
         macerationDate: getVal('prod-maceration') || 'March 2026',
-        image: getVal('prod-image') || 'assets/product/1kingscar.webp',
+        image: bottleImage,
+        media: {
+          bottleImage: bottleImage,
+          cardImage: cardImage,
+          backgroundImage: backgroundImage,
+          gallery: galleryUrls
+        },
         description: getVal('prod-description')
       };
 
@@ -4589,6 +4645,218 @@ class MytholisApp {
       console.error("[Sovereign Command] saveAdminProduct error:", err);
       this.showToast(`Error saving fragrance: ${err.message}`);
     }
+  }
+
+  adminUpdateMediaThumb(elementId, url) {
+    const el = document.getElementById(elementId);
+    if (el && url) {
+      el.src = url;
+    }
+  }
+
+  adminPreviewGalleryRow(inputEl) {
+    if (!inputEl) return;
+    const row = inputEl.closest('.admin-gallery-row');
+    if (row) {
+      const preview = row.querySelector('.admin-slot-preview');
+      if (preview && inputEl.value.trim()) {
+        preview.src = inputEl.value.trim();
+      }
+    }
+  }
+
+  adminAddGallerySlot() {
+    const container = document.getElementById('admin-gallery-slots');
+    if (!container) return;
+    const currentInputs = Array.from(container.querySelectorAll('.admin-gallery-input')).map(i => i.value.trim());
+    if (currentInputs.length >= 10) {
+      this.showToast('Maximum 10 gallery photos permitted per product.');
+      return;
+    }
+    const defaultBottle = document.getElementById('prod-bottle-image')?.value?.trim() || 'assets/product/1kingscar.webp';
+    currentInputs.push(defaultBottle);
+    this.adminRenderGallerySlots(currentInputs);
+  }
+
+  adminRemoveGallerySlot(idx) {
+    const container = document.getElementById('admin-gallery-slots');
+    if (!container) return;
+    const currentInputs = Array.from(container.querySelectorAll('.admin-gallery-input')).map(i => i.value.trim());
+    if (currentInputs.length <= 1) {
+      this.showToast('At least 1 photo must remain in the gallery.');
+      return;
+    }
+    currentInputs.splice(idx, 1);
+    this.adminRenderGallerySlots(currentInputs);
+  }
+
+  adminMoveGallerySlot(idx, dir) {
+    const container = document.getElementById('admin-gallery-slots');
+    if (!container) return;
+    const currentInputs = Array.from(container.querySelectorAll('.admin-gallery-input')).map(i => i.value.trim());
+    const targetIdx = idx + dir;
+    if (targetIdx < 0 || targetIdx >= currentInputs.length) return;
+    const temp = currentInputs[idx];
+    currentInputs[idx] = currentInputs[targetIdx];
+    currentInputs[targetIdx] = temp;
+    this.adminRenderGallerySlots(currentInputs);
+  }
+
+  adminRenderGallerySlots(urls) {
+    const container = document.getElementById('admin-gallery-slots');
+    if (!container) return;
+    container.innerHTML = urls.map((imgUrl, idx) => `
+      <div class="admin-gallery-row" data-idx="${idx}" style="display: flex; align-items: center; gap: 0.6rem; background: rgba(0, 0, 0, 0.35); padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid rgba(212, 175, 55, 0.2);">
+        <span class="admin-slot-num" style="font-size: 0.75rem; color: var(--gold-light); font-weight: 700; width: 22px;">#${idx + 1}</span>
+        <img class="admin-slot-preview" src="${imgUrl}" style="width: 38px; height: 38px; object-fit: contain; border-radius: 4px; background: #041812; border: 1px solid rgba(212, 175, 55, 0.3);" onerror="this.src='assets/product/1kingscar.webp'" />
+        <input type="text" class="sovereign-form-input admin-gallery-input" style="flex: 1; padding: 0.4rem 0.7rem; font-size: 0.8rem;" value="${imgUrl}" oninput="if(window.app) app.adminPreviewGalleryRow(this)" placeholder="assets/product/..." required />
+        <button type="button" class="btn btn-glass" style="padding: 0.3rem 0.6rem; font-size: 0.7rem;" onclick="app.adminMoveGallerySlot(${idx}, -1)" title="Move Up" ${idx === 0 ? 'disabled' : ''}>↑</button>
+        <button type="button" class="btn btn-glass" style="padding: 0.3rem 0.6rem; font-size: 0.7rem;" onclick="app.adminMoveGallerySlot(${idx}, 1)" title="Move Down" ${idx === urls.length - 1 ? 'disabled' : ''}>↓</button>
+        <button type="button" class="btn btn-glass" style="padding: 0.3rem 0.6rem; font-size: 0.7rem; color: #FCA5A5; border-color: rgba(239, 68, 68, 0.4);" onclick="app.adminRemoveGallerySlot(${idx})" title="Remove Photo" ${urls.length <= 1 ? 'disabled' : ''}>✕</button>
+      </div>
+    `).join('');
+
+    const countBadge = document.getElementById('admin-gallery-badge');
+    if (countBadge) countBadge.textContent = `${urls.length}/10 Photos`;
+    const countSlot = document.getElementById('admin-add-slot-count');
+    if (countSlot) countSlot.textContent = `${urls.length}`;
+    const addBtn = document.getElementById('admin-add-photo-btn');
+    if (addBtn) addBtn.disabled = urls.length >= 10;
+  }
+
+  adminAutoMapMedia(prodId) {
+    const slug = prodId || document.getElementById('prod-id')?.value?.trim();
+    if (!slug) {
+      this.showToast('Please enter or select a product slug first.');
+      return;
+    }
+
+    const map = {
+      'king-scar': {
+        sku: 'MYTH-EDP-KS-50',
+        bottleImage: 'assets/product/1kingscar.webp',
+        cardImage: 'assets/product/1kingscarbox.webp',
+        backgroundImage: 'assets/hero/kingscarbg.webp',
+        gallery: [
+          'assets/product/1kingscar.webp',
+          'assets/product/1kingscarbox.webp',
+          'assets/hero/kingscarcard.webp',
+          'assets/hero/kingscarbg.webp',
+          'assets/product/1.webp'
+        ]
+      },
+      'petralux': {
+        sku: 'MYTH-EDP-PX-50',
+        bottleImage: 'assets/product/2petralux.webp',
+        cardImage: 'assets/product/2petraluxbox.webp',
+        backgroundImage: 'assets/hero/2bg.webp',
+        gallery: [
+          'assets/product/2petralux.webp',
+          'assets/product/2petraluxbox.webp',
+          'assets/hero/2.webp',
+          'assets/hero/2bg.webp',
+          'assets/product/2.webp'
+        ]
+      },
+      'oud-rion': {
+        sku: 'MYTH-EDP-OR-50',
+        bottleImage: 'assets/product/3oudrion.webp',
+        cardImage: 'assets/product/3oudrionbox.webp',
+        backgroundImage: 'assets/hero/oudrionbg.webp',
+        gallery: [
+          'assets/product/3oudrion.webp',
+          'assets/product/3oudrionbox.webp',
+          'assets/hero/oudrioncard.webp',
+          'assets/hero/oudrionbg.webp',
+          'assets/product/3.webp'
+        ]
+      },
+      'spark': {
+        sku: 'MYTH-EDP-SP-50',
+        bottleImage: 'assets/product/4spark.webp',
+        cardImage: 'assets/product/4sparkbox.webp',
+        backgroundImage: 'assets/hero/sparkbg.webp',
+        gallery: [
+          'assets/product/4spark.webp',
+          'assets/product/4sparkbox.webp',
+          'assets/hero/sparkcard.webp',
+          'assets/hero/sparkbg.webp',
+          'assets/product/4.webp'
+        ]
+      },
+      'wood-sera': {
+        sku: 'MYTH-EDP-WS-50',
+        bottleImage: 'assets/product/5woodsera.webp',
+        cardImage: 'assets/product/5woodserabox.webp',
+        backgroundImage: 'assets/product/5woodserabox.webp',
+        gallery: [
+          'assets/product/5woodsera.webp',
+          'assets/product/5woodserabox.webp',
+          'assets/product/5.webp'
+        ]
+      },
+      'ash': {
+        sku: 'MYTH-EDP-AS-50',
+        bottleImage: 'assets/product/6ash.webp',
+        cardImage: 'assets/product/6ashbox.webp',
+        backgroundImage: 'assets/hero/6bg.webp',
+        gallery: [
+          'assets/product/6ash.webp',
+          'assets/product/6ashbox.webp',
+          'assets/hero/6.webp',
+          'assets/hero/6bg.webp',
+          'assets/product/6.webp'
+        ]
+      },
+      'mytholis-discovery-set': {
+        sku: 'MYTH-SET-6S-48',
+        bottleImage: 'assets/coffret_banner.webp',
+        cardImage: 'assets/product/sixthsense.webp',
+        backgroundImage: 'assets/coffret_banner.webp',
+        gallery: [
+          'assets/coffret_banner.webp',
+          'assets/product/sixthsense.webp',
+          'assets/product/1kingscar.webp',
+          'assets/product/2petralux.webp',
+          'assets/product/3oudrion.webp',
+          'assets/product/4spark.webp',
+          'assets/product/5woodsera.webp',
+          'assets/product/6ash.webp'
+        ]
+      }
+    };
+
+    const mediaObj = map[slug];
+    if (!mediaObj) {
+      this.showToast(`No local asset preset found for slug "${slug}".`);
+      return;
+    }
+
+    const skuInput = document.getElementById('prod-sku');
+    if (skuInput) skuInput.value = mediaObj.sku;
+
+    const bottleInput = document.getElementById('prod-bottle-image');
+    if (bottleInput) {
+      bottleInput.value = mediaObj.bottleImage;
+      const hImg = document.getElementById('prod-image');
+      if (hImg) hImg.value = mediaObj.bottleImage;
+      this.adminUpdateMediaThumb('prod-bottle-preview', mediaObj.bottleImage);
+    }
+
+    const cardInput = document.getElementById('prod-card-image');
+    if (cardInput) {
+      cardInput.value = mediaObj.cardImage;
+      this.adminUpdateMediaThumb('prod-card-preview', mediaObj.cardImage);
+    }
+
+    const bgInput = document.getElementById('prod-bg-image');
+    if (bgInput) {
+      bgInput.value = mediaObj.backgroundImage;
+      this.adminUpdateMediaThumb('prod-bg-preview', mediaObj.backgroundImage);
+    }
+
+    this.adminRenderGallerySlots(mediaObj.gallery);
+    this.showToast(`Mapped canonical local assets for ${slug} (${mediaObj.gallery.length} photos).`);
   }
 
   async updateProductSizePrice(productId, ml, newPrice) {

@@ -347,7 +347,8 @@
    HERO SECTION - 3D FAN ARRAY FLACON HERO (HAUTE PARFUMERIE)
    -------------------------------------------------------------------------- */
 .view-section.home-view,
-.view-section:has(#hero-section) {
+.view-section:has(#hero-section),
+.view-section:has(.hero-section) {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }
@@ -357,7 +358,7 @@
   position: relative;
   min-height: 100vh;
   min-height: 100dvh;
-  padding: 110px 24px 40px;
+  padding: 110px 24px 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -613,7 +614,7 @@ div#cardsRow {
 .subline,
 div#subline {
   position: absolute;
-  bottom: clamp(20px, 4vh, 44px);
+  bottom: clamp(14px, 2.2vh, 26px);
   left: 0;
   right: 0;
   margin: 0 auto;
@@ -622,7 +623,7 @@ div#subline {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(10px, 1.6vh, 15px);
+  gap: clamp(8px, 1.2vh, 12px);
   width: 100%;
   max-width: 100%;
   padding: 0 1.5rem;
@@ -694,7 +695,7 @@ div#subline {
   .cards-row,
   div#cardsRow {
     height: 380px;
-    top: 30%;
+    top: 28%;
   }
 
   .cards-row .card-1, #cardsRow .card-1, .flacon-card.card-1 { width: 175px; height: 300px; left: 2%; top: 30px; }
@@ -706,34 +707,61 @@ div#subline {
 
   .subline,
   div#subline {
-    bottom: clamp(18px, 3.5vh, 36px);
-    gap: 12px;
+    bottom: clamp(12px, 1.8vh, 20px);
+    gap: 8px;
   }
 }
 
-/* Compact Height Scaling for Laptops & Small Desktops */
-@media (min-width: 769px) and (max-height: 740px) {
+/* Compact Height Scaling for Laptops & Small Desktops (769px+) */
+@media (min-width: 769px) and (max-height: 840px) {
   .hero,
   #hero-section {
-    padding-top: calc(75px + var(--announcement-height, 0px));
+    padding-top: calc(72px + var(--announcement-height, 0px));
   }
   .cards-row,
   div#cardsRow {
-    top: 24%;
-    transform: scale(0.88);
+    top: 23%;
+    transform: scale(0.85);
     transform-origin: center top;
   }
   .subline,
   div#subline {
-    bottom: 16px;
-    gap: 8px;
+    bottom: clamp(10px, 1.5vh, 16px);
+    gap: 6px;
   }
   .subline .arrow-pill {
-    padding: 10px 20px 10px 24px;
-    font-size: 12px;
+    padding: 10px 18px 10px 22px;
+    font-size: 11.5px;
+  }
+  .subline .arrow-pill .ar {
+    width: 25px;
+    height: 25px;
   }
   .subline-text {
     font-size: 11px;
+    gap: 6px;
+  }
+}
+
+@media (min-width: 769px) and (max-height: 680px) {
+  .cards-row,
+  div#cardsRow {
+    top: 20%;
+    transform: scale(0.76);
+    transform-origin: center top;
+  }
+  .subline,
+  div#subline {
+    bottom: 8px;
+    gap: 4px;
+  }
+  .subline .arrow-pill {
+    padding: 8px 16px 8px 20px;
+    font-size: 10.5px;
+  }
+  .subline-text {
+    font-size: 10px;
+    gap: 5px;
   }
 }
 
@@ -880,9 +908,9 @@ div#subline {
     bottom: auto !important;
     margin-top: auto !important;
     margin-bottom: 0 !important;
-    padding-top: 14px;
-    padding-bottom: 0;
-    gap: 12px;
+    padding-top: 10px;
+    padding-bottom: clamp(6px, 1.2vh, 12px);
+    gap: 10px;
     width: 100%;
   }
 
@@ -968,8 +996,9 @@ div#subline {
     bottom: auto !important;
     margin-top: auto !important;
     margin-bottom: 0 !important;
-    padding-top: 10px;
-    gap: 10px;
+    padding-top: 8px;
+    padding-bottom: clamp(4px, 1vh, 8px);
+    gap: 8px;
   }
 
   .subline .arrow-pill {
@@ -1556,8 +1585,98 @@ div#subline {
   max-width: 100%;
   object-fit: contain;
   filter: drop-shadow(0 25px 45px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 45px rgba(212, 175, 55, 0.5));
-  transition: transform 0.3s ease-out;
+  transition: opacity 0.25s ease-out, transform 0.3s ease-out;
   border-radius: 16px;
+}
+
+/* ============ LUXURY STOREFRONT PRODUCT GALLERY ============ */
+.product-gallery-thumbnails {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 1.2rem;
+  flex-wrap: wrap;
+  max-width: 100%;
+  padding: 0 0.5rem;
+}
+
+.gallery-thumb-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 10px;
+  background: rgba(4, 24, 18, 0.7);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  padding: 3px;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.gallery-thumb-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  transition: transform 0.3s ease;
+}
+
+.gallery-thumb-btn:hover {
+  border-color: rgba(212, 175, 55, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.7), 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+.gallery-thumb-btn:hover img {
+  transform: scale(1.08);
+}
+
+.gallery-thumb-btn.active {
+  border: 2px solid var(--gold-primary);
+  background: rgba(212, 175, 55, 0.15);
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.55), 0 4px 15px rgba(0, 0, 0, 0.8);
+  transform: scale(1.04);
+}
+
+.gallery-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(4, 24, 18, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  color: var(--gold-light);
+  font-size: 1.4rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  user-select: none;
+}
+
+.gallery-nav-btn:hover {
+  background: var(--gold-primary);
+  color: #041812;
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+}
+
+.gallery-nav-prev {
+  left: 6px;
+}
+
+.gallery-nav-next {
+  right: 6px;
 }
 
 .product-spec-col {
@@ -6662,9 +6781,17 @@ div#subline {
   padding-top: calc(85px + var(--announcement-height, 32px)) !important;
 }
 
+.has-announcement-bar .view-section:has(#hero-section),
+.has-announcement-bar .view-section:has(.hero-section),
+.has-announcement-bar .view-section.home-view {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
 .has-announcement-bar .hero,
 .has-announcement-bar #hero-section {
   padding-top: calc(80px + var(--announcement-height, 32px)) !important;
+  padding-bottom: 0 !important;
 }
 
 /* Tablet & Mobile Layout for Announcement Bar & Navbar */
@@ -6713,9 +6840,17 @@ div#subline {
     padding-top: calc(var(--announcement-height, 28px) + 52px) !important;
   }
 
+  .has-announcement-bar .view-section:has(#hero-section),
+  .has-announcement-bar .view-section:has(.hero-section),
+  .has-announcement-bar .view-section.home-view {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
   .has-announcement-bar .hero,
   .has-announcement-bar #hero-section {
     padding-top: calc(var(--announcement-height, 28px) + 48px) !important;
+    padding-bottom: 0 !important;
   }
 }
 

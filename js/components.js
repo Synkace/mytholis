@@ -987,6 +987,11 @@ const Components = {
     const unitPricePerMl = (currentPrice / currentMl).toFixed(2);
     const detailMythosInfo = store.calculateProductMythos(currentPrice);
 
+    // Extract ordered gallery images (up to 10 photos)
+    const galleryImages = (product.media && Array.isArray(product.media.gallery) && product.media.gallery.length > 0)
+      ? product.media.gallery.filter(Boolean).slice(0, 10)
+      : [product.image || 'assets/product/1kingscar.webp'];
+
     return `
       <div class="container">
         <button class="btn btn-glass" onclick="app.navigateTo('collections')" style="margin-bottom: 2rem; padding: 0.5rem 1.2rem; font-size: 0.75rem;">
@@ -994,17 +999,41 @@ const Components = {
         </button>
 
         <div class="product-detail-layout">
-          <!-- Left: Transparent Product Showcase -->
+          <!-- Left: Interactive Luxury Multi-Photo Product Gallery -->
           <div class="product-showcase-glass liquid-glass-card bottle-pedestal-glow">
             <span class="glass-pill product-card-badge" style="top: 20px; left: 20px;">${product.tag}</span>
-            <div class="transparent-bottle-frame">
-              <img src="${product.image}" alt="${this.cleanText(product.name)}" class="main-bottle-view-img tilt-element" id="transparent-bottle-img" />
+            <div class="transparent-bottle-frame" style="position: relative;">
+              ${galleryImages.length > 1 ? `
+                <button type="button" class="gallery-nav-btn gallery-nav-prev" onclick="app.stepProductGallery(-1)" aria-label="Previous Photo" title="Previous Photo">
+                  ‹
+                </button>
+                <button type="button" class="gallery-nav-btn gallery-nav-next" onclick="app.stepProductGallery(1)" aria-label="Next Photo" title="Next Photo">
+                  ›
+                </button>
+              ` : ''}
+              <img src="${galleryImages[0]}" alt="${this.cleanText(product.name)}" class="main-bottle-view-img tilt-element" id="transparent-bottle-img" />
             </div>
-            <div class="showcase-bottle-caption">
-              Crystal Flacon
+
+            <!-- Gallery Thumbnails (Up to 10 Photos) -->
+            ${galleryImages.length > 1 ? `
+              <div class="product-gallery-thumbnails" id="product-gallery-thumbnails">
+                ${galleryImages.map((img, idx) => `
+                  <button type="button" 
+                          class="gallery-thumb-btn ${idx === 0 ? 'active' : ''}" 
+                          onclick="app.switchProductGalleryImage('${img}', this, ${idx + 1}, ${galleryImages.length})"
+                          title="View Photo ${idx + 1} of ${galleryImages.length}">
+                    <img src="${img}" alt="${this.cleanText(product.name)} view ${idx + 1}" loading="lazy" />
+                  </button>
+                `).join('')}
+              </div>
+            ` : ''}
+
+            <div class="showcase-bottle-caption" id="gallery-photo-caption">
+              ${galleryImages.length > 1 ? `Photo 1 of ${galleryImages.length} · Flacon Edition` : 'Crystal Flacon'}
             </div>
-            <div style="margin-top: 0.4rem;">
+            <div style="margin-top: 0.4rem; display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center;">
               <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-primary);">${product.concentration}</span>
+              ${product.sku ? `<span class="glass-pill" style="font-size: 0.65rem; color: var(--text-muted);">${product.sku}</span>` : ''}
             </div>
           </div>
 
