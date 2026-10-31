@@ -31,7 +31,7 @@ const MYTHOLIS_CATALOG = [
       base: ["Vetiver", "Cedar", "White Musk", "Tonka Bean"]
     },
     sizes: [
-      { ml: 50, price: 3999 },
+      { ml: 50, price: 3499 },
       { ml: 100, price: 5999 }
     ]
   },
@@ -59,7 +59,7 @@ const MYTHOLIS_CATALOG = [
       base: ["Birch", "Musk", "Oakmoss", "Cedarwood", "Amber"]
     },
     sizes: [
-      { ml: 50, price: 3299 },
+      { ml: 50, price: 2799 },
       { ml: 100, price: 4999 }
     ]
   },
@@ -87,7 +87,7 @@ const MYTHOLIS_CATALOG = [
       base: ["Raspberry", "Birch & Geranium", "Amberwood"]
     },
     sizes: [
-      { ml: 50, price: 4599 },
+      { ml: 50, price: 4099 },
       { ml: 100, price: 6999 }
     ]
   },
@@ -115,7 +115,7 @@ const MYTHOLIS_CATALOG = [
       base: ["Vetiver", "Oakmoss", "Iris", "Leather", "Agarwood (Oud)"]
     },
     sizes: [
-      { ml: 50, price: 3699 },
+      { ml: 50, price: 3199 },
       { ml: 100, price: 5499 }
     ]
   },
@@ -143,7 +143,7 @@ const MYTHOLIS_CATALOG = [
       base: ["Praline Accord", "Vanilla", "Guaiac Wood", "Copahu Balm (Copaiba)"]
     },
     sizes: [
-      { ml: 50, price: 3299 },
+      { ml: 50, price: 2799 },
       { ml: 100, price: 4999 }
     ]
   },
@@ -171,7 +171,7 @@ const MYTHOLIS_CATALOG = [
       base: ["Amber", "Vanilla", "Musk"]
     },
     sizes: [
-      { ml: 50, price: 3999 },
+      { ml: 50, price: 3499 },
       { ml: 100, price: 5999 }
     ]
   },

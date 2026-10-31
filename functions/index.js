@@ -18,9 +18,10 @@ import patronDeleteAccountHandler from "./handlers/patron/delete-account.js";
 import razorpayCreateOrderHandler from "./handlers/razorpay/create-order.js";
 import razorpayVerifyPaymentHandler from "./handlers/razorpay/verify-payment.js";
 
-// Permanent server-side secret sanitization
+// Permanent server-side secret sanitization & catalog synchronization
 import { adminDb } from "./handlers/_firebaseAdmin.js";
 import { FieldValue } from "firebase-admin/firestore";
+import { SERVER_CATALOG } from "./catalog.js";
 
 let _settingsSanitized = false;
 async function purgeLegacySecretsFromFirestore() {
@@ -43,6 +44,39 @@ async function purgeLegacySecretsFromFirestore() {
   }
 }
 purgeLegacySecretsFromFirestore().catch(() => {});
+
+let _catalogSynced = false;
+async function syncAuthoritativeCatalogToFirestore() {
+  if (_catalogSynced || !adminDb) return;
+  try {
+    for (const prod of SERVER_CATALOG) {
+      const prodRef = adminDb.collection("products").doc(prod.id);
+      const snap = await prodRef.get();
+      if (snap.exists) {
+        const data = snap.data() || {};
+        const currentSizes = Array.isArray(data.sizes) ? data.sizes : [];
+        const auth50 = prod.sizes.find(s => s.ml === 50);
+        const current50 = currentSizes.find(s => s.ml === 50);
+
+        if (auth50 && (!current50 || current50.price !== auth50.price)) {
+          const updatedSizes = currentSizes.filter(s => s.ml !== 50 && s.ml !== 8);
+          updatedSizes.push(auth50);
+          const auth100 = prod.sizes.find(s => s.ml === 100);
+          if (auth100 && !updatedSizes.some(s => s.ml === 100)) {
+            updatedSizes.push(auth100);
+          }
+          updatedSizes.sort((a, b) => a.ml - b.ml);
+          await prodRef.update({ sizes: updatedSizes });
+          console.log(`[Catalog Sync] Updated 50ml price for ${prod.id} to ₹${auth50.price}`);
+        }
+      }
+    }
+    _catalogSynced = true;
+  } catch (err) {
+    console.warn("[Catalog Sync] Notice during catalog price sync:", err.message);
+  }
+}
+syncAuthoritativeCatalogToFirestore().catch(() => {});
 
 const app = express();
 

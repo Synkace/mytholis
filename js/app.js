@@ -1843,26 +1843,44 @@ class MytholisApp {
       }];
     }
 
-    const promoCode = store.appliedPromoCode || null;
-    const paymentMethod = 'Prepaid (Cards / UPI)';
+    const appliedReward = (typeof store.getAppliedReward === 'function') ? store.getAppliedReward() : null;
+    let promoCode = appliedReward?.code 
+      || store.loyalty?.applied_reward_code 
+      || store.appliedPromoCode 
+      || null;
+
+    if (!promoCode && (!store.user?.orders?.length && !store.loyalty?.promo_dismissed)) {
+      promoCode = 'FIRST20';
+    }
+
+    const activeMethodPill = (typeof document !== 'undefined') ? document.querySelector('.razorpay-method-pill.active') : null;
+    const paymentMethod = activeMethodPill ? activeMethodPill.textContent.trim() : 'Google Pay';
+    const redeemMythos = (store.loyalty && typeof store.loyalty.spendable_mythos === 'number') 
+      ? (store.redeemMythosPoints || store.loyalty.redeem_mythos || 0) 
+      : 0;
 
     this.cachedRazorpayOrderData = null;
 
     // 3. Initiate order creation on backend sending structured items array
-    this.cachedRazorpayOrderPromise = fetch('/api/create-order', {
+    const promise = fetch('/api/create-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         items,
         promoCode,
         paymentMethod,
+        redeemMythos,
+        mythosPoints: redeemMythos,
         currency: 'INR',
         receipt: `MYTH-${Date.now().toString().slice(-6)}`
       })
     })
       .then(res => res.ok ? res.json() : null)
       .then(data => {
-        if (data && data.orderId) {
+        if (data && (data.orderId || data.order_id)) {
+          data._promoCode = promoCode;
+          data._paymentMethod = paymentMethod;
+          data._itemsCount = items.length;
           this.cachedRazorpayOrderData = data;
           return data;
         }
@@ -1872,6 +1890,10 @@ class MytholisApp {
         console.warn('[Razorpay Order Pre-creation Notice]:', err.message);
         return null;
       });
+
+    promise._promoCode = promoCode;
+    promise._paymentMethod = paymentMethod;
+    this.cachedRazorpayOrderPromise = promise;
   }
 
   closeRazorpayModal() {
@@ -1890,6 +1912,78 @@ class MytholisApp {
         codNotice.style.display = 'block';
       } else {
         codNotice.style.display = 'none';
+      }
+    }
+
+    // Invalidate stale order cache whenever payment method changes
+    this.cachedRazorpayOrderData = null;
+    this.cachedRazorpayOrderPromise = null;
+
+    // Dynamically update checkout total and proceed button text
+    this.updateCheckoutModalPrice();
+
+    // Re-create background order for the newly chosen payment method
+    this.precreateRazorpayOrder();
+  }
+
+  updateCheckoutModalPrice() {
+    const isSingleProduct = !!(this.activeProduct && this.activeProduct.id && !store.cart.length);
+    let chosenSize = this.selectedSize || 50;
+    let singlePrice = this.selectedPrice;
+    if (isSingleProduct && this.activeProduct.sizes) {
+      const sObj = this.activeProduct.sizes.find(s => s.ml === chosenSize) || this.activeProduct.sizes[0];
+      chosenSize = sObj.ml;
+      singlePrice = sObj.price;
+    }
+    const baseSubtotal = isSingleProduct ? (singlePrice || this.activeProduct.price) : store.getCartTotal();
+    const appliedReward = isSingleProduct ? null : store.getAppliedReward();
+    const discount = isSingleProduct ? 0 : store.getDiscountAmount(baseSubtotal);
+
+    const activeMethodPill = document.querySelector('.razorpay-method-pill.active');
+    const paymentMethodText = activeMethodPill ? activeMethodPill.textContent.trim().toLowerCase() : 'google pay';
+    const isUPI = paymentMethodText.includes('pay') || paymentMethodText.includes('upi');
+
+    // Non-stackable: UPI discount applies on orders >= ₹2000 only when no promo discount is active
+    const upiDiscount = (!discount && isUPI && baseSubtotal >= 2000) ? 200 : 0;
+    const finalAmount = Math.max(1, baseSubtotal - discount - upiDiscount);
+
+    const finalEl = document.getElementById('checkout-modal-final-total');
+    if (finalEl) finalEl.textContent = store.formatPrice(finalAmount);
+
+    const proceedBtn = document.getElementById('btn-proceed-checkout');
+    if (proceedBtn) proceedBtn.innerHTML = `Proceed to Payment Desk • ${store.formatPrice(finalAmount)}`;
+
+    const badgeEl = document.getElementById('checkout-mode-discount-badge');
+    if (badgeEl) {
+      if (discount > 0) {
+        badgeEl.textContent = `✦ 20% Privilege Active (${appliedReward ? appliedReward.code : 'FIRST20'})`;
+      } else if (isUPI && baseSubtotal >= 2000) {
+        badgeEl.textContent = 'Save ₹200 via Prepaid UPI';
+      } else {
+        badgeEl.textContent = 'Complimentary Armored Delivery';
+      }
+    }
+
+    const breakdownEl = document.getElementById('checkout-modal-breakdown');
+    if (breakdownEl) {
+      if (discount > 0) {
+        breakdownEl.style.display = 'block';
+        breakdownEl.innerHTML = `
+          <div style="display: flex; justify-content: space-between; color: var(--gold-light);">
+            <span>Mythos Privilege (${appliedReward ? appliedReward.code : 'FIRST20'} - 20%):</span>
+            <span>-${store.formatPrice(discount)}</span>
+          </div>
+        `;
+      } else if (upiDiscount > 0) {
+        breakdownEl.style.display = 'block';
+        breakdownEl.innerHTML = `
+          <div style="display: flex; justify-content: space-between; color: #10B981;">
+            <span>Prepaid UPI Instant Discount:</span>
+            <span>-₹200</span>
+          </div>
+        `;
+      } else {
+        breakdownEl.style.display = 'none';
       }
     }
   }
@@ -2174,7 +2268,20 @@ class MytholisApp {
           qty: 1
         }];
 
-    const activePromoCode = store.appliedPromoCode || null;
+    const appliedReward = (typeof store.getAppliedReward === 'function') ? store.getAppliedReward() : null;
+    let activePromoCode = appliedReward?.code 
+      || store.loyalty?.applied_reward_code 
+      || store.appliedPromoCode 
+      || null;
+
+    if (!activePromoCode && (!store.user?.orders?.length && !store.loyalty?.promo_dismissed)) {
+      activePromoCode = 'FIRST20';
+    }
+
+    const redeemMythos = (store.loyalty && typeof store.loyalty.spendable_mythos === 'number') 
+      ? (store.redeemMythosPoints || store.loyalty.redeem_mythos || 0) 
+      : 0;
+
     const customerObj = {
       name: customerName,
       email: customerEmail,
@@ -2195,11 +2302,15 @@ class MytholisApp {
             items: structuredItems,
             promoCode: activePromoCode,
             paymentMethod: 'Cash on Delivery (COD)',
+            redeemMythos: redeemMythos,
+            mythosPoints: redeemMythos,
             customer: customerObj,
             orderData: {
               items: structuredItems,
               promoCode: activePromoCode,
               paymentMethod: 'Cash on Delivery (COD)',
+              redeemMythos: redeemMythos,
+              mythosPoints: redeemMythos,
               customer: customerObj,
               customerName,
               customerPhone,
@@ -2253,11 +2364,20 @@ class MytholisApp {
     let rzpOrderId = null;
     let rzpAmount = 0;
 
-    // Consume pre-created order if ready, or wait with a short timeout, or fetch on demand
+    // Consume pre-created order only if it strictly matches current activePromoCode, paymentMethod, and cart size
     let orderData = null;
-    if (this.cachedRazorpayOrderData && this.cachedRazorpayOrderData.orderId) {
+    if (
+      this.cachedRazorpayOrderData &&
+      (this.cachedRazorpayOrderData.orderId || this.cachedRazorpayOrderData.order_id) &&
+      this.cachedRazorpayOrderData._promoCode === activePromoCode &&
+      this.cachedRazorpayOrderData._paymentMethod === paymentMethod
+    ) {
       orderData = this.cachedRazorpayOrderData;
-    } else if (this.cachedRazorpayOrderPromise) {
+    } else if (
+      this.cachedRazorpayOrderPromise &&
+      this.cachedRazorpayOrderPromise._promoCode === activePromoCode &&
+      this.cachedRazorpayOrderPromise._paymentMethod === paymentMethod
+    ) {
       try {
         orderData = await Promise.race([
           this.cachedRazorpayOrderPromise,
@@ -2268,7 +2388,7 @@ class MytholisApp {
       }
     }
 
-    if (!orderData || !orderData.orderId) {
+    if (!orderData || !(orderData.orderId || orderData.order_id)) {
       try {
         const orderResp = await fetch('/api/create-order', {
           method: 'POST',
@@ -2277,6 +2397,8 @@ class MytholisApp {
             items: structuredItems,
             promoCode: activePromoCode,
             paymentMethod: paymentMethod,
+            redeemMythos: redeemMythos,
+            mythosPoints: redeemMythos,
             customer: customerObj,
             currency: 'INR',
             receipt: `MYTH-${Date.now().toString().slice(-6)}`
@@ -2285,6 +2407,8 @@ class MytholisApp {
 
         if (orderResp.ok) {
           orderData = await orderResp.json();
+          orderData._promoCode = activePromoCode;
+          orderData._paymentMethod = paymentMethod;
         } else {
           const errData = await orderResp.json().catch(() => ({}));
           console.error('[Razorpay Order API Failed]:', errData);
@@ -2300,14 +2424,20 @@ class MytholisApp {
       }
     }
 
-    if (!orderData || !orderData.orderId) {
+    if (!orderData || !(orderData.orderId || orderData.order_id)) {
       restoreProceedBtn();
       this.showToast('Failed to create authoritative order on server.');
       return;
     }
 
-    rzpOrderId = orderData.orderId;
+    rzpOrderId = orderData.order_id || orderData.orderId;
     rzpAmount = orderData.amount;
+    const verifiedTotal = orderData.verifiedTotal || Math.round(rzpAmount / 100);
+
+    // Synchronize proceed button text with server verified total before opening modal
+    if (proceedBtn) {
+      proceedBtn.innerHTML = `Proceed to Payment Desk • ${store.formatPrice(verifiedTotal)}`;
+    }
     if (orderData.key || orderData.keyId) {
       razorpayKey = (orderData.key || orderData.keyId).trim();
     }
@@ -4388,7 +4518,7 @@ class MytholisApp {
         sizes.push({ ml: 48, price: coffretPrice, stock: coffretStock });
       } else {
         if (getChecked('size-enabled-50')) {
-          sizes.push({ ml: 50, price: getNum('size-price-50') || 3999, stock: getNum('size-stock-50') || 50 });
+          sizes.push({ ml: 50, price: getNum('size-price-50') || 3499, stock: getNum('size-stock-50') || 50 });
         }
         if (getChecked('size-enabled-100')) {
           sizes.push({ ml: 100, price: getNum('size-price-100') || 5999, stock: getNum('size-stock-100') || 50 });
@@ -4484,8 +4614,7 @@ class MytholisApp {
       } else {
         if (!Array.isArray(prod.sizes)) {
           prod.sizes = [
-            { ml: 8, price: 899 },
-            { ml: 50, price: 3999 },
+            { ml: 50, price: 3499 },
             { ml: 100, price: prod.price || 5999 }
           ];
         }

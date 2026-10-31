@@ -1968,8 +1968,7 @@ export class FirebaseService {
           await setDoc(prodRef, {
             ...prod,
             sizes: prod.sizes || [
-              { ml: 8, price: 899 },
-              { ml: 50, price: 3999 },
+              { ml: 50, price: 3499 },
               { ml: 100, price: 5999 }
             ],
             stock: prod.stock || 50,
@@ -2001,13 +2000,10 @@ export class FirebaseService {
             if (prod.name && prod.name.includes('<br>')) {
               updates.name = prod.name;
             }
-            if (existingData.sizes && existingData.sizes.some(s => s.ml === 8)) {
+            if (prod.sizes && Array.isArray(prod.sizes)) {
+              updates.sizes = prod.sizes;
+            } else if (existingData.sizes && existingData.sizes.some(s => s.ml === 8)) {
               updates.sizes = existingData.sizes.filter(s => s.ml !== 8);
-            } else if (!existingData.sizes || !existingData.sizes.length || !existingData.sizes.some(s => s.ml === 50)) {
-              updates.sizes = prod.sizes || [
-                { ml: 50, price: 3999 },
-                { ml: 100, price: 5999 }
-              ];
             }
           }
 
@@ -2103,6 +2099,15 @@ export class FirebaseService {
           if (Array.isArray(item.sizes)) {
             // 8ml is not for sale individually, only 50ml and 100ml
             item.sizes = item.sizes.filter(s => s.ml !== 8);
+            // Reconcile 50ml price with authoritative catalog
+            const catMatch = (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []).find(c => c.id === item.id);
+            if (catMatch && Array.isArray(catMatch.sizes)) {
+              const cat50 = catMatch.sizes.find(s => s.ml === 50);
+              const item50 = item.sizes.find(s => s.ml === 50);
+              if (cat50 && item50) {
+                item50.price = cat50.price;
+              }
+            }
           }
         }
         list.push(item);

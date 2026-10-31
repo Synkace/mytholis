@@ -26,7 +26,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { items, promoCode, paymentMethod, customer, notes = {}, mythosPoints, currency = 'INR', receipt, amount } = req.body || {};
+    const { items, promoCode, paymentMethod, customer, notes = {}, mythosPoints, redeemMythos, currency = 'INR', receipt, amount } = req.body || {};
 
     let amountInPaise = 0;
     let finalAmountInRupees = 0;
@@ -35,10 +35,14 @@ export default async function handler(req, res) {
     let discountCode = null;
     let discountAmount = 0;
     let earnedMythos = 0;
+    let promoDiscount = 0;
+    let upiDiscount = 0;
+    let mythosDiscount = 0;
 
     // 1. Support both cart items array (catalog-driven) and direct amount in paise (Step 1 API standard)
     if (Array.isArray(items) && items.length > 0) {
-      const serverCalc = calculateServerOrderTotal(items, promoCode, paymentMethod, mythosPoints);
+      const pointsToRedeem = Number(redeemMythos !== undefined ? redeemMythos : (mythosPoints || 0)) || 0;
+      const serverCalc = calculateServerOrderTotal(items, promoCode, paymentMethod, pointsToRedeem);
       if (!serverCalc.isValid) {
         return res.status(400).json({ error: serverCalc.error || 'Invalid cart items or quantities' });
       }
@@ -49,6 +53,9 @@ export default async function handler(req, res) {
       discountCode = serverCalc.validatedPromoCode || null;
       discountAmount = serverCalc.discountAmount;
       earnedMythos = serverCalc.earnedMythos;
+      promoDiscount = serverCalc.promoDiscount || 0;
+      upiDiscount = serverCalc.upiDiscount || 0;
+      mythosDiscount = serverCalc.mythosDiscount || 0;
     } else if (amount !== undefined && amount !== null && !isNaN(Number(amount))) {
       amountInPaise = Math.round(Number(amount));
       finalAmountInRupees = Math.round(amountInPaise / 100);
@@ -171,7 +178,15 @@ export default async function handler(req, res) {
       currency: data.currency,
       receipt: data.receipt,
       key: keyId,
-      keyId: keyId
+      keyId: keyId,
+      subtotal: subtotal,
+      promoDiscount: promoDiscount,
+      upiDiscount: upiDiscount,
+      mythosDiscount: mythosDiscount,
+      discountAmount: discountAmount,
+      totalDiscount: discountAmount,
+      verifiedTotal: finalAmountInRupees,
+      amountInPaise: amountInPaise
     });
   } catch (err) {
     console.error('[Razorpay Create-Order Exception]:', err);

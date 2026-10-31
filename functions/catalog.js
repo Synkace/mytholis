@@ -12,7 +12,7 @@ export const SERVER_CATALOG = [
     name: "King Scar Extrait de Parfum",
     price: 5999,
     sizes: [
-      { ml: 50, price: 3999 },
+      { ml: 50, price: 3499 },
       { ml: 100, price: 5999 }
     ]
   },
@@ -21,7 +21,7 @@ export const SERVER_CATALOG = [
     name: "Petralux Extrait de Parfum",
     price: 4999,
     sizes: [
-      { ml: 50, price: 3299 },
+      { ml: 50, price: 2799 },
       { ml: 100, price: 4999 }
     ]
   },
@@ -30,7 +30,7 @@ export const SERVER_CATALOG = [
     name: "Oud Rion Extrait de Parfum",
     price: 6999,
     sizes: [
-      { ml: 50, price: 4599 },
+      { ml: 50, price: 4099 },
       { ml: 100, price: 6999 }
     ]
   },
@@ -39,7 +39,7 @@ export const SERVER_CATALOG = [
     name: "Spark Extrait de Parfum",
     price: 5499,
     sizes: [
-      { ml: 50, price: 3699 },
+      { ml: 50, price: 3199 },
       { ml: 100, price: 5499 }
     ]
   },
@@ -48,7 +48,7 @@ export const SERVER_CATALOG = [
     name: "Wood Sera Extrait de Parfum",
     price: 4999,
     sizes: [
-      { ml: 50, price: 3299 },
+      { ml: 50, price: 2799 },
       { ml: 100, price: 4999 }
     ]
   },
@@ -57,7 +57,7 @@ export const SERVER_CATALOG = [
     name: "Ash Extrait de Parfum",
     price: 5999,
     sizes: [
-      { ml: 50, price: 3999 },
+      { ml: 50, price: 3499 },
       { ml: 100, price: 5999 }
     ]
   },
@@ -72,9 +72,13 @@ export const SERVER_CATALOG = [
 ];
 
 export const VALID_PROMO_CODES = {
-  'FIRST20': { type: 'percent', value: 20, maxDiscount: 2500 },
-  'MYTHOLIS10': { type: 'percent', value: 10, maxDiscount: 1500 },
-  'VIP500': { type: 'flat', value: 500, maxDiscount: 500, minOrder: 2500 }
+  'FIRST20': { type: 'percent', value: 20, maxDiscount: 10000 },
+  'WELCOME20': { type: 'percent', value: 20, maxDiscount: 10000 },
+  'MYTHOLIS10': { type: 'percent', value: 10, maxDiscount: 5000 },
+  'LEGEND10': { type: 'percent', value: 10, minOrder: 1999, maxDiscount: 5000 },
+  'VIP500': { type: 'flat', value: 500, maxDiscount: 500, minOrder: 2500 },
+  'ROYAL500': { type: 'flat', value: 500, maxDiscount: 500, minOrder: 3999 },
+  'MYTH-COFFRET-1000': { type: 'flat', value: 1000, maxDiscount: 1000 }
 };
 
 /**
@@ -206,26 +210,31 @@ export function calculateServerOrderTotal(items = [], promoCode = '', paymentMet
   let promoDiscount = 0;
   let appliedPromoCode = null;
   const cleanCode = (promoCode || '').trim().toUpperCase();
-  if (cleanCode && VALID_PROMO_CODES[cleanCode]) {
-    const promo = VALID_PROMO_CODES[cleanCode];
-    if (!promo.minOrder || subtotal >= promo.minOrder) {
-      appliedPromoCode = cleanCode;
-      if (promo.type === 'percent') {
-        promoDiscount = Math.floor(subtotal * (promo.value / 100));
-      } else if (promo.type === 'flat') {
-        promoDiscount = promo.value;
-      }
-      if (promo.maxDiscount) {
-        promoDiscount = Math.min(promoDiscount, promo.maxDiscount);
+  if (cleanCode) {
+    if (cleanCode === 'FIRST20') {
+      appliedPromoCode = 'FIRST20';
+      promoDiscount = Math.floor(subtotal * 0.20);
+    } else if (VALID_PROMO_CODES[cleanCode]) {
+      const promo = VALID_PROMO_CODES[cleanCode];
+      if (!promo.minOrder || subtotal >= promo.minOrder) {
+        appliedPromoCode = cleanCode;
+        if (promo.type === 'percent') {
+          promoDiscount = Math.floor(subtotal * (promo.value / 100));
+        } else if (promo.type === 'flat') {
+          promoDiscount = promo.value;
+        }
+        if (promo.maxDiscount) {
+          promoDiscount = Math.min(promoDiscount, promo.maxDiscount);
+        }
       }
     }
   }
 
-  // 2. UPI Discount (₹200 instant reduction for UPI payments on orders >= ₹2,000)
+  // 2. UPI Discount (₹200 instant reduction for UPI payments on orders >= ₹2,000, active only when no promo code discount is applied)
   let upiDiscount = 0;
-  if (paymentMethod && typeof paymentMethod === 'string') {
+  if (!promoDiscount && paymentMethod && typeof paymentMethod === 'string') {
     const pmLower = paymentMethod.toLowerCase();
-    if ((pmLower.includes('upi') || pmLower.includes('prepaid')) && subtotal >= 2000) {
+    if ((pmLower.includes('upi') || pmLower.includes('prepaid') || pmLower.includes('gpay') || pmLower.includes('google pay') || pmLower.includes('phonepe') || pmLower.includes('paytm')) && subtotal >= 2000) {
       upiDiscount = 200;
     }
   }
@@ -234,7 +243,8 @@ export function calculateServerOrderTotal(items = [], promoCode = '', paymentMet
   let mythosDiscount = 0;
   const pointsClaimed = Math.max(0, Math.floor(Number(mythosPoints) || 0));
   if (pointsClaimed > 0) {
-    const maxConcession = Math.min(Math.floor(subtotal * 0.30), 2500);
+    const remainingAfterDiscounts = Math.max(0, subtotal - promoDiscount - upiDiscount);
+    const maxConcession = Math.min(Math.floor(remainingAfterDiscounts * 0.30), 2500);
     mythosDiscount = Math.min(pointsClaimed, maxConcession);
   }
 
@@ -253,6 +263,7 @@ export function calculateServerOrderTotal(items = [], promoCode = '', paymentMet
     totalDiscount,
     finalAmountInRupees,
     finalTotal: finalAmountInRupees,
+    verifiedTotal: finalAmountInRupees,
     amountInPaise,
     earnedMythos,
     validatedPromoCode: appliedPromoCode,

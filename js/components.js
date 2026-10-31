@@ -3524,7 +3524,11 @@ const Components = {
     const appliedReward = isSingleProduct ? null : store.getAppliedReward();
     const appliedGift = isSingleProduct ? null : store.getAppliedGift();
     const discount = isSingleProduct ? 0 : store.getDiscountAmount(baseSubtotal);
-    const finalAmount = Math.max(0, baseSubtotal - discount);
+
+    // Initial payment mode is UPI (Google Pay active by default)
+    // Non-stackable rule: UPI discount of ₹200 applies on orders >= ₹2,000 only when no promo code discount is active
+    const upiDiscount = (!discount && baseSubtotal >= 2000) ? 200 : 0;
+    const finalAmount = Math.max(1, baseSubtotal - discount - upiDiscount);
     const cleanName = isSingleProduct ? (productOrCart.name || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '';
     const title = isSingleProduct ? `${cleanName} (${chosenSize}ml)` : `Vault Cart (${store.getCartCount()} items)`;
 
@@ -3557,26 +3561,29 @@ const Components = {
               <span style="font-size: 0.75rem; color: var(--text-muted);">Inclusive of 18% GST & Free Express Delivery</span>
             </div>
             <div style="text-align: right;">
-              <span class="gold-text" style="font-size: 1.4rem; font-weight: 700;">${store.formatPrice(finalAmount)}</span>
+              <span id="checkout-modal-final-total" class="gold-text" style="font-size: 1.4rem; font-weight: 700;">${store.formatPrice(finalAmount)}</span>
             </div>
           </div>
 
-          ${discount > 0 || appliedGift ? `
-            <div style="margin-top: 0.8rem; padding-top: 0.6rem; border-top: 1px solid rgba(212, 175, 55, 0.2); font-size: 0.75rem;">
-              ${discount > 0 ? `
-                <div style="display: flex; justify-content: space-between; color: var(--gold-light);">
-                  <span>Mythos Concession (${appliedReward ? appliedReward.code : ''}):</span>
-                  <span>-${store.formatPrice(discount)}</span>
-                </div>
-              ` : ''}
-              ${appliedGift ? `
-                <div style="display: flex; justify-content: space-between; color: var(--gold-light); margin-top: 0.2rem;">
-                  <span>Complimentary Gift Flacon:</span>
-                  <span>${appliedGift.name} (Free)</span>
-                </div>
-              ` : ''}
-            </div>
-          ` : ''}
+          <div id="checkout-modal-breakdown" style="${(discount > 0 || upiDiscount > 0 || appliedGift) ? 'display: block;' : 'display: none;'} margin-top: 0.8rem; padding-top: 0.6rem; border-top: 1px solid rgba(212, 175, 55, 0.2); font-size: 0.75rem;">
+            ${discount > 0 ? `
+              <div style="display: flex; justify-content: space-between; color: var(--gold-light);">
+                <span>Mythos Privilege (${appliedReward ? appliedReward.code : 'FIRST20'} - 20%):</span>
+                <span>-${store.formatPrice(discount)}</span>
+              </div>
+            ` : (upiDiscount > 0 ? `
+              <div style="display: flex; justify-content: space-between; color: #10B981;">
+                <span>Prepaid UPI Instant Discount:</span>
+                <span>-₹200</span>
+              </div>
+            ` : '')}
+            ${appliedGift ? `
+              <div style="display: flex; justify-content: space-between; color: var(--gold-light); margin-top: 0.2rem;">
+                <span>Complimentary Gift Flacon:</span>
+                <span>${appliedGift.name} (Free)</span>
+              </div>
+            ` : ''}
+          </div>
         </div>
 
         <!-- Payment Method Tabs -->
@@ -3585,8 +3592,8 @@ const Components = {
             <h5 style="font-size: 0.85rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; margin: 0;">
               Select Payment Mode
             </h5>
-            <span class="glass-pill" style="font-size: 0.65rem; color: #10B981; border-color: #10B981;">
-              Save ₹200 via Prepaid UPI
+            <span id="checkout-mode-discount-badge" class="glass-pill" style="font-size: 0.65rem; color: #10B981; border-color: #10B981;">
+              ${discount > 0 ? `✦ 20% Privilege Active (${appliedReward ? appliedReward.code : 'FIRST20'})` : 'Save ₹200 via Prepaid UPI'}
             </span>
           </div>
 

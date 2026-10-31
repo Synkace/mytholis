@@ -588,7 +588,7 @@ export const AdminComponents = {
                     const rawSizes = (Array.isArray(prod.sizes) && prod.sizes.length > 0)
                       ? prod.sizes
                       : (catalogMatch && Array.isArray(catalogMatch.sizes) ? catalogMatch.sizes : [
-                          { ml: 50, price: 3999 },
+                          { ml: 50, price: (catalogMatch?.sizes?.find(s => s.ml === 50)?.price) || 3499 },
                           { ml: 100, price: prod.price || 5999 }
                         ]);
                     const prodSizes = isCoffret 
@@ -1230,7 +1230,7 @@ export const AdminComponents = {
         ? prod.sizes
         : (catalogMatch && Array.isArray(catalogMatch.sizes) ? catalogMatch.sizes : [
             { ml: 8, price: 899, stock: 50 },
-            { ml: 50, price: 3999, stock: 50 },
+            { ml: 50, price: (catalogMatch?.sizes?.find(s => s.ml === 50)?.price) || 3499, stock: 50 },
             { ml: 100, price: 5999, stock: 50 }
           ]));
 

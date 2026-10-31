@@ -225,6 +225,11 @@ class MytholisStore {
       this.loyalty.signup_bonus_popup_seen = Boolean(this.loyalty.spendable_mythos > 0 || this.loyalty.legacy_mythos > 0);
     }
 
+    // Auto-apply FIRST20 (20% OFF) for first-time visitors if not explicitly dismissed
+    if (!this.loyalty.applied_reward_code && !this.loyalty.promo_dismissed) {
+      this.loyalty.applied_reward_code = 'FIRST20';
+    }
+
     const defaultUser = {
       isLoggedIn: false,
       name: "",
@@ -825,7 +830,7 @@ class MytholisStore {
           title: '₹1,000 Off 50ml Flacon (Discovery Privilege)',
           type: 'discount',
           amount: 1000,
-          minOrder: 3299,
+          minOrder: 2799,
           requiresFullFlacon: true,
           used: false,
           createdAt: new Date().toISOString()
@@ -903,6 +908,18 @@ class MytholisStore {
     return { success: true, code: uniqueCode, reward: newRewardCode };
   }
 
+  get appliedPromoCode() {
+    return this.getAppliedReward()?.code || this.loyalty?.applied_reward_code || this._appliedPromoCode || null;
+  }
+
+  set appliedPromoCode(val) {
+    this._appliedPromoCode = val;
+    if (this.loyalty) {
+      this.loyalty.applied_reward_code = val;
+      this.syncUserWithLoyalty();
+    }
+  }
+
   applyRewardCode(rawCode) {
     if (!rawCode) return { success: false, error: "Please enter a voucher code." };
     const codeStr = rawCode.trim().toUpperCase();
@@ -973,6 +990,7 @@ class MytholisStore {
     }
 
     this.loyalty.applied_reward_code = existing.code;
+    this.loyalty.promo_dismissed = false;
     this.syncUserWithLoyalty();
     this.notify();
 
@@ -981,6 +999,7 @@ class MytholisStore {
 
   removeAppliedRewardCode() {
     this.loyalty.applied_reward_code = null;
+    this.loyalty.promo_dismissed = true;
     this.syncUserWithLoyalty();
     this.notify();
   }
