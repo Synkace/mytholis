@@ -3,6 +3,139 @@
    Haute Parfumerie Dark Emerald & Liquid Gold 6-Module Operations Desk
    ========================================================================== */
 
+export const CANONICAL_SKU_MAP = {
+  'king-scar': 'MYTH-EDP-KS-100',
+  'petralux': 'MYTH-EDP-PX-100',
+  'oud-rion': 'MYTH-EDP-OR-100',
+  'spark': 'MYTH-EDP-SP-100',
+  'wood-sera': 'MYTH-EDP-WS-100',
+  'ash': 'MYTH-EDP-AS-100',
+  'sixth-sense': 'MYTH-SET-6S-48',
+  'mytholis-discovery-set': 'MYTH-SET-6S-48'
+};
+
+export const CANONICAL_MEDIA_MAP = {
+  'king-scar': {
+    sku: 'MYTH-EDP-KS-50',
+    bottleImage: 'assets/product/1kingscar.webp',
+    cardImage: 'assets/product/1kingscarbox.webp',
+    backgroundImage: 'assets/hero/kingscarbg.webp',
+    gallery: [
+      'assets/product/1kingscar.webp',
+      'assets/product/1kingscarbox.webp',
+      'assets/product/1-1.webp',
+      'assets/product/1-2.webp',
+      'assets/hero/kingscarcard.webp',
+      'assets/hero/kingscarbg.webp'
+    ]
+  },
+  'petralux': {
+    sku: 'MYTH-EDP-PX-50',
+    bottleImage: 'assets/product/2petralux.webp',
+    cardImage: 'assets/product/2petraluxbox.webp',
+    backgroundImage: 'assets/product/2petraluxbox.webp',
+    gallery: [
+      'assets/product/2petralux.webp',
+      'assets/product/2petraluxbox.webp',
+      'assets/product/2-1.webp',
+      'assets/product/2-2.webp'
+    ]
+  },
+  'oud-rion': {
+    sku: 'MYTH-EDP-OR-50',
+    bottleImage: 'assets/product/3oudrion.webp',
+    cardImage: 'assets/product/3oudrionbox.webp',
+    backgroundImage: 'assets/hero/oudrionbg.webp',
+    gallery: [
+      'assets/product/3oudrion.webp',
+      'assets/product/3oudrionbox.webp',
+      'assets/product/3-1.webp',
+      'assets/product/3-2.webp',
+      'assets/hero/oudrioncard.webp',
+      'assets/hero/oudrionbg.webp'
+    ]
+  },
+  'spark': {
+    sku: 'MYTH-EDP-SP-50',
+    bottleImage: 'assets/product/4spark.webp',
+    cardImage: 'assets/product/4sparkbox.webp',
+    backgroundImage: 'assets/hero/sparkbg.webp',
+    gallery: [
+      'assets/product/4spark.webp',
+      'assets/product/4sparkbox.webp',
+      'assets/product/4-1.webp',
+      'assets/product/4-2.webp',
+      'assets/hero/sparkcard.webp',
+      'assets/hero/sparkbg.webp'
+    ]
+  },
+  'wood-sera': {
+    sku: 'MYTH-EDP-WS-50',
+    bottleImage: 'assets/product/5woodsera.webp',
+    cardImage: 'assets/product/5woodserabox.webp',
+    backgroundImage: 'assets/product/5woodserabox.webp',
+    gallery: [
+      'assets/product/5woodsera.webp',
+      'assets/product/5woodserabox.webp',
+      'assets/product/5-1.webp',
+      'assets/product/5-2.webp'
+    ]
+  },
+  'ash': {
+    sku: 'MYTH-EDP-AS-50',
+    bottleImage: 'assets/product/6ash.webp',
+    cardImage: 'assets/product/6ashbox.webp',
+    backgroundImage: 'assets/product/6ashbox.webp',
+    gallery: [
+      'assets/product/6ash.webp',
+      'assets/product/6ashbox.webp',
+      'assets/product/6-1.webp',
+      'assets/product/6-2.webp'
+    ]
+  },
+  'sixth-sense': {
+    sku: 'MYTH-SET-6S-48',
+    bottleImage: 'assets/product/sixthsense.webp',
+    cardImage: 'assets/product/sixthsense.webp',
+    backgroundImage: 'assets/coffret_banner.webp',
+    gallery: [
+      'assets/product/sixthsense.webp',
+      'assets/coffret_banner.webp',
+      'assets/product/7-1.webp',
+      'assets/product/7-2.webp',
+      'assets/product/1kingscar.webp',
+      'assets/product/2petralux.webp',
+      'assets/product/3oudrion.webp',
+      'assets/product/4spark.webp',
+      'assets/product/5woodsera.webp',
+      'assets/product/6ash.webp'
+    ]
+  },
+  'mytholis-discovery-set': {
+    sku: 'MYTH-SET-6S-48',
+    bottleImage: 'assets/product/sixthsense.webp',
+    cardImage: 'assets/product/sixthsense.webp',
+    backgroundImage: 'assets/coffret_banner.webp',
+    gallery: [
+      'assets/product/sixthsense.webp',
+      'assets/coffret_banner.webp',
+      'assets/product/7-1.webp',
+      'assets/product/7-2.webp',
+      'assets/product/1kingscar.webp',
+      'assets/product/2petralux.webp',
+      'assets/product/3oudrion.webp',
+      'assets/product/4spark.webp',
+      'assets/product/5woodsera.webp',
+      'assets/product/6ash.webp'
+    ]
+  }
+};
+
+if (typeof window !== 'undefined') {
+  window.MYTHOLIS_CANONICAL_SKUS = CANONICAL_SKU_MAP;
+  window.MYTHOLIS_CANONICAL_MEDIA = CANONICAL_MEDIA_MAP;
+}
+
 export const AdminComponents = {
   renderAdmin() {
     const currentUser = (typeof firebaseService !== 'undefined' && firebaseService?.currentUser) || store.firebaseUser;
@@ -573,63 +706,100 @@ export const AdminComponents = {
                     <th>Flacon</th>
                     <th>Name & Concentration</th>
                     <th>Category</th>
-                    <th style="min-width: 210px;">Flacon Editions & Sizes (50ml · 100ml)</th>
-                    <th>Base Price (₹)</th>
-                    <th>Stock Count</th>
-                    <th>In Stock</th>
+                    <th style="min-width: 310px;">Variant Pricing & SKUs (100ml Default • 50ml)</th>
+                    <th>Status</th>
                     <th>Batch / Maceration</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   ${productsList.map(prod => {
-                    const catalogMatch = (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []).find(c => c.id === prod.id);
-                    const isCoffret = prod.id === 'mytholis-discovery-set' || (prod.collection && prod.collection.toLowerCase().includes('sixth sense')) || (prod.name && prod.name.toLowerCase().includes('sixth sense'));
-                    const rawSizes = (Array.isArray(prod.sizes) && prod.sizes.length > 0)
-                      ? prod.sizes
-                      : (catalogMatch && Array.isArray(catalogMatch.sizes) ? catalogMatch.sizes : [
-                          { ml: 50, price: (catalogMatch?.sizes?.find(s => s.ml === 50)?.price) || 3499 },
-                          { ml: 100, price: prod.price || 5999 }
-                        ]);
-                    const prodSizes = isCoffret 
-                      ? [{ ml: 48, price: prod.price || 3999 }] 
-                      : rawSizes.filter(s => s.ml !== 8 && s.ml !== 48 && s.ml !== 60);
+                    const catalogMatch = (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []).find(c => c.id === prod.id || c.slug === prod.id || c.sku === prod.sku);
+                    const cleanName = (prod.name || catalogMatch?.name || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+                    const isCoffret = prod.id === 'mytholis-discovery-set' || prod.id === 'sixth-sense' || (prod.collection && prod.collection.toLowerCase().includes('sixth sense')) || (cleanName.toLowerCase().includes('sixth sense'));
+                    const officialSku = prod.sku || catalogMatch?.sku || CANONICAL_SKU_MAP[prod.id] || (isCoffret ? 'MYTH-SET-6S-48' : 'MYTH-EDP-100');
+
+                    // Resolve 100ml (default), 50ml, and 48ml variants
+                    const v100 = prod.variants?.['100ml'] || catalogMatch?.variants?.['100ml'] || (Array.isArray(prod.sizes) ? prod.sizes.find(s => s.ml === 100) : null) || {
+                      sku: prod.sku || `MYTH-EDP-${prod.id.slice(0, 2).toUpperCase()}-100`,
+                      salePrice: Number(prod.pricing?.salePrice ?? prod.salePrice ?? prod.price ?? 5999),
+                      mrp: Number(prod.pricing?.mrp ?? prod.compareAtPrice ?? prod.mrp ?? 7499),
+                      stock: prod.inventory?.stock ?? prod.stock ?? 50
+                    };
+                    const v50 = prod.variants?.['50ml'] || catalogMatch?.variants?.['50ml'] || (Array.isArray(prod.sizes) ? prod.sizes.find(s => s.ml === 50) : null) || {
+                      sku: `MYTH-EDP-${prod.id.slice(0, 2).toUpperCase()}-50`,
+                      salePrice: Math.round(Number(v100.salePrice || 5999) * 0.58),
+                      mrp: Math.round(Number(v100.mrp || 7499) * 0.58),
+                      stock: 50
+                    };
+                    const v48 = prod.variants?.['48ml'] || catalogMatch?.variants?.['48ml'] || (Array.isArray(prod.sizes) ? prod.sizes.find(s => s.ml === 48) : null) || {
+                      sku: 'MYTH-SET-6S-48',
+                      salePrice: Number(prod.pricing?.salePrice ?? prod.salePrice ?? prod.price ?? 3999),
+                      mrp: Number(prod.pricing?.mrp ?? prod.compareAtPrice ?? prod.mrp ?? 4999),
+                      stock: prod.inventory?.stock ?? prod.stock ?? 50
+                    };
+
+                    const media = prod.media || catalogMatch?.media || CANONICAL_MEDIA_MAP[prod.id] || {};
+                    const bottleImg = media.bottleImage || prod.image || (isCoffret ? 'assets/product/sixthsense.webp' : (CANONICAL_MEDIA_MAP[prod.id]?.bottleImage || 'assets/product/1kingscar.webp'));
 
                     return `
                     <tr>
                       <td>
-                        <img src="${prod.image || 'assets/product/1kingscar.webp'}" class="sovereign-table-img" alt="${(prod.name || '').replace(/<[^>]*>/g, ' ').replace(/"/g, '&quot;').trim()}" />
+                        <img src="${bottleImg}" class="sovereign-table-img" alt="${cleanName.replace(/"/g, '&quot;')}" onerror="this.src='${isCoffret ? 'assets/product/sixthsense.webp' : 'assets/product/1kingscar.webp'}'" />
                       </td>
                       <td>
-                        <strong style="color: var(--gold-light); font-size: 0.95rem;">${isCoffret ? 'Sixth Sense' : prod.name}</strong>
-                        <div style="font-size: 0.75rem; color: var(--gold-primary);">${isCoffret ? 'Extrait de Parfum (6 × 8ml Deluxe Vials)' : (prod.concentration || 'Extrait de Parfum (40%)')}</div>
+                        <strong style="color: var(--gold-light); font-size: 0.95rem;">${isCoffret ? 'Sixth Sense' : cleanName}</strong>
+                        <div style="font-size: 0.72rem; color: var(--gold-primary); margin-top: 0.15rem;">
+                          ${isCoffret ? 'Extrait de Parfum (6 × 8ml Deluxe Vials • 40% Concentration)' : (prod.concentration || 'Extrait de Parfum (40% Concentration)')}
+                        </div>
+                        <span class="glass-pill" style="font-size: 0.68rem; margin-top: 0.3rem; display: inline-block; color: var(--gold-light); border-color: rgba(212, 175, 55, 0.4); background: rgba(212, 175, 55, 0.08);">
+                          ${isCoffret ? '6 × 8ml Coffret (48ml)' : '100ml Default • 50ml Signature'}
+                        </span>
                       </td>
                       <td>
-                        <span class="glass-pill" style="font-size: 0.7rem; color: var(--text-muted);">${prod.collection || prod.subtitle || 'Signature'}</span>
+                        <span class="glass-pill" style="font-size: 0.7rem; color: var(--text-muted);">${prod.category || prod.collection || prod.subtitle || 'Signature'}</span>
                       </td>
                       <td>
-                        <div style="display: flex; flex-direction: column; gap: 0.35rem; min-width: 200px;">
-                          ${prodSizes.map(s => `
-                            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0, 0, 0, 0.35); padding: 0.22rem 0.5rem; border-radius: 6px; border: 1px solid ${s.ml === 100 || isCoffret ? 'rgba(212, 175, 55, 0.4)' : 'rgba(255, 255, 255, 0.12)'};">
-                              <span style="font-size: 0.72rem; font-weight: 700; color: ${s.ml === 100 || isCoffret ? 'var(--gold-light)' : 'var(--text-main)'};">
-                                ${isCoffret || s.ml === 48 || s.ml === 60 ? '6 × 8ml (48ml)' : `${s.ml}ml`}
-                              </span>
-                              <div style="display: flex; align-items: center; gap: 0.25rem;">
-                                <span style="font-size: 0.7rem; color: var(--text-muted);">₹</span>
-                                <input type="number" class="sovereign-inline-input" style="width: 78px; padding: 0.18rem 0.35rem; font-size: 0.78rem; text-align: right;" 
-                                       value="${s.price || 0}" 
-                                       title="Edit ${s.ml}ml price for ${(prod.name || '').replace(/<[^>]*>/g, ' ').replace(/"/g, '&quot;').trim()}"
-                                       onchange="app.updateProductSizePrice('${prod.id}', ${isCoffret ? 48 : s.ml}, this.value)" />
+                        ${isCoffret ? `
+                          <div style="background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 6px; padding: 0.45rem 0.75rem; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;">
+                            <div style="display: flex; align-items: center; gap: 0.4rem;">
+                              <span class="glass-pill" style="font-size: 0.68rem; font-weight: 700; color: #FFF1C5; background: rgba(212, 175, 55, 0.25); border-color: var(--gold-primary);">6 × 8ML</span>
+                              <span style="font-family: monospace; font-size: 0.75rem; color: var(--gold-light); font-weight: 600;">${v48.sku}</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                              <strong style="color: var(--gold-light); font-size: 0.85rem;">₹${Number(v48.salePrice).toLocaleString('en-IN')}</strong>
+                              <span style="font-size: 0.7rem; color: var(--text-muted); text-decoration: line-through;">MRP ₹${Number(v48.mrp).toLocaleString('en-IN')}</span>
+                              <span class="glass-pill" style="font-size: 0.65rem; color: ${Number(v48.stock) <= 5 ? '#EF4444' : 'var(--gold-primary)'};">Stock: ${v48.stock}</span>
+                            </div>
+                          </div>
+                        ` : `
+                          <div style="display: flex; flex-direction: column; gap: 0.35rem; min-width: 290px;">
+                            <!-- Row 1: 100ML (Default) -->
+                            <div style="background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.45); border-radius: 6px; padding: 0.35rem 0.6rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                              <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                <span class="glass-pill" style="font-size: 0.65rem; font-weight: 800; color: #FFF1C5; background: rgba(212, 175, 55, 0.25); border-color: var(--gold-primary);">100ML ★ DEFAULT</span>
+                                <span style="font-family: monospace; font-size: 0.72rem; color: var(--gold-light); font-weight: 600;">${v100.sku}</span>
+                              </div>
+                              <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                <strong style="color: var(--gold-light); font-size: 0.82rem;">₹${Number(v100.salePrice).toLocaleString('en-IN')}</strong>
+                                <span style="font-size: 0.68rem; color: var(--text-muted); text-decoration: line-through;">MRP ₹${Number(v100.mrp).toLocaleString('en-IN')}</span>
+                                <span class="glass-pill" style="font-size: 0.65rem; color: ${Number(v100.stock) <= 5 ? '#EF4444' : 'var(--gold-primary)'};">Stock: ${v100.stock}</span>
                               </div>
                             </div>
-                          `).join('')}
-                        </div>
-                      </td>
-                      <td>
-                        <input type="number" class="sovereign-inline-input" value="${prod.price || 0}" onchange="app.updateProductInline('${prod.id}', 'price', this.value)" />
-                      </td>
-                      <td>
-                        <input type="number" class="sovereign-inline-input" value="${prod.stock !== undefined ? prod.stock : 50}" onchange="app.updateProductInline('${prod.id}', 'stock', this.value)" style="color: ${(prod.stock !== undefined ? prod.stock : 50) <= 5 ? '#EF4444' : 'var(--gold-light)'};" />
+                            <!-- Row 2: 50ML -->
+                            <div style="background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(212, 175, 55, 0.22); border-radius: 6px; padding: 0.35rem 0.6rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                              <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                <span class="glass-pill" style="font-size: 0.65rem; font-weight: 600; color: var(--text-muted);">50ML</span>
+                                <span style="font-family: monospace; font-size: 0.72rem; color: var(--text-muted);">${v50.sku}</span>
+                              </div>
+                              <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                <strong style="color: var(--gold-light); font-size: 0.82rem;">₹${Number(v50.salePrice).toLocaleString('en-IN')}</strong>
+                                <span style="font-size: 0.68rem; color: var(--text-muted); text-decoration: line-through;">MRP ₹${Number(v50.mrp).toLocaleString('en-IN')}</span>
+                                <span class="glass-pill" style="font-size: 0.65rem; color: ${Number(v50.stock) <= 5 ? '#EF4444' : 'var(--gold-primary)'};">Stock: ${v50.stock}</span>
+                              </div>
+                            </div>
+                          </div>
+                        `}
                       </td>
                       <td>
                         <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.6rem; border-color: ${prod.inStock !== false ? '#10B981' : '#EF4444'}; color: ${prod.inStock !== false ? '#6EE7B7' : '#FCA5A5'};" onclick="app.updateProductInline('${prod.id}', 'inStock', ${prod.inStock === false ? 'true' : 'false'})">
@@ -1219,133 +1389,285 @@ export const AdminComponents = {
 
   /* Product Modal (Create / Edit) */
   renderProductModal(prod = null) {
-    const isEdit = Boolean(prod && prod.id);
-    const catalogMatch = prod && prod.id ? (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []).find(c => c.id === prod.id) : null;
-    const isCoffret = (prod && prod.id === 'mytholis-discovery-set') || 
-                      (prod && (prod.collection?.toLowerCase().includes('sixth sense') || prod.name?.toLowerCase().includes('sixth sense') || prod.id?.includes('coffret') || prod.id?.includes('discovery')));
+    const isEdit = Boolean(prod && (prod.id || prod.slug || prod.sku));
+    const cleanId = prod ? String(prod.slug || prod.id || '').trim().toLowerCase() : '';
+    const catalogMatch = cleanId 
+      ? (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []).find(c => 
+          String(c.id).toLowerCase() === cleanId || 
+          String(c.slug).toLowerCase() === cleanId || 
+          (prod.sku && String(c.sku).toUpperCase() === String(prod.sku).toUpperCase())
+        ) 
+      : null;
 
-    const sizes = isCoffret 
-      ? [{ ml: 48, price: prod?.price || 3999, stock: prod?.stock !== undefined ? prod.stock : 50 }]
-      : ((prod && Array.isArray(prod.sizes) && prod.sizes.length > 0)
-        ? prod.sizes
-        : (catalogMatch && Array.isArray(catalogMatch.sizes) ? catalogMatch.sizes : [
-            { ml: 8, price: 899, stock: 50 },
-            { ml: 50, price: (catalogMatch?.sizes?.find(s => s.ml === 50)?.price) || 3499, stock: 50 },
-            { ml: 100, price: 5999, stock: 50 }
-          ]));
+    const canonicalMedia = (cleanId && CANONICAL_MEDIA_MAP[cleanId]) || 
+                           (catalogMatch?.id && CANONICAL_MEDIA_MAP[catalogMatch.id]) || 
+                           null;
+    const canonicalSku = (cleanId && CANONICAL_SKU_MAP[cleanId]) || 
+                         (catalogMatch?.id && CANONICAL_SKU_MAP[catalogMatch.id]) || 
+                         '';
 
-    const s8 = sizes.find(s => s.ml === 8);
-    const s50 = sizes.find(s => s.ml === 50);
-    const s100 = sizes.find(s => s.ml === 100);
-    const otherSizes = isCoffret ? [] : sizes.filter(s => s.ml !== 8 && s.ml !== 50 && s.ml !== 100 && s.ml !== 48 && s.ml !== 60);
+    const isCoffret = cleanId === 'mytholis-discovery-set' || 
+                      cleanId === 'sixth-sense' || 
+                      (prod && (prod.collection?.toLowerCase().includes('sixth sense') || 
+                               prod.name?.toLowerCase().includes('sixth sense') || 
+                               cleanId.includes('coffret') || 
+                               cleanId.includes('discovery')));
 
-    const p = prod || {
-      id: '',
-      sku: '',
-      name: '',
-      tagline: '',
-      collection: 'Signature Men',
-      price: s100 ? s100.price : (s50 ? s50.price : 4999),
-      compareAtPrice: 5999,
-      stock: 50,
-      inStock: true,
-      concentration: 'Extrait de Parfum (40% Concentration)',
-      batchCode: 'MYTH-2026-X01',
-      macerationDate: 'March 2026',
-      image: 'assets/product/1kingscar.webp',
-      media: {
-        bottleImage: 'assets/product/1kingscar.webp',
-        cardImage: 'assets/product/1kingscarbox.webp',
-        backgroundImage: 'assets/hero/kingscarbg.webp',
-        gallery: ['assets/product/1kingscar.webp', 'assets/product/1kingscarbox.webp']
-      },
-      description: '',
-      notesTop: 'Bergamot, Pink Pepper',
-      notesHeart: 'Lavender, Rose',
-      notesBase: 'Vetiver, Amber, Musk',
-      accords: 'Aromatic, Spicy, Woody'
-    };
+    const cleanName = (prod?.name || catalogMatch?.name || (isCoffret ? 'Sixth Sense' : (isEdit ? cleanId : '')))
+      .replace(/<[^>]*>/g, '')
+      .replace(/Extrait\s*de\s*Parfum/gi, '')
+      .trim();
 
-    const media = (p && p.media) ? p.media : {
-      bottleImage: p.image || (catalogMatch?.media?.bottleImage) || 'assets/product/1kingscar.webp',
-      cardImage: (catalogMatch?.media?.cardImage) || p.image || 'assets/product/1kingscarbox.webp',
-      backgroundImage: (catalogMatch?.media?.backgroundImage) || 'assets/hero/kingscarbg.webp',
-      gallery: (p.gallery && Array.isArray(p.gallery)) ? p.gallery : (catalogMatch?.media?.gallery || [p.image || 'assets/product/1kingscar.webp'])
-    };
-    const galleryList = (Array.isArray(media.gallery) && media.gallery.length > 0)
-      ? media.gallery.filter(Boolean).slice(0, 10)
-      : [media.bottleImage || p.image || 'assets/product/1kingscar.webp'];
+    const officialSku = prod?.sku || canonicalSku || catalogMatch?.sku || '';
+    const tagline = prod?.tagline || prod?.subtitle || catalogMatch?.tagline || catalogMatch?.subtitle || '';
+    const category = prod?.category || prod?.collection || catalogMatch?.category || catalogMatch?.collection || (isCoffret ? 'Discovery Wardrobe · Unisex' : 'Woody · Men');
+
+    // Resolve 100ml (default), 50ml, and 48ml variants
+    const v100Data = prod?.variants?.['100ml'] || 
+                     catalogMatch?.variants?.['100ml'] || 
+                     (Array.isArray(prod?.sizes) ? prod.sizes.find(s => s.ml === 100) : null) || 
+                     (Array.isArray(catalogMatch?.sizes) ? catalogMatch.sizes.find(s => s.ml === 100) : null);
+
+    const v50Data = prod?.variants?.['50ml'] || 
+                    catalogMatch?.variants?.['50ml'] || 
+                    (Array.isArray(prod?.sizes) ? prod.sizes.find(s => s.ml === 50) : null) || 
+                    (Array.isArray(catalogMatch?.sizes) ? catalogMatch.sizes.find(s => s.ml === 50) : null);
+
+    const v48Data = prod?.variants?.['48ml'] || 
+                    catalogMatch?.variants?.['48ml'] || 
+                    (Array.isArray(prod?.sizes) ? prod.sizes.find(s => s.ml === 48) : null) || 
+                    (Array.isArray(catalogMatch?.sizes) ? catalogMatch.sizes.find(s => s.ml === 48) : null);
+
+    const shortCode = cleanId === 'king-scar' ? 'KS' :
+                      cleanId === 'petralux' ? 'PX' :
+                      cleanId === 'oud-rion' ? 'OR' :
+                      cleanId === 'spark' ? 'SP' :
+                      cleanId === 'wood-sera' ? 'WS' :
+                      cleanId === 'ash' ? 'AS' : 'FL';
+
+    const sku100 = v100Data?.sku || prod?.sku || `MYTH-EDP-${shortCode}-100`;
+    const price100 = Number(v100Data?.salePrice ?? v100Data?.price ?? prod?.pricing?.salePrice ?? prod?.price ?? (catalogMatch?.pricing?.salePrice ?? catalogMatch?.price ?? 5999));
+    const mrp100 = Number(v100Data?.mrp ?? prod?.pricing?.mrp ?? prod?.compareAtPrice ?? (catalogMatch?.pricing?.mrp ?? catalogMatch?.compareAtPrice ?? 7499));
+    const stock100 = Number(v100Data?.stock ?? prod?.inventory?.stock ?? prod?.stock ?? 50);
+
+    const sku50 = v50Data?.sku || `MYTH-EDP-${shortCode}-50`;
+    const price50 = Number(v50Data?.salePrice ?? v50Data?.price ?? (catalogMatch?.variants?.['50ml']?.salePrice ?? Math.round(price100 * 0.58)));
+    const mrp50 = Number(v50Data?.mrp ?? (catalogMatch?.variants?.['50ml']?.mrp ?? Math.round(mrp100 * 0.58)));
+    const stock50 = Number(v50Data?.stock ?? 50);
+
+    const sku48 = v48Data?.sku || prod?.sku || 'MYTH-SET-6S-48';
+    const price48 = Number(v48Data?.salePrice ?? v48Data?.price ?? prod?.pricing?.salePrice ?? prod?.price ?? 3999);
+    const mrp48 = Number(v48Data?.mrp ?? prod?.pricing?.mrp ?? prod?.compareAtPrice ?? 4999);
+    const stock48 = Number(v48Data?.stock ?? prod?.inventory?.stock ?? prod?.stock ?? 50);
+
+    const concentration = prod?.concentration || catalogMatch?.concentration || (isCoffret ? 'Extrait de Parfum (6 × 8ml Deluxe Vials • 40% Concentration)' : 'Extrait de Parfum (40% Concentration)');
+    const batchCode = prod?.batchCode || catalogMatch?.batchCode || 'MYTH-2026-X01';
+    const macerationDate = prod?.macerationDate || catalogMatch?.macerationDate || 'March 2026';
+
+    // Primary Assets
+    const bottleImage = prod?.media?.bottleImage || 
+                        prod?.bottleImage || 
+                        prod?.image || 
+                        canonicalMedia?.bottleImage || 
+                        catalogMatch?.media?.bottleImage || 
+                        (isEdit ? '' : 'assets/product/1kingscar.webp');
+
+    const cardImage = prod?.media?.cardImage || 
+                      prod?.cardImage || 
+                      canonicalMedia?.cardImage || 
+                      catalogMatch?.media?.cardImage || 
+                      (isEdit ? '' : 'assets/product/1kingscarbox.webp');
+
+    const backgroundImage = prod?.media?.backgroundImage || 
+                            prod?.backgroundImage || 
+                            canonicalMedia?.backgroundImage || 
+                            catalogMatch?.media?.backgroundImage || 
+                            (isEdit ? '' : 'assets/hero/kingscarbg.webp');
+
+    // Storefront Multi-Photo Carousel Gallery (up to 10 photos)
+    const rawGallery = prod?.media?.gallery || 
+                       prod?.gallery || 
+                       canonicalMedia?.gallery || 
+                       catalogMatch?.media?.gallery || 
+                       [];
+    const galleryList = (Array.isArray(rawGallery) && rawGallery.length > 0)
+      ? rawGallery.filter(Boolean).slice(0, 10)
+      : (isEdit 
+          ? [bottleImage, cardImage].filter(Boolean) 
+          : ['assets/product/1kingscar.webp']);
+
+    // Olfactory Notes & Pyramids
+    const topNotes = Array.isArray(prod?.olfactory?.top) 
+      ? prod.olfactory.top.join(', ')
+      : (Array.isArray(prod?.notes?.top) 
+          ? prod.notes.top.join(', ')
+          : (prod?.notesTop || catalogMatch?.notesTop || (Array.isArray(catalogMatch?.olfactory?.top) ? catalogMatch.olfactory.top.join(', ') : '') || (isEdit ? '' : 'Bergamot, Pink Pepper')));
+
+    const heartNotes = Array.isArray(prod?.olfactory?.heart) 
+      ? prod.olfactory.heart.join(', ')
+      : (Array.isArray(prod?.notes?.heart) 
+          ? prod.notes.heart.join(', ')
+          : (prod?.notesHeart || catalogMatch?.notesHeart || (Array.isArray(catalogMatch?.olfactory?.heart) ? catalogMatch.olfactory.heart.join(', ') : '') || (isEdit ? '' : 'Lavender, Rose')));
+
+    const baseNotes = Array.isArray(prod?.olfactory?.base) 
+      ? prod.olfactory.base.join(', ')
+      : (Array.isArray(prod?.notes?.base) 
+          ? prod.notes.base.join(', ')
+          : (prod?.notesBase || catalogMatch?.notesBase || (Array.isArray(catalogMatch?.olfactory?.base) ? catalogMatch.olfactory.base.join(', ') : '') || (isEdit ? '' : 'Vetiver, Amber, Musk')));
+
+    const accords = Array.isArray(prod?.olfactory?.accords) 
+      ? prod.olfactory.accords.join(', ')
+      : (Array.isArray(prod?.accords) 
+          ? prod.accords.join(', ')
+          : (prod?.accords || catalogMatch?.accords || (Array.isArray(catalogMatch?.olfactory?.accords) ? catalogMatch.olfactory.accords.join(', ') : '') || (isEdit ? '' : 'Aromatic, Spicy, Woody')));
+
+    const description = prod?.description || catalogMatch?.description || '';
 
     return `
       <div class="sovereign-modal-backdrop" onclick="if(event.target === this) app.closeAdminModal()">
         <div class="sovereign-modal-box">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.8rem;">
             <h3 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.3rem;">
-              ${isEdit ? `Edit Extrait: ${p.name}` : 'Inscribe New Fragrance Extrait'}
+              ${isEdit ? `EDIT FRAGRANCE EXTRAIT — ${cleanName.toUpperCase()}` : 'INSCRIBE NEW FRAGRANCE EXTRAIT'}
             </h3>
-            <button class="icon-btn" onclick="app.closeAdminModal()" style="font-size: 1.2rem; color: var(--gold-light);">✕</button>
+            <button type="button" class="icon-btn" onclick="app.closeAdminModal()" style="font-size: 1.2rem; color: var(--gold-light);">✕</button>
           </div>
 
-          <form onsubmit="app.saveAdminProduct(event, '${isEdit ? p.id : ''}')">
+          <form onsubmit="app.saveAdminProduct(event, '${isEdit ? cleanId : ''}')">
             <div class="sovereign-form-grid">
               <div>
                 <label class="sovereign-field-label">Flacon Slug / ID</label>
-                <input type="text" id="prod-id" class="sovereign-form-input" value="${p.id}" ${isEdit ? 'readonly style="opacity: 0.6;"' : 'required'} placeholder="e.g. oud-noir" />
+                <input type="text" id="prod-id" class="sovereign-form-input" value="${cleanId}" ${isEdit ? 'readonly style="opacity: 0.7; cursor: not-allowed; background: rgba(255,255,255,0.05);"' : 'required'} placeholder="e.g. oud-rion" />
               </div>
               <div>
                 <label class="sovereign-field-label">Extrait Name</label>
-                <input type="text" id="prod-name" class="sovereign-form-input" value="${p.name}" required placeholder="e.g. Oud Noir Extrait de Parfum" />
+                <input type="text" id="prod-name" class="sovereign-form-input" value="${cleanName}" required placeholder="e.g. Oud Rion Extrait de Parfum" />
               </div>
               <div>
-                <label class="sovereign-field-label">Tagline</label>
-                <input type="text" id="prod-tagline" class="sovereign-form-input" value="${p.tagline || ''}" placeholder="A commanding presence..." />
+                <label class="sovereign-field-label">Tagline / Subtitle</label>
+                <input type="text" id="prod-tagline" class="sovereign-form-input" value="${tagline}" placeholder="A commanding presence..." />
               </div>
               <div>
                 <label class="sovereign-field-label">Collection / Category</label>
-                <input type="text" id="prod-collection" class="sovereign-form-input" value="${p.collection || p.subtitle || 'Aromatic · Men'}" />
-              </div>
-              <div>
-                <label class="sovereign-field-label">Base Reference Price (₹)</label>
-                <input type="number" id="prod-price" class="sovereign-form-input" value="${p.price || 4999}" min="0" required />
-              </div>
-              <div>
-                <label class="sovereign-field-label">Compare At / MRP (₹)</label>
-                <input type="number" id="prod-compare-price" class="sovereign-form-input" value="${p.compareAtPrice || 5999}" min="0" />
-              </div>
-              <div>
-                <label class="sovereign-field-label">Global Stock Quantity</label>
-                <input type="number" id="prod-stock" class="sovereign-form-input" value="${p.stock !== undefined ? p.stock : 50}" min="0" required />
+                <input type="text" id="prod-collection" class="sovereign-form-input" value="${category}" placeholder="e.g. Woody · Men" />
               </div>
               <div>
                 <label class="sovereign-field-label">Concentration</label>
-                <input type="text" id="prod-concentration" class="sovereign-form-input" value="${p.concentration || 'Extrait de Parfum (40% Concentration)'}" />
+                <input type="text" id="prod-concentration" class="sovereign-form-input" value="${concentration}" placeholder="Extrait de Parfum (40% Concentration)" />
               </div>
               <div>
                 <label class="sovereign-field-label">Batch Code</label>
-                <input type="text" id="prod-batch" class="sovereign-form-input" value="${p.batchCode || 'MYTH-2026-X01'}" />
+                <input type="text" id="prod-batch" class="sovereign-form-input" value="${batchCode}" placeholder="MYTH-2026-X01" />
               </div>
               <div>
                 <label class="sovereign-field-label">Maceration Date</label>
-                <input type="text" id="prod-maceration" class="sovereign-form-input" value="${p.macerationDate || 'March 2026'}" />
-              </div>
-              <div>
-                <label class="sovereign-field-label">Official SKU Code</label>
-                <input type="text" id="prod-sku" class="sovereign-form-input" value="${p.sku || catalogMatch?.sku || ''}" placeholder="e.g. MYTH-EDP-KS-50" />
+                <input type="text" id="prod-maceration" class="sovereign-form-input" value="${macerationDate}" placeholder="March 2026" />
               </div>
               <div>
                 <label class="sovereign-field-label">Primary Bottle Image URL</label>
-                <input type="text" id="prod-bottle-image" class="sovereign-form-input" value="${media.bottleImage || p.image || 'assets/product/1kingscar.webp'}" oninput="document.getElementById('prod-image').value = this.value; if(window.app) app.adminUpdateMediaThumb('prod-bottle-preview', this.value);" required />
-                <input type="hidden" id="prod-image" value="${media.bottleImage || p.image || 'assets/product/1kingscar.webp'}" />
+                <input type="text" id="prod-bottle-image" class="sovereign-form-input" value="${bottleImage}" oninput="document.getElementById('prod-image').value = this.value; if(window.app) app.adminUpdateMediaThumb('prod-bottle-preview', this.value);" required placeholder="assets/product/..." />
+                <input type="hidden" id="prod-image" value="${bottleImage}" />
               </div>
               <div>
                 <label class="sovereign-field-label">Packaging / Box Image URL</label>
-                <input type="text" id="prod-card-image" class="sovereign-form-input" value="${media.cardImage || ''}" oninput="if(window.app) app.adminUpdateMediaThumb('prod-card-preview', this.value);" placeholder="assets/product/1kingscarbox.webp" />
+                <input type="text" id="prod-card-image" class="sovereign-form-input" value="${cardImage}" oninput="if(window.app) app.adminUpdateMediaThumb('prod-card-preview', this.value);" placeholder="assets/product/...box.webp" />
               </div>
               <div>
                 <label class="sovereign-field-label">Atmosphere / Background URL</label>
-                <input type="text" id="prod-bg-image" class="sovereign-form-input" value="${media.backgroundImage || ''}" oninput="if(window.app) app.adminUpdateMediaThumb('prod-bg-preview', this.value);" placeholder="assets/hero/kingscarbg.webp" />
+                <input type="text" id="prod-bg-image" class="sovereign-form-input" value="${backgroundImage}" oninput="if(window.app) app.adminUpdateMediaThumb('prod-bg-preview', this.value);" placeholder="assets/hero/...bg.webp" />
               </div>
             </div>
+
+            <!-- FLACON EDITIONS & VOLUME PRICING (100ML • 50ML) -->
+            ${isCoffret ? `
+              <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.45); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.35);">
+                <div style="font-size: 0.78rem; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 0.8rem;">
+                  ✦ Sixth Sense Discovery Coffret Edition (6 × 8ml = 48ml)
+                </div>
+                <div class="sovereign-form-grid" style="margin-bottom: 0;">
+                  <div>
+                    <label class="sovereign-field-label">Official SKU Code</label>
+                    <input type="text" id="prod-sku-48" class="sovereign-form-input" value="${sku48}" placeholder="MYTH-SET-6S-48" required />
+                  </div>
+                  <div>
+                    <label class="sovereign-field-label">Sale Price (₹)</label>
+                    <input type="number" id="prod-price-48" class="sovereign-form-input" value="${price48}" min="0" required />
+                  </div>
+                  <div>
+                    <label class="sovereign-field-label">Compare At / MRP (₹)</label>
+                    <input type="number" id="prod-mrp-48" class="sovereign-form-input" value="${mrp48}" min="0" required />
+                  </div>
+                  <div>
+                    <label class="sovereign-field-label">Stock Quantity</label>
+                    <input type="number" id="prod-stock-48" class="sovereign-form-input" value="${stock48}" min="0" required />
+                  </div>
+                </div>
+              </div>
+            ` : `
+              <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.45); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.35);">
+                <div style="font-size: 0.78rem; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 0.8rem; display: flex; align-items: center; justify-content: space-between;">
+                  <span>✦ Flacon Editions & Volume Pricing (100ml Default • 50ml)</span>
+                  <span class="glass-pill" style="font-size: 0.68rem; color: var(--gold-light); border-color: var(--gold-primary);">Authoritative Vault Variants</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+                  <!-- Left Column: 100ml Grand Flacon (Default) -->
+                  <div style="background: rgba(212, 175, 55, 0.08); padding: 1rem; border-radius: 6px; border: 1px solid rgba(212, 175, 55, 0.4);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                      <strong style="color: var(--gold-light); font-size: 0.85rem;">100ml Grand Flacon</strong>
+                      <span class="glass-pill" style="font-size: 0.65rem; background: rgba(212, 175, 55, 0.25); color: #FFF1C5; border-color: var(--gold-primary);">★ DEFAULT</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                      <div>
+                        <label class="sovereign-field-label">100ml SKU Code</label>
+                        <input type="text" id="prod-sku-100" class="sovereign-form-input" value="${sku100}" placeholder="e.g. MYTH-EDP-KS-100" required />
+                      </div>
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                        <div>
+                          <label class="sovereign-field-label">Sale Price (₹)</label>
+                          <input type="number" id="prod-price-100" class="sovereign-form-input" value="${price100}" min="0" required />
+                        </div>
+                        <div>
+                          <label class="sovereign-field-label">MRP (₹)</label>
+                          <input type="number" id="prod-mrp-100" class="sovereign-form-input" value="${mrp100}" min="0" required />
+                        </div>
+                      </div>
+                      <div>
+                        <label class="sovereign-field-label">100ml Stock Quantity</label>
+                        <input type="number" id="prod-stock-100" class="sovereign-form-input" value="${stock100}" min="0" required />
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Right Column: 50ml Signature Flacon -->
+                  <div style="background: rgba(0, 0, 0, 0.35); padding: 1rem; border-radius: 6px; border: 1px solid rgba(212, 175, 55, 0.25);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                      <strong style="color: var(--gold-light); font-size: 0.85rem;">50ml Signature Flacon</strong>
+                      <span class="glass-pill" style="font-size: 0.65rem; color: var(--text-muted);">SECONDARY</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                      <div>
+                        <label class="sovereign-field-label">50ml SKU Code</label>
+                        <input type="text" id="prod-sku-50" class="sovereign-form-input" value="${sku50}" placeholder="e.g. MYTH-EDP-KS-50" required />
+                      </div>
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                        <div>
+                          <label class="sovereign-field-label">Sale Price (₹)</label>
+                          <input type="number" id="prod-price-50" class="sovereign-form-input" value="${price50}" min="0" required />
+                        </div>
+                        <div>
+                          <label class="sovereign-field-label">MRP (₹)</label>
+                          <input type="number" id="prod-mrp-50" class="sovereign-form-input" value="${mrp50}" min="0" required />
+                        </div>
+                      </div>
+                      <div>
+                        <label class="sovereign-field-label">50ml Stock Quantity</label>
+                        <input type="number" id="prod-stock-50" class="sovereign-form-input" value="${stock50}" min="0" required />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `}
 
             <!-- 📸 Product Media Pipeline & 10-Photo Gallery Manager -->
             <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.45); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);">
@@ -1354,7 +1676,7 @@ export const AdminComponents = {
                   📸 Product Media Pipeline (Up to 10 Gallery Photos)
                 </div>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                  <button type="button" class="btn btn-glass" style="padding: 0.35rem 0.8rem; font-size: 0.72rem; color: var(--gold-light);" onclick="app.adminAutoMapMedia('${p.id || ''}')" title="Auto-Map Canonical Local Assets for this SKU">
+                  <button type="button" class="btn btn-glass" style="padding: 0.35rem 0.8rem; font-size: 0.72rem; color: var(--gold-light);" onclick="app.adminAutoMapMedia('${cleanId}')" title="Auto-Map Canonical Local Assets for this SKU">
                     ⚡ Auto-Map SKU Assets
                   </button>
                   <span class="glass-pill" id="admin-gallery-badge" style="font-size: 0.68rem; color: var(--gold-light);">${galleryList.length}/10 Photos</span>
@@ -1364,21 +1686,21 @@ export const AdminComponents = {
               <!-- Live Preview Row for Primary Assets -->
               <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.2rem; background: rgba(212, 175, 55, 0.05); padding: 0.8rem; border-radius: 6px; border: 1px dashed rgba(212, 175, 55, 0.25); flex-wrap: wrap;">
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
-                  <img id="prod-bottle-preview" src="${media.bottleImage || p.image || 'assets/product/1kingscar.webp'}" style="width: 44px; height: 44px; object-fit: contain; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.4); background: #041812;" onerror="this.src='assets/product/1kingscar.webp'" />
+                  <img id="prod-bottle-preview" src="${bottleImage || 'assets/product/1kingscar.webp'}" style="width: 44px; height: 44px; object-fit: contain; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.4); background: #041812;" onerror="this.src='assets/product/1kingscar.webp'" />
                   <div>
                     <div style="font-size: 0.72rem; color: var(--gold-light); font-weight: 600;">Bottle</div>
                     <div style="font-size: 0.65rem; color: var(--text-muted);">Transparent Flacon</div>
                   </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
-                  <img id="prod-card-preview" src="${media.cardImage || 'assets/product/1kingscarbox.webp'}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.4); background: #041812;" onerror="this.src='assets/product/1kingscarbox.webp'" />
+                  <img id="prod-card-preview" src="${cardImage || 'assets/product/1kingscarbox.webp'}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.4); background: #041812;" onerror="this.src='assets/product/1kingscarbox.webp'" />
                   <div>
                     <div style="font-size: 0.72rem; color: var(--gold-light); font-weight: 600;">Box / Packaging</div>
                     <div style="font-size: 0.65rem; color: var(--text-muted);">Sovereign Coffret</div>
                   </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
-                  <img id="prod-bg-preview" src="${media.backgroundImage || 'assets/hero/kingscarbg.webp'}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.4); background: #041812;" onerror="this.src='assets/hero/kingscarbg.webp'" />
+                  <img id="prod-bg-preview" src="${backgroundImage || 'assets/hero/kingscarbg.webp'}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.4); background: #041812;" onerror="this.src='assets/hero/kingscarbg.webp'" />
                   <div>
                     <div style="font-size: 0.72rem; color: var(--gold-light); font-weight: 600;">Atmosphere</div>
                     <div style="font-size: 0.65rem; color: var(--text-muted);">Hero Environment</div>
@@ -1408,127 +1730,32 @@ export const AdminComponents = {
               </div>
             </div>
 
-            <!-- Flacon Editions or Discovery Coffret Volume Pricing -->
-            ${isCoffret ? `
-              <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.45); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.35);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
-                  <div style="font-size: 0.78rem; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">
-                    📦 Discovery Coffret Master Set (6 × 8ml Deluxe Vials)
-                  </div>
-                  <span class="glass-pill" style="font-size: 0.68rem; color: var(--gold-light); border-color: rgba(212, 175, 55, 0.4);">48ml Total Wardrobe</span>
-                </div>
-                <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 1rem; line-height: 1.5;">
-                  The Sixth Sense is an exclusive vault discovery set featuring all 6 extraits in deluxe 8ml atomizers plus a complimentary ₹1,000 voucher. Individual 50ml or 100ml flacons do not exist for this discovery coffret.
-                </p>
-
-                <div style="background: rgba(212, 175, 55, 0.08); border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 8px; padding: 1rem; max-width: 320px;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
-                    <span style="font-weight: 700; color: var(--gold-light); font-size: 0.88rem;">6 × 8ml Discovery Set</span>
-                    <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light); border-color: rgba(212, 175, 55, 0.3);">48ml Total</span>
-                  </div>
-                  <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                    <div>
-                      <label class="sovereign-field-label" style="font-size: 0.7rem;">Coffret Price (₹)</label>
-                      <input type="number" id="coffret-price" class="sovereign-form-input" value="${p.price || 3999}" min="0" />
-                    </div>
-                    <div>
-                      <label class="sovereign-field-label" style="font-size: 0.7rem;">Vault Stock Count</label>
-                      <input type="number" id="coffret-stock" class="sovereign-form-input" value="${p.stock !== undefined ? p.stock : 50}" min="0" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ` : `
-              <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.45); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.25);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
-                  <div style="font-size: 0.78rem; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">
-                    🏺 Flacon Editions & Volume Pricing (50ml · 100ml)
-                  </div>
-                  <span class="glass-pill" style="font-size: 0.68rem; color: var(--gold-light);">Multi-Size Vault Matrix</span>
-                </div>
-                <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 1rem;">
-                  Control pricing and inventory specifically for the <strong>50ml Signature Flacon</strong> and the <strong>100ml Grand Flacon</strong>. (Note: 8ml is exclusively available in the Sixth Sense vault set).
-                </p>
-
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
-                  <!-- 50ml Flacon Card -->
-                  <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; padding: 1rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
-                      <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--gold-light); cursor: pointer; margin: 0;">
-                        <input type="checkbox" id="size-enabled-50" ${s50 || !isEdit ? 'checked' : ''} />
-                        <span>50ml Flacon</span>
-                      </label>
-                      <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light); border-color: rgba(212, 175, 55, 0.3);">50ml</span>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                      <div>
-                        <label class="sovereign-field-label" style="font-size: 0.7rem;">50ml Price (₹)</label>
-                        <input type="number" id="size-price-50" class="sovereign-form-input" value="${s50 ? s50.price : 3999}" min="0" />
-                      </div>
-                      <div>
-                        <label class="sovereign-field-label" style="font-size: 0.7rem;">50ml Stock Count</label>
-                        <input type="number" id="size-stock-50" class="sovereign-form-input" value="${s50 && s50.stock !== undefined ? s50.stock : (p.stock !== undefined ? p.stock : 50)}" min="0" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- 100ml Grand Flacon Card -->
-                  <div style="background: rgba(212, 175, 55, 0.08); border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 8px; padding: 1rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
-                      <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--gold-light); cursor: pointer; margin: 0;">
-                        <input type="checkbox" id="size-enabled-100" ${s100 || !isEdit ? 'checked' : ''} />
-                        <span>100ml Grand Flacon</span>
-                      </label>
-                      <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light); border-color: rgba(212, 175, 55, 0.3);">Grand</span>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                      <div>
-                        <label class="sovereign-field-label" style="font-size: 0.7rem;">100ml Price (₹)</label>
-                        <input type="number" id="size-price-100" class="sovereign-form-input" value="${s100 ? s100.price : (p.price || 5999)}" min="0" />
-                      </div>
-                      <div>
-                        <label class="sovereign-field-label" style="font-size: 0.7rem;">100ml Stock Count</label>
-                        <input type="number" id="size-stock-100" class="sovereign-form-input" value="${s100 && s100.stock !== undefined ? s100.stock : (p.stock !== undefined ? p.stock : 50)}" min="0" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                ${otherSizes.length > 0 ? `
-                  <div style="margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid rgba(212, 175, 55, 0.15); font-size: 0.75rem; color: var(--gold-light);">
-                    <span>Custom / Coffret Editions: </span>
-                    ${otherSizes.map(os => `<span class="glass-pill" style="margin-left: 0.4rem;">${os.ml}ml · ₹${os.price}</span>`).join('')}
-                  </div>
-                ` : ''}
-              </div>
-            `}
-
             <!-- Notes & Accords -->
             <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.4); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.2);">
               <div style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; font-weight: 600;">Olfactory Pyramids & Accords</div>
               <div class="sovereign-form-grid" style="margin-bottom: 0;">
                 <div>
                   <label class="sovereign-field-label">Top Notes (comma-separated)</label>
-                  <input type="text" id="prod-notes-top" class="sovereign-form-input" value="${Array.isArray(p.notes?.top) ? p.notes.top.join(', ') : (p.notesTop || '')}" />
+                  <input type="text" id="prod-notes-top" class="sovereign-form-input" value="${topNotes}" placeholder="Bergamot, Pink Pepper" />
                 </div>
                 <div>
                   <label class="sovereign-field-label">Heart Notes (comma-separated)</label>
-                  <input type="text" id="prod-notes-heart" class="sovereign-form-input" value="${Array.isArray(p.notes?.heart) ? p.notes.heart.join(', ') : (p.notesHeart || '')}" />
+                  <input type="text" id="prod-notes-heart" class="sovereign-form-input" value="${heartNotes}" placeholder="Lavender, Rose" />
                 </div>
                 <div>
                   <label class="sovereign-field-label">Base Notes (comma-separated)</label>
-                  <input type="text" id="prod-notes-base" class="sovereign-form-input" value="${Array.isArray(p.notes?.base) ? p.notes.base.join(', ') : (p.notesBase || '')}" />
+                  <input type="text" id="prod-notes-base" class="sovereign-form-input" value="${baseNotes}" placeholder="Vetiver, Amber, Musk" />
                 </div>
                 <div>
                   <label class="sovereign-field-label">Accords (comma-separated)</label>
-                  <input type="text" id="prod-accords" class="sovereign-form-input" value="${Array.isArray(p.accords) ? p.accords.join(', ') : (p.accords || '')}" />
+                  <input type="text" id="prod-accords" class="sovereign-form-input" value="${accords}" placeholder="Aromatic, Spicy, Woody" />
                 </div>
               </div>
             </div>
 
             <div style="margin-bottom: 1.5rem;">
               <label class="sovereign-field-label">Poetic Lore / Description</label>
-              <textarea id="prod-description" class="sovereign-form-textarea" placeholder="Detailed description of the fragrance...">${p.description || ''}</textarea>
+              <textarea id="prod-description" class="sovereign-form-textarea" placeholder="Detailed description of the fragrance...">${description}</textarea>
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">

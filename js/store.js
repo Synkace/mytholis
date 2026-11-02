@@ -536,16 +536,29 @@ class MytholisStore {
   }
 
   /* Cart Methods */
-  addToCart(productId, sizeMl = 50, engraving = '', quantity = 1) {
+  addToCart(productId, sizeMl = null, engraving = '', quantity = 1, sku = null) {
     const catalog = this.getProducts();
-    const product = catalog.find(p => p.id === productId);
+    const product = catalog.find(p => p.id === productId) || (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG.find(p => p.id === productId) : null);
     if (!product) return;
 
-    const sizeObj = product.sizes.find(s => s.ml === sizeMl) || product.sizes[0];
-    const itemPrice = sizeObj.price;
+    const isCoffret = product.id === 'mytholis-discovery-set' || product.id === 'sixth-sense';
+    const defaultMl = isCoffret ? 48 : 100;
+    const targetMl = (sizeMl !== null && sizeMl !== undefined) 
+      ? (Number(String(sizeMl).toLowerCase().replace('ml', '').trim()) || defaultMl)
+      : defaultMl;
 
+    const sizeObj = (Array.isArray(product.sizes) && product.sizes.find(s => s.ml === targetMl)) 
+      || product.sizes?.[0] 
+      || { ml: targetMl, price: product.price };
+    
+    const itemPrice = sizeObj.price;
+    const itemSku = sku || sizeObj.sku || (product.variants && product.variants[`${targetMl}ml`]?.sku) || `${product.id}-${targetMl}`;
+    const sizeLabel = targetMl === 48 ? '48ml' : `${targetMl}ml`;
+    const mrp = sizeObj.mrp || (product.variants && product.variants[`${targetMl}ml`]?.mrp) || Math.round(itemPrice * 1.25);
+
+    // Treat distinct volume variants (e.g., 100ml vs 50ml) as separate cart line items keyed by SKU
     const existingIndex = this.cart.findIndex(
-      item => item.id === productId && item.size === sizeObj.ml && item.engraving === engraving
+      item => (item.sku ? item.sku === itemSku : (item.id === productId && Number(item.size) === targetMl)) && item.engraving === engraving
     );
 
     if (existingIndex > -1) {
@@ -553,10 +566,14 @@ class MytholisStore {
     } else {
       this.cart.push({
         id: productId,
+        slug: product.slug || productId,
+        sku: itemSku,
         name: product.name,
         image: product.image,
-        size: sizeObj.ml,
+        size: targetMl,
+        sizeLabel: sizeLabel,
         price: itemPrice,
+        mrp: mrp,
         engraving: engraving,
         quantity: quantity
       });

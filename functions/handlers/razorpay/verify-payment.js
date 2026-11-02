@@ -128,7 +128,7 @@ export default async function handler(req, res) {
             }
           }
 
-          // Decrement stock on products/{item.id}
+          // Decrement stock on products/{item.id} and matching variant (variants[size].stock)
           for (const it of items) {
             if (it.id) {
               const prodRef = adminDb.collection('products').doc(it.id);
@@ -137,9 +137,29 @@ export default async function handler(req, res) {
                 const pData = prodDoc.data() || {};
                 const currentStock = typeof pData.stock === 'number' ? pData.stock : 50;
                 const decQty = Number(it.quantity || it.qty) || 1;
-                tx.update(prodRef, {
+                const rawSize = it.size ? String(it.size).toLowerCase().replace('ml', '').trim() : '';
+                const sizeKey = rawSize ? `${rawSize}ml` : (it.id === 'mytholis-discovery-set' ? '48ml' : '100ml');
+
+                const updates = {
                   stock: Math.max(0, currentStock - decQty)
-                });
+                };
+
+                if (pData.variants && pData.variants[sizeKey]) {
+                  const varStock = typeof pData.variants[sizeKey].stock === 'number' ? pData.variants[sizeKey].stock : 50;
+                  updates[`variants.${sizeKey}.stock`] = Math.max(0, varStock - decQty);
+                }
+
+                if (Array.isArray(pData.sizes)) {
+                  updates.sizes = pData.sizes.map(s => {
+                    if (String(s.ml) === rawSize || (rawSize === '' && s.ml === 100)) {
+                      const sStock = typeof s.stock === 'number' ? s.stock : 50;
+                      return { ...s, stock: Math.max(0, sStock - decQty) };
+                    }
+                    return s;
+                  });
+                }
+
+                tx.update(prodRef, updates);
               }
             }
           }

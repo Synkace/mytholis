@@ -1911,14 +1911,35 @@ export class FirebaseService {
             item.name = "Sixth Sense";
             item.subtitle = "Sixth Sense";
             item.collection = "Sixth Sense";
+            item.sku = "MYTH-SET-6S-48";
+            item.defaultSize = "48ml";
+            item.volume = 48;
+            item.volumeMl = 48;
             item.concentration = "Extrait de Parfum (6 × 8ml Deluxe Vials • 40% Concentration)";
-            item.sizes = [{ ml: 48, price: item.price || 3999, stock: item.stock !== undefined ? item.stock : 50 }];
+            item.variants = item.variants || {
+              "48ml": { sku: "MYTH-SET-6S-48", volumeMl: 48, salePrice: item.price || 3999, mrp: 4999, stock: item.stock !== undefined ? item.stock : 50, mythosReward: 150 }
+            };
+            item.sizes = [{ ml: 48, price: item.price || 3999, mrp: 4999, sku: "MYTH-SET-6S-48", stock: item.stock !== undefined ? item.stock : 50 }];
             if (item.notes) {
               ['top', 'heart', 'base'].forEach(tier => {
                 if (Array.isArray(item.notes[tier])) {
                   item.notes[tier] = item.notes[tier].map(s => typeof s === 'string' ? s.replace(/10ml/g, '8ml') : s);
                 }
               });
+            }
+          } else {
+            const catMatch = (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []).find(c => c.id === item.id);
+            if (catMatch) {
+              item.defaultSize = "100ml";
+              item.volume = 100;
+              item.volumeMl = 100;
+              item.variants = catMatch.variants;
+              item.sizes = catMatch.sizes;
+              item.sku = catMatch.sku;
+              item.price = catMatch.price;
+              item.salePrice = catMatch.salePrice;
+              item.compareAtPrice = catMatch.compareAtPrice;
+              item.mrp = catMatch.mrp;
             }
           }
           data.products.push(item);
@@ -2011,6 +2032,23 @@ export class FirebaseService {
           if (prod.sku) {
             updates.sku = prod.sku;
           }
+          if (prod.variants) {
+            updates.variants = prod.variants;
+          }
+          if (prod.defaultSize) {
+            updates.defaultSize = prod.defaultSize;
+          }
+          if (prod.volumeMl) {
+            updates.volume = prod.volumeMl;
+            updates.volumeMl = prod.volumeMl;
+          }
+          if (prod.pricing) {
+            updates.pricing = prod.pricing;
+            updates.price = prod.pricing.salePrice;
+            updates.salePrice = prod.pricing.salePrice;
+            updates.compareAtPrice = prod.pricing.mrp;
+            updates.mrp = prod.pricing.mrp;
+          }
 
           if (prod.id === 'mytholis-discovery-set') {
             updates.name = "Sixth Sense";
@@ -2018,7 +2056,7 @@ export class FirebaseService {
             updates.collection = "Sixth Sense";
             updates.concentration = prod.concentration;
             updates.notes = prod.notes;
-            updates.sizes = prod.sizes || [{ ml: 48, price: 3999 }];
+            updates.sizes = prod.sizes || [{ ml: 48, price: 3999, mrp: 4999, sku: "MYTH-SET-6S-48", stock: 50 }];
             updates.tagline = prod.tagline;
             updates.accords = prod.accords;
             updates.description = prod.description;
@@ -2028,8 +2066,6 @@ export class FirebaseService {
             }
             if (prod.sizes && Array.isArray(prod.sizes)) {
               updates.sizes = prod.sizes;
-            } else if (existingData.sizes && existingData.sizes.some(s => s.ml === 8)) {
-              updates.sizes = existingData.sizes.filter(s => s.ml !== 8);
             }
           }
 
@@ -2057,21 +2093,35 @@ export class FirebaseService {
 
     try {
       const prodRef = doc(db, "products", prodData.id);
+      const cleanSlug = String(prodData.id).toLowerCase();
+      const canonicalMediaMap = (typeof window !== 'undefined' && window.CANONICAL_MEDIA_MAP) || null;
+      const canonicalMedia = canonicalMediaMap ? canonicalMediaMap[cleanSlug] : null;
+      const defaultBottle = canonicalMedia?.bottleImage || prodData.bottleImage || prodData.image || 'assets/product/1kingscar.webp';
+      const defaultBox = canonicalMedia?.cardImage || prodData.cardImage || defaultBottle;
+      const defaultBg = canonicalMedia?.backgroundImage || prodData.backgroundImage || defaultBottle;
+
       const media = prodData.media || {
-        bottleImage: prodData.image || 'assets/product/1kingscar.webp',
-        cardImage: prodData.cardImage || prodData.image || 'assets/product/1kingscar.webp',
-        backgroundImage: prodData.backgroundImage || prodData.image || 'assets/product/1kingscar.webp',
-        gallery: Array.isArray(prodData.gallery) ? prodData.gallery.slice(0, 10) : [prodData.image || 'assets/product/1kingscar.webp']
+        bottleImage: defaultBottle,
+        cardImage: defaultBox,
+        backgroundImage: defaultBg,
+        gallery: Array.isArray(prodData.gallery) ? prodData.gallery.slice(0, 10) : [defaultBottle]
       };
+
+      const finalBottle = media.bottleImage || defaultBottle;
+      const finalCard = media.cardImage || defaultBox;
+      const finalBg = media.backgroundImage || defaultBg;
+      const finalGallery = (Array.isArray(media.gallery) && media.gallery.length > 0)
+        ? media.gallery.filter(Boolean).slice(0, 10)
+        : [finalBottle, finalCard].filter(Boolean);
 
       await setDoc(prodRef, {
         ...prodData,
-        image: media.bottleImage || prodData.image || 'assets/product/1kingscar.webp',
+        image: finalBottle,
         media: {
-          bottleImage: media.bottleImage || prodData.image || 'assets/product/1kingscar.webp',
-          cardImage: media.cardImage || media.bottleImage || prodData.image || 'assets/product/1kingscar.webp',
-          backgroundImage: media.backgroundImage || media.bottleImage || prodData.image || 'assets/product/1kingscar.webp',
-          gallery: Array.isArray(media.gallery) ? media.gallery.filter(Boolean).slice(0, 10) : [media.bottleImage || prodData.image || 'assets/product/1kingscar.webp']
+          bottleImage: finalBottle,
+          cardImage: finalCard,
+          backgroundImage: finalBg,
+          gallery: finalGallery
         },
         price: Number(prodData.price) || 0,
         stock: Number(prodData.stock) || 0,
@@ -2135,7 +2185,15 @@ export class FirebaseService {
         if (item.id === 'mytholis-discovery-set') {
           item.name = "Sixth Sense";
           item.subtitle = "Sixth Sense";
-          item.sizes = [{ ml: 48, price: 3999 }];
+          item.collection = "Sixth Sense";
+          item.sku = "MYTH-SET-6S-48";
+          item.defaultSize = "48ml";
+          item.volume = 48;
+          item.volumeMl = 48;
+          item.variants = item.variants || {
+            "48ml": { sku: "MYTH-SET-6S-48", volumeMl: 48, salePrice: item.price || 3999, mrp: 4999, stock: item.stock !== undefined ? item.stock : 50, mythosReward: 150 }
+          };
+          item.sizes = [{ ml: 48, price: item.price || 3999, mrp: 4999, sku: "MYTH-SET-6S-48", stock: item.stock !== undefined ? item.stock : 50 }];
           if (item.notes) {
             ['top', 'heart', 'base'].forEach(tier => {
               if (Array.isArray(item.notes[tier])) {
@@ -2149,18 +2207,18 @@ export class FirebaseService {
             const rawBase = item.name.replace(/<[^>]*>/g, '').replace(/Extrait\s*de\s*Parfum/gi, '').trim();
             item.name = `${rawBase} <br><span class="product-concentration-sub">Extrait de Parfum</span>`;
           }
-          if (Array.isArray(item.sizes)) {
-            // 8ml is not for sale individually, only 50ml and 100ml
-            item.sizes = item.sizes.filter(s => s.ml !== 8);
-            // Reconcile 50ml price with authoritative catalog
-            const catMatch = (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []).find(c => c.id === item.id);
-            if (catMatch && Array.isArray(catMatch.sizes)) {
-              const cat50 = catMatch.sizes.find(s => s.ml === 50);
-              const item50 = item.sizes.find(s => s.ml === 50);
-              if (cat50 && item50) {
-                item50.price = cat50.price;
-              }
-            }
+          const catMatch = (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []).find(c => c.id === item.id);
+          if (catMatch) {
+            item.defaultSize = "100ml";
+            item.volume = 100;
+            item.volumeMl = 100;
+            item.variants = catMatch.variants;
+            item.sizes = catMatch.sizes;
+            item.sku = catMatch.sku;
+            item.price = catMatch.price;
+            item.salePrice = catMatch.salePrice;
+            item.compareAtPrice = catMatch.compareAtPrice;
+            item.mrp = catMatch.mrp;
           }
         }
         list.push(item);

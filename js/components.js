@@ -80,6 +80,7 @@ const Components = {
             <div class="card-size-selector" onclick="event.stopPropagation()">
               ${product.sizes.map(s => `
                 <button class="card-size-pill ${s.ml === defaultSize.ml ? 'active' : ''}" 
+                        data-ml="${s.ml}"
                         onclick="app.selectCardSize(event, '${product.id}', ${s.ml}, ${s.price})">
                   ${s.ml}ml • ₹${s.price.toLocaleString()}
                 </button>
@@ -90,20 +91,24 @@ const Components = {
           <div class="product-card-footer">
             <div>
               <span class="product-price" id="card-price-${product.id}">${store.formatPrice(defaultSize.price)}</span>
+              ${defaultSize.mrp ? `<span class="compare-price" id="card-mrp-${product.id}" style="text-decoration: line-through; opacity: 0.6; font-size: 0.85rem; margin-left: 6px;">${store.formatPrice(defaultSize.mrp)}</span>` : ''}
               <div class="card-mythos-badge" id="card-mythos-${product.id}" title="Loyalty Reward: 1 Mythos Coin = ₹1 Concession">
                 <span>🪙</span> Earn <strong>+${mythosInfo.coins} Mythos</strong>
               </div>
               <span class="product-tax-note">MRP (Incl. taxes)</span>
             </div>
             <div class="product-card-actions">
-              <button class="btn btn-gold quick-add-btn" 
-                      id="card-buy-btn-${product.id}"
-                      onclick="event.stopPropagation(); app.quickAddToCart('${product.id}')"
-                      title="Quick Add Flacon to Cart">
-                Acquire
+              <button class="btn btn-glass quick-add-btn" 
+                      id="card-add-btn-${product.id}"
+                      onclick="event.stopPropagation(); app.quickAddToCart('${product.id}', ${defaultSize.ml}, ${defaultSize.price}, '${defaultSize.sku || ''}')"
+                      title="Add to Cart">
+                ADD TO CART
               </button>
-              <button class="btn btn-glass product-explore-btn" onclick="event.stopPropagation(); app.openProductView('${product.id}')">
-                Details
+              <button class="btn btn-gold quick-buy-btn" 
+                      id="card-buy-btn-${product.id}"
+                      onclick="event.stopPropagation(); app.buyNow('${product.id}', event, ${defaultSize.ml}, ${defaultSize.price})"
+                      title="Buy Now">
+                BUY NOW
               </button>
             </div>
           </div>
@@ -399,11 +404,11 @@ const Components = {
               <span>Free Pan-India Armored Delivery</span>
             </div>
             <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
-              <button class="btn btn-gold" onclick="app.acquireCoffretNow()">
-                Acquire Sixth Sense • ₹3,999
+              <button class="btn btn-glass" onclick="app.addProductToCart('mytholis-discovery-set')">
+                ADD TO CART
               </button>
-              <button class="btn btn-glass" onclick="app.buyNowWhatsApp('mytholis-discovery-set')">
-                Order via WhatsApp
+              <button class="btn btn-gold" onclick="app.buyNow('mytholis-discovery-set', event)">
+                BUY NOW • ₹3,999
               </button>
             </div>
           </div>
@@ -571,10 +576,13 @@ const Components = {
               </div>
             </div>
 
-            <!-- Direct CTA Button below Pyramid -->
-            <div style="text-align: center; margin-top: 3rem;">
-              <button id="pyramid-cta-btn" class="btn btn-gold" onclick="app.openProductView('${activeScent.id}')">
-                Acquire ${activeShortName} →
+            <!-- Direct CTA Buttons below Pyramid -->
+            <div id="pyramid-cta-wrap" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 3rem;">
+              <button id="pyramid-cart-btn" class="btn btn-glass" onclick="app.quickAddToCart('${activeScent.id}')">
+                ADD TO CART
+              </button>
+              <button id="pyramid-buy-btn" class="btn btn-gold" onclick="app.buyNow('${activeScent.id}', event)">
+                BUY NOW
               </button>
             </div>
           `;
@@ -723,12 +731,12 @@ const Components = {
               </div>
             </div>
 
-            <div class="quiz-result-actions">
-              <button class="btn btn-gold" style="flex: 1;" onclick="app.quickAddToCart('${matchedProduct.id}')">
-                Acquire Matched Flacon (${store.formatPrice(matchedProduct.price)})
+            <div class="quiz-result-actions" style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+              <button class="btn btn-glass" style="flex: 1;" onclick="app.quickAddToCart('${matchedProduct.id}')">
+                ADD TO CART
               </button>
-              <button class="btn btn-gold" style="flex: 1; background: linear-gradient(135deg, #10B981 0%, #047857 100%); border: 1px solid #34D399;" onclick="app.quickAddToCart('mytholis-discovery-set')">
-                Try in Sixth Sense (₹3,999)
+              <button class="btn btn-gold" style="flex: 1;" onclick="app.buyNow('${matchedProduct.id}', event)">
+                BUY NOW • ${store.formatPrice(matchedProduct.price)}
               </button>
             </div>
             <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.2rem;">
@@ -1051,6 +1059,7 @@ const Components = {
             <div class="product-detail-price-row">
               <div>
                 <span class="product-price" id="detail-product-price" style="font-size: 2.2rem;">${store.formatPrice(currentPrice)}</span>
+                ${activeSizeObj?.mrp ? `<span class="compare-price" id="detail-compare-price" style="text-decoration: line-through; opacity: 0.6; font-size: 1.1rem; margin-left: 8px;">${store.formatPrice(activeSizeObj.mrp)}</span>` : ''}
                 <span class="mrp-tax-tag" id="detail-mrp-tag">MRP (Incl. of all taxes) • ₹${unitPricePerMl}/ml</span>
                 <div class="detail-mythos-earn-pill" id="detail-mythos-pill">
                   <span>🪙</span> Circle of Legends Privilege: Earn <strong>+${detailMythosInfo.coins} Mythos Coins</strong> (${detailMythosInfo.pct}% Return)
@@ -1076,7 +1085,7 @@ const Components = {
                   <button class="btn ${s.ml === currentMl ? 'btn-gold' : 'btn-glass'} size-btn" 
                           data-ml="${s.ml}" data-price="${s.price}"
                           onclick="app.selectProductSize(${s.ml}, ${s.price})">
-                    ${isCoffret ? `6 × 8ml (48ml Coffret) — ${store.formatPrice(s.price)}` : `${s.ml} ml — ${store.formatPrice(s.price)}`}
+                    ${isCoffret ? `6 × 8ml (48ml Coffret) — ${store.formatPrice(s.price)}` : (s.ml === 100 ? `100ml Grand Flacon ★ DEFAULT — ${store.formatPrice(s.price)}` : `${s.ml}ml Signature Flacon — ${store.formatPrice(s.price)}`)}
                   </button>
                 `).join('')}
               </div>
@@ -1278,9 +1287,14 @@ const Components = {
                   </p>
                 </div>
               </div>
-              <button class="btn btn-gold" style="font-size: 0.85rem; padding: 0.8rem 1.8rem; font-weight: 700;" onclick="app.addProductToCart('${product.id}')">
-                Acquire Sixth Sense Coffret • ₹3,999
-              </button>
+              <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                <button class="btn btn-glass" style="font-size: 0.85rem; padding: 0.8rem 1.4rem; font-weight: 700;" onclick="app.addProductToCart('${product.id}')">
+                  ADD TO CART
+                </button>
+                <button class="btn btn-gold" style="font-size: 0.85rem; padding: 0.8rem 1.4rem; font-weight: 700;" onclick="app.buyNow('${product.id}', event)">
+                  BUY NOW • ₹3,999
+                </button>
+              </div>
             </div>
           </div>
         ` : `
@@ -1312,18 +1326,35 @@ const Components = {
     `;
   },
 
-  /* Render Cart Modal Contents */
+  /* Render Unified Slide-Out Cart & Checkout Drawer */
   renderCartModal() {
     const rawSubtotal = store.getCartTotal ? store.getCartTotal() : 0;
     const count = store.getCartCount ? store.getCartCount() : 0;
     const appliedReward = store.getAppliedReward ? store.getAppliedReward() : null;
-    const discountAmount = store.getDiscountAmount ? store.getDiscountAmount(rawSubtotal) : 0;
+    let promoDiscount = store.getDiscountAmount ? store.getDiscountAmount(rawSubtotal) : 0;
     const appliedGift = store.getAppliedGift ? store.getAppliedGift() : null;
-    const finalTotal = Math.max(0, rawSubtotal - discountAmount);
     const estLoyalty = store.getEstimatedOrderLoyalty ? store.getEstimatedOrderLoyalty(rawSubtotal, store.cart) : { spendEarned: 0, legacyEarned: 0 };
     const unusedCodes = (store.loyalty && Array.isArray(store.loyalty.active_reward_codes))
       ? store.loyalty.active_reward_codes.filter(c => !c.used)
       : [];
+
+    const activePaymentMethod = (typeof app !== 'undefined' && app.drawerPaymentMethod) || 'upi_gpay';
+    const isUPI = ['upi_gpay', 'upi_phonepe', 'upi_paytm'].includes(activePaymentMethod);
+    const isCOD = activePaymentMethod === 'cod';
+
+    // Non-stackable: ₹200 UPI discount applies on subtotal >= ₹2,000 only when no promo discount is active
+    const upiDiscount = (!promoDiscount && isUPI && rawSubtotal >= 2000) ? 200 : 0;
+    const verifiedTotal = Math.max(1, rawSubtotal - promoDiscount - upiDiscount);
+
+    const hasSavedAddress = typeof app !== 'undefined' && app.hasValidSavedAddress ? app.hasValidSavedAddress() : false;
+    const savedUser = store.user || {};
+    const savedName = savedUser.name || '';
+    const savedPhone = savedUser.phone || '';
+    const savedAddress = savedUser.address || '';
+    const savedCity = savedUser.city || '';
+    const savedPincode = savedUser.pincode || '';
+    const savedState = savedUser.state || '';
+    const savedEmail = savedUser.email || '';
 
     return `
       <div class="modal-header">
@@ -1347,12 +1378,13 @@ const Components = {
         </div>
       </div>
 
-      <div class="modal-scroll-body">
+      <div class="modal-scroll-body" style="padding: 1rem 1.2rem;">
         ${store.cart.length === 0 ? `
-          <div class="modal-empty-state liquid-glass-card">
-            <h4 class="modal-empty-title">Your Cart is Empty</h4>
-            <p class="modal-empty-desc font-garamond">Explore our signature extraits or order Sixth Sense.</p>
-            <div style="display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem;">
+          <div class="modal-empty-state liquid-glass-card" style="padding: 2.5rem 1.5rem; text-align: center;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">🏺</div>
+            <h4 class="modal-empty-title" style="color: var(--gold-light); font-size: 1.15rem; margin-bottom: 0.4rem;">Your Cart is Empty</h4>
+            <p class="modal-empty-desc font-garamond" style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">Explore our signature extraits or order Sixth Sense.</p>
+            <div style="display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap;">
               <button class="btn btn-gold" onclick="app.closeCartModal(); app.openProductView('mytholis-discovery-set');">
                 Sixth Sense (₹3,999)
               </button>
@@ -1362,6 +1394,7 @@ const Components = {
             </div>
           </div>
         ` : `
+          <!-- 1. Line Items List -->
           <div class="modal-items-list">
             ${store.cart.map((item, idx) => `
               <div class="modal-product-item-card liquid-glass-card">
@@ -1401,8 +1434,8 @@ const Components = {
             </div>
           ` : ''}
 
-          <!-- Vault Concessions & Voucher Input -->
-          <div class="modal-section-box liquid-glass-card" style="margin-top: 0.65rem; padding: 0.75rem 0.85rem;">
+          <!-- 2. Vault Concessions & Promo Code -->
+          <div class="modal-section-box liquid-glass-card" style="margin-top: 0.75rem; padding: 0.85rem;">
             <div class="modal-section-header" style="margin-bottom: 0.45rem;">
               <h5 class="modal-section-title" style="font-size: 0.8rem;">Mythos Society Concession / Voucher</h5>
               <span class="modal-section-hint">Margin guardrails applied</span>
@@ -1433,7 +1466,7 @@ const Components = {
                   </div>
                   <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">
                     ${appliedReward.type === 'discount' 
-                      ? `Concession applied: -${store.formatPrice(discountAmount)} (Capped at 30% of cart / ₹2,500 max)` 
+                      ? `Concession applied: -${store.formatPrice(promoDiscount)}` 
                       : `Complimentary Vault Gift: ${appliedGift ? appliedGift.name : 'Exclusive Flacon'} attached`
                     }
                   </div>
@@ -1442,7 +1475,7 @@ const Components = {
               </div>
             ` : `
               <div style="display: flex; gap: 0.4rem; margin-bottom: 0.5rem;">
-                <input type="text" id="cart-voucher-input" class="engraving-input" placeholder="Enter MYTH-... Code" style="margin: 0; text-transform: uppercase; font-size: 0.8rem; padding: 0.45rem 0.75rem;" />
+                <input type="text" id="cart-voucher-input" class="engraving-input" placeholder="Enter Promo or Voucher Code" style="margin: 0; text-transform: uppercase; font-size: 0.8rem; padding: 0.45rem 0.75rem;" />
                 <button class="btn btn-gold" style="font-size: 0.72rem; padding: 0.45rem 0.85rem; white-space: nowrap;"
                         onclick="const el = document.getElementById('cart-voucher-input'); if(el && el.value.trim()){ app.applyCartRewardCode(el.value.trim()); }">
                   Apply
@@ -1468,46 +1501,141 @@ const Components = {
               </div>
             </div>
           </div>
+
+          <!-- 3. Payment Method Tabs & UPI/COD Selector -->
+          <div class="modal-section-box liquid-glass-card" style="margin-top: 0.75rem; padding: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.4rem;">
+              <h5 class="modal-section-title" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; margin: 0;">
+                Select Payment Mode
+              </h5>
+              <span id="drawer-discount-badge" class="glass-pill" style="font-size: 0.65rem; color: #10B981; border-color: #10B981;">
+                ${promoDiscount > 0 ? `✦ 20% Privilege Active (${appliedReward ? appliedReward.code : 'FIRST20'})` : (rawSubtotal >= 2000 ? 'Save ₹200 via Prepaid UPI' : 'Complimentary Armored Delivery')}
+              </span>
+            </div>
+
+            <!-- UPI Apps Grid (1-Tap Fast Checkout) -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.5rem;">
+              <div class="razorpay-method-pill drawer-method-pill ${activePaymentMethod === 'upi_gpay' ? 'active' : ''}" onclick="app.selectDrawerPaymentMethod(this, 'upi_gpay')">
+                <span style="font-weight: 600;">Google Pay</span>
+              </div>
+              <div class="razorpay-method-pill drawer-method-pill ${activePaymentMethod === 'upi_phonepe' ? 'active' : ''}" onclick="app.selectDrawerPaymentMethod(this, 'upi_phonepe')">
+                <span style="font-weight: 600;">PhonePe</span>
+              </div>
+              <div class="razorpay-method-pill drawer-method-pill ${activePaymentMethod === 'upi_paytm' ? 'active' : ''}" onclick="app.selectDrawerPaymentMethod(this, 'upi_paytm')">
+                <span style="font-weight: 600;">Paytm / UPI</span>
+              </div>
+            </div>
+
+            <!-- Cards & COD Grid -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+              <div class="razorpay-method-pill drawer-method-pill ${activePaymentMethod === 'cards' ? 'active' : ''}" onclick="app.selectDrawerPaymentMethod(this, 'cards')">
+                <span>Credit / Debit Card</span>
+              </div>
+              <div class="razorpay-method-pill drawer-method-pill ${activePaymentMethod === 'cod' ? 'active' : ''}" onclick="app.selectDrawerPaymentMethod(this, 'cod')">
+                <span>Cash on Delivery</span>
+              </div>
+            </div>
+
+            <!-- COD Guardrail Notice -->
+            <div id="drawer-cod-notice" class="cod-guardrail-box" style="${isCOD ? 'display: block;' : 'display: none;'} margin-top: 0.75rem; padding: 0.65rem 0.85rem; border-radius: 8px; background: rgba(245, 158, 11, 0.12); border: 1px solid #F59E0B; font-size: 0.73rem; color: #FCD34D;">
+              <strong>COD Policy:</strong> Cash on Delivery is available for Sixth Sense (₹3,999). For full flacons (50ml/100ml), an automated WhatsApp dispatch confirmation OTP is required, or switch to UPI to save ₹200 instantly.
+            </div>
+          </div>
+
+          <!-- 4. Smart Compact Address Block -->
+          <div class="modal-section-box liquid-glass-card" style="margin-top: 0.75rem; padding: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+              <h5 class="modal-section-title" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; margin: 0;">
+                Delivery Coordinates
+              </h5>
+              <span class="modal-section-hint">Armored Logistics</span>
+            </div>
+
+            ${hasSavedAddress ? `
+              <!-- Collapsed 1-Line Summary Card for Existing Patrons -->
+              <div id="drawer-saved-address-card" class="saved-address-summary-card" style="padding: 0.75rem 0.9rem; border: 1px solid rgba(212, 175, 55, 0.35); border-radius: 10px; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; background: rgba(4, 24, 18, 0.65);">
+                <div style="font-size: 0.78rem; color: var(--gold-light); line-height: 1.45; overflow: hidden;">
+                  <span style="margin-right: 0.3rem;">📍</span>
+                  <strong>Delivering to:</strong> <span id="summary-saved-name">${savedName}</span> (<span id="summary-saved-phone">${savedPhone}</span>) — <span id="summary-saved-addr">${savedAddress}${savedCity ? ', ' + savedCity : ''} - ${savedPincode}</span>
+                </div>
+                <button type="button" class="btn btn-glass" style="font-size: 0.68rem; padding: 0.25rem 0.6rem; border-color: var(--gold-primary); color: var(--gold-light); flex-shrink: 0;" onclick="app.toggleDrawerAddressForm(true)">
+                  Change
+                </button>
+              </div>
+            ` : ''}
+
+            <!-- Compact Autofill Address Inputs -->
+            <div id="drawer-address-fields" style="${hasSavedAddress ? 'display: none;' : 'display: block;'} margin-top: ${hasSavedAddress ? '0.6rem' : '0'}; display: flex; flex-direction: column; gap: 0.6rem;">
+              ${hasSavedAddress ? `
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 0.2rem;">
+                  <button type="button" class="btn btn-glass" style="font-size: 0.65rem; padding: 0.2rem 0.5rem;" onclick="app.toggleDrawerAddressForm(false)">
+                    ✕ Cancel Edit (Keep Saved Address)
+                  </button>
+                </div>
+              ` : ''}
+
+              <div style="display: flex; gap: 0.5rem;">
+                <input type="text" id="checkout-name" class="engraving-input" placeholder="Full Delivery Name" autocomplete="name" value="${savedName}" style="flex: 1.2; margin: 0; font-size: 0.8rem; padding: 0.5rem 0.7rem;" required />
+                <input type="email" id="checkout-email" class="engraving-input" placeholder="Email Address" autocomplete="email" value="${savedEmail}" style="flex: 1; margin: 0; font-size: 0.8rem; padding: 0.5rem 0.7rem;" required />
+              </div>
+
+              <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
+                <div style="flex: 1.2;">
+                  <input type="tel" id="checkout-phone" class="engraving-input" placeholder="10-Digit Mobile (+91)" autocomplete="tel-national" value="${savedPhone}" oninput="app.handleCheckoutPhoneInput(this)" maxlength="14" style="width: 100%; margin: 0; font-size: 0.8rem; padding: 0.5rem 0.7rem;" required />
+                </div>
+                <div style="flex: 1; position: relative;">
+                  <input type="text" id="checkout-pincode" class="engraving-input" placeholder="PIN Code (6 Digits)" autocomplete="postal-code" maxlength="6" value="${savedPincode}" oninput="app.handlePincodeLookup(this.value)" style="width: 100%; margin: 0; font-size: 0.8rem; padding: 0.5rem 0.7rem;" required />
+                  <div id="pincode-status-hint" style="font-size: 0.64rem; color: var(--gold-light); display: none; margin-top: 2px; position: absolute; bottom: -15px; left: 2px; white-space: nowrap;"></div>
+                </div>
+              </div>
+
+              <input type="text" id="checkout-address" class="engraving-input" placeholder="Flat / Building, Street, Area, Landmark" autocomplete="street-address" value="${savedAddress}" style="margin: 0; font-size: 0.8rem; padding: 0.5rem 0.7rem;" required />
+
+              <div style="display: flex; gap: 0.5rem;">
+                <input type="text" id="checkout-city" class="engraving-input" placeholder="City / District" autocomplete="address-level2" value="${savedCity}" style="flex: 1; margin: 0; font-size: 0.8rem; padding: 0.5rem 0.7rem;" required />
+                <input type="text" id="checkout-state" class="engraving-input" placeholder="State" autocomplete="address-level1" value="${savedState}" style="flex: 1; margin: 0; font-size: 0.8rem; padding: 0.5rem 0.7rem;" required />
+              </div>
+            </div>
+          </div>
         `}
       </div>
 
       ${store.cart.length > 0 ? `
-        <div class="modal-footer modal-cart-footer">
-          <div class="modal-subtotal-row">
-            ${discountAmount > 0 ? `
-              <div class="modal-subtotal-line">
+        <!-- Sticky Bottom Footer with Single Proceed Button -->
+        <div class="modal-footer modal-cart-footer" style="padding: 1rem 1.2rem; border-top: 1px solid rgba(212, 175, 55, 0.25); background: #03140e;">
+          <div class="modal-subtotal-row" style="margin-bottom: 0.8rem;">
+            ${(promoDiscount > 0 || upiDiscount > 0) ? `
+              <div class="modal-subtotal-line" style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.25rem;">
                 <span>Subtotal</span>
                 <span>${store.formatPrice(rawSubtotal)}</span>
               </div>
-              <div class="modal-concession-line">
-                <span>Concession (${appliedReward ? appliedReward.code : 'Reward'})</span>
-                <span>-${store.formatPrice(discountAmount)}</span>
-              </div>
             ` : ''}
+            ${promoDiscount > 0 ? `
+              <div class="modal-concession-line" style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--gold-light); margin-bottom: 0.25rem;">
+                <span>Concession (${appliedReward ? appliedReward.code : 'FIRST20'} - 20%)</span>
+                <span>-${store.formatPrice(promoDiscount)}</span>
+              </div>
+            ` : (upiDiscount > 0 ? `
+              <div class="modal-concession-line" style="display: flex; justify-content: space-between; font-size: 0.82rem; color: #10B981; margin-bottom: 0.25rem;">
+                <span>Prepaid UPI Instant Discount</span>
+                <span>-₹200</span>
+              </div>
+            ` : '')}
             ${appliedGift ? `
-              <div class="modal-concession-line">
+              <div class="modal-concession-line" style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--gold-light); margin-bottom: 0.25rem;">
                 <span>Vault Flacon Gift (${appliedGift.name})</span>
                 <span class="glass-pill" style="font-size: 0.62rem; padding: 0.05rem 0.35rem;">FREE</span>
               </div>
             ` : ''}
-            <div class="modal-total-line">
-              <span class="modal-total-label">Total (Incl. all taxes)</span>
-              <span class="modal-total-amount">${store.formatPrice(finalTotal)}</span>
+            <div class="modal-total-line" style="display: flex; justify-content: space-between; align-items: center; font-size: 1.05rem; font-weight: 700;">
+              <span class="modal-total-label" style="color: var(--text-main);">Total Payable</span>
+              <span id="drawer-final-total" class="modal-total-amount gold-text" style="font-size: 1.25rem;">${store.formatPrice(verifiedTotal)}</span>
             </div>
           </div>
-          <div class="modal-cart-actions-row">
-            <button class="cart-checkout-primary-btn" onclick="app.checkoutCart(event)">
-              <span>⚡</span> Checkout (UPI · Cards · COD)
-            </button>
-            <div class="cart-secondary-actions-grid">
-              <button class="cart-secondary-btn" onclick="app.openRazorpayModal()">
-                Card / NetBanking Desk
-              </button>
-              <button class="cart-secondary-btn" onclick="app.checkoutCartWhatsApp()">
-                Order via WhatsApp
-              </button>
-            </div>
-          </div>
+
+          <button id="drawer-proceed-btn" class="btn btn-gold drawer-unified-proceed-btn" style="width: 100%; padding: 0.95rem 1.2rem; font-size: 0.92rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border-radius: 12px; box-shadow: 0 4px 20px rgba(212, 175, 55, 0.35);" onclick="app.launchUnifiedCheckout()">
+            ${isCOD ? `COMPLETE COD ORDER • ${store.formatPrice(verifiedTotal)}` : `PROCEED TO PAYMENT • ${store.formatPrice(verifiedTotal)}`}
+          </button>
         </div>
       ` : ''}
     `;
@@ -1740,7 +1868,7 @@ const Components = {
                   ${!isUnlocked ? `
                     <button class="btn btn-glass" style="width: 100%; font-size: 0.68rem; padding: 0.35rem 0.5rem; margin-top: 0.6rem;"
                             onclick="${isModal ? 'app.closeProfileModal();' : ''} app.openProductView('${id}')">
-                      Acquire Flacon
+                      Explore Flacon
                     </button>
                   ` : ''}
                 </div>

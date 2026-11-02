@@ -10,63 +10,125 @@ export const SERVER_CATALOG = [
   {
     id: "king-scar",
     name: "King Scar Extrait de Parfum",
+    sku: "MYTH-EDP-KS-100",
+    defaultSize: "100ml",
     price: 5999,
+    salePrice: 5999,
+    mrp: 7499,
+    volumeMl: 100,
+    variants: {
+      "100ml": { sku: "MYTH-EDP-KS-100", volumeMl: 100, salePrice: 5999, mrp: 7499, stock: 50, mythosReward: 180 },
+      "50ml": { sku: "MYTH-EDP-KS-50", volumeMl: 50, salePrice: 3499, mrp: 4399, stock: 50, mythosReward: 105 }
+    },
     sizes: [
-      { ml: 50, price: 3499 },
-      { ml: 100, price: 5999 }
+      { ml: 100, price: 5999, mrp: 7499, sku: "MYTH-EDP-KS-100", stock: 50 },
+      { ml: 50, price: 3499, mrp: 4399, sku: "MYTH-EDP-KS-50", stock: 50 }
     ]
   },
   {
     id: "petralux",
     name: "Petralux Extrait de Parfum",
+    sku: "MYTH-EDP-PX-100",
+    defaultSize: "100ml",
     price: 4999,
+    salePrice: 4999,
+    mrp: 6249,
+    volumeMl: 100,
+    variants: {
+      "100ml": { sku: "MYTH-EDP-PX-100", volumeMl: 100, salePrice: 4999, mrp: 6249, stock: 50, mythosReward: 150 },
+      "50ml": { sku: "MYTH-EDP-PX-50", volumeMl: 50, salePrice: 2799, mrp: 3499, stock: 50, mythosReward: 84 }
+    },
     sizes: [
-      { ml: 50, price: 2799 },
-      { ml: 100, price: 4999 }
+      { ml: 100, price: 4999, mrp: 6249, sku: "MYTH-EDP-PX-100", stock: 50 },
+      { ml: 50, price: 2799, mrp: 3499, sku: "MYTH-EDP-PX-50", stock: 50 }
     ]
   },
   {
     id: "oud-rion",
     name: "Oud Rion Extrait de Parfum",
+    sku: "MYTH-EDP-OR-100",
+    defaultSize: "100ml",
     price: 6999,
+    salePrice: 6999,
+    mrp: 8749,
+    volumeMl: 100,
+    variants: {
+      "100ml": { sku: "MYTH-EDP-OR-100", volumeMl: 100, salePrice: 6999, mrp: 8749, stock: 50, mythosReward: 210 },
+      "50ml": { sku: "MYTH-EDP-OR-50", volumeMl: 50, salePrice: 4099, mrp: 5149, stock: 50, mythosReward: 123 }
+    },
     sizes: [
-      { ml: 50, price: 4099 },
-      { ml: 100, price: 6999 }
+      { ml: 100, price: 6999, mrp: 8749, sku: "MYTH-EDP-OR-100", stock: 50 },
+      { ml: 50, price: 4099, mrp: 5149, sku: "MYTH-EDP-OR-50", stock: 50 }
     ]
   },
   {
     id: "spark",
     name: "Spark Extrait de Parfum",
+    sku: "MYTH-EDP-SP-100",
+    defaultSize: "100ml",
     price: 5499,
+    salePrice: 5499,
+    mrp: 6874,
+    volumeMl: 100,
+    variants: {
+      "100ml": { sku: "MYTH-EDP-SP-100", volumeMl: 100, salePrice: 5499, mrp: 6874, stock: 50, mythosReward: 165 },
+      "50ml": { sku: "MYTH-EDP-SP-50", volumeMl: 50, salePrice: 3199, mrp: 3999, stock: 50, mythosReward: 96 }
+    },
     sizes: [
-      { ml: 50, price: 3199 },
-      { ml: 100, price: 5499 }
+      { ml: 100, price: 5499, mrp: 6874, sku: "MYTH-EDP-SP-100", stock: 50 },
+      { ml: 50, price: 3199, mrp: 3999, sku: "MYTH-EDP-SP-50", stock: 50 }
     ]
   },
   {
     id: "wood-sera",
     name: "Wood Sera Extrait de Parfum",
+    sku: "MYTH-EDP-WS-100",
+    defaultSize: "100ml",
     price: 4999,
+    salePrice: 4999,
+    mrp: 6249,
+    volumeMl: 100,
+    variants: {
+      "100ml": { sku: "MYTH-EDP-WS-100", volumeMl: 100, salePrice: 4999, mrp: 6249, stock: 50, mythosReward: 150 },
+      "50ml": { sku: "MYTH-EDP-WS-50", volumeMl: 50, salePrice: 2799, mrp: 3499, stock: 50, mythosReward: 84 }
+    },
     sizes: [
-      { ml: 50, price: 2799 },
-      { ml: 100, price: 4999 }
+      { ml: 100, price: 4999, mrp: 6249, sku: "MYTH-EDP-WS-100", stock: 50 },
+      { ml: 50, price: 2799, mrp: 3499, sku: "MYTH-EDP-WS-50", stock: 50 }
     ]
   },
   {
     id: "ash",
     name: "Ash Extrait de Parfum",
+    sku: "MYTH-EDP-AS-100",
+    defaultSize: "100ml",
     price: 5999,
+    salePrice: 5999,
+    mrp: 7499,
+    volumeMl: 100,
+    variants: {
+      "100ml": { sku: "MYTH-EDP-AS-100", volumeMl: 100, salePrice: 5999, mrp: 7499, stock: 50, mythosReward: 180 },
+      "50ml": { sku: "MYTH-EDP-AS-50", volumeMl: 50, salePrice: 3499, mrp: 4399, stock: 50, mythosReward: 105 }
+    },
     sizes: [
-      { ml: 50, price: 3499 },
-      { ml: 100, price: 5999 }
+      { ml: 100, price: 5999, mrp: 7499, sku: "MYTH-EDP-AS-100", stock: 50 },
+      { ml: 50, price: 3499, mrp: 4399, sku: "MYTH-EDP-AS-50", stock: 50 }
     ]
   },
   {
     id: "mytholis-discovery-set",
     name: "Sixth Sense (Master Discovery Coffret)",
+    sku: "MYTH-SET-6S-48",
+    defaultSize: "48ml",
     price: 3999,
+    salePrice: 3999,
+    mrp: 4999,
+    volumeMl: 48,
+    variants: {
+      "48ml": { sku: "MYTH-SET-6S-48", volumeMl: 48, salePrice: 3999, mrp: 4999, stock: 50, mythosReward: 150 }
+    },
     sizes: [
-      { ml: 48, price: 3999 }
+      { ml: 48, price: 3999, mrp: 4999, sku: "MYTH-SET-6S-48", stock: 50 }
     ]
   }
 ];
@@ -83,6 +145,10 @@ export const VALID_PROMO_CODES = {
 
 /**
  * Server-authoritative order total recalculation.
+ * Resolves each cart item by matching:
+ * 1. item.sku (e.g., MYTH-EDP-KS-100 vs MYTH-EDP-KS-50)
+ * 2. item.id / item.slug + item.size (defaulting to "100ml" or "48ml")
+ * 
  * @param {Array} items - List of items [{ id, sku, size, qty, quantity }]
  * @param {string} promoCode - Optional coupon code
  * @param {string|number} paymentMethodOrPoints - Payment method string ('UPI', 'Razorpay', 'COD') or Mythos points number
@@ -118,28 +184,54 @@ export function calculateServerOrderTotal(items = [], promoCode = '', paymentMet
   const validatedItems = [];
 
   for (const item of items) {
-    // Resolve product ID from id, productId, or sku
-    let prodId = item.id || item.productId;
-    let requestedSize = Number(item.size || item.ml);
+    let matchedProd = null;
+    let matchedVariant = null;
+    let matchedSize = 100;
 
-    if (!prodId && item.sku && typeof item.sku === 'string') {
-      const lastHyphen = item.sku.lastIndexOf('-');
-      if (lastHyphen !== -1) {
-        prodId = item.sku.substring(0, lastHyphen);
-        const parsedSize = Number(item.sku.substring(lastHyphen + 1));
-        if (!isNaN(parsedSize) && !requestedSize) {
-          requestedSize = parsedSize;
+    // 1. Try matching by exact variant SKU across catalog
+    if (item.sku && typeof item.sku === 'string') {
+      const cleanSku = item.sku.trim().toUpperCase();
+      for (const prod of SERVER_CATALOG) {
+        if (prod.variants) {
+          for (const [sKey, v] of Object.entries(prod.variants)) {
+            if (v.sku && v.sku.toUpperCase() === cleanSku) {
+              matchedProd = prod;
+              matchedVariant = v;
+              matchedSize = v.volumeMl;
+              break;
+            }
+          }
         }
-      } else {
-        prodId = item.sku;
+        if (matchedProd) break;
       }
     }
 
-    const catalogProd = SERVER_CATALOG.find(p => p.id === prodId);
-    if (!catalogProd) {
+    // 2. If no SKU match, match product by ID / slug
+    if (!matchedProd) {
+      const rawId = String(item.id || item.productId || item.slug || '').trim().toLowerCase();
+      matchedProd = SERVER_CATALOG.find(p => 
+        p.id === rawId || 
+        (rawId === 'sixth-sense' && p.id === 'mytholis-discovery-set') ||
+        (rawId === 'mytholis-discovery-set' && p.id === 'mytholis-discovery-set')
+      );
+    }
+
+    // 3. Fallback to SKU prefix if ID was missing (e.g. "MYTH-EDP-KS-50")
+    if (!matchedProd && item.sku && typeof item.sku === 'string') {
+      const cleanSku = item.sku.trim().toUpperCase();
+      if (cleanSku.includes('KS')) matchedProd = SERVER_CATALOG.find(p => p.id === 'king-scar');
+      else if (cleanSku.includes('PX')) matchedProd = SERVER_CATALOG.find(p => p.id === 'petralux');
+      else if (cleanSku.includes('OR')) matchedProd = SERVER_CATALOG.find(p => p.id === 'oud-rion');
+      else if (cleanSku.includes('SP')) matchedProd = SERVER_CATALOG.find(p => p.id === 'spark');
+      else if (cleanSku.includes('WS')) matchedProd = SERVER_CATALOG.find(p => p.id === 'wood-sera');
+      else if (cleanSku.includes('AS')) matchedProd = SERVER_CATALOG.find(p => p.id === 'ash');
+      else if (cleanSku.includes('6S') || cleanSku.includes('SET')) matchedProd = SERVER_CATALOG.find(p => p.id === 'mytholis-discovery-set');
+    }
+
+    if (!matchedProd) {
       return {
         isValid: false,
-        error: `Unknown catalog product: ${prodId || item.sku || 'unspecified'}`,
+        error: `Unknown catalog product: ${item.id || item.sku || 'unspecified'}`,
         subtotal: 0,
         discountAmount: 0,
         totalDiscount: 0,
@@ -151,11 +243,45 @@ export function calculateServerOrderTotal(items = [], promoCode = '', paymentMet
       };
     }
 
+    // 4. Resolve exact size variant if not already matched
+    if (!matchedVariant) {
+      const isCoffret = matchedProd.id === 'mytholis-discovery-set' || matchedProd.id === 'sixth-sense';
+      let reqSize = item.size ? String(item.size).toLowerCase().replace('ml', '').trim() : '';
+      if (!reqSize) {
+        reqSize = isCoffret ? '48' : '100'; // Default is 100ml (or 48ml for Coffret)
+      }
+
+      const sizeKey = `${reqSize}ml`;
+      if (matchedProd.variants && matchedProd.variants[sizeKey]) {
+        matchedVariant = matchedProd.variants[sizeKey];
+        matchedSize = matchedVariant.volumeMl;
+      } else if (matchedProd.sizes) {
+        const sObj = matchedProd.sizes.find(s => String(s.ml) === reqSize) || matchedProd.sizes[0];
+        matchedVariant = {
+          sku: sObj.sku || `${matchedProd.id}-${sObj.ml}`,
+          volumeMl: sObj.ml,
+          salePrice: sObj.price,
+          mrp: sObj.mrp || Math.round(sObj.price * 1.25),
+          stock: sObj.stock || 50
+        };
+        matchedSize = sObj.ml;
+      } else {
+        matchedVariant = {
+          sku: matchedProd.sku,
+          volumeMl: matchedProd.volumeMl || 100,
+          salePrice: matchedProd.price,
+          mrp: matchedProd.mrp || 7499,
+          stock: 50
+        };
+        matchedSize = matchedVariant.volumeMl;
+      }
+    }
+
     const qty = Math.floor(Number(item.qty !== undefined ? item.qty : item.quantity));
     if (isNaN(qty) || qty < 1) {
       return {
         isValid: false,
-        error: `Invalid quantity for ${catalogProd.name}: must be at least 1`,
+        error: `Invalid quantity for ${matchedProd.name}: must be at least 1`,
         subtotal: 0,
         discountAmount: 0,
         totalDiscount: 0,
@@ -170,7 +296,7 @@ export function calculateServerOrderTotal(items = [], promoCode = '', paymentMet
     if (qty > 50) {
       return {
         isValid: false,
-        error: `Quantity exceeds maximum permissible limit for ${catalogProd.name}`,
+        error: `Quantity exceeds maximum permissible limit for ${matchedProd.name}`,
         subtotal: 0,
         discountAmount: 0,
         totalDiscount: 0,
@@ -182,23 +308,17 @@ export function calculateServerOrderTotal(items = [], promoCode = '', paymentMet
       };
     }
 
-    let unitPrice = catalogProd.price;
-    let matchedSize = 100;
-
-    if (catalogProd.sizes && catalogProd.sizes.length > 0) {
-      const sizeObj = catalogProd.sizes.find(s => s.ml === requestedSize) || catalogProd.sizes[0];
-      unitPrice = sizeObj.price;
-      matchedSize = sizeObj.ml;
-    }
-
+    const unitPrice = matchedVariant.salePrice;
     const itemTotal = unitPrice * qty;
     subtotal += itemTotal;
 
     validatedItems.push({
-      id: catalogProd.id,
-      sku: `${catalogProd.id}-${matchedSize}`,
-      name: catalogProd.name,
+      id: matchedProd.id,
+      slug: matchedProd.id,
+      sku: matchedVariant.sku,
+      name: matchedProd.name,
       size: matchedSize,
+      sizeLabel: `${matchedSize}ml`,
       quantity: qty,
       qty: qty,
       unitPrice,

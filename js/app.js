@@ -507,17 +507,18 @@ class MytholisApp {
     const topNotesEl = document.getElementById('pyramid-top-notes');
     const heartNotesEl = document.getElementById('pyramid-heart-notes');
     const baseNotesEl = document.getElementById('pyramid-base-notes');
-    const ctaBtn = document.getElementById('pyramid-cta-btn');
+    const cartBtn = document.getElementById('pyramid-cart-btn');
+    const buyBtn = document.getElementById('pyramid-buy-btn');
 
-    if (cardsContainer && topNotesEl && heartNotesEl && baseNotesEl && ctaBtn) {
+    if (cardsContainer && topNotesEl && heartNotesEl && baseNotesEl) {
       cardsContainer.style.opacity = '0.3';
       cardsContainer.style.transform = 'translateY(6px)';
       setTimeout(() => {
         topNotesEl.innerHTML = scent.notes.top.join(' · ');
         heartNotesEl.innerHTML = scent.notes.heart.join(' · ');
         baseNotesEl.innerHTML = scent.notes.base.join(' · ');
-        ctaBtn.innerHTML = `Acquire ${shortName} →`;
-        ctaBtn.setAttribute('onclick', `app.openProductView('${scent.id}')`);
+        if (cartBtn) cartBtn.setAttribute('onclick', `app.quickAddToCart('${scent.id}')`);
+        if (buyBtn) buyBtn.setAttribute('onclick', `app.buyNow('${scent.id}', event)`);
         cardsContainer.style.opacity = '1';
         cardsContainer.style.transform = 'translateY(0)';
       }, 150);
@@ -585,9 +586,12 @@ class MytholisApp {
 
     // If on admin view, load data if authenticated as admin
     if (store.currentView === 'admin' || store.currentView === 'sanctum-command') {
+      document.body.classList.add('admin-view-active');
       if (store.isAdmin() && !this.adminLoading && (!this.adminData.orders.length && !this.adminData.users.length)) {
         this.loadAdminDashboard();
       }
+    } else {
+      document.body.classList.remove('admin-view-active');
     }
 
     if (store.currentView === 'home') {
@@ -644,7 +648,7 @@ class MytholisApp {
         if (kicker) gsap.set(kicker, { opacity: 0, y: -15 });
         if (words.length) gsap.set(words, { y: '105%' });
         if (letters.length) gsap.set(letters, { y: 30, opacity: 0 });
-        if (subline) gsap.set(subline, { opacity: 0, y: 25 });
+        if (subline) gsap.set(subline, { opacity: 0, y: 15 });
 
         // 2. Intro timeline: Kicker -> Title -> ONE SANCTUARY -> BOTTLES DROP FALL -> Subline
         const intro = gsap.timeline({
@@ -652,6 +656,7 @@ class MytholisApp {
           onComplete: () => {
             this.isIntroAnimating = false;
             if (letters.length) gsap.set(letters, { clearProps: 'all' });
+            if (subline) gsap.set(subline, { clearProps: 'transform' });
           }
         });
 
@@ -688,7 +693,7 @@ class MytholisApp {
           }, 0.75);
         }
 
-        if (subline) intro.to(subline, { opacity: 1, y: 0, duration: 0.85 }, 1.55);
+        if (subline) intro.to(subline, { opacity: 1, y: 0, duration: 0.85, clearProps: 'transform' }, 1.55);
       } else {
         // Fast 300ms transition for returning to Home during same session
         this.isIntroAnimating = false;
@@ -696,7 +701,7 @@ class MytholisApp {
         if (kicker) gsap.set(kicker, { opacity: 1, y: 0 });
         if (words.length) gsap.set(words, { y: '0%' });
         if (letters.length) gsap.set(letters, { clearProps: 'all' });
-        if (subline) gsap.set(subline, { opacity: 1, y: 0 });
+        if (subline) gsap.set(subline, { opacity: 1, clearProps: 'transform' });
 
         if (isMobile) {
           cards.forEach((card, i) => {
@@ -1577,19 +1582,20 @@ class MytholisApp {
     const engravingEl = document.getElementById('engraving-text');
     const engraving = engravingEl ? engravingEl.value.trim() : '';
 
-    store.addToCart(productId, activeSizeObj.ml, engraving, 1);
+    store.addToCart(productId, activeSizeObj.ml, engraving, 1, activeSizeObj.sku);
     this.showToast("Fragrance added to your cart.");
     this.openCartModal();
   }
 
   /* Instant Quick Add from Catalog Card or Quiz Outcome */
-  quickAddToCart(productId, ml = null, price = null) {
+  quickAddToCart(productId, ml = null, price = null, sku = null) {
     const product = MYTHOLIS_CATALOG.find(p => p.id === productId) || MYTHOLIS_CATALOG[0];
     const targetSize = ml 
       ? (product.sizes.find(s => s.ml === ml) || product.sizes[0])
       : product.sizes[0];
+    const targetSku = sku || targetSize.sku;
     
-    store.addToCart(productId, targetSize.ml, '', 1);
+    store.addToCart(productId, targetSize.ml, '', 1, targetSku);
     const cleanName = (product.name || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     this.showToast(`${cleanName} (${targetSize.ml}ml) added to your cart.`);
     this.openCartModal();
@@ -1601,11 +1607,14 @@ class MytholisApp {
     const product = MYTHOLIS_CATALOG.find(p => p.id === productId);
     if (!product) return;
 
+    const sizeObj = product.sizes ? product.sizes.find(s => s.ml === ml) : null;
+    const targetSku = sizeObj?.sku || (product.variants && product.variants[`${ml}ml`]?.sku) || product.sku;
+
     // Update active pill styling on this card
     const cardEl = document.querySelector(`.product-card[data-id="${productId}"]`);
     if (cardEl) {
       cardEl.querySelectorAll('.card-size-pill').forEach(pill => {
-        if (pill.innerText.includes(`${ml}ml`)) {
+        if (pill.innerText.includes(`${ml}ml`) || pill.getAttribute('data-ml') == ml) {
           pill.classList.add('active');
         } else {
           pill.classList.remove('active');
@@ -1615,14 +1624,22 @@ class MytholisApp {
       if (priceEl) {
         priceEl.innerText = store.formatPrice(price);
       }
+      const mrpEl = document.getElementById(`card-mrp-${productId}`);
+      if (mrpEl && sizeObj?.mrp) {
+        mrpEl.innerText = store.formatPrice(sizeObj.mrp);
+      }
       const cardMythosEl = document.getElementById(`card-mythos-${productId}`);
       if (cardMythosEl && store.calculateProductMythos) {
         const mInfo = store.calculateProductMythos(price);
         cardMythosEl.innerHTML = `<span>🪙</span> Earn <strong>+${mInfo.coins} Mythos</strong>`;
       }
+      const addBtn = document.getElementById(`card-add-btn-${productId}`);
+      if (addBtn) {
+        addBtn.setAttribute('onclick', `event.stopPropagation(); app.quickAddToCart('${productId}', ${ml}, ${price}, '${targetSku}')`);
+      }
       const buyBtn = document.getElementById(`card-buy-btn-${productId}`);
       if (buyBtn) {
-        buyBtn.setAttribute('onclick', `event.stopPropagation(); app.quickAddToCart('${productId}', ${ml}, ${price})`);
+        buyBtn.setAttribute('onclick', `event.stopPropagation(); app.buyNow('${productId}', event, ${ml}, ${price})`);
       }
     }
   }
@@ -1754,38 +1771,159 @@ class MytholisApp {
     }
   }
 
-  buyNow(productId, event) {
-    if (event) event.preventDefault();
+  hasValidSavedAddress() {
+    const u = store.user || {};
+    const name = (u.name || '').trim();
+    const phone = (u.phone || '').replace(/\D/g, '').slice(-10);
+    const address = (u.address || '').trim();
+    const pincode = (u.pincode || '').replace(/\D/g, '');
+    if (!name || name === 'Mytholis Patron' || name === 'Mytholis Collector') return false;
+    if (phone.length !== 10) return false;
+    if (address.length < 5) return false;
+    if (pincode.length !== 6) return false;
+    return true;
+  }
+
+  toggleDrawerAddressForm(show) {
+    const card = document.getElementById('drawer-saved-address-card');
+    const fields = document.getElementById('drawer-address-fields');
+    if (card) card.style.display = show ? 'none' : 'flex';
+    if (fields) {
+      fields.style.display = show ? 'flex' : 'none';
+      if (show) {
+        setTimeout(() => {
+          const nameEl = document.getElementById('checkout-name');
+          if (nameEl) nameEl.focus();
+        }, 120);
+      }
+    }
+  }
+
+  selectDrawerPaymentMethod(el, method) {
+    this.drawerPaymentMethod = method;
+    document.querySelectorAll('.drawer-method-pill').forEach(p => p.classList.remove('active'));
+    if (el) el.classList.add('active');
+
+    const codNotice = document.getElementById('drawer-cod-notice');
+    if (codNotice) {
+      codNotice.style.display = (method === 'cod') ? 'block' : 'none';
+    }
+
+    // Invalidate stale order cache whenever payment method changes
+    this.cachedRazorpayOrderData = null;
+    this.cachedRazorpayOrderPromise = null;
+
+    this.updateDrawerPriceAndButton();
+    this.precreateRazorpayOrder();
+  }
+
+  updateDrawerPriceAndButton() {
+    const rawSubtotal = store.getCartTotal ? store.getCartTotal() : 0;
+    const appliedReward = store.getAppliedReward ? store.getAppliedReward() : null;
+    const promoDiscount = store.getDiscountAmount ? store.getDiscountAmount(rawSubtotal) : 0;
+    const activeMethod = this.drawerPaymentMethod || 'upi_gpay';
+    const isUPI = ['upi_gpay', 'upi_phonepe', 'upi_paytm'].includes(activeMethod);
+    const isCOD = activeMethod === 'cod';
+
+    // Non-stackable: UPI discount applies on subtotal >= ₹2,000 only when no promo discount is active
+    const upiDiscount = (!promoDiscount && isUPI && rawSubtotal >= 2000) ? 200 : 0;
+    const verifiedTotal = Math.max(1, rawSubtotal - promoDiscount - upiDiscount);
+
+    const totalEl = document.getElementById('drawer-final-total');
+    if (totalEl) totalEl.textContent = store.formatPrice(verifiedTotal);
+
+    const proceedBtn = document.getElementById('drawer-proceed-btn');
+    if (proceedBtn) {
+      proceedBtn.innerHTML = isCOD 
+        ? `COMPLETE COD ORDER • ${store.formatPrice(verifiedTotal)}` 
+        : `PROCEED TO PAYMENT • ${store.formatPrice(verifiedTotal)}`;
+    }
+
+    const badgeEl = document.getElementById('drawer-discount-badge');
+    if (badgeEl) {
+      if (promoDiscount > 0) {
+        badgeEl.textContent = `✦ 20% Privilege Active (${appliedReward ? appliedReward.code : 'FIRST20'})`;
+      } else if (isUPI && rawSubtotal >= 2000) {
+        badgeEl.textContent = 'Save ₹200 via Prepaid UPI';
+      } else {
+        badgeEl.textContent = 'Complimentary Armored Delivery';
+      }
+    }
+  }
+
+  buyNow(productId, event, ml = null, price = null) {
+    if (event && event.preventDefault) event.preventDefault();
     const catalog = (typeof store !== 'undefined' && store.getProducts) ? store.getProducts() : MYTHOLIS_CATALOG;
     const product = catalog.find(p => p.id === productId) || MYTHOLIS_CATALOG.find(p => p.id === productId) || { id: productId };
     
-    // Determine the active selected size or default to 50ml (or 48ml for coffret)
-    const isCoffret = product.id === 'mytholis-discovery-set';
-    const fallbackSize = isCoffret ? 48 : 50;
-    const activeMl = (this.selectedSize && product.sizes?.some(s => s.ml === this.selectedSize))
+    // Determine the active selected size or default to 100ml (or 48ml for coffret)
+    const isCoffret = product.id === 'mytholis-discovery-set' || product.id === 'sixth-sense';
+    const fallbackSize = isCoffret ? 48 : (product.defaultSize ? parseInt(product.defaultSize) : 100);
+    const activeMl = ml || (this.selectedSize && product.sizes?.some(s => s.ml === this.selectedSize)
       ? this.selectedSize
-      : fallbackSize;
-    const activeSizeObj = product.sizes?.find(s => s.ml === activeMl) || product.sizes?.[0] || { ml: activeMl, price: product.price };
+      : fallbackSize);
+    const activeSizeObj = product.sizes?.find(s => s.ml === activeMl) || product.sizes?.[0] || { ml: activeMl, price: price || product.price };
 
     this.selectedSize = activeSizeObj.ml;
-    this.selectedPrice = activeSizeObj.price;
+    this.selectedPrice = price || activeSizeObj.price;
 
-    // Set cart to this exact item so checkout processes this exact size and price
+    const variantKey = `${activeSizeObj.ml}ml`;
+    const targetSku = activeSizeObj.sku 
+      || (product.variants && product.variants[variantKey]?.sku) 
+      || product.sku 
+      || `${product.id}-${activeSizeObj.ml}`;
+
+    // Set cart to this exact item so checkout processes this exact size, sku and price
     store.cart = [{
       id: product.id,
+      slug: product.slug || product.id,
+      sku: targetSku,
       name: product.name,
-      image: product.image,
+      image: product.image || (product.media && product.media.bottleImage),
       size: activeSizeObj.ml,
-      price: activeSizeObj.price,
+      sizeLabel: activeSizeObj.label || `${activeSizeObj.ml}ml`,
+      price: this.selectedPrice,
+      mrp: activeSizeObj.mrp || product.mrp || Math.round(this.selectedPrice * 1.25),
       engraving: '',
       quantity: 1
     }];
     store.saveLocalStorage('mytholis_cart', store.cart);
     store.notify();
 
-    this.trackMetaEvent('AddToCart', { content_name: product.name, value: activeSizeObj.price, currency: 'INR' });
+    this.trackMetaEvent('AddToCart', { content_name: product.name, value: this.selectedPrice, currency: 'INR' });
 
-    return this.openRazorpayModal(product);
+    // DIRECT BUY NOW EXPRESS FLOW:
+    if (this.hasValidSavedAddress()) {
+      // Saved Address Exists: immediately launch Razorpay without drawer or middle modal
+      this.closeAllModals(false);
+      this.showToast('Launching Express Armored Checkout...');
+      return this.launchExpressCheckout(product, activeSizeObj);
+    } else {
+      // No Saved Address: slide open Unified Cart Drawer focused on the autofill address block
+      this.openCartModal();
+      this.toggleDrawerAddressForm(true);
+      return;
+    }
+  }
+
+  async launchExpressCheckout(product, sizeObj) {
+    const rawSubtotal = sizeObj?.price || product.price;
+    const appliedReward = (typeof store.getAppliedReward === 'function') ? store.getAppliedReward() : null;
+    let promoCode = appliedReward?.code 
+      || store.loyalty?.applied_reward_code 
+      || store.appliedPromoCode 
+      || null;
+
+    if (!promoCode && (!store.user?.orders?.length && !store.loyalty?.promo_dismissed)) {
+      promoCode = 'FIRST20';
+    }
+
+    const promoDiscount = promoCode ? Math.floor(rawSubtotal * 0.20) : 0;
+    // Default express payment is UPI (saves ₹200 if no promo and >= ₹2000)
+    const upiDiscount = (!promoDiscount && rawSubtotal >= 2000) ? 200 : 0;
+    const expressTotal = Math.max(1, rawSubtotal - promoDiscount - upiDiscount);
+
+    return this.launchRazorpayCheckout(expressTotal);
   }
 
   buyNowRazorpay(productId, event) {
@@ -1793,9 +1931,120 @@ class MytholisApp {
   }
 
   checkoutCart(event) {
-    if (event) event.preventDefault();
-    this.closeCartModal();
-    return this.openRazorpayModal();
+    if (event && event.preventDefault) event.preventDefault();
+    return this.launchUnifiedCheckout();
+  }
+
+  async launchUnifiedCheckout() {
+    const proceedBtn = document.getElementById('drawer-proceed-btn') || document.getElementById('btn-proceed-checkout');
+    const originalBtnText = proceedBtn ? proceedBtn.innerHTML : '';
+    if (proceedBtn) {
+      proceedBtn.disabled = true;
+      proceedBtn.innerHTML = `<span style="display:inline-block; animation:spin 1s linear infinite;">✦</span> Verifying Logistics...`;
+    }
+    const restoreProceedBtn = () => {
+      if (proceedBtn) {
+        proceedBtn.disabled = false;
+        proceedBtn.innerHTML = originalBtnText;
+      }
+    };
+
+    const nameInput = document.getElementById('checkout-name');
+    const emailInput = document.getElementById('checkout-email');
+    const phoneInput = document.getElementById('checkout-phone');
+    const pincodeInput = document.getElementById('checkout-pincode');
+    const addressInput = document.getElementById('checkout-address');
+    const cityInput = document.getElementById('checkout-city');
+    const stateInput = document.getElementById('checkout-state');
+
+    const customerName = (nameInput ? nameInput.value.trim() : '') || store.user?.name || '';
+    const rawEmail = (emailInput ? emailInput.value.trim() : '') || store.user?.email || (typeof firebaseService !== 'undefined' && firebaseService.currentUser?.email) || '';
+    const customerEmail = normalizeEmail(rawEmail);
+    const rawPhone = (phoneInput ? phoneInput.value.trim() : '') || store.user?.phone || (typeof firebaseService !== 'undefined' && firebaseService.currentUser?.phoneNumber) || '';
+    const customerPhone = normalizePhone(rawPhone) || rawPhone.replace(/\D/g, '').slice(-10);
+    const customerAddress = (addressInput ? addressInput.value.trim() : '') || store.user?.address || '';
+    const customerPincode = (pincodeInput ? pincodeInput.value.trim().replace(/\D/g, '') : '') || store.user?.pincode || '';
+    const customerCity = (cityInput ? cityInput.value.trim() : '') || store.user?.city || '';
+    const customerState = (stateInput ? stateInput.value.trim() : '') || store.user?.state || '';
+
+    if (!customerName || customerName === 'Mytholis Patron' || customerName === 'Mytholis Collector') {
+      restoreProceedBtn();
+      this.toggleDrawerAddressForm(true);
+      this.showToast('Please provide your full delivery name.');
+      if (nameInput) nameInput.focus();
+      return;
+    }
+
+    if (!customerEmail || !customerEmail.includes('@')) {
+      restoreProceedBtn();
+      this.toggleDrawerAddressForm(true);
+      this.showToast('Please provide a valid email address for delivery notifications.');
+      if (emailInput) emailInput.focus();
+      return;
+    }
+
+    if (!customerPhone || customerPhone.length !== 10) {
+      restoreProceedBtn();
+      this.toggleDrawerAddressForm(true);
+      this.showToast('Please provide a valid 10-digit Indian mobile number.');
+      if (phoneInput) phoneInput.focus();
+      return;
+    }
+
+    if (!customerPincode || customerPincode.length !== 6) {
+      restoreProceedBtn();
+      this.toggleDrawerAddressForm(true);
+      this.showToast('Please provide a valid 6-digit postal PIN code.');
+      if (pincodeInput) pincodeInput.focus();
+      return;
+    }
+
+    if (!customerAddress || customerAddress.length < 5) {
+      restoreProceedBtn();
+      this.toggleDrawerAddressForm(true);
+      this.showToast('Please provide your complete street address.');
+      if (addressInput) addressInput.focus();
+      return;
+    }
+
+    // Persist verified customer coordinates
+    if (!store.user) store.user = {};
+    store.user.name = customerName;
+    store.user.email = customerEmail;
+    store.user.phone = customerPhone;
+    store.user.address = customerAddress;
+    store.user.pincode = customerPincode;
+    store.user.city = customerCity;
+    store.user.state = customerState;
+    if (typeof store.saveUser === 'function') {
+      store.saveUser();
+    } else {
+      store.saveLocalStorage('mytholis_user', store.user);
+    }
+    if (typeof firebaseService !== 'undefined' && firebaseService?.currentUser && firebaseService?.updateUserProfile) {
+      firebaseService.updateUserProfile({
+        name: customerName,
+        email: customerEmail,
+        phone: customerPhone,
+        address: customerAddress,
+        pincode: customerPincode,
+        city: customerCity,
+        state: customerState
+      }).catch(() => {});
+    }
+
+    // Calculate verified total
+    const rawSubtotal = store.getCartTotal ? store.getCartTotal() : 0;
+    const promoDiscount = store.getDiscountAmount ? store.getDiscountAmount(rawSubtotal) : 0;
+    const activeMethod = this.drawerPaymentMethod || 'upi_gpay';
+    const isUPI = ['upi_gpay', 'upi_phonepe', 'upi_paytm'].includes(activeMethod);
+    const upiDiscount = (!promoDiscount && isUPI && rawSubtotal >= 2000) ? 200 : 0;
+    const verifiedTotal = Math.max(1, rawSubtotal - promoDiscount - upiDiscount);
+
+    restoreProceedBtn();
+
+    // Directly launch payment or place COD
+    return this.launchRazorpayCheckout(verifiedTotal);
   }
 
   /* ==========================================================================
@@ -1853,28 +2102,37 @@ class MytholisApp {
     // 2. Structured items array for server catalog validation
     const target = productOrCart || (store.cart.length ? { id: null } : MYTHOLIS_CATALOG[0]);
     const isSingleProduct = !!(target && target.id);
-    let chosenSize = this.selectedSize || 50;
+    const isCoffret = target && (target.id === 'mytholis-discovery-set' || target.id === 'sixth-sense');
+    let chosenSize = this.selectedSize || (isCoffret ? 48 : (target.defaultSize ? parseInt(target.defaultSize) : 100));
 
     let items = [];
     if (isSingleProduct) {
+      const vKey = `${chosenSize}ml`;
+      const targetSku = (target.variants && target.variants[vKey]?.sku) 
+        || target.sku 
+        || `${target.id}-${chosenSize}`;
       items = [{
         id: target.id,
-        sku: `${target.id}-${chosenSize}`,
+        slug: target.slug || target.id,
+        sku: targetSku,
         size: Number(chosenSize),
         qty: 1
       }];
     } else if (store.cart.length > 0) {
       items = store.cart.map(item => ({
         id: item.id || item.slug,
+        slug: item.slug || item.id,
         sku: item.sku || `${item.id}-${item.size || 100}`,
         size: Number(item.size || 100),
         qty: Number(item.qty || item.quantity || 1)
       }));
     } else {
+      const def = MYTHOLIS_CATALOG[0];
       items = [{
-        id: MYTHOLIS_CATALOG[0].id,
-        sku: `${MYTHOLIS_CATALOG[0].id}-50`,
-        size: 50,
+        id: def.id,
+        slug: def.slug || def.id,
+        sku: def.sku || 'MYTH-EDP-KS-100',
+        size: 100,
         qty: 1
       }];
     }
@@ -2196,7 +2454,7 @@ class MytholisApp {
 
   /* Execute Razorpay Standard Checkout Popup / COD Order Placement */
   async launchRazorpayCheckout(amount) {
-    const proceedBtn = document.getElementById('btn-proceed-checkout');
+    const proceedBtn = document.getElementById('drawer-proceed-btn') || document.getElementById('btn-proceed-checkout');
     const originalBtnText = proceedBtn ? proceedBtn.innerHTML : '';
     if (proceedBtn) {
       proceedBtn.disabled = true;
@@ -2285,8 +2543,8 @@ class MytholisApp {
     }
 
     // Check payment method
-    const activeMethodPill = document.querySelector('.razorpay-method-pill.active');
-    const paymentMethod = activeMethodPill ? activeMethodPill.textContent.trim() : 'Prepaid (Cards / UPI)';
+    const activeMethodPill = document.querySelector('.drawer-method-pill.active') || document.querySelector('.razorpay-method-pill.active');
+    const paymentMethod = activeMethodPill ? activeMethodPill.textContent.trim() : (this.drawerPaymentMethod === 'cod' ? 'Cash on Delivery (COD)' : 'Prepaid (Google Pay / UPI)');
     const isCOD = paymentMethod.toLowerCase().includes('cash on delivery') || paymentMethod.toLowerCase().includes('cod');
 
     // Structured items array for server catalog calculation
@@ -2472,7 +2730,9 @@ class MytholisApp {
 
     // Synchronize proceed button text with server verified total before opening modal
     if (proceedBtn) {
-      proceedBtn.innerHTML = `Proceed to Payment Desk • ${store.formatPrice(verifiedTotal)}`;
+      proceedBtn.innerHTML = (this.drawerPaymentMethod === 'cod')
+        ? `COMPLETE COD ORDER • ${store.formatPrice(verifiedTotal)}`
+        : `PROCEED TO PAYMENT • ${store.formatPrice(verifiedTotal)}`;
     }
     if (orderData.key || orderData.keyId) {
       razorpayKey = (orderData.key || orderData.keyId).trim();
@@ -2560,6 +2820,7 @@ class MytholisApp {
     }
 
     try {
+      this.closeCartModal();
       this.closeRazorpayModal();
       const rzpInstance = new window.Razorpay(options);
       rzpInstance.on('payment.failed', (response) => {
@@ -2821,6 +3082,9 @@ class MytholisApp {
       overlay.classList.add('active');
       document.body.style.overflow = 'hidden';
     }
+    // Prefill delivery coordinates and pre-create background order
+    this.autofillCheckoutFromProfile();
+    this.precreateRazorpayOrder();
   }
 
   closeCartModal() {
@@ -4522,104 +4786,176 @@ class MytholisApp {
     }
   }
 
-  openProductEditorModal(productId = null) {
+  openProductEditorModal(targetId = null) {
     let prod = null;
-    if (productId) {
-      prod = (this.adminData.products || store.getProducts()).find(p => p.id === productId);
+    if (targetId) {
+      const tid = String(targetId).trim().toLowerCase();
+      const candidates = [
+        ...(Array.isArray(this.adminData?.products) ? this.adminData.products : []),
+        ...(typeof store !== 'undefined' && Array.isArray(store.products) ? store.products : []),
+        ...(typeof store !== 'undefined' && typeof store.getProducts === 'function' ? store.getProducts() : []),
+        ...(typeof MYTHOLIS_CATALOG !== 'undefined' && Array.isArray(MYTHOLIS_CATALOG) ? MYTHOLIS_CATALOG : [])
+      ];
+      prod = candidates.find(p => p && (
+        String(p.id || '').trim().toLowerCase() === tid ||
+        String(p.slug || '').trim().toLowerCase() === tid ||
+        String(p.sku || '').trim().toLowerCase() === tid ||
+        (p.name && p.name.replace(/<[^>]*>/g, '').toLowerCase().includes(tid))
+      )) || null;
     }
     const modalHtml = AdminComponents.renderProductModal(prod);
     this.injectAdminModal(modalHtml);
   }
 
-  async saveAdminProduct(event) {
-    event.preventDefault();
+  async saveAdminProduct(event, existingId = null) {
+    if (event) event.preventDefault();
     try {
       const getVal = id => document.getElementById(id)?.value?.trim() || '';
       const getNum = id => Number(document.getElementById(id)?.value || 0);
-      const getChecked = id => Boolean(document.getElementById(id)?.checked);
 
-      const prodId = getVal('prod-id');
+      const prodId = getVal('prod-id') || existingId;
       if (!prodId) {
         this.showToast('Please provide a valid product ID/slug.');
         return;
       }
 
-      // Read configured sizes (50ml, 100ml or Discovery Coffret)
-      const isCoffret = prodId === 'mytholis-discovery-set' || prodId.includes('coffret') || prodId.includes('discovery') || getVal('prod-name').toLowerCase().includes('sixth sense');
-      const sizes = [];
+      const cleanSlug = prodId.toLowerCase();
+      const isCoffret = cleanSlug === 'mytholis-discovery-set' || 
+                        cleanSlug === 'sixth-sense' || 
+                        cleanSlug.includes('coffret') || 
+                        cleanSlug.includes('discovery') || 
+                        getVal('prod-name').toLowerCase().includes('sixth sense');
+
+      let variants = {};
+      let sizes = [];
+      let defaultSize = isCoffret ? '48ml' : '100ml';
+      let primarySku = '';
+      let salePrice = 0;
+      let mrp = 0;
+      let stock = 0;
+      let volume = isCoffret ? 48 : 100;
 
       if (isCoffret) {
-        const coffretPrice = getNum('coffret-price') || getNum('prod-price') || 3999;
-        const coffretStock = getNum('coffret-stock') || getNum('prod-stock') || 50;
-        sizes.push({ ml: 48, price: coffretPrice, stock: coffretStock });
+        const sku48 = getVal('prod-sku-48') || getVal('prod-sku') || 'MYTH-SET-6S-48';
+        const price48 = getNum('prod-price-48') || getNum('prod-price') || 3999;
+        const mrp48 = getNum('prod-mrp-48') || getNum('prod-compare-price') || 4999;
+        const stock48 = getNum('prod-stock-48') || getNum('prod-stock') || 50;
+
+        variants = {
+          '48ml': { sku: sku48, volumeMl: 48, salePrice: price48, mrp: mrp48, stock: stock48, mythosReward: Math.round(price48 * 0.03) }
+        };
+        sizes = [{ ml: 48, label: '6 × 8ml Coffret (48ml)', price: price48, mrp: mrp48, sku: sku48, stock: stock48, inStock: stock48 > 0 }];
+        primarySku = sku48;
+        salePrice = price48;
+        mrp = mrp48;
+        stock = stock48;
       } else {
-        if (getChecked('size-enabled-50')) {
-          sizes.push({ ml: 50, price: getNum('size-price-50') || 3499, stock: getNum('size-stock-50') || 50 });
-        }
-        if (getChecked('size-enabled-100')) {
-          sizes.push({ ml: 100, price: getNum('size-price-100') || 5999, stock: getNum('size-stock-100') || 50 });
-        }
+        const canonSku100 = (typeof CANONICAL_SKU_MAP !== 'undefined' && CANONICAL_SKU_MAP[cleanSlug]) 
+          ? CANONICAL_SKU_MAP[cleanSlug] 
+          : `MYTH-EDP-${cleanSlug.slice(0, 2).toUpperCase()}-100`;
+        const sku100 = getVal('prod-sku-100') || getVal('prod-sku') || canonSku100;
+        const price100 = getNum('prod-price-100') || getNum('prod-price') || 5999;
+        const mrp100 = getNum('prod-mrp-100') || getNum('prod-compare-price') || Math.round(price100 * 1.25);
+        const stock100 = getNum('prod-stock-100') || getNum('prod-stock') || 50;
 
-        // Preserve existing custom sizes if any
-        const existingProd = (this.adminData.products || []).find(p => p.id === prodId) ||
-                             (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG.find(p => p.id === prodId) : null);
-        if (existingProd && Array.isArray(existingProd.sizes)) {
-          existingProd.sizes.forEach(es => {
-            if (es.ml !== 8 && es.ml !== 48 && es.ml !== 50 && es.ml !== 60 && es.ml !== 100) {
-              sizes.push(es);
-            }
-          });
-        }
+        const canonSku50 = `MYTH-EDP-${cleanSlug.slice(0, 2).toUpperCase()}-50`;
+        const sku50 = getVal('prod-sku-50') || canonSku50;
+        const price50 = getNum('prod-price-50') || Math.round(price100 * 0.58);
+        const mrp50 = getNum('prod-mrp-50') || Math.round(price50 * 1.25);
+        const stock50 = getNum('prod-stock-50') || 50;
+
+        variants = {
+          '100ml': { sku: sku100, volumeMl: 100, salePrice: price100, mrp: mrp100, stock: stock100, mythosReward: Math.round(price100 * 0.03) },
+          '50ml': { sku: sku50, volumeMl: 50, salePrice: price50, mrp: mrp50, stock: stock50, mythosReward: Math.round(price50 * 0.03) }
+        };
+        sizes = [
+          { ml: 100, label: '100ml Grand Flacon', price: price100, mrp: mrp100, sku: sku100, stock: stock100, inStock: stock100 > 0, isDefault: true },
+          { ml: 50, label: '50ml Signature Flacon', price: price50, mrp: mrp50, sku: sku50, stock: stock50, inStock: stock50 > 0 }
+        ];
+        primarySku = sku100;
+        salePrice = price100;
+        mrp = mrp100;
+        stock = stock100 + stock50;
       }
-
-      // Sort sizes by ml ascending
-      sizes.sort((a, b) => a.ml - b.ml);
-
-      // Determine primary reference price: input or 100ml or 50ml or coffret
-      const basePrice = isCoffret 
-        ? (sizes[0]?.price || 3999) 
-        : (getNum('prod-price') || (sizes.find(s => s.ml === 100)?.price) || (sizes.find(s => s.ml === 50)?.price) || 4999);
-      const baseStock = isCoffret ? (sizes[0]?.stock || 50) : (getNum('prod-stock') || 50);
 
       const topNotesRaw = getVal('prod-notes-top');
       const heartNotesRaw = getVal('prod-notes-heart');
       const baseNotesRaw = getVal('prod-notes-base');
       const accordsRaw = getVal('prod-accords');
 
+      const topNotes = topNotesRaw ? topNotesRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+      const heartNotes = heartNotesRaw ? heartNotesRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+      const baseNotes = baseNotesRaw ? baseNotesRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+      const accordsList = accordsRaw ? accordsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+
       // Product Media Pipeline (up to 10 photos)
-      const bottleImage = getVal('prod-bottle-image') || getVal('prod-image') || 'assets/product/1kingscar.webp';
-      const cardImage = getVal('prod-card-image') || bottleImage;
-      const backgroundImage = getVal('prod-bg-image') || cardImage;
+      const canonicalMedia = (typeof CANONICAL_MEDIA_MAP !== 'undefined' && CANONICAL_MEDIA_MAP[cleanSlug]) || null;
+      const bottleFallback = canonicalMedia?.bottleImage || 'assets/product/1kingscar.webp';
+      const boxFallback = canonicalMedia?.cardImage || bottleFallback;
+      const bgFallback = canonicalMedia?.backgroundImage || bottleFallback;
+
+      const bottleImage = getVal('prod-bottle-image') || getVal('prod-image') || bottleFallback;
+      const cardImage = getVal('prod-card-image') || boxFallback;
+      const backgroundImage = getVal('prod-bg-image') || bgFallback;
+
       const galleryInputs = Array.from(document.querySelectorAll('.admin-gallery-input'));
       let galleryUrls = galleryInputs.map(input => input.value.trim()).filter(Boolean);
-      // Fallback if none entered
       if (galleryUrls.length === 0) {
-        galleryUrls = [bottleImage];
+        galleryUrls = [bottleImage, cardImage].filter(Boolean);
       }
-      // Deduplicate while preserving order, max 10 photos
       galleryUrls = Array.from(new Set(galleryUrls)).slice(0, 10);
+
+      const skuCode = primarySku;
+
+      const prodName = isCoffret ? 'Sixth Sense' : getVal('prod-name');
+      const categoryName = getVal('prod-collection') || getVal('prod-category') || (isCoffret ? 'Discovery Wardrobe · Unisex' : 'Woody · Men');
 
       const prodData = {
         id: prodId,
-        sku: getVal('prod-sku') || '',
-        name: isCoffret ? 'Sixth Sense' : getVal('prod-name'),
+        slug: prodId,
+        sku: skuCode,
+        name: prodName,
         tagline: getVal('prod-tagline'),
-        category: getVal('prod-collection') || getVal('prod-category') || 'Aromatic · Men',
-        collection: isCoffret ? 'Sixth Sense' : (getVal('prod-collection') || 'Aromatic · Men'),
-        price: basePrice,
-        compareAtPrice: getNum('prod-compare-price') || (basePrice + 1000),
-        stock: baseStock,
+        category: categoryName,
+        collection: categoryName,
+        volume: volume,
+        volumeMl: volume,
+        defaultSize: defaultSize,
+        variants: variants,
+        pricing: {
+          salePrice: salePrice,
+          mrp: mrp,
+          currency: 'INR'
+        },
+        price: salePrice,
+        salePrice: salePrice,
+        mrp: mrp,
+        compareAtPrice: mrp,
+        inventory: {
+          stock: stock,
+          inStock: true
+        },
+        stock: stock,
         inStock: true,
         sizes: sizes,
         concentration: isCoffret 
           ? 'Extrait de Parfum (6 × 8ml Deluxe Vials • 40% Concentration)' 
           : (getVal('prod-concentration') || 'Extrait de Parfum (40% Concentration)'),
-        notes: {
-          top: topNotesRaw ? topNotesRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
-          heart: heartNotesRaw ? heartNotesRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
-          base: baseNotesRaw ? baseNotesRaw.split(',').map(s => s.trim()).filter(Boolean) : []
+        olfactory: {
+          top: topNotes,
+          heart: heartNotes,
+          base: baseNotes,
+          accords: accordsList
         },
-        accords: accordsRaw ? accordsRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
+        notes: {
+          top: topNotes,
+          heart: heartNotes,
+          base: baseNotes
+        },
+        notesTop: topNotesRaw,
+        notesHeart: heartNotesRaw,
+        notesBase: baseNotesRaw,
+        accords: accordsList,
         batchCode: getVal('prod-batch') || 'MYTH-2026-X01',
         macerationDate: getVal('prod-maceration') || 'March 2026',
         image: bottleImage,
@@ -4633,14 +4969,45 @@ class MytholisApp {
       };
 
       this.showToast('Saving fragrance to vault catalog...');
-      const res = await firebaseService.saveProduct(prodData);
-      if (res.success) {
-        this.closeAdminModal();
-        this.showToast(`Fragrance "${prodData.name}" saved to vault.`);
-        await this.loadAdminDashboard();
-      } else {
-        this.showToast(`Failed to save product: ${res.error}`);
+
+      // 1. Update in local store & catalog
+      if (typeof store !== 'undefined') {
+        if (Array.isArray(store.products)) {
+          const idx = store.products.findIndex(p => p.id === prodId || p.slug === prodId || p.sku === prodId);
+          if (idx !== -1) {
+            store.products[idx] = { ...store.products[idx], ...prodData };
+          } else {
+            store.products.push(prodData);
+          }
+        }
+        if (typeof window !== 'undefined' && window.MYTHOLIS_CATALOG) {
+          const catIdx = window.MYTHOLIS_CATALOG.findIndex(p => p.id === prodId || p.slug === prodId);
+          if (catIdx !== -1) {
+            window.MYTHOLIS_CATALOG[catIdx] = { ...window.MYTHOLIS_CATALOG[catIdx], ...prodData };
+          }
+        }
       }
+
+      // 2. Save to Firestore products/{slug}
+      if (typeof firebaseService !== 'undefined') {
+        await firebaseService.saveProduct(prodData);
+      }
+
+      // 3. Update in adminData
+      if (this.adminData && Array.isArray(this.adminData.products)) {
+        const aIdx = this.adminData.products.findIndex(p => p.id === prodId || p.slug === prodId || p.sku === prodId);
+        if (aIdx !== -1) {
+          this.adminData.products[aIdx] = { ...this.adminData.products[aIdx], ...prodData };
+        } else {
+          this.adminData.products.push(prodData);
+        }
+      }
+
+      this.closeAdminModal();
+      this.showToast(`Fragrance "${prodData.name}" saved to vault.`);
+
+      // 4. Re-render Admin table
+      await this.loadAdminDashboard();
     } catch (err) {
       console.error("[Sovereign Command] saveAdminProduct error:", err);
       this.showToast(`Error saving fragrance: ${err.message}`);
@@ -4944,15 +5311,53 @@ class MytholisApp {
   async updateProductInline(productId, field, value) {
     try {
       let finalVal = value;
+      const updates = {};
       if (field === 'price' || field === 'stock') {
         finalVal = Number(value);
+        updates[field] = finalVal;
+      } else if (field === 'salePrice') {
+        finalVal = Number(value);
+        updates.salePrice = finalVal;
+        updates.price = finalVal;
+        updates['pricing.salePrice'] = finalVal;
       } else if (field === 'inStock') {
         finalVal = Boolean(value);
+        updates[field] = finalVal;
+      } else {
+        updates[field] = finalVal;
       }
-      const res = await firebaseService.updateProductQuick(productId, { [field]: finalVal });
+      const res = await firebaseService.updateProductQuick(productId, updates);
       if (res.success) {
-        const prod = (this.adminData.products || []).find(p => p.id === productId);
-        if (prod) prod[field] = finalVal;
+        const prod = (this.adminData.products || []).find(p => p.id === productId || p.slug === productId);
+        if (prod) {
+          if (field === 'salePrice') {
+            prod.salePrice = finalVal;
+            prod.price = finalVal;
+            if (!prod.pricing) prod.pricing = {};
+            prod.pricing.salePrice = finalVal;
+            if (Array.isArray(prod.sizes) && prod.sizes.length > 0) {
+              prod.sizes[0].price = finalVal;
+            }
+          } else {
+            prod[field] = finalVal;
+          }
+        }
+        if (typeof store !== 'undefined' && Array.isArray(store.products)) {
+          const sProd = store.products.find(p => p.id === productId || p.slug === productId);
+          if (sProd) {
+            if (field === 'salePrice') {
+              sProd.salePrice = finalVal;
+              sProd.price = finalVal;
+              if (!sProd.pricing) sProd.pricing = {};
+              sProd.pricing.salePrice = finalVal;
+              if (Array.isArray(sProd.sizes) && sProd.sizes.length > 0) {
+                sProd.sizes[0].price = finalVal;
+              }
+            } else {
+              sProd[field] = finalVal;
+            }
+          }
+        }
         this.showToast(`Updated ${productId} ${field} to ${value}.`);
       } else {
         this.showToast(`Inline update failed: ${res.error}`);
