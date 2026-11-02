@@ -383,9 +383,19 @@ class MytholisApp {
         targetHash = 'dossier';
       } else if (viewName === 'admin') {
         targetHash = 'admin';
+      } else if (viewName === 'home') {
+        targetHash = '';
       }
 
-      if (window.location.hash !== `#${targetHash}`) {
+      if (viewName === 'home') {
+        if (window.location.hash) {
+          try {
+            history.pushState(null, '', window.location.pathname + window.location.search);
+          } catch (_) {
+            window.location.hash = '';
+          }
+        }
+      } else if (window.location.hash !== `#${targetHash}`) {
         window.location.hash = targetHash;
       }
     }
@@ -4137,6 +4147,11 @@ class MytholisApp {
     } else {
       this.showToast(result.error);
     }
+  }
+
+  exitSanctum() {
+    this.navigateTo('home');
+    this.showToast('Exited Sanctum to Storefront');
   }
 
   async handleFirebaseSignOut() {

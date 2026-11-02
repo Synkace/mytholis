@@ -328,11 +328,11 @@ export const AdminComponents = {
             <button class="btn btn-glass" style="font-size: 0.78rem; padding: 0.6rem 1.1rem;" onclick="app.refreshAdminDashboard()" title="Synchronize with Firestore">
               ↻ Refresh Cloud Ledger
             </button>
-            <button class="btn btn-gold" style="font-size: 0.78rem; padding: 0.6rem 1.1rem;" onclick="app.navigateTo('home')">
-              Storefront Preview
-            </button>
-            <button class="btn btn-glass" style="font-size: 0.78rem; padding: 0.6rem 1.1rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.logoutUser()">
+            <button class="btn btn-gold" style="font-size: 0.78rem; padding: 0.6rem 1.1rem;" onclick="app.exitSanctum()" title="Return to Storefront without signing out">
               Exit Sanctum
+            </button>
+            <button class="btn btn-glass" style="font-size: 0.78rem; padding: 0.6rem 1.1rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.logoutUser()" title="Sign Out of Founder Account">
+              Sign Out
             </button>
           </div>
         </div>

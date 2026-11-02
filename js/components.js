@@ -3973,8 +3973,11 @@ const Components = {
             <button class="btn btn-glass" style="font-size: 0.75rem; padding: 0.6rem 1rem;" onclick="app.refreshAdminDashboard()" title="Reload Cloud Ledger">
               ↻ Refresh Live Ledger
             </button>
-            <button class="btn btn-glass" style="font-size: 0.75rem; padding: 0.6rem 1rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.handleFirebaseSignOut()">
+            <button class="btn btn-gold" style="font-size: 0.75rem; padding: 0.6rem 1rem;" onclick="app.exitSanctum()" title="Return to Storefront without signing out">
               Exit Sanctum
+            </button>
+            <button class="btn btn-glass" style="font-size: 0.75rem; padding: 0.6rem 1rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.handleFirebaseSignOut()" title="Sign Out of Founder Account">
+              Sign Out
             </button>
           </div>
         </div>
