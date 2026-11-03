@@ -388,7 +388,7 @@ export async function generateSampleThermalLabelPdf() {
   // Bottom "Sold By" Box (The Locked KYC entity that needs rebranding)
   page.drawText('SOLD BY / RETURN ADDRESS:', { x: 14, y: 96, size: 7.5, font: fontBold, color: rgb(0.2, 0.2, 0.2) });
   page.drawText('OLD_LOCKED_KYC_LEGAL_ENTITY_PVT_LTD', { x: 14, y: 82, size: 8.5, font: fontBold, color: rgb(0, 0, 0) });
-  page.drawText('GSTIN: 07AAACH0000A1Z5 | CIN: U74999DL2021PTC123456', { x: 14, y: 70, size: 7, font: fontRegular, color: rgb(0, 0, 0) });
+  page.drawText('GSTIN: 27NJXPS7705H1Z2 | HSN: 33030010', { x: 14, y: 70, size: 7, font: fontRegular, color: rgb(0, 0, 0) });
   page.drawText('Shed 12B, Industrial Area Ph 1, Okhla, New Delhi 110020', { x: 14, y: 58, size: 7, font: fontRegular, color: rgb(0, 0, 0) });
   page.drawText('Return Care: returns@courier-logistics-hub.in', { x: 14, y: 46, size: 7, font: fontRegular, color: rgb(0, 0, 0) });
   page.drawText('Authorized Merchant Dispatch Hub', { x: 14, y: 34, size: 6.5, font: fontRegular, color: rgb(0.4, 0.4, 0.4) });
@@ -534,11 +534,12 @@ export async function generateMytholisShippingLabelPdf(order = {}) {
   page.drawLine({ start: { x: 8, y: 108 }, end: { x: 280, y: 108 }, thickness: 1, color: rgb(0, 0, 0) });
 
   // 6. Return / Dispatched By (Authentic Mytholis Identity)
+  const officialPhone = (typeof store !== 'undefined' && store.getSupportPhone ? store.getSupportPhone() : '+91 777000 9170');
   page.drawText('SHIPPED BY & RETURN ADDRESS:', { x: 14, y: 94, size: 7.5, font: fontBold, color: rgb(0.25, 0.25, 0.25) });
   page.drawText('MYTHOLIS LUXURY FRAGRANCES PVT. LTD.', { x: 14, y: 80, size: 8.5, font: fontBold, color: rgb(0, 0, 0) });
-  page.drawText('GSTIN: 24AAECM4821P1ZT | HSN: 33030010 (Fine Perfumery)', { x: 14, y: 68, size: 7, font: fontRegular, color: rgb(0, 0, 0) });
+  page.drawText('GSTIN: 27NJXPS7705H1Z2 | Mfg Lic No: GC/1428-A | HSN: 33030010', { x: 14, y: 68, size: 6.8, font: fontRegular, color: rgb(0, 0, 0) });
   page.drawText('Vasant Vihar 2, Nava Naroda, Ahmedabad, Gujarat 382330, India', { x: 14, y: 56, size: 7, font: fontRegular, color: rgb(0, 0, 0) });
-  page.drawText('Concierge: concierge@mytholis.com | WhatsApp: +91 70207 25550', { x: 14, y: 44, size: 7, font: fontRegular, color: rgb(0, 0, 0) });
+  page.drawText(`Concierge: concierge@mytholis.com | WhatsApp: ${officialPhone}`, { x: 14, y: 44, size: 7, font: fontRegular, color: rgb(0, 0, 0) });
   page.drawText('Formulated in London, UK • Handcrafted in Ahmedabad, India', { x: 14, y: 32, size: 6.5, font: fontBold, color: rgb(0.3, 0.3, 0.3) });
 
   const pdfBytes = await pdfDoc.save();

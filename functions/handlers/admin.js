@@ -1,4 +1,5 @@
 import { adminAuth, adminDb } from './_firebaseAdmin.js';
+import { requireAdmin } from '../lib/auth.js';
 
 // Dual-Key Tier Level Hierarchy matching store.js
 const LOYALTY_TIERS = [
@@ -36,65 +37,13 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  // 1. Read Bearer token
-  const authHeader = req.headers.authorization || req.headers.Authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Unauthorized: Missing or invalid Bearer token' });
+  // 1. Authoritative admin authorization (custom claim, or verified ADMIN_EMAIL).
+  const auth = await requireAdmin(req);
+  if (!auth.ok) {
+    return res.status(auth.status).json({ error: auth.error });
   }
-
-  const idToken = authHeader.replace('Bearer ', '').trim();
-
-  // 2. Verify token & verify ADMIN_EMAIL
-  let decodedToken;
-  try {
-    decodedToken = await adminAuth.verifyIdToken(idToken);
-  } catch (authErr) {
-    console.error("[Mytholis Admin API] Token verification failed:", authErr.message);
-    return res.status(401).json({ error: 'Unauthorized: Invalid authentication token' });
-  }
-
-  const configuredAdminEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL || '').trim().toLowerCase();
+  const decodedToken = auth.decoded;
   const tokenEmail = (decodedToken.email || '').trim().toLowerCase();
-
-  const allowedAdmins = [
-    'gunhegarr@gmail.com',
-    'admin@mytholis.com',
-    'alexander@mytholis.com',
-    'founder@mytholis.com'
-  ];
-  if (configuredAdminEmail) {
-    configuredAdminEmail.split(',').forEach(e => {
-      const trimmed = e.trim().toLowerCase();
-      if (trimmed && !allowedAdmins.includes(trimmed)) allowedAdmins.push(trimmed);
-    });
-  }
-
-  // Also check dynamic admin emails from Firestore settings/global
-  if (adminDb) {
-    try {
-      const settingsSnap = await adminDb.collection('settings').doc('global').get();
-      if (settingsSnap.exists) {
-        const s = settingsSnap.data() || {};
-        if (Array.isArray(s.adminEmails)) {
-          s.adminEmails.forEach(e => {
-            const trimmed = String(e).trim().toLowerCase();
-            if (trimmed && !allowedAdmins.includes(trimmed)) allowedAdmins.push(trimmed);
-          });
-        }
-      }
-    } catch (e) {
-      console.warn('[Mytholis Admin API] Could not load dynamic admin emails:', e.message);
-    }
-  }
-
-  const isAuthorized = 
-    decodedToken.admin === true ||
-    allowedAdmins.some(a => a.toLowerCase() === tokenEmail);
-
-  if (!isAuthorized) {
-    console.warn(`[Mytholis Admin API] Forbidden attempt by ${tokenEmail || decodedToken.uid}.`);
-    return res.status(403).json({ error: 'Forbidden: Access restricted to verified Founder only' });
-  }
 
   const { action, payload = {} } = req.body || {};
 
@@ -302,8 +251,119 @@ export default async function handler(req, res) {
         });
       }
 
-      default:
-        return res.status(400).json({ error: `Unsupported admin action: ${action}` });
+      /* ------------------------------------------------------------------
+         Grant or revoke the admin claim. This is the ONLY supported way to
+         create another administrator. Never grant admin from a client-writable
+         document field.
+         ------------------------------------------------------------------ */
+      case 'SET_ADMIN_CLAIM': {
+        const { targetUid, email, enabled = true } = payload;
+        let uid = targetUid || null;
+
+        if (!uid && email) {
+          try {
+            const userRecord = await adminAuth.getUserByEmail(String(email).trim().toLowerCase());
+            uid = userRecord.uid;
+          } catch (_) {
+            return res.status(404).json({ error: 'No account exists for that email address.' });
+          }
+        }
+        if (!uid) {
+          return res.status(400).json({ error: 'Missing targetUid or email' });
+        }
+
+        // Never let an operator lock themselves out.
+        if (uid === decodedToken.uid && enabled === false) {
+          return res.status(400).json({ error: 'You cannot revoke your own admin claim.' });
+        }
+
+        const userRecord = await adminAuth.getUser(uid);
+        const existing = userRecord.customClaims || {};
+        const nextClaims = { ...existing };
+        if (enabled === true) {
+          nextClaims.admin = true;
+        } else {
+          delete nextClaims.admin;
+        }
+
+        await adminAuth.setCustomUserClaims(uid, nextClaims);
+        console.log(`[Mytholis Admin API] admin claim for ${uid} set to ${enabled === true}`);
+
+        // Mirror onto the profile document for display only - never for auth.
+        await adminDb.collection('users').doc(uid).set({
+          role: enabled === true ? 'admin' : 'collector',
+          isAdmin: enabled === true,
+          adminClaimUpdatedAt: new Date().toISOString()
+        }, { merge: true }).catch(() => {});
+
+        return res.status(200).json({
+          success: true,
+          uid,
+          admin: enabled === true,
+          message: enabled === true
+            ? 'Admin claim granted. The user must sign in again for it to take effect.'
+            : 'Admin claim revoked.'
+        });
+      }
+
+      /* ------------------------------------------------------------------
+         Abandoned checkout recovery desk (caller executive).
+         ------------------------------------------------------------------ */
+      case 'MARK_CHECKOUT_RECOVERY': {
+        const { orderId, status, note = '' } = payload;
+        if (!orderId) return res.status(400).json({ error: 'Missing orderId' });
+
+        const allowed = ['CONTACTED', 'RECOVERED', 'LOST', 'NOT_CONTACTED'];
+        const next = String(status || '').toUpperCase();
+        if (!allowed.includes(next)) return res.status(400).json({ error: 'Invalid recovery status' });
+
+        await adminDb.collection('orders').doc(orderId).set({
+          recoveryStatus: next,
+          recoveryNote: String(note || '').slice(0, 500),
+          recoveryUpdatedAt: new Date().toISOString(),
+          recoveryBy: tokenEmail || decodedToken.uid
+        }, { merge: true });
+
+        return res.status(200).json({ success: true, orderId, recoveryStatus: next });
+      }
+
+      case 'PURGE_ABANDONED_DRAFTS': {
+        const olderThanDays = Number(payload.olderThanDays) || 30;
+        const cutoffMs = Date.now() - olderThanDays * 24 * 60 * 60 * 1000;
+        const dryRun = payload.dryRun === true;
+
+        const snap = await adminDb.collection('orders').limit(1000).get();
+        const victims = [];
+
+        snap.docs.forEach((d) => {
+          const o = d.data() || {};
+          const status = String(o.status || '').toUpperCase();
+          const isDraft = o.isDraft === true || ['CREATED', 'AWAITING_PAYMENT'].includes(status);
+          const paid = /paid|captured/i.test(String(o.paymentStatus || '')) || Boolean(o.paidAt);
+          if (!isDraft || paid) return;
+
+          const raw = o.checkoutStartedAt || o.createdAt || o.timestamp;
+          const ms = raw?.toMillis ? raw.toMillis() : new Date(raw || 0).getTime();
+          if (Number.isFinite(ms) && ms > 0 && ms < cutoffMs) victims.push(d.ref);
+        });
+
+        if (dryRun) {
+          return res.status(200).json({ success: true, dryRun: true, wouldDelete: victims.length, olderThanDays });
+        }
+
+        let deleted = 0;
+        for (let i = 0; i < victims.length; i += 400) {
+          const batch = adminDb.batch();
+          victims.slice(i, i + 400).forEach((ref) => batch.delete(ref));
+          await batch.commit();
+          deleted += Math.min(400, victims.length - i);
+        }
+
+        console.log(`[Admin] Purged ${deleted} abandoned checkout draft(s) older than ${olderThanDays} days`);
+        return res.status(200).json({ success: true, deleted, olderThanDays });
+      }
+
+      default:        return res.status(400).json({ error: `Unsupported admin action: ${action}` });
     }
   } catch (actionErr) {
     console.error(`[Mytholis Admin API] Error executing ${action}:`, actionErr);

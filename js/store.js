@@ -225,11 +225,6 @@ class MytholisStore {
       this.loyalty.signup_bonus_popup_seen = Boolean(this.loyalty.spendable_mythos > 0 || this.loyalty.legacy_mythos > 0);
     }
 
-    // Auto-apply FIRST20 (20% OFF) for first-time visitors if not explicitly dismissed
-    if (!this.loyalty.applied_reward_code && !this.loyalty.promo_dismissed) {
-      this.loyalty.applied_reward_code = 'FIRST20';
-    }
-
     const defaultUser = {
       isLoggedIn: false,
       name: "",
@@ -269,27 +264,36 @@ class MytholisStore {
       supportWhatsApp: '917770009170',
       supportEmail: 'concierge@mytholis.com',
       metaPixelId: '',
-      adminEmails: ['gunhegarr@gmail.com', 'admin@mytholis.com', 'alexander@mytholis.com', 'founder@mytholis.com'],
+      adminEmails: [],
       promoCodes: [
-        { code: 'FIRST20', discountType: 'percent', value: 20, minOrder: 0, active: true },
-        { code: 'WELCOME20', discountType: 'percent', value: 20, minOrder: 0, active: true },
+        { code: 'FIRST25', discountType: 'percent', value: 25, maxDiscount: 5000, minOrder: 0, active: true, firstOrderOnly: true, excludeProductIds: ['mytholis-discovery-set'] },
         { code: 'LEGEND10', discountType: 'percent', value: 10, minOrder: 1999, active: true },
         { code: 'ROYAL500', discountType: 'flat', value: 500, minOrder: 3999, active: true }
       ]
     };
     const loadedSettings = this.loadLocalStorage('mytholis_global_settings', defaultGlobalSettings);
     this.globalSettings = Object.assign({}, defaultGlobalSettings, loadedSettings);
-    // Ensure FIRST20 is always present in promoCodes
-    if (Array.isArray(this.globalSettings.promoCodes) && !this.globalSettings.promoCodes.some(p => p.code === 'FIRST20')) {
-      this.globalSettings.promoCodes.unshift({ code: 'FIRST20', discountType: 'percent', value: 20, minOrder: 0, active: true });
-    }
 
-    // Auto-purge any legacy mock "Lord Alexander" data from existing client localStorage
-    if (this.user.email === 'alexander@mytholis.com' || this.user.name === 'Lord Alexander') {
-      this.user = Object.assign({}, defaultUser);
-      this.saveLocalStorage('mytholis_user', this.user);
-      this.loyalty = Object.assign({}, defaultLoyalty);
-      this.saveLocalStorage('mytholis_loyalty', this.loyalty);
+    /* localStorage may hold a settings snapshot from before FIRST25 existed,
+       which would hide the branch in `promoCodes` and make the first-order
+       button answer "unrecognised code". Patch it in if it is missing. */
+    if (!Array.isArray(this.globalSettings.promoCodes)) {
+      this.globalSettings.promoCodes = [];
+    }
+    const hasFirst = this.globalSettings.promoCodes.some(
+      (p) => String(p?.code || '').trim().toUpperCase() === 'FIRST25'
+    );
+    if (!hasFirst) {
+      this.globalSettings.promoCodes = [
+        {
+          code: 'FIRST25', discountType: 'percent', value: 25, maxDiscount: 5000,
+          minOrder: 0, active: true, firstOrderOnly: true,
+          excludeProductIds: ['mytholis-discovery-set']
+        },
+        ...this.globalSettings.promoCodes.filter(
+          (p) => !['FIRST20', 'WELCOME20'].includes(String(p?.code || '').trim().toUpperCase())
+        )
+      ];
     }
 
     // Ensure user tier & points mirror loyalty state
@@ -327,28 +331,10 @@ class MytholisStore {
 
   /* Admin Authorization Gate */
   isAdmin() {
-    const configuredAdmins = (this.globalSettings && Array.isArray(this.globalSettings.adminEmails)) 
-      ? this.globalSettings.adminEmails 
-      : [];
-    const whitelist = [
-      'gunhegarr@gmail.com',
-      'admin@mytholis.com',
-      'alexander@mytholis.com',
-      'founder@mytholis.com',
-      ...configuredAdmins
-    ];
-    const fbUser = (typeof firebaseService !== 'undefined' && firebaseService?.currentUser) || null;
-    const userEmail = (
-      (this.firebaseUser && this.firebaseUser.email) || 
-      (fbUser && fbUser.email) ||
-      (this.user && this.user.email) || 
-      ''
-    ).toLowerCase().trim();
-
-    if (userEmail && whitelist.some(e => e.toLowerCase().trim() === userEmail)) return true;
+    // UI-only gate. The server decides; this only decides whether to paint the
+    // admin nav. No email allowlist is used, and none is shipped in the bundle.
     if (this.user && (this.user.isAdmin === true || this.user.role === 'admin')) return true;
     if (this.firebaseUser && (this.firebaseUser.isAdmin === true || this.firebaseUser.role === 'admin')) return true;
-    if (fbUser && (fbUser.isAdmin === true || fbUser.role === 'admin')) return true;
     return false;
   }
 
@@ -881,48 +867,58 @@ class MytholisStore {
     };
   }
 
-  redeemMythosReward(rewardId) {
+  /**
+   * Redeem Mythos for a concession voucher.
+   *
+   * The balance check, the debit and the code mint happen SERVER-SIDE inside a
+   * transaction (`POST /api/redeem-reward`). The old implementation deducted
+   * points and minted the code in the browser, which meant any user could edit
+   * their own balance and mint unlimited vouchers.
+   */
+  async redeemMythosReward(rewardId) {
     const reward = LOYALTY_REWARDS.find(r => r.id === rewardId);
     if (!reward) {
       return { success: false, error: "Concession voucher not found in Vault." };
     }
 
-    const currentTier = this.getCurrentTier();
-    if (currentTier.level < reward.minLevel) {
-      return { 
-        success: false, 
-        error: `Requires Level ${reward.minLevel}: ${LOYALTY_TIERS[reward.minLevel - 1].name}.` 
-      };
+    const svc = (typeof window !== 'undefined') ? window.firebaseService : null;
+    const user = svc?.currentUser;
+    if (!user) {
+      return { success: false, error: "Please sign in to redeem Mythos." };
     }
 
-    if (this.loyalty.spendable_mythos < reward.cost) {
-      const deficit = reward.cost - this.loyalty.spendable_mythos;
-      return { 
-        success: false, 
-        error: `Insufficient Spendable Mythos. Need ${deficit.toLocaleString()} more M.` 
-      };
+    try {
+      const token = await user.getIdToken();
+      const resp = await fetch('/api/redeem-reward', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ rewardId })
+      });
+
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok || !data.success) {
+        return { success: false, error: data.error || "Redemption failed. Please try again." };
+      }
+
+      // Trust only the server-returned balance and voucher.
+      if (typeof data.remainingMythos === 'number') {
+        this.loyalty.spendable_mythos = data.remainingMythos;
+      }
+      if (data.reward) {
+        const codes = Array.isArray(this.loyalty.active_reward_codes) ? this.loyalty.active_reward_codes : [];
+        this.loyalty.active_reward_codes = [data.reward, ...codes];
+      }
+
+      this.syncUserWithLoyalty();
+      this.notify();
+
+      return { success: true, code: data.code, reward: data.reward };
+    } catch (err) {
+      return { success: false, error: "Network error redeeming Mythos. Please try again." };
     }
-
-    this.loyalty.spendable_mythos -= reward.cost;
-
-    const uniqueCode = `MYTH-${reward.id}-${Math.floor(1000 + Math.random() * 9000)}`;
-    const newRewardCode = {
-      code: uniqueCode,
-      id: reward.id,
-      title: reward.title,
-      type: reward.type,
-      amount: reward.amount || 0,
-      giftItem: reward.giftItem || '',
-      minOrder: reward.minOrder || 0,
-      used: false,
-      createdAt: new Date().toISOString()
-    };
-
-    this.loyalty.active_reward_codes.unshift(newRewardCode);
-    this.syncUserWithLoyalty();
-    this.notify();
-
-    return { success: true, code: uniqueCode, reward: newRewardCode };
   }
 
   get appliedPromoCode() {
@@ -986,6 +982,28 @@ class MytholisStore {
     }
     if (existing.used) {
       return { success: false, error: "This Mythos code has already been redeemed." };
+    }
+
+    /* First-order privilege is re-checked here so the browser agrees with the
+       server: the server will refuse it for a returning buyer or a coffret-only
+       cart, and showing a discount that will not be applied is worse than
+       refusing it up front. */
+    if (String(existing.code || '').toUpperCase() === 'FIRST25' || existing.firstOrderOnly === true) {
+      const hasPriorOrders = Array.isArray(this.user?.orders) && this.user.orders.length > 0;
+      if (hasPriorOrders) {
+        return {
+          success: false,
+          error: "The first-order privilege is reserved for a collector's first acquisition."
+        };
+      }
+      const excluded = new Set((existing.excludeProductIds || ['mytholis-discovery-set']).map(String));
+      const cartIds = (this.cart || []).map((i) => String(i.id || i.slug || ''));
+      if (cartIds.some((id) => excluded.has(id))) {
+        return {
+          success: false,
+          error: "The first-order privilege does not apply to the Sixth Sense discovery coffret."
+        };
+      }
     }
 
     const cartSubtotalINR = this.getCartTotal();
@@ -1062,6 +1080,15 @@ class MytholisStore {
       return 1000;
     }
 
+    // First-order privilege must not be displayed where the server will refuse it.
+    if (String(reward.code || '').toUpperCase() === 'FIRST25' || reward.firstOrderOnly === true) {
+      const hasPriorOrders = Array.isArray(this.user?.orders) && this.user.orders.length > 0;
+      if (hasPriorOrders) return 0;
+      const excluded = new Set(['mytholis-discovery-set']);
+      const cartIds = (this.cart || []).map((i) => String(i.id || i.slug || ''));
+      if (cartIds.some((id) => excluded.has(id))) return 0;
+    }
+
     let calculatedDiscount = 0;
     if (reward.type === 'percent') {
       calculatedDiscount = Math.floor(subtotal * (Number(reward.amount) / 100));
@@ -1069,9 +1096,9 @@ class MytholisStore {
       calculatedDiscount = Number(reward.amount) || 0;
     }
 
-    // Guardrail: Max 30% of cart subtotal (in base INR) or ₹2,500, whichever is lower
+    // Guardrail: never exceed the cap the server enforces (₹5,000 / 30% of cart).
     const maxRedemptionPct = (this.globalSettings && this.globalSettings.maxMythosRedemptionPct) ? (this.globalSettings.maxMythosRedemptionPct / 100) : 0.30;
-    const maxAllowed = Math.min(Math.floor(subtotal * maxRedemptionPct), 2500);
+    const maxAllowed = Math.min(Math.floor(subtotal * maxRedemptionPct), 5000);
     return Math.min(calculatedDiscount, maxAllowed);
   }
 

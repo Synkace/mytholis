@@ -1,10 +1,11 @@
 import { FieldValue } from 'firebase-admin/firestore';
 import { adminDb, adminAuth } from '../_firebaseAdmin.js';
-import { 
-  canonicalPhone, 
-  formatPhoneDisplay, 
-  canonicalEmail, 
-  canonicalAddressKey 
+import { requireAdmin, safeEqual } from '../../lib/auth.js';
+import {
+  canonicalPhone,
+  formatPhoneDisplay,
+  canonicalEmail,
+  canonicalAddressKey
 } from '../../utils/normalize.js';
 
 /**
@@ -35,55 +36,31 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed. Please POST to trigger batch deduplication.' });
   }
 
-  // 1. Authorize Admin Caller
-  const authHeader = req.headers.authorization || req.headers.Authorization || '';
+  // 1. Authorize Admin Caller - claim or verified ADMIN_EMAIL only.
   const xAdminKey = req.headers['x-admin-key'] || req.headers['X-Admin-Key'] || '';
   let isAdminAuthorized = false;
-  let callerEmail = '';
 
-  const configuredAdminEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL || '').trim().toLowerCase();
-  const allowedAdmins = [
-    'gunhegarr@gmail.com',
-    'admin@mytholis.com',
-    'alexander@mytholis.com',
-    'founder@mytholis.com'
-  ];
-  if (configuredAdminEmail) {
-    configuredAdminEmail.split(',').forEach(e => {
-      const trimmed = e.trim().toLowerCase();
-      if (trimmed && !allowedAdmins.includes(trimmed)) allowedAdmins.push(trimmed);
-    });
+  const auth = await requireAdmin(req);
+  if (auth.ok) {
+    isAdminAuthorized = true;
   }
 
-  if (authHeader.startsWith('Bearer ')) {
-    const token = authHeader.replace('Bearer ', '').trim();
-    try {
-      const decoded = await adminAuth.verifyIdToken(token);
-      callerEmail = (decoded.email || '').trim().toLowerCase();
-      if (decoded.admin === true || allowedAdmins.includes(callerEmail) || callerEmail.includes('gunhegarr')) {
-        isAdminAuthorized = true;
-      } else {
-        const userDoc = await adminDb.collection('users').doc(decoded.uid).get().catch(() => null);
-        if (userDoc && userDoc.exists) {
-          const uData = userDoc.data() || {};
-          if (uData.role === 'admin' || uData.isAdmin === true || uData.profile?.role === 'admin' || uData.profile?.isAdmin === true) {
-            isAdminAuthorized = true;
-          }
-        }
-      }
-    } catch (err) {
-      console.warn('[Batch Deduplicate] Token verification failed:', err.message);
-    }
-  }
-
-  // Secret header fallback
+  // Optional shared-secret path for scheduled jobs. Compared in constant time.
   const expectedSecret = process.env.ADMIN_API_KEY;
-  if (!isAdminAuthorized && xAdminKey && expectedSecret && xAdminKey === expectedSecret) {
+  if (!isAdminAuthorized && xAdminKey && expectedSecret && safeEqual(xAdminKey, expectedSecret)) {
     isAdminAuthorized = true;
   }
 
   if (!isAdminAuthorized) {
     return res.status(401).json({ error: 'Unauthorized: Sovereign administrator privileges required.' });
+  }
+
+  // Destructive global merge: require an explicit confirmation flag.
+  if (req.body?.confirm !== true) {
+    return res.status(400).json({
+      error: 'Refused: this operation merges and archives accounts globally. Re-send with {"confirm": true}.',
+      hint: 'Consider running it against a staging project first.'
+    });
   }
 
   try {

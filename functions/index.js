@@ -4,7 +4,6 @@ import cors from "cors";
 
 // Import route handlers
 import adminHandler from "./handlers/admin.js";
-import completeOrderHandler from "./handlers/complete-order.js";
 import dispatchHandler from "./handlers/dispatch.js";
 import healthHandler from "./handlers/health.js";
 import redeemRewardHandler from "./handlers/redeem-reward.js";
@@ -13,10 +12,14 @@ import redeemRewardHandler from "./handlers/redeem-reward.js";
 import patronReconcileHandler from "./handlers/patron/reconcile.js";
 import patronBatchDeduplicateHandler from "./handlers/patron/batch-deduplicate.js";
 import patronDeleteAccountHandler from "./handlers/patron/delete-account.js";
+import patronBootstrapHandler from "./handlers/patron/bootstrap.js";
+import patronSettleOrderHandler from "./handlers/patron/settle-order.js";
+import patronSettleBalanceHandler from "./handlers/patron/settle-balance.js";
 
 // Razorpay handlers
 import razorpayCreateOrderHandler from "./handlers/razorpay/create-order.js";
 import razorpayVerifyPaymentHandler from "./handlers/razorpay/verify-payment.js";
+import razorpayWebhookHandler from "./handlers/razorpay/webhook.js";
 
 // Permanent server-side secret sanitization & catalog synchronization
 import { adminDb } from "./handlers/_firebaseAdmin.js";
@@ -45,6 +48,61 @@ async function purgeLegacySecretsFromFirestore() {
 }
 purgeLegacySecretsFromFirestore().catch(() => {});
 
+/* ------------------------------------------------------------------------
+   One-time promo migration: FIRST20 / WELCOME20 -> FIRST25.
+
+   The catalog reads settings/global.promoCodes BEFORE its built-in table, so
+   editing code alone would have left the old 20% codes in force. This rewrites
+   the Firestore copy once, and stamps promoCodesMigratedAt so it never repeats.
+   ------------------------------------------------------------------------ */
+let _promoMigrated = false;
+async function migratePromoCodesToFirst25() {
+  if (_promoMigrated || !adminDb) return;
+  try {
+    const ref = adminDb.collection('settings').doc('global');
+    const snap = await ref.get();
+    if (!snap.exists) {
+      _promoMigrated = true;
+      return;
+    }
+
+    const settings = snap.data() || {};
+    if (settings.promoCodesMigratedAt) {
+      _promoMigrated = true;
+      return;
+    }
+
+    const existing = Array.isArray(settings.promoCodes) ? settings.promoCodes : [];
+    const retired = ['FIRST20', 'WELCOME20', 'FIRST25'];
+    const kept = existing.filter((p) => {
+      const code = String(p?.code || '').trim().toUpperCase();
+      return p && !retired.includes(code);
+    });
+
+    kept.unshift({
+      code: 'FIRST25',
+      discountType: 'percent',
+      value: 25,
+      maxDiscount: 5000,
+      minOrder: 0,
+      active: true,
+      firstOrderOnly: true,
+      excludeProductIds: ['mytholis-discovery-set']
+    });
+
+    await ref.set({
+      promoCodes: kept,
+      promoCodesMigratedAt: new Date().toISOString()
+    }, { merge: true });
+
+    console.log(`[Promo Migration] FIRST20/WELCOME20 retired, FIRST25 installed (${kept.length} codes).`);
+    _promoMigrated = true;
+  } catch (err) {
+    console.warn('[Promo Migration] Notice:', err.message);
+  }
+}
+migratePromoCodesToFirst25().catch(() => {});
+
 let _catalogSynced = false;
 async function syncAuthoritativeCatalogToFirestore() {
   if (_catalogSynced || !adminDb) return;
@@ -52,28 +110,20 @@ async function syncAuthoritativeCatalogToFirestore() {
     for (const prod of SERVER_CATALOG) {
       const prodRef = adminDb.collection("products").doc(prod.id);
       const snap = await prodRef.get();
-      if (snap.exists) {
-        const data = snap.data() || {};
-        const currentSizes = Array.isArray(data.sizes) ? data.sizes : [];
-        const auth50 = prod.sizes.find(s => s.ml === 50);
-        const current50 = currentSizes.find(s => s.ml === 50);
-
-        if (auth50 && (!current50 || current50.price !== auth50.price)) {
-          const updatedSizes = currentSizes.filter(s => s.ml !== 50 && s.ml !== 8);
-          updatedSizes.push(auth50);
-          const auth100 = prod.sizes.find(s => s.ml === 100);
-          if (auth100 && !updatedSizes.some(s => s.ml === 100)) {
-            updatedSizes.push(auth100);
-          }
-          updatedSizes.sort((a, b) => a.ml - b.ml);
-          await prodRef.update({ sizes: updatedSizes });
-          console.log(`[Catalog Sync] Updated 50ml price for ${prod.id} to ₹${auth50.price}`);
-        }
+      // Only seed a product document if it does not exist in Firestore yet.
+      // Never overwrite existing Firestore prices, variants, or admin edits.
+      if (!snap.exists) {
+        await prodRef.set({
+          ...prod,
+          createdAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp()
+        });
+        console.log(`[Catalog Seed] Seeded missing product document ${prod.id} into Firestore`);
       }
     }
     _catalogSynced = true;
   } catch (err) {
-    console.warn("[Catalog Sync] Notice during catalog price sync:", err.message);
+    console.warn("[Catalog Sync] Notice during catalog seed check:", err.message);
   }
 }
 syncAuthoritativeCatalogToFirestore().catch(() => {});
@@ -114,7 +164,6 @@ const router = express.Router();
 
 // Sovereign Core APIs
 router.all("/admin", adminHandler);
-router.all("/complete-order", completeOrderHandler);
 router.all("/dispatch", dispatchHandler);
 router.all("/health", healthHandler);
 router.all("/redeem-reward", redeemRewardHandler);
@@ -127,11 +176,21 @@ router.all("/collector/batch-deduplicate", patronBatchDeduplicateHandler);
 router.all("/patron/delete-account", patronDeleteAccountHandler);
 router.all("/collector/delete-account", patronDeleteAccountHandler);
 
+// Server-owned collector document + reward settlement
+router.all("/patron/bootstrap", patronBootstrapHandler);
+router.all("/patron/settle-order", patronSettleOrderHandler);
+router.all("/patron/settle-balance", patronSettleBalanceHandler);
+router.all("/patron/collect-balance", patronSettleBalanceHandler);
+
 // Razorpay Payment Gateway APIs (support both /create-order and /razorpay/create-order)
 router.all("/create-order", razorpayCreateOrderHandler);
 router.all("/verify-payment", razorpayVerifyPaymentHandler);
 router.all("/razorpay/create-order", razorpayCreateOrderHandler);
 router.all("/razorpay/verify-payment", razorpayVerifyPaymentHandler);
+
+// Razorpay webhook: the authoritative settlement path (server-to-server).
+router.all("/razorpay/webhook", razorpayWebhookHandler);
+router.all("/webhook/razorpay", razorpayWebhookHandler);
 
 // Mount router on both '/api' and '/' to support Firebase Hosting rewrite and direct invocation
 app.use("/api", router);

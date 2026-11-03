@@ -54,23 +54,18 @@ import {
   limit
 } from "firebase/firestore";
 
-// Founder and High-Security Admin Whitelist
-export const ADMIN_EMAILS = [
-  'gunhegarr@gmail.com',
-  'admin@mytholis.com',
-  'alexander@mytholis.com',
-  'founder@mytholis.com',
-  ((typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_ADMIN_EMAIL) || '').trim().toLowerCase()
-].filter(Boolean);
-
+/**
+ * Client-side admin detection is a UI convenience ONLY - it decides whether to
+ * render the admin nav. It grants nothing. Every privileged action is checked
+ * server-side against the `admin` custom claim.
+ *
+ * The previous implementation shipped a hardcoded list of founder/company email
+ * addresses in the public bundle and matched on them. That both leaked the
+ * target list and disagreed with the server. It is gone: the server stamps
+ * `role`/`isAdmin` from the claim, and that mirror is what the UI reads.
+ */
 export function checkIsAdmin(user, profile = {}) {
   if (!user && !profile) return false;
-  const email = (user?.email || profile?.email || '').trim().toLowerCase();
-  const dynamicAdmins = (typeof store !== 'undefined' && store.globalSettings && Array.isArray(store.globalSettings.adminEmails))
-    ? store.globalSettings.adminEmails
-    : [];
-  const allAdmins = [...ADMIN_EMAILS, ...dynamicAdmins];
-  if (email && allAdmins.some(e => e.toLowerCase().trim() === email)) return true;
   if (profile?.isAdmin === true || profile?.role === 'admin') return true;
   if (user?.role === 'admin' || user?.isAdmin === true) return true;
   return false;
@@ -721,10 +716,11 @@ export class FirebaseService {
       const targetPhone = (options.phone || '').trim();
       const explicitOrderIds = Array.isArray(options.orderIds) ? options.orderIds : [];
 
-      // Master Admin Protection Safeguard
-      const adminEmails = ['gunhegarr@gmail.com', 'admin@mytholis.com', 'alexander@mytholis.com', 'founder@mytholis.com'];
-      if (auth.currentUser.email && adminEmails.includes(auth.currentUser.email.toLowerCase()) && uidToDelete === auth.currentUser.uid) {
-        return { success: false, error: 'Cannot delete sovereign master administrator account.' };
+      // Administrator accounts are protected server-side (delete-account.js).
+      // The client only mirrors that rule for a friendlier error message.
+      const isSelfAdmin = store?.user?.isAdmin === true || store?.user?.role === 'admin';
+      if (isSelfAdmin && uidToDelete === auth.currentUser.uid) {
+        return { success: false, error: 'Cannot delete your own administrator account.' };
       }
 
       // 1. Attempt authoritative backend deletion (removes from Firebase Auth + Firestore + Orders)
@@ -1100,84 +1096,35 @@ export class FirebaseService {
           };
         }
 
-        // Merge cloud loyalty state with store
-        const spendablePts = Number(cloudData.loyalty?.spendable_mythos || 0);
-        const legacyPts = Number(cloudData.loyalty?.legacy_mythos || 0);
-        const hasExistingPoints = spendablePts > 0 || legacyPts > 0;
+        /* Server-owned ledger.
+           Firestore rules no longer permit a client to write `loyalty`,
+           `role` or `isAdmin`. The document and its welcome bonus are created
+           and owned by POST /api/patron/bootstrap (Admin SDK).              */
+        const boot = await this.bootstrapCollectorDocument(user.uid);
+        const serverLoyalty = boot?.user?.loyalty || cloudData.loyalty || null;
 
         // Existing profile in Firestore: mark as having already seen signup bonus
         localStorage.setItem('mytholis_welcome_seen_' + user.uid, 'true');
         if (patronEmail) localStorage.setItem('mytholis_welcome_seen_' + patronEmail, 'true');
         if (user.phoneNumber) localStorage.setItem('mytholis_welcome_seen_' + user.phoneNumber.replace(/\D/g, '').slice(-10), 'true');
 
-        if (hasExistingPoints) {
-          this.store.loyalty = cloudData.loyalty;
-          if (this.store.loyalty) this.store.loyalty.signup_bonus_popup_seen = true;
+        if (serverLoyalty) {
+          this.store.loyalty = { ...serverLoyalty, signup_bonus_popup_seen: true };
           this.store.saveLocalStorage('mytholis_loyalty', this.store.loyalty);
-        } else {
-          // Profile existed but loyalty was uninitialized or 0: grant welcome bonus silently
-          const bonusMythos = Number(this.store?.globalSettings?.signupBonusMythos) || 200;
-          const initialLoyalty = {
-            spendable_mythos: bonusMythos,
-            legacy_mythos: bonusMythos,
-            full_bottles_purchased: 0,
-            initiation_completed: false,
-            codex_unlocked: [],
-            trinity_claimed: false,
-            pantheon_claimed: false,
-            reviewed_scents: [],
-            active_reward_codes: [],
-            applied_reward_code: null,
-            signup_bonus_awarded: true,
-            signup_bonus_popup_seen: true // Existing profile: NEVER show welcome popup on login
-          };
-          await setDoc(userDocRef, { loyalty: initialLoyalty }, { merge: true }).catch(() => {});
-          this.store.loyalty = initialLoyalty;
-          this.store.saveLocalStorage('mytholis_loyalty', initialLoyalty);
         }
       } else {
-        // First-time cloud registration: create clean initial profile & loyalty
-        const bonusMythos = Number(this.store?.globalSettings?.signupBonusMythos) || 200;
-        const initialLoyalty = {
-          spendable_mythos: bonusMythos,
-          legacy_mythos: bonusMythos,
-          full_bottles_purchased: 0,
-          initiation_completed: false,
-          codex_unlocked: [],
-          trinity_claimed: false,
-          pantheon_claimed: false,
-          reviewed_scents: [],
-          active_reward_codes: [],
-          applied_reward_code: null,
-          signup_bonus_awarded: true,
-          signup_bonus_popup_seen: false
-        };
-        const initialProfile = {
-          name: patronName,
-          email: patronEmail,
-          phone: user.phoneNumber || this.store.user.phone || '',
-          address: this.store.user.address || '',
-          pincode: this.store.user.pincode || '',
-          city: this.store.user.city || '',
-          state: this.store.user.state || '',
-          photoURL: patronPhoto,
-          createdAt: serverTimestamp()
-        };
+        // First-time cloud registration: the SERVER creates the document,
+        // including the welcome bonus. The client only writes its profile
+        // (rules allow safe profile fields, never `loyalty`).
+        const boot = await this.bootstrapCollectorDocument(user.uid);
+        const serverLoyalty = boot?.user?.loyalty || null;
 
-        const initialDocData = {
-          profile: initialProfile,
-          loyalty: initialLoyalty,
-          updatedAt: serverTimestamp(),
-          role: isUserAdmin ? 'admin' : 'collector',
-          isAdmin: isUserAdmin
-        };
+        if (serverLoyalty) {
+          this.store.loyalty = serverLoyalty;
+          this.store.saveLocalStorage('mytholis_loyalty', serverLoyalty);
+        }
 
-        await setDoc(userDocRef, initialDocData, { merge: true }).catch(setErr => {
-          console.error('[Mytholis Firebase] Initial user profile setDoc note:', setErr.message);
-        });
-
-        this.store.loyalty = initialLoyalty;
-        this.store.saveLocalStorage('mytholis_loyalty', initialLoyalty);
+        const bonusMythos = Number(serverLoyalty?.spendable_mythos) || 0;
 
         // Announce welcome bonus celebration popup ONLY ONCE strictly upon first signup
         const isBrandNewUser = user.metadata && (
@@ -1188,7 +1135,7 @@ export class FirebaseService {
                             (patronEmail && localStorage.getItem('mytholis_welcome_seen_' + patronEmail) === 'true') ||
                             (user.phoneNumber && localStorage.getItem('mytholis_welcome_seen_' + user.phoneNumber.replace(/\D/g, '').slice(-10)) === 'true');
 
-        if (isBrandNewUser && !alreadySeen && this.app && typeof this.app.openSignupBonusModal === 'function') {
+        if (isBrandNewUser && !alreadySeen && bonusMythos > 0 && this.app && typeof this.app.openSignupBonusModal === 'function') {
           setTimeout(() => {
             this.app.openSignupBonusModal(bonusMythos, user.uid);
           }, 350);
@@ -1200,15 +1147,6 @@ export class FirebaseService {
       this.store.notify();
       if (this.app && typeof this.app.renderProfileModalContent === 'function') {
         this.app.renderProfileModalContent();
-      }
-
-      // If user qualifies as admin by email whitelist but Firestore doesn't mark it yet, persist it
-      if (isUserAdmin && (!cloudData || cloudData.role !== 'admin' || !cloudData.isAdmin)) {
-        await setDoc(userDocRef, {
-          role: 'admin',
-          isAdmin: true,
-          updatedAt: serverTimestamp()
-        }, { merge: true }).catch(() => {});
       }
 
       // Fetch user's real orders from Firestore orders collection
@@ -1312,47 +1250,22 @@ export class FirebaseService {
           localStorage.setItem('mytholis_welcome_seen_' + uid, 'true');
           if (cleanPhone) localStorage.setItem('mytholis_welcome_seen_' + cleanPhone, 'true');
         } else {
-          const bonusMythos = Number(this.store?.globalSettings?.signupBonusMythos) || 200;
-          const initialLoyalty = {
-            spendable_mythos: bonusMythos,
-            legacy_mythos: bonusMythos,
-            full_bottles_purchased: 0,
-            initiation_completed: false,
-            codex_unlocked: [],
-            trinity_claimed: false,
-            pantheon_claimed: false,
-            reviewed_scents: [],
-            active_reward_codes: [],
-            applied_reward_code: null,
-            signup_bonus_awarded: true,
-            signup_bonus_popup_seen: false
-          };
-          await setDoc(userDocRef, {
-            profile: {
-              name: patronName,
-              email: patronEmail,
-              phone: cleanPhone,
-              address: this.store.user.address || '',
-              pincode: this.store.user.pincode || '',
-              city: this.store.user.city || '',
-              state: this.store.user.state || '',
-              authProvider: 'phone',
-              role: 'collector',
-              isAdmin: false,
-              createdAt: serverTimestamp()
-            },
-            loyalty: initialLoyalty,
-            updatedAt: serverTimestamp()
-          }, { merge: true }).catch(() => {});
+          // Server creates the document (and the welcome bonus). Firestore rules
+          // no longer allow a client to write `loyalty`, `role` or `isAdmin`.
+          const boot = await this.bootstrapCollectorDocument(uid);
+          const serverLoyalty = boot?.user?.loyalty || null;
 
-          this.store.loyalty = initialLoyalty;
-          this.store.saveLocalStorage('mytholis_loyalty', initialLoyalty);
+          if (serverLoyalty) {
+            this.store.loyalty = serverLoyalty;
+            this.store.saveLocalStorage('mytholis_loyalty', serverLoyalty);
+          }
+          const bonusMythos = Number(serverLoyalty?.spendable_mythos) || 0;
 
           const alreadySeen = (this.store.loyalty && this.store.loyalty.signup_bonus_popup_seen === true) ||
                               localStorage.getItem('mytholis_welcome_seen_' + uid) === 'true' ||
                               (cleanPhone && localStorage.getItem('mytholis_welcome_seen_' + cleanPhone) === 'true');
 
-          if (!alreadySeen && this.app && typeof this.app.openSignupBonusModal === 'function') {
+          if (!alreadySeen && bonusMythos > 0 && this.app && typeof this.app.openSignupBonusModal === 'function') {
             setTimeout(() => {
               this.app.openSignupBonusModal(bonusMythos, uid);
             }, 350);
@@ -1367,14 +1280,72 @@ export class FirebaseService {
     }
   }
 
+  /**
+   * Ask the server to create (or repair) the collector document.
+   * The welcome bonus and the loyalty ledger are server-owned; a client can no
+   * longer write them (see firestore.rules).
+   */
+  async bootstrapCollectorDocument(uid) {
+    try {
+      const user = auth.currentUser;
+      if (!user) return null;
+      const idToken = await user.getIdToken().catch(() => null);
+      if (!idToken) return null;
+
+      const resp = await fetch('/api/patron/bootstrap', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({})
+      });
+      if (!resp.ok) return null;
+      return await resp.json().catch(() => null);
+    } catch (err) {
+      console.warn('[Mytholis Firebase] Collector bootstrap note:', err.message);
+      return null;
+    }
+  }
+
+  /**
+   * Re-read the loyalty ledger from Firestore.
+   * Crediting happens server-side (webhook / settle-order), so the client polls
+   * briefly after a purchase instead of computing its own numbers.
+   */
+  async refreshLoyaltyFromServer(retries = 3, delayMs = 1200) {
+    if (!this.currentUser) return null;
+    for (let attempt = 0; attempt < retries; attempt += 1) {
+      try {
+        const snap = await getDoc(doc(db, 'users', this.currentUser.uid));
+        if (snap.exists()) {
+          const data = snap.data() || {};
+          if (data.loyalty) {
+            this.store.loyalty = data.loyalty;
+            this.store.syncUserWithLoyalty();
+            this.store.saveLocalStorage('mytholis_loyalty', data.loyalty);
+            this.store.notify();
+            return data.loyalty;
+          }
+        }
+      } catch (err) {
+        console.warn('[Mytholis Firebase] Loyalty refresh note:', err.message);
+      }
+      if (attempt < retries - 1) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
+    return null;
+  }
+
   // Persist that the user has seen their signup bonus modal
   async markSignupBonusSeen(uid) {
     if (!uid) return;
     try {
       const userDocRef = doc(db, "users", uid);
+      // Top-level flag only. `loyalty` is server-owned.
       await setDoc(userDocRef, {
         signup_bonus_popup_seen: true,
-        loyalty: { signup_bonus_popup_seen: true },
         updatedAt: serverTimestamp()
       }, { merge: true });
     } catch (e) {
@@ -1386,14 +1357,9 @@ export class FirebaseService {
     return this.syncPhoneUserData(userData);
   }
 
-  // Push local changes up to Firestore
+  // Push profile changes up to Firestore (loyalty is server-owned)
   async pushLocalStateToCloud() {
     if (!this.currentUser || this.isSyncing) return;
-
-    // Safety guard: NEVER push an uninitialized 0-points loyalty object to Firestore
-    if (!this.store.loyalty || (this.store.loyalty.spendable_mythos === 0 && this.store.loyalty.legacy_mythos === 0 && !this.store.loyalty.signup_bonus_awarded)) {
-      return;
-    }
 
     try {
       const userDocRef = doc(db, "users", this.currentUser.uid);
@@ -1410,9 +1376,10 @@ export class FirebaseService {
       if (this.store.user.photoURL || this.currentUser.photoURL) {
         profileToSave.photoURL = this.store.user.photoURL || this.currentUser.photoURL;
       }
+      // NOTE: `loyalty` is deliberately absent. It is written only by the
+      // server (redeem-reward, settle-order, payment webhook).
       await setDoc(userDocRef, {
         profile: profileToSave,
-        loyalty: this.store.loyalty,
         updatedAt: serverTimestamp()
       }, { merge: true });
     } catch (err) {
@@ -1420,25 +1387,15 @@ export class FirebaseService {
     }
   }
 
-  // Record completed order into Firestore orders collection
+  /**
+   * Orders are created by the server (`/api/create-order`, `/api/complete-order`).
+   * The client used to add a SECOND order document here with a client-computed
+   * total, which produced duplicate consignments and duplicated loyalty.
+   * Kept as a no-op so existing call sites stay valid.
+   */
   async recordOrderInCloud(orderData) {
-    if (!this.currentUser) return;
-    try {
-      const ordersRef = collection(db, "orders");
-      const docRef = await addDoc(ordersRef, {
-        userId: this.currentUser.uid,
-        userEmail: this.currentUser.email,
-        userName: this.currentUser.displayName || this.store?.user?.name || 'Mytholis Collector',
-        ...orderData,
-        rewardsCredited: orderData.paymentMethod === 'Prepaid' ? true : false,
-        timestamp: serverTimestamp()
-      });
-      console.log("[Mytholis Firebase] Order recorded in cloud with ID:", docRef.id);
-      return docRef.id;
-    } catch (err) {
-      console.warn("[Mytholis Firebase] Could not record cloud order:", err.message);
-      return null;
-    }
+    console.warn('[Mytholis Firebase] recordOrderInCloud is disabled: the server owns order creation.');
+    return null;
   }
 
   /* ==========================================================================
@@ -2306,101 +2263,35 @@ export class FirebaseService {
     return this.saveShippingOrderDetails(orderId, details);
   }
 
-  // Settle COD order rewards with duplicate protection
+  /**
+   * Settle COD order rewards.
+   * The calculation and the ledger write are server-side and transactional now;
+   * this only asks the server to do it. Previously the browser computed the
+   * balance and wrote it with setDoc, which both allowed forgery and double
+   * credited alongside the server path.
+   */
   async settleCodOrderLoyalty(orderId, orderData = null) {
     try {
-      let orderRef = doc(db, "orders", orderId);
-      let data = orderData;
-      if (!data) {
-        let snap = await getDoc(orderRef).catch(() => null);
-        if (!snap || !snap.exists()) {
-          const q = query(collection(db, "orders"), where("orderId", "==", orderId), limit(1));
-          const qSnap = await getDocs(q).catch(() => null);
-          if (qSnap && !qSnap.empty) {
-            snap = qSnap.docs[0];
-            orderRef = snap.ref;
-          }
-        }
-        if (!snap || !snap.exists()) return { success: false, error: "Order not found" };
-        data = snap.data();
-      }
+      const user = auth.currentUser;
+      if (!user) return { success: false, error: 'Administrator authentication required.' };
 
-      if (data.rewardsCredited) {
-        return { success: true, message: "Rewards already credited." };
-      }
+      const idToken = await user.getIdToken().catch(() => null);
+      if (!idToken) return { success: false, error: 'Unable to retrieve administrator credential.' };
 
-      const uid = data.userId;
-      if (!uid) {
-        return { success: false, error: "No user UID associated with this order." };
-      }
-
-      const userDocRef = doc(db, "users", uid);
-      const userSnap = await getDoc(userDocRef);
-      if (!userSnap.exists()) {
-        return { success: false, error: "Collector account does not exist." };
-      }
-
-      const userDocData = userSnap.data();
-      const currentLoyalty = userDocData.loyalty || {
-        spendable_mythos: 0,
-        legacy_mythos: 0,
-        full_bottles_purchased: 0
-      };
-
-      // Calculate rewards
-      const finalAmount = Number(data.finalPayable || data.total || data.subtotal || 0);
-      const earnPct = this.store?.globalSettings?.mythosEarnPct || 3;
-      const spendEarned = Math.floor(finalAmount / 100) * earnPct;
-
-      let bottleCount = 0;
-      let bottleBonus = 0;
-      if (Array.isArray(data.items)) {
-        data.items.forEach(item => {
-          const qty = Number(item.quantity) || 1;
-          const sz = Number(item.size);
-          if (sz === 50) {
-            bottleCount += qty;
-            bottleBonus += (300 * qty);
-          } else if (sz === 100) {
-            bottleCount += qty;
-            bottleBonus += (500 * qty);
-          }
-        });
-      }
-
-      const legacyEarned = spendEarned + bottleBonus;
-
-      const updatedLoyalty = {
-        ...currentLoyalty,
-        spendable_mythos: (Number(currentLoyalty.spendable_mythos) || 0) + spendEarned,
-        legacy_mythos: (Number(currentLoyalty.legacy_mythos) || 0) + legacyEarned,
-        full_bottles_purchased: (Number(currentLoyalty.full_bottles_purchased) || 0) + bottleCount
-      };
-
-      // Write updated loyalty to collector
-      await setDoc(userDocRef, {
-        loyalty: updatedLoyalty,
-        updatedAt: serverTimestamp()
-      }, { merge: true });
-
-      // Mark order with rewardsCredited flag to prevent any double crediting
-      await updateDoc(orderRef, {
-        rewardsCredited: true,
-        rewardsCreditedAt: serverTimestamp(),
-        rewardsGranted: {
-          spendEarned,
-          legacyEarned,
-          bottleCount
-        }
+      const resp = await fetch('/api/patron/settle-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({ orderId })
       });
 
-      console.log(`[Mytholis Admin] Succeeded crediting ${spendEarned}M to collector ${uid} for order ${orderId}`);
-      return { 
-        success: true, 
-        spendEarned, 
-        legacyEarned, 
-        bottleCount 
-      };
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        return { success: false, error: data.error || 'Settlement failed.' };
+      }
+      return data;
     } catch (err) {
       console.error("[Mytholis Admin] settleCodOrderLoyalty error:", err);
       return { success: false, error: err.message };
@@ -2610,11 +2501,17 @@ export class FirebaseService {
         codEnabled: settingsData.codEnabled !== false,
         codFee: Number(settingsData.codFee) || 0,
         maxCodAmount: Number(settingsData.maxCodAmount) || 15000,
+        freeShippingThreshold: Number(settingsData.freeShippingThreshold) || 3000,
+        standardShippingFee: settingsData.standardShippingFee !== undefined ? Number(settingsData.standardShippingFee) : 150,
         mythosEarnPct: Number(settingsData.mythosEarnPct) || 3,
         redemptionRatio: Number(settingsData.redemptionRatio) || 1,
         maxMythosRedemptionPct: Number(settingsData.maxMythosRedemptionPct) || 30,
         razorpayKeyId: settingsData.razorpayKeyId || '',
         promoCodes: settingsData.promoCodes || [],
+        supportPhone: settingsData.supportPhone || '+91 777000 9170',
+        supportWhatsApp: settingsData.supportWhatsApp || '917770009170',
+        supportEmail: settingsData.supportEmail || 'concierge@mytholis.com',
+        metaPixelId: settingsData.metaPixelId || '',
         updatedAt: serverTimestamp()
       };
       await setDoc(doc(db, "settings", "public_config"), publicConfig, { merge: true }).catch(() => {});
@@ -2674,6 +2571,5 @@ export { db, auth, doc, getDoc, setDoc, getDocs, updateDoc, deleteDoc, collectio
 if (typeof window !== 'undefined') {
   window.firebaseService = firebaseService;
   window.firebaseDb = db;
-  window.ADMIN_EMAILS = ADMIN_EMAILS;
   window.checkIsAdmin = checkIsAdmin;
 }

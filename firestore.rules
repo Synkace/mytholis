@@ -2,49 +2,101 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    /* ======================================================================
+       AUTHORIZATION MODEL
+       ----------------------------------------------------------------------
+       Admin rights come from ONE place: the `admin: true` custom claim,
+       which can only be set by the Admin SDK (never by a client).
+
+       Transitional bridge (remove once the founder's claim is set):
+       a SINGLE verified email address. It is safe only because of the
+       `email_verified == true` requirement - an attacker cannot register
+       and verify an address they do not control. Do not add more addresses
+       here; use the admin claim instead (see functions/handlers/admin.js
+       action SET_ADMIN_CLAIM).
+       ====================================================================== */
+    function signedIn() {
+      return request.auth != null;
+    }
+
     function isAdmin() {
-      return request.auth != null && (
+      return signedIn() && (
         request.auth.token.admin == true ||
-        (request.auth.token.email != null && (
-          request.auth.token.email in ['gunhegarr@gmail.com', 'admin@mytholis.com', 'alexander@mytholis.com', 'founder@mytholis.com']
-        )) ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true))
+        (
+          request.auth.token.email_verified == true &&
+          request.auth.token.email == 'gunhegarr@gmail.com'
+        )
       );
     }
-    
-    // 1. Collectors can read & update their own profile (cannot escalate role or tamper with isAdmin); Admins have sovereign read/write
+
+    // Only a verified address may be used to match order ownership.
+    function verifiedEmail() {
+      return request.auth.token.email_verified == true
+        ? request.auth.token.email
+        : null;
+    }
+
+    /* ---- Fields a collector may write on their own document. ------------
+       Everything else is server-only. In particular: role, isAdmin,
+       loyalty, points, tier, manual_tier_override, active_reward_codes,
+       createdAt, referralCode.
+       NOTE: `profile` is presentation data only. No authorization decision
+       anywhere may read profile.role / profile.isAdmin.
+       -------------------------------------------------------------------- */
+    function selfWritableFields() {
+      return [
+        'name', 'displayName', 'photoURL',
+        'phone', 'phoneNumber',
+        'address', 'pincode', 'city', 'state',
+        'emailCanonical', 'phoneCanonical', 'addressKey', 'emails', 'linkedUids',
+        'profile',
+        'updatedAt', 'lastLoginAt',
+        'signup_bonus_popup_seen', 'isMergedDuplicate', 'activeDocUid'
+      ];
+    }
+
+    // 1. Collector profiles
     match /users/{userId} {
-      allow read: if (request.auth != null && request.auth.uid == userId) || isAdmin();
-      allow create: if (request.auth != null && request.auth.uid == userId &&
-                      request.resource.data.get('isAdmin', false) == false &&
-                      request.resource.data.get('role', 'collector') == 'collector') || isAdmin();
-      allow update: if (request.auth != null && request.auth.uid == userId &&
-                        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'isAdmin'])) ||
-                       isAdmin();
+      allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
+
+      // First write: safe fields only. Loyalty is created by the server.
+      allow create: if signedIn() && request.auth.uid == userId &&
+                       request.resource.data.keys().hasOnly(selfWritableFields());
+
+      // Any later self-write may only touch safe fields. Any attempt to
+      // change role / isAdmin / loyalty / points makes affectedKeys()
+      // contain a forbidden key and the whole write is rejected.
+      allow update: if signedIn() && request.auth.uid == userId &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(selfWritableFields());
+
       allow delete: if isAdmin();
-      
-      // Nested user orders or history
+
       match /{document=**} {
-        allow read: if (request.auth != null && request.auth.uid == userId) || isAdmin();
-        allow write: if isAdmin();
+        allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
+        allow write: if false;
       }
     }
 
-    // 2. Orders collection: Direct client creation restricted to authenticated users with non-paid status.
-    // Paid orders and points are strictly server-authoritative via Cloud Functions Admin SDK.
+    // 2. Orders - creation and pricing are SERVER ONLY.
+    // Cloud Functions use the Admin SDK and bypass these rules. An admin may
+    // still update fulfilment fields (status, courier, AWB) from the dashboard;
+    // that is gated on the admin claim, which a client cannot forge.
     match /orders/{orderId} {
-      allow create: if isAdmin() || (
-        request.auth != null &&
-        request.resource.data.userId == request.auth.uid &&
-        request.resource.data.get('paymentStatus', 'Pending') != 'Paid'
-      );
-      allow read: if isAdmin() || (request.auth != null && (resource.data.userId == request.auth.uid || resource.data.userEmail == request.auth.token.email));
+      allow create: if false;
       allow update, delete: if isAdmin();
+
+      allow read: if signedIn() && (
+        isAdmin() ||
+        resource.data.userId == request.auth.uid ||
+        resource.data.uid == request.auth.uid ||
+        (
+          verifiedEmail() != null &&
+          resource.data.userEmail == verifiedEmail()
+        )
+      );
     }
 
-    // 3. Settings: Public storefront toggles in public_config only; all other settings strictly admin-only.
+    // 3. Global settings
     match /settings/public_config {
       allow read: if true;
       allow write: if isAdmin();
@@ -53,19 +105,29 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
-    // 4. Vault Reward Codes: Publicly readable; writable ONLY by verified admin or server.
+    // 4. Voucher vault - server only.
+    // `allow read: if true` previously made the whole collection listable,
+    // which exposed every unredeemed code.
     match /reward_codes/{code} {
+      allow read, write: if isAdmin();
+    }
+    match /vouchers/{voucherId} {
+      allow read, write: if isAdmin();
+    }
+
+    // 5. Storefront catalog
+    match /products/{productId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // 5. Editorial / Gazette Posts
+    // 6. Editorial / Gazette posts
     match /posts/{postId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // 6. Diagnostics Ping:
+    // 7. Diagnostics
     match /_diagnostics/{doc} {
       allow read, write: if isAdmin();
     }

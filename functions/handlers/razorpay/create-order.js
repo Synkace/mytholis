@@ -1,4 +1,4 @@
-import { calculateServerOrderTotal } from '../../catalog.js';
+import { calculateServerOrderTotal, isFirstOrderEligible } from '../../catalog.js';
 import { adminDb, adminAuth } from '../_firebaseAdmin.js';
 import { FieldValue } from 'firebase-admin/firestore';
 
@@ -38,11 +38,125 @@ export default async function handler(req, res) {
     let promoDiscount = 0;
     let upiDiscount = 0;
     let mythosDiscount = 0;
+    let shippingFee = 0;
+    let codFee = 0;
+    let isPartialCod = false;
+    let depositInRupees = 0;
+    let balanceDueInRupees = 0;
+
+    /* 0. Resolve identity BEFORE pricing.
+       Loyalty redemption must be clamped to the collector's real balance, which
+       means we need to know who they are before the discount is computed.
+       The client's `redeemMythos` value is a request, never a fact. */
+    let authenticatedUid = null;
+    let authenticatedEmail = null;
+    let serverSpendable = 0;
+    let mythosRedeemed = 0;
+
+    const authHeader = req.headers?.authorization || req.headers?.Authorization;
+    if (authHeader && authHeader.startsWith('Bearer ') && adminAuth) {
+      try {
+        const decoded = await adminAuth.verifyIdToken(authHeader.replace('Bearer ', '').trim());
+        authenticatedUid = decoded.uid;
+        if (decoded.email) authenticatedEmail = decoded.email.toLowerCase();
+
+        const userSnap = await adminDb.collection('users').doc(decoded.uid).get().catch(() => null);
+        if (userSnap && userSnap.exists) {
+          const u = userSnap.data() || {};
+          serverSpendable = Number(u.loyalty?.spendable_mythos) || 0;
+        }
+      } catch (_) {
+        authenticatedUid = null;
+        authenticatedEmail = null;
+      }
+    }
 
     // 1. Support both cart items array (catalog-driven) and direct amount in paise (Step 1 API standard)
     if (Array.isArray(items) && items.length > 0) {
-      const pointsToRedeem = Number(redeemMythos !== undefined ? redeemMythos : (mythosPoints || 0)) || 0;
-      const serverCalc = calculateServerOrderTotal(items, promoCode, paymentMethod, pointsToRedeem);
+      const requestedPoints = Number(redeemMythos !== undefined ? redeemMythos : (mythosPoints || 0)) || 0;
+      // Never redeem more than the server knows they have - and never for a guest.
+      const pointsToRedeem = authenticatedUid
+        ? Math.max(0, Math.min(requestedPoints, serverSpendable))
+        : 0;
+      mythosRedeemed = pointsToRedeem;
+
+      // Authoritative Firestore Lookups: Live Products, Dynamic Settings, & Vouchers
+      let firestoreProducts = [];
+      let serverSettings = {};
+      let voucherDoc = null;
+
+      if (adminDb) {
+        // A. Fetch live product documents from Firestore products/{id}
+        try {
+          const productIdsToFetch = new Set();
+          items.forEach(it => {
+            const raw = String(it.id || it.productId || it.slug || '').trim().toLowerCase();
+            if (raw === 'sixth-sense' || raw === 'mytholis-discovery-set') {
+              productIdsToFetch.add('mytholis-discovery-set');
+            } else if (raw) {
+              productIdsToFetch.add(raw);
+            }
+          });
+
+          const fetchPromises = Array.from(productIdsToFetch).map(pid =>
+            adminDb.collection('products').doc(pid).get()
+              .then(snap => snap.exists ? { id: snap.id, ...snap.data() } : null)
+              .catch(() => null)
+          );
+          const fetchedResults = await Promise.all(fetchPromises);
+          firestoreProducts = fetchedResults.filter(Boolean);
+        } catch (prodErr) {
+          console.warn('[Razorpay Create-Order] Live products fetch notice:', prodErr.message);
+        }
+
+        // B. Fetch live settings from Firestore settings/global (fallback to settings/public_config)
+        try {
+          const globalSnap = await adminDb.collection('settings').doc('global').get().catch(() => null);
+          if (globalSnap && globalSnap.exists) {
+            serverSettings = globalSnap.data() || {};
+          } else {
+            const pubSnap = await adminDb.collection('settings').doc('public_config').get().catch(() => null);
+            if (pubSnap && pubSnap.exists) {
+              serverSettings = pubSnap.data() || {};
+            }
+          }
+        } catch (setErr) {
+          console.warn('[Razorpay Create-Order] Live settings fetch notice:', setErr.message);
+        }
+
+        // C. Fetch dynamic voucher from Firestore if promoCode provided
+        const cleanPromo = (promoCode || '').trim().toUpperCase();
+        if (cleanPromo) {
+          try {
+            const vSnap = await adminDb.collection('vouchers').doc(cleanPromo).get().catch(() => null);
+            if (vSnap && vSnap.exists) {
+              voucherDoc = { id: vSnap.id, ...vSnap.data() };
+            } else {
+              const rSnap = await adminDb.collection('reward_codes').doc(cleanPromo).get().catch(() => null);
+              if (rSnap && rSnap.exists) {
+                voucherDoc = { id: rSnap.id, ...rSnap.data() };
+              }
+            }
+          } catch (vErr) {
+            console.warn('[Razorpay Create-Order] Voucher fetch notice:', vErr.message);
+          }
+        }
+      }
+
+      // First-order eligibility is decided from the order ledger, never the UI.
+      const serverFirstOrder = await isFirstOrderEligible(adminDb, {
+        uid: authenticatedUid,
+        email: authenticatedEmail || req.body?.customerEmail || req.body?.email,
+        phone: req.body?.customerPhone || req.body?.phone
+      });
+
+      const serverCalc = calculateServerOrderTotal(items, promoCode, paymentMethod, pointsToRedeem, {
+        firestoreProducts,
+        settings: serverSettings,
+        voucherDoc,
+        isFirstOrder: serverFirstOrder
+      });
+
       if (!serverCalc.isValid) {
         return res.status(400).json({ error: serverCalc.error || 'Invalid cart items or quantities' });
       }
@@ -56,28 +170,28 @@ export default async function handler(req, res) {
       promoDiscount = serverCalc.promoDiscount || 0;
       upiDiscount = serverCalc.upiDiscount || 0;
       mythosDiscount = serverCalc.mythosDiscount || 0;
-    } else if (amount !== undefined && amount !== null && !isNaN(Number(amount))) {
-      amountInPaise = Math.round(Number(amount));
-      finalAmountInRupees = Math.round(amountInPaise / 100);
-      subtotal = finalAmountInRupees;
+      shippingFee = serverCalc.shippingFee || 0;
+      codFee = serverCalc.codFee || 0;
+
+      // Partial COD: the gateway is asked for the deposit only.
+      isPartialCod = serverCalc.isPartialCod === true;
+      depositInRupees = serverCalc.depositInRupees;
+      balanceDueInRupees = serverCalc.balanceDueInRupees;
+      if (isPartialCod) {
+        amountInPaise = serverCalc.chargeInPaise;
+      }
     } else {
-      return res.status(400).json({ error: 'Cart items array or order amount in paise is required' });
+      /* A raw `amount` in paise used to be accepted when no items were sent.
+         That let a caller create a Razorpay order for any value they liked and
+         have it written into the authoritative draft. Removed: every order must
+         carry a cart, and every price comes from the server catalog. */
+      return res.status(400).json({
+        error: 'A cart items array is required. Orders are priced server-side from the catalog.'
+      });
     }
 
     if (!amountInPaise || amountInPaise < 100) {
       return res.status(400).json({ error: 'Invalid order amount. Minimum order value is 100 paise (₹1).' });
-    }
-
-    // 3. Resolve user identity authoritatively if auth token present
-    let authenticatedUid = null;
-    let authenticatedEmail = null;
-    const authHeader = req.headers?.authorization || req.headers?.Authorization;
-    if (authHeader && authHeader.startsWith('Bearer ') && adminAuth) {
-      try {
-        const decoded = await adminAuth.verifyIdToken(authHeader.replace('Bearer ', '').trim());
-        authenticatedUid = decoded.uid;
-        if (decoded.email) authenticatedEmail = decoded.email.toLowerCase();
-      } catch (_) {}
     }
 
     // 4. Resolve credentials strictly from server environment
@@ -147,13 +261,30 @@ export default async function handler(req, res) {
       subtotal: subtotal,
       discountCode: discountCode,
       discountAmount: discountAmount,
+      promoDiscount: promoDiscount,
+      upiDiscount: upiDiscount,
+      mythosDiscount: mythosDiscount,
+      shippingFee: shippingFee,
+      codFee: codFee,
       verifiedTotal: finalAmountInRupees,
       total: finalAmountInRupees,
       amountInPaise: amountInPaise,
+      /* Deferred payment bookkeeping. `verifiedTotal` is always the FULL order
+         value; `chargedInPaise` is what the gateway actually captured. */
+      isPartialCod: isPartialCod,
+      depositAmount: isPartialCod ? depositInRupees : finalAmountInRupees,
+      balanceDue: balanceDueInRupees,
+      chargedInPaise: amountInPaise,
       earnedMythos: earnedMythos,
-      paymentMethod: paymentMethod || 'Razorpay Instant',
+      // Points this order consumes. Debited server-side at settlement.
+      mythosRedeemed: mythosRedeemed,
+      paymentMethod: isPartialCod ? 'Partial COD' : (paymentMethod || 'Razorpay Instant'),
       paymentStatus: 'PENDING',
-      status: 'CREATED',
+      /* A draft is a CHECKOUT, not an order. It exists so the server has a
+         priced cart to settle against. The dashboard must not count it. */
+      isDraft: true,
+      status: 'AWAITING_PAYMENT',
+      checkoutStartedAt: new Date().toISOString(),
       customer: sanitizedCustomer,
       customerName: sanitizedCustomer.name,
       customerPhone: sanitizedCustomer.phone,
@@ -166,7 +297,13 @@ export default async function handler(req, res) {
       try {
         await adminDb.collection('orders').doc(data.id).set(orderDraft);
       } catch (dbErr) {
-        console.warn('[Razorpay Order Draft DB Notice]:', dbErr.message);
+        // Without the draft there is nothing to settle against, so we must not
+        // let the customer pay. Fail loudly instead of returning a live order id.
+        console.error('[Razorpay Create-Order] Could not persist the order draft:', dbErr.message);
+        return res.status(500).json({
+          error: 'Could not record the order. Please try again.',
+          retryable: true
+        });
       }
     }
 
@@ -179,14 +316,20 @@ export default async function handler(req, res) {
       receipt: data.receipt,
       key: keyId,
       keyId: keyId,
+      isPartialCod: isPartialCod,
+      depositAmount: isPartialCod ? depositInRupees : finalAmountInRupees,
+      balanceDue: balanceDueInRupees,
       subtotal: subtotal,
       promoDiscount: promoDiscount,
       upiDiscount: upiDiscount,
       mythosDiscount: mythosDiscount,
+      shippingFee: shippingFee,
+      codFee: codFee,
       discountAmount: discountAmount,
       totalDiscount: discountAmount,
       verifiedTotal: finalAmountInRupees,
-      amountInPaise: amountInPaise
+      amountInPaise: amountInPaise,
+      earnedMythos: earnedMythos
     });
   } catch (err) {
     console.error('[Razorpay Create-Order Exception]:', err);

@@ -1,10 +1,11 @@
 import { FieldValue } from 'firebase-admin/firestore';
-import { adminDb, adminAuth } from '../_firebaseAdmin.js';
-import { 
-  canonicalPhone, 
-  formatPhoneDisplay, 
-  canonicalEmail, 
-  canonicalAddressKey 
+import { adminDb } from '../_firebaseAdmin.js';
+import { authenticate } from '../../lib/auth.js';
+import {
+  canonicalPhone,
+  formatPhoneDisplay,
+  canonicalEmail,
+  canonicalAddressKey
 } from '../../utils/normalize.js';
 
 export default async function handler(req, res) {
@@ -22,19 +23,11 @@ export default async function handler(req, res) {
   }
 
   // 1. Authenticate caller via Firebase ID Token
-  const authHeader = req.headers.authorization || req.headers.Authorization || '';
-  if (!authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Unauthorized: Missing or invalid Bearer token.' });
+  const auth = await authenticate(req);
+  if (!auth.ok) {
+    return res.status(auth.status).json({ error: auth.error });
   }
-
-  const token = authHeader.replace('Bearer ', '').trim();
-  let decodedToken;
-  try {
-    decodedToken = await adminAuth.verifyIdToken(token);
-  } catch (authErr) {
-    console.error('[Reconcile API] Token verification failed:', authErr.message);
-    return res.status(401).json({ error: 'Unauthorized: Invalid authentication token.' });
-  }
+  const decodedToken = auth.decoded;
 
   const callerUid = decodedToken.uid;
   if (!callerUid) {
@@ -42,37 +35,54 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 2. Extract and canonicalize phone & email from request body, token, and database
-    const bodyPhone = req.body?.phone || req.body?.phoneNumber || '';
-    const bodyEmail = req.body?.email || '';
-
+    /* 2. Identity proof.
+       ------------------------------------------------------------------
+       The merge key may ONLY come from evidence Firebase has verified:
+         - a phone number bound to the account, or
+         - an email address with email_verified === true.
+       Request-body email/phone are deliberately ignored: they are attacker
+       controlled and were the vector for cross-account merges. Nothing the
+       client writes onto its own document (emailCanonical, phoneCanonical,
+       linkedUids) is used for lookup either.
+       ------------------------------------------------------------------ */
     const callerUserRef = adminDb.collection('users').doc(callerUid);
     const callerSnap = await callerUserRef.get();
     const callerData = callerSnap.exists ? callerSnap.data() : { profile: {}, loyalty: {} };
     const callerProf = callerData.profile || {};
 
-    const rawPhone = bodyPhone || callerData.phoneCanonical || callerProf.phone || callerData.phone || decodedToken.phone_number || '';
-    const rawEmail = bodyEmail || callerData.emailCanonical || callerProf.email || callerData.email || decodedToken.email || '';
+    const verifiedPhone = decodedToken.phone_number || null;
+    const verifiedEmail = decodedToken.email_verified === true ? decodedToken.email : null;
 
-    let p10 = canonicalPhone(rawPhone);
-    const em = canonicalEmail(rawEmail);
+    let p10 = canonicalPhone(verifiedPhone);
+    const em = canonicalEmail(verifiedEmail);
 
-    // If caller has no phone in profile/token, search recent orders to resolve their phone
-    if (!p10) {
-      try {
-        const userOrders = await adminDb.collection('orders').where('userId', '==', callerUid).limit(5).get();
-        userOrders.forEach(ord => {
-          if (!p10) {
-            const ordData = ord.data() || {};
-            const p = ordData.phone || ordData.customerPhone || ordData.shippingPhone || ordData.customer?.phone || ordData.shipping?.phone || ordData.shippingAddress?.phone;
-            const normP = canonicalPhone(p);
-            if (normP) p10 = normP;
-          }
-        });
-      } catch (ordSearchErr) {
-        console.warn('[Reconcile API] Order phone discovery note:', ordSearchErr.message);
-      }
+    // If the caller has no verified identity at all, there is nothing to
+    // reconcile against - normalise only their own document and stop.
+    if (!p10 && !em) {
+      const formattedPhone = callerProf.phone || '';
+      const addrKey = canonicalAddressKey(callerProf.address || callerData.address, callerProf.pincode || callerData.pincode);
+      await callerUserRef.set({
+        phone: formattedPhone,
+        'profile.phone': formattedPhone,
+        addressKey: addrKey
+      }, { merge: true }).catch(() => {});
+
+      const refreshed = await callerUserRef.get();
+      return res.status(200).json({
+        success: true,
+        masterUid: callerUid,
+        merged: false,
+        verifiedIdentity: false,
+        message: 'No verified phone or email on this account, so no other records were matched.',
+        user: refreshed.data()
+      });
     }
+
+    // NOTE: phone numbers harvested from past orders are intentionally NOT used
+    // as a merge key. A guest checkout accepts any phone number, so an attacker
+    // could place an order with a victim's number and then "reconcile" into
+    // their account. Only token-verified identity may be used.
+
 
     const isDummyEmail = (e) => !e || e.endsWith('@phone.mytholis.com') || e.includes('placeholder');
 
@@ -204,15 +214,13 @@ export default async function handler(req, res) {
     }
 
     // 4. Deterministic Master Record Selection across all candidates
-    // Priority:
-    // 1. isAdmin === true or role === 'admin'
-    // 2. Real non-dummy email
-    // 3. Earliest createdAt
+    // Priority (authorization is NOT a factor - admin rights never influence
+    // which record is chosen, and are never copied by a merge):
+    // 1. Real non-dummy email
+    // 2. Earliest createdAt
     const scoredCandidates = allCandidates.map(c => {
       let score = 0;
       const prof = c.profile || {};
-      const isAdmin = c.isAdmin === true || c.role === 'admin' || prof.isAdmin === true || prof.role === 'admin';
-      if (isAdmin) score += 10000000;
 
       const email = canonicalEmail(c.emailCanonical || prof.email || c.email);
       if (email && !isDummyEmail(email)) score += 10000;
@@ -237,7 +245,6 @@ export default async function handler(req, res) {
     let masterLoyalty = { ...(masterCandidate.loyalty || {}) };
     const allEmails = new Set();
     const allLinkedUids = new Set([masterUid, ...(masterCandidate.linkedUids || [])]);
-    let isAdmin = masterCandidate.isAdmin === true || masterCandidate.role === 'admin' || masterProf.isAdmin === true || masterProf.role === 'admin';
 
     const mEmail = canonicalEmail(masterCandidate.emailCanonical || masterProf.email || masterCandidate.email);
     if (mEmail && !isDummyEmail(mEmail)) allEmails.add(mEmail);
@@ -254,10 +261,6 @@ export default async function handler(req, res) {
       const dLoyalty = dup.loyalty || {};
       allLinkedUids.add(dup.id);
       if (Array.isArray(dup.linkedUids)) dup.linkedUids.forEach(id => allLinkedUids.add(id));
-
-      if (dup.isAdmin === true || dup.role === 'admin' || dProf.isAdmin === true || dProf.role === 'admin') {
-        isAdmin = true;
-      }
 
       const dupEmail = canonicalEmail(dup.emailCanonical || dProf.email || dup.email);
       if (dupEmail && !isDummyEmail(dupEmail)) allEmails.add(dupEmail);
@@ -312,9 +315,7 @@ export default async function handler(req, res) {
         address: bestAddress,
         city: bestCity,
         state: bestState,
-        pincode: bestPincode,
-        role: isAdmin ? 'admin' : 'collector',
-        isAdmin: Boolean(isAdmin)
+        pincode: bestPincode
       },
       loyalty: masterLoyalty,
       phone: formattedPhone,
@@ -324,8 +325,6 @@ export default async function handler(req, res) {
       emails: Array.from(allEmails),
       linkedUids: Array.from(allLinkedUids),
       addressKey: addrKey,
-      role: isAdmin ? 'admin' : 'collector',
-      isAdmin: Boolean(isAdmin),
       mergedFromUids: FieldValue.arrayUnion(...dupUids),
       isMergedDuplicate: false,
       reconciledAt: FieldValue.serverTimestamp()
@@ -353,21 +352,36 @@ export default async function handler(req, res) {
         console.warn(`[Reconcile API] Order reassignment note for ${dupUid}:`, ordErr.message);
       }
 
-      // Archive duplicate doc & delete from users
+      // Archive the duplicate. The user document itself is KEPT and flagged:
+      // deleting it used to destroy the account (and its auth-linked data) with
+      // no way back, and the account was recreated empty on next sign-in.
       try {
         const dupDocSnap = await adminDb.collection('users').doc(dupUid).get();
         if (dupDocSnap.exists) {
+          const dupData = dupDocSnap.data() || {};
+
           await adminDb.collection('archived_users').doc(dupUid).set({
-            ...dupDocSnap.data(),
+            ...dupData,
             isMergedDuplicate: true,
             mergedIntoUid: masterUid,
             archivedAt: FieldValue.serverTimestamp()
           }, { merge: true });
 
-          await adminDb.collection('users').doc(dupUid).delete();
+          await adminDb.collection('users').doc(dupUid).set({
+            isMergedDuplicate: true,
+            mergedIntoUid: masterUid,
+            mergedAt: new Date().toISOString(),
+            // Zero out the ledger on the duplicate so points cannot be spent twice.
+            loyalty: {
+              spendable_mythos: 0,
+              legacy_mythos: 0,
+              full_bottles_purchased: 0,
+              active_reward_codes: []
+            }
+          }, { merge: true });
         }
-      } catch (delErr) {
-        console.warn(`[Reconcile API] Archive/delete note for ${dupUid}:`, delErr.message);
+      } catch (mergeErr) {
+        console.warn(`[Reconcile API] Archive note for ${dupUid}:`, mergeErr.message);
       }
     }
 

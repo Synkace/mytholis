@@ -4111,8 +4111,7 @@ div#subline {
   justify-content: center;
 }
 
-/* PayU & Gateway Modal Payment Pills */
-.payu-method-pill,
+/* Razorpay & Gateway Modal Payment Pills */
 .razorpay-method-pill {
   display: flex;
   flex-direction: column;
@@ -4130,8 +4129,6 @@ div#subline {
   transition: all 0.3s ease;
 }
 
-.payu-method-pill:hover,
-.payu-method-pill.active,
 .razorpay-method-pill:hover,
 .razorpay-method-pill.active {
   background: rgba(212, 175, 55, 0.15);
@@ -6678,7 +6675,7 @@ body.admin-view-active .view-section,
 
 /* ==========================================================================
    CAPACITOR NATIVE ANDROID APP - FOOTER SUPPRESSION & CLEAN BOTTOM PADDING
-   (Keeps full footer on Desktop/Mobile Web for PayU/Razorpay KYC compliance)
+   (Keeps full footer on Desktop/Mobile Web for Razorpay KYC & Legal compliance)
    ========================================================================== */
 .is-native-app footer,
 .is-native-app .site-footer,

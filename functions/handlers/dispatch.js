@@ -13,6 +13,22 @@ function mapLogisticsStatus(status) {
   return 'Shipped';
 }
 
+// Provider-Aware Carrier Tracking URL Resolver
+function buildCourierTrackingUrl(courierName, awb, fallbackUrl = '') {
+  if (!awb) return fallbackUrl || '';
+  const courier = String(courierName || '').toLowerCase().trim();
+  if (courier.includes('bluedart') || courier.includes('blue dart')) {
+    return `https://www.bluedart.com/tracking?trackNumbers=${encodeURIComponent(awb)}`;
+  }
+  if (courier.includes('delhivery')) {
+    return `https://www.delhivery.com/track/package/${encodeURIComponent(awb)}`;
+  }
+  if (courier.includes('shiprocket')) {
+    return fallbackUrl || `https://shiprocket.co/tracking/${encodeURIComponent(awb)}`;
+  }
+  return fallbackUrl || `https://www.delhivery.com/track/package/${encodeURIComponent(awb)}`;
+}
+
 export default async function handler(req, res) {
   // CORS configuration
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -152,13 +168,24 @@ export default async function handler(req, res) {
 
         const mappedStatus = mapLogisticsStatus(rawStatus);
         const isDelivered = mappedStatus.toLowerCase() === 'delivered';
-        const isCod = (targetOrderDoc.paymentMethod || '').toUpperCase() === 'COD';
+
+        /* Deferred payment. Orders are either fully prepaid or "Partial COD"
+           (25% deposit online, balance on delivery). The old exact-match on
+           'COD' missed every partial order, leaving the balance unsettled. */
+        const payMethod = String(targetOrderDoc.paymentMethod || '').toLowerCase();
+        const isDeferred = payMethod.includes('cod') || targetOrderDoc.isPartialCod === true;
+        const balanceDue = Number(targetOrderDoc.balanceDue) || 0;
+        const isRefused = /rto|return|cancel|refus/i.test(String(mappedStatus) + ' ' + String(rawStatus));
+
+        const resolvedCourier = courierName || targetOrderDoc.courierName || 'BlueDart Express';
+        const providedUrl = item.tracking_url || item.trackingUrl || targetOrderDoc.trackingUrl || '';
+        const trackingUrl = buildCourierTrackingUrl(resolvedCourier, awb, providedUrl);
 
         const updateData = {
           status: mappedStatus,
           trackingNumber: awb || targetOrderDoc.trackingNumber || targetOrderDoc.awb_number || '',
-          courierName: courierName || targetOrderDoc.courierName || 'BlueDart Express',
-          trackingUrl: awb ? `https://track.delhivery.com/tracking?tracking_id=${awb}` : (targetOrderDoc.trackingUrl || ''),
+          courierName: resolvedCourier,
+          trackingUrl,
           logisticsRawStatus: rawStatus,
           logisticsLastUpdate: new Date().toISOString(),
           updatedAt: new Date().toISOString()
@@ -172,12 +199,26 @@ export default async function handler(req, res) {
           if (lastScan.activity) updateData.lastActivity = lastScan.activity;
         }
 
-        // COD & Loyalty Settlement Guardrail:
+        // Deferred payment & Loyalty Settlement Guardrail
         let loyaltyCredited = false;
-        if (isDelivered && isCod && !targetOrderDoc.rewardsCredited) {
-          updateData.paymentStatus = 'Paid';
+
+        /* Refused / returned before the balance was collected. The deposit is
+           not automatically refunded here - that is a finance decision recorded
+           on the order so it shows up in the dashboard (policy: refund minus
+           ₹499 freight, or forfeit after 3 failed attempts). */
+        if (isRefused && isDeferred) {
+          updateData.depositOutcome = 'REFUSED_RETURNED';
+          updateData.depositOutcomeAt = new Date().toISOString();
+          updateData.balanceDue = balanceDue;
+        }
+
+        if (isDelivered && isDeferred && !targetOrderDoc.rewardsCredited) {
+          updateData.paymentStatus = 'PAID';
           updateData.rewardsCredited = true;
           updateData.rewardsCreditedAt = new Date().toISOString();
+          updateData.balanceCollected = balanceDue;
+          updateData.balanceCollectedAt = new Date().toISOString();
+          updateData.balanceDue = 0;
 
           const uid = targetOrderDoc.userId;
           if (uid && uid !== 'guest') {

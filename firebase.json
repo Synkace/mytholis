@@ -56,6 +56,18 @@
         "destination": "/deletion.html"
       },
       {
+        "source": "/refund",
+        "destination": "/refund.html"
+      },
+      {
+        "source": "/returns",
+        "destination": "/refund.html"
+      },
+      {
+        "source": "/shipping",
+        "destination": "/shipping.html"
+      },
+      {
         "source": "/api/**",
         "function": {
           "functionId": "api",

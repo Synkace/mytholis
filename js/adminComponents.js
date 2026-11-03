@@ -3,6 +3,8 @@
    Haute Parfumerie Dark Emerald & Liquid Gold 6-Module Operations Desk
    ========================================================================== */
 
+import { esc, safeId, safeHref } from './sanitize.js';
+
 export const CANONICAL_SKU_MAP = {
   'king-scar': 'MYTH-EDP-KS-100',
   'petralux': 'MYTH-EDP-PX-100',
@@ -138,12 +140,12 @@ if (typeof window !== 'undefined') {
 
 export const AdminComponents = {
   renderAdmin() {
-    const currentUser = (typeof firebaseService !== 'undefined' && firebaseService?.currentUser) || store.firebaseUser;
+    // Authorization is decided by the server (`admin` custom claim mirrored on
+    // the user document). This gate only avoids rendering a panel that the API
+    // would reject anyway.
+    const isAuthorized = store.isAdmin();
+    const currentUser = (typeof firebaseService !== 'undefined' && firebaseService?.currentUser) || store.firebaseUser || null;
     const userEmail = (currentUser?.email || store.user?.email || '').trim().toLowerCase();
-    const adminEmails = (store.globalSettings && Array.isArray(store.globalSettings.adminEmails)) 
-      ? store.globalSettings.adminEmails 
-      : ['gunhegarr@gmail.com', 'admin@mytholis.com', 'alexander@mytholis.com', 'founder@mytholis.com'];
-    const isAuthorized = store.isAdmin() || (userEmail && adminEmails.some(e => e.toLowerCase().trim() === userEmail));
 
     // 1. Unauthenticated or Unauthorized Gate
     if (!isAuthorized) {
@@ -197,6 +199,32 @@ export const AdminComponents = {
     const activeTab = app.adminActiveTab || 'telemetry';
     const adminData = app.adminData || { orders: [], users: [], products: [], posts: [], settings: {} };
     const ordersList = adminData.orders || [];
+
+    /* ------------------------------------------------------------------
+       A checkout is NOT an order.
+       `/api/create-order` writes a priced draft BEFORE the customer pays, so
+       the server has something to settle against. Counting those drafts made
+       every abandoned cart look like a sale. Split them here:
+         realOrders          - paid, partially paid, or COD-committed
+         inProgressCheckouts - draft younger than 30 minutes (customer may
+                               still be in the Razorpay sheet)
+         abandonedCheckouts  - draft older than 30 minutes
+       ------------------------------------------------------------------ */
+    const ABANDON_MINUTES = 30;
+    const nowMs = Date.now();
+    const draftStartedMs = (o) => {
+      const raw = o.checkoutStartedAt || o.createdAt || o.timestamp;
+      const ms = raw?.toMillis ? raw.toMillis() : new Date(raw || 0).getTime();
+      return Number.isFinite(ms) && ms > 0 ? ms : 0;
+    };
+    const isDraftOrder = (o) =>
+      o.isDraft === true ||
+      ['CREATED', 'AWAITING_PAYMENT'].includes(String(o.status || '').toUpperCase());
+
+    const realOrders = ordersList.filter((o) => !isDraftOrder(o));
+    const draftOrders = ordersList.filter((o) => isDraftOrder(o));
+    const inProgressCheckouts = draftOrders.filter((o) => (nowMs - draftStartedMs(o)) / 60000 < ABANDON_MINUTES);
+    const abandonedCheckouts = draftOrders.filter((o) => (nowMs - draftStartedMs(o)) / 60000 >= ABANDON_MINUTES);
     
     // Strict In-Memory Patron Deduplication: group duplicate records by canonical 10-digit phone or email
     const deduplicatedUsers = [];
@@ -331,9 +359,6 @@ export const AdminComponents = {
             <button class="btn btn-gold" style="font-size: 0.78rem; padding: 0.6rem 1.1rem;" onclick="app.exitSanctum()" title="Return to Storefront without signing out">
               Exit Sanctum
             </button>
-            <button class="btn btn-glass" style="font-size: 0.78rem; padding: 0.6rem 1.1rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.logoutUser()" title="Sign Out of Founder Account">
-              Sign Out
-            </button>
           </div>
         </div>
 
@@ -343,7 +368,10 @@ export const AdminComponents = {
             📊 Executive Telemetry
           </button>
           <button class="sovereign-tab ${activeTab === 'orders' ? 'active' : ''}" onclick="app.setAdminTab('orders')">
-            📦 Orders & COD (${ordersList.length})
+            📦 Orders & COD (${realOrders.length})
+          </button>
+          <button class="sovereign-tab ${activeTab === 'abandoned' ? 'active' : ''}" onclick="app.setAdminTab('abandoned')">
+            🕳️ Abandoned Carts (${abandonedCheckouts.length})
           </button>
           <button class="sovereign-tab ${activeTab === 'vault' ? 'active' : ''}" onclick="app.setAdminTab('vault')">
             🏺 Fragrance Vault (${productsList.length})
@@ -389,7 +417,7 @@ export const AdminComponents = {
                   <span class="sovereign-kpi-title">Total Consignments</span>
                   <span class="sovereign-kpi-icon">📦</span>
                 </div>
-                <div class="sovereign-kpi-value">${ordersList.length}</div>
+                <div class="sovereign-kpi-value">${realOrders.length}</div>
                 <div class="sovereign-kpi-hint">${deliveredCount} successfully delivered</div>
               </div>
 
@@ -472,10 +500,10 @@ export const AdminComponents = {
                     <tbody>
                       ${lowStockItems.map(p => `
                         <tr>
-                          <td><img src="${p.image || 'assets/product/1kingscar.webp'}" class="sovereign-table-img" alt="${(p.name || '').replace(/<[^>]*>/g, ' ').replace(/"/g, '&quot;').trim()}" /></td>
-                          <td><strong style="color: var(--gold-light);">${p.name}</strong></td>
-                          <td><span style="color: var(--text-muted); font-size: 0.78rem;">${p.collection || p.subtitle || 'Signature'}</span></td>
-                          <td><strong style="color: #EF4444; font-size: 0.95rem;">${p.stock !== undefined ? p.stock : 50} left</strong></td>
+                          <td><img src="${safeHref(p.image, 'assets/product/1kingscar.webp')}" class="sovereign-table-img" alt="${esc((p.name || '').replace(/<[^>]*>/g, ' ').trim())}" /></td>
+                          <td><strong style="color: var(--gold-light);">${esc(p.name)}</strong></td>
+                          <td><span style="color: var(--text-muted); font-size: 0.78rem;">${esc(p.collection || p.subtitle || 'Signature')}</span></td>
+                          <td><strong style="color: #EF4444; font-size: 0.95rem;">${esc(p.stock !== undefined ? p.stock : 50)} left</strong></td>
                           <td>₹${Number(p.price || 0).toLocaleString('en-IN')}</td>
                         </tr>
                       `).join('')}
@@ -531,15 +559,46 @@ export const AdminComponents = {
               </button>
             </div>
 
+            <!-- Checkout vs order separation -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.8rem; padding:0.75rem 1rem; margin-bottom:1rem; border:1px solid rgba(212,175,55,0.18); border-radius:8px; background:rgba(0,0,0,0.25);">
+              <div style="font-size:0.78rem; color:var(--text-muted); line-height:1.6;">
+                <strong style="color:var(--gold-light);">${realOrders.length}</strong> orders &middot;
+                <strong style="color:#FCD34D;">${inProgressCheckouts.length}</strong> checkout(s) in progress &middot;
+                <strong style="color:#FCA5A5;">${abandonedCheckouts.length}</strong> abandoned
+                <span style="opacity:0.75;">&nbsp;— checkouts are excluded from order counts and revenue.</span>
+              </div>
+              ${abandonedCheckouts.length > 0 ? `
+                <button class="btn btn-glass" style="font-size:0.7rem; padding:0.3rem 0.7rem;" onclick="app.toggleAbandonedCheckouts()">
+                  ${app.showAbandonedCheckouts ? 'Hide' : 'Show'} abandoned checkouts
+                </button>
+              ` : ''}
+            </div>
+
+            ${app.showAbandonedCheckouts && abandonedCheckouts.length > 0 ? `
+              <div class="liquid-glass-card" style="padding:1rem; margin-bottom:1rem;">
+                <div style="font-size:0.75rem; letter-spacing:0.08em; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.6rem;">Abandoned checkouts (not orders)</div>
+                ${abandonedCheckouts.slice(0, 25).map((o) => {
+                  const id = o.orderId || o.id || '—';
+                  const started = draftStartedMs(o) ? new Date(draftStartedMs(o)).toLocaleString('en-IN') : 'unknown';
+                  return `<div style="display:flex; justify-content:space-between; gap:1rem; font-size:0.78rem; padding:0.35rem 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+                    <span style="color:var(--text-main);">#${esc(id)}</span>
+                    <span style="color:var(--text-muted);">${esc(started)}</span>
+                    <span style="color:var(--gold-primary);">₹${Number(o.verifiedTotal || o.total || 0).toLocaleString('en-IN')}</span>
+                  </div>`;
+                }).join('')}
+                ${abandonedCheckouts.length > 25 ? `<div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.5rem;">…and ${abandonedCheckouts.length - 25} more</div>` : ''}
+              </div>
+            ` : ''}
+
             <!-- Orders Cards List -->
             <div class="sovereign-orders-list" id="admin-orders-container">
-              ${ordersList.length === 0 ? `
+              ${realOrders.length === 0 ? `
                 <div class="liquid-glass-card" style="padding: 3rem; text-align: center; color: var(--text-muted);">
                   <div style="font-size: 2rem; margin-bottom: 0.5rem;">📦</div>
                   <h3 class="font-title" style="color: var(--gold-light);">No Consignments Recorded</h3>
                   <p style="font-size: 0.85rem;">Orders placed by collectors will stream into this real-time ledger automatically.</p>
                 </div>
-              ` : ordersList.map(order => {
+              ` : realOrders.map(order => {
                 const orderId = order.orderId || order.id || 'MYTH-0000';
                 const patronName = order.userName || order.customer?.name || order.shipping?.name || 'Collector';
                 const patronEmail = order.userEmail || order.customer?.email || order.shipping?.email || 'N/A';
@@ -558,17 +617,30 @@ export const AdminComponents = {
                 const awb = order.trackingNumber || '';
                 const orderDate = order.timestamp?.toMillis ? new Date(order.timestamp.toMillis()).toLocaleString('en-IN') : (order.date || order.createdAt ? new Date(order.date || order.createdAt).toLocaleString('en-IN') : 'Recent');
 
+                /* Every value below originates from a customer-controlled order
+                   document, so none of it may reach innerHTML raw. */
+                const eOrderId = esc(orderId);
+                const idOrder = safeId(orderId);
+                const eName = esc(patronName);
+                const eEmail = esc(patronEmail);
+                const ePhone = esc(patronPhone);
+                const eAddr = esc(shippingAddr);
+                const eStatus = esc(currentStatus);
+                const eMethod = esc(paymentMethod);
+                const eCourier = esc(courier);
+                const eAwb = esc(awb);
+
                 return `
-                  <div class="sovereign-order-card" id="order-card-${orderId}" data-orderid="${orderId.toLowerCase()}" data-name="${patronName.toLowerCase()}" data-email="${patronEmail.toLowerCase()}" data-phone="${patronPhone}" data-status="${currentStatus}" data-method="${paymentMethod}" data-paid="${isPaid}">
+                  <div class="sovereign-order-card" id="order-card-${idOrder}" data-orderid="${idOrder.toLowerCase()}" data-name="${esc(patronName.toLowerCase())}" data-email="${esc(patronEmail.toLowerCase())}" data-phone="${esc(patronPhone)}" data-status="${esc(currentStatus)}" data-method="${esc(paymentMethod)}" data-paid="${isPaid}">
                     <!-- Head -->
                     <div class="sovereign-order-head">
                       <div>
-                        <div class="sovereign-order-id">Order #${orderId}</div>
-                        <div class="sovereign-order-date">${orderDate} &bull; Consignment UID: ${order.userId || 'Guest'}</div>
+                        <div class="sovereign-order-id">Order #${eOrderId}</div>
+                        <div class="sovereign-order-date">${esc(orderDate)} &bull; Consignment UID: ${esc(order.userId || 'Guest')}</div>
                       </div>
                       <div class="sovereign-badges-wrap">
-                        <span class="sovereign-pill status-${currentStatus.toLowerCase()}">${currentStatus}</span>
-                        <span class="sovereign-pill payment-${paymentMethod.toLowerCase()}">${paymentMethod}</span>
+                        <span class="sovereign-pill status-${idOrder.toLowerCase()}">${eStatus}</span>
+                        <span class="sovereign-pill payment-${esc(String(paymentMethod).toLowerCase())}">${eMethod}</span>
                         <span class="sovereign-pill payment-${isPaid ? 'paid' : 'pending'}">${isPaid ? 'Paid' : 'Pending Payment'}</span>
                         ${order.rewardsCredited ? `
                           <span class="sovereign-pill" style="background: rgba(212, 175, 55, 0.2); border: 1px solid var(--gold-primary); color: var(--gold-light);">🪙 Rewards Settled</span>
@@ -581,11 +653,11 @@ export const AdminComponents = {
                       <!-- Collector Coordinates -->
                       <div class="sovereign-subpanel">
                         <div class="sovereign-subpanel-title">Collector Coordinates</div>
-                        <div style="font-weight: 700; color: var(--gold-light); font-size: 0.95rem; margin-bottom: 0.2rem;">${patronName}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.2rem;">${patronEmail}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">WhatsApp / Tel: <strong style="color: var(--text-main);">${patronPhone || 'Not provided'}</strong></div>
+                        <div style="font-weight: 700; color: var(--gold-light); font-size: 0.95rem; margin-bottom: 0.2rem;">${eName}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.2rem;">${eEmail}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">WhatsApp / Tel: <strong style="color: var(--text-main);">${ePhone || 'Not provided'}</strong></div>
                         <div style="font-size: 0.78rem; line-height: 1.4; color: var(--text-muted); background: rgba(0, 0, 0, 0.3); padding: 0.5rem; border-radius: 6px;">
-                          📍 ${shippingAddr}
+                          📍 ${eAddr}
                         </div>
                       </div>
 
@@ -594,7 +666,7 @@ export const AdminComponents = {
                         <div class="sovereign-subpanel-title">Itemized Extraits (${items.length} Bottles)</div>
                         ${items.map(item => `
                           <div class="sovereign-item-row">
-                            <span>${item.name || item.id} <span style="color: var(--gold-primary);">(${item.size || 50}ml)</span> &times; ${item.quantity || 1}</span>
+                            <span>${esc(item.name || item.id)} <span style="color: var(--gold-primary);">(${esc(item.size || 50)}ml)</span> &times; ${esc(item.quantity || 1)}</span>
                             <span style="color: var(--gold-light);">₹${(Number(item.price || 0) * Number(item.quantity || 1)).toLocaleString('en-IN')}</span>
                           </div>
                         `).join('')}
@@ -631,7 +703,7 @@ export const AdminComponents = {
                       <!-- Status Dropdown -->
                       <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <span style="font-size: 0.75rem; color: var(--text-muted);">Status:</span>
-                        <select id="status-${orderId}" class="sovereign-select" style="min-width: 140px; padding: 0.45rem 0.6rem; font-size: 0.8rem;" onchange="app.updateAdminOrderStatus('${orderId}', this.value)">
+                        <select id="status-${idOrder}" class="sovereign-select" style="min-width: 140px; padding: 0.45rem 0.6rem; font-size: 0.8rem;" onchange="app.updateAdminOrderStatus('${idOrder}', this.value)">
                           <option value="Pending" ${currentStatus === 'Pending' ? 'selected' : ''}>Pending</option>
                           <option value="Confirmed" ${currentStatus === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
                           <option value="Packed" ${currentStatus === 'Packed' ? 'selected' : ''}>Packed</option>
@@ -643,30 +715,37 @@ export const AdminComponents = {
                       </div>
 
                       <!-- Payment Status Toggle -->
-                      <button class="btn btn-glass" style="font-size: 0.75rem; padding: 0.45rem 0.8rem; border-color: ${isPaid ? '#10B981' : '#F59E0B'}; color: ${isPaid ? '#6EE7B7' : '#FCD34D'};" onclick="app.toggleAdminPaymentStatus('${orderId}', '${isPaid ? 'Paid' : 'Pending'}')">
+                      <button class="btn btn-glass" style="font-size: 0.75rem; padding: 0.45rem 0.8rem; border-color: ${isPaid ? '#10B981' : '#F59E0B'}; color: ${isPaid ? '#6EE7B7' : '#FCD34D'};" onclick="app.toggleAdminPaymentStatus('${idOrder}', '${isPaid ? 'Paid' : 'Pending'}')">
                         ${isPaid ? '✓ Marked Paid (Click to Unpay)' : '⚠ Unpaid (Mark as Paid)'}
                       </button>
 
+                      <!-- Partial COD: collect the deferred balance on delivery -->
+                      ${Number(order.balanceDue) > 0 ? `
+                        <button class="btn btn-gold" style="font-size: 0.75rem; padding: 0.45rem 0.8rem;" onclick="app.collectPartialBalance('${idOrder}')">
+                          💰 Collect Balance ₹${Number(order.balanceDue).toLocaleString('en-IN')}
+                        </button>
+                      ` : ''}
+
                       <!-- Courier & Tracking -->
                       <div style="display: flex; gap: 0.4rem; flex: 1; min-width: 280px;">
-                        <input type="text" id="courier-${orderId}" class="sovereign-form-input" style="padding: 0.45rem 0.6rem; font-size: 0.8rem; flex: 1;" placeholder="Courier (e.g. BlueDart)" value="${courier}" />
-                        <input type="text" id="tracking-${orderId}" class="sovereign-form-input" style="padding: 0.45rem 0.6rem; font-size: 0.8rem; flex: 1.2;" placeholder="AWB / Tracking #" value="${awb}" />
-                        <button class="btn btn-gold" style="font-size: 0.72rem; padding: 0.45rem 0.8rem;" onclick="app.saveAdminOrderTracking('${orderId}')">
+                        <input type="text" id="courier-${idOrder}" class="sovereign-form-input" style="padding: 0.45rem 0.6rem; font-size: 0.8rem; flex: 1;" placeholder="Courier (e.g. BlueDart)" value="${eCourier}" />
+                        <input type="text" id="tracking-${idOrder}" class="sovereign-form-input" style="padding: 0.45rem 0.6rem; font-size: 0.8rem; flex: 1.2;" placeholder="AWB / Tracking #" value="${eAwb}" />
+                        <button class="btn btn-gold" style="font-size: 0.72rem; padding: 0.45rem 0.8rem;" onclick="app.saveAdminOrderTracking('${idOrder}')">
                           Save
                         </button>
                       </div>
 
                       <!-- 1-Click Actions: Shipping Label & WhatsApp -->
                       <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                        <button class="btn btn-gold" style="font-size: 0.72rem; padding: 0.45rem 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem; background: linear-gradient(135deg, #D4AF37 0%, #AA820A 100%); color: #041812; font-weight: 700;" onclick="app.printShippingLabelForOrder('${orderId}')" title="Generate & Print 4x6 Thermal Shipping Label">
+                        <button class="btn btn-gold" style="font-size: 0.72rem; padding: 0.45rem 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem; background: linear-gradient(135deg, #D4AF37 0%, #AA820A 100%); color: #041812; font-weight: 700;" onclick="app.printShippingLabelForOrder('${idOrder}')" title="Generate & Print 4x6 Thermal Shipping Label">
                           🏷️ Print Shipping Label
                         </button>
                         ${paymentMethod === 'COD' ? `
-                          <button class="btn-whatsapp-verify" onclick="app.verifyCodWhatsApp('${orderId}', '${patronPhone}', ${finalPayable})" title="Send WhatsApp COD Confirmation">
+                          <button class="btn-whatsapp-verify" onclick="app.verifyCodWhatsApp('${idOrder}', '${safeId(patronPhone)}', ${Number(finalPayable) || 0})" title="Send WhatsApp COD Confirmation">
                             <span>💬</span> Verify COD
                           </button>
                         ` : ''}
-                        <button class="btn-whatsapp-dispatch" onclick="app.sendDispatchWhatsApp('${orderId}', '${patronPhone}')" title="Send WhatsApp Dispatch Notice">
+                        <button class="btn-whatsapp-dispatch" onclick="app.sendDispatchWhatsApp('${idOrder}', '${safeId(patronPhone)}')" title="Send WhatsApp Dispatch Notice">
                           <span>📦</span> Send Dispatch
                         </button>
                       </div>
@@ -675,6 +754,91 @@ export const AdminComponents = {
                 `;
               }).join('')}
             </div>
+          </div>
+        ` : ''}
+
+        <!-- ====================================================================
+             MODULE B2: ABANDONED CHECKOUT RECOVERY DESK
+             For the caller executive: who started a checkout, what it was worth,
+             whether anyone has called them, and what happened next.
+             ==================================================================== -->
+        ${activeTab === 'abandoned' ? `
+          <div class="sovereign-tab-content">
+            <div class="liquid-glass-card" style="padding: 1.5rem; margin-bottom: 1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+              <div>
+                <h3 class="font-title" style="color: var(--gold-light); margin: 0 0 0.3rem;">Abandoned Checkout Recovery</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">
+                  ${abandonedCheckouts.length} checkout(s) started but never paid &middot;
+                  ₹${abandonedCheckouts.reduce((s, o) => s + (Number(o.verifiedTotal || o.total || 0) || 0), 0).toLocaleString('en-IN')} of recoverable value.
+                  <span style="opacity:0.75;">These are NOT orders and are excluded from revenue.</span>
+                </p>
+              </div>
+              <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+                <button class="btn btn-glass" style="font-size:0.75rem;" onclick="app.refreshAdminDashboard()">↻ Reload</button>
+                <button class="btn btn-glass" style="font-size:0.75rem; border-color:rgba(239,68,68,0.4); color:#FCA5A5;" onclick="app.purgeAbandonedDrafts()">🧹 Purge older than 30 days</button>
+              </div>
+            </div>
+
+            ${abandonedCheckouts.length === 0 ? `
+              <div class="liquid-glass-card" style="padding: 3rem; text-align: center; color: var(--text-muted);">
+                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🕳️</div>
+                <h3 class="font-title" style="color: var(--gold-light);">No Abandoned Checkouts</h3>
+                <p style="font-size: 0.85rem;">Nothing to recover right now.</p>
+              </div>
+            ` : `
+              <div class="liquid-glass-card" style="padding: 0; overflow-x: auto;">
+                <table class="sovereign-table" style="width:100%; min-width: 980px;">
+                  <thead>
+                    <tr>
+                      <th>Collector</th>
+                      <th>Contact</th>
+                      <th>Basket</th>
+                      <th>Value</th>
+                      <th>Started</th>
+                      <th>Recovery</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${abandonedCheckouts.map((o) => {
+                      const id = o.orderId || o.id || '';
+                      const sid = safeId(id);
+                      const cust = o.customer || {};
+                      const name = o.customerName || cust.name || 'Guest';
+                      const phone = String(o.customerPhone || cust.phone || '').replace(/[^0-9]/g, '');
+                      const email = o.userEmail || cust.email || '';
+                      const items = Array.isArray(o.items) ? o.items : [];
+                      const value = Number(o.verifiedTotal || o.total || 0);
+                      const started = draftStartedMs(o) ? new Date(draftStartedMs(o)).toLocaleString('en-IN') : 'unknown';
+                      const status = String(o.recoveryStatus || '').toUpperCase();
+                      const statusPill = status === 'RECOVERED' ? '#10B981' : status === 'CONTACTED' ? '#FCD34D' : status === 'LOST' ? '#FCA5A5' : '#9AA39D';
+                      const statusLabel = status === 'RECOVERED' ? 'Recovered' : status === 'CONTACTED' ? 'Contacted' : status === 'LOST' ? 'Lost' : 'Not contacted';
+                      return `
+                        <tr>
+                          <td><strong style="color:var(--gold-light);">${esc(name)}</strong><br><span style="font-size:0.7rem; color:var(--text-muted);">#${esc(id)}</span></td>
+                          <td style="font-size:0.78rem;">
+                            ${phone ? `<a href="https://wa.me/${esc(phone.length === 10 ? '91' + phone : phone)}" target="_blank" rel="noopener" style="color:#25D366;">WhatsApp</a> · ${esc(phone)}` : '<span style="color:var(--text-muted);">no phone</span>'}<br>
+                            <span style="color:var(--text-muted); font-size:0.72rem;">${esc(email || 'no email')}</span>
+                          </td>
+                          <td style="font-size:0.76rem; color:var(--text-muted);">${items.length ? esc(items.map(i => `${i.name || i.id} (${i.size || 50}ml)`).join(', ')).slice(0, 90) : '—'}</td>
+                          <td style="color:var(--gold-primary); font-weight:600;">₹${value.toLocaleString('en-IN')}</td>
+                          <td style="font-size:0.72rem; color:var(--text-muted);">${esc(started)}</td>
+                          <td><span class="glass-pill" style="font-size:0.66rem; color:${statusPill}; border-color:${statusPill};">${statusLabel}</span>
+                            ${o.recoveryNote ? `<div style="font-size:0.68rem; color:var(--text-muted); margin-top:4px;">${esc(o.recoveryNote).slice(0, 60)}</div>` : ''}
+                          </td>
+                          <td>
+                            <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                              <button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px;" onclick="app.markCheckoutRecovery('${sid}', 'CONTACTED')">Contacted</button>
+                              <button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px; color:#6EE7B7; border-color:#10B981;" onclick="app.markCheckoutRecovery('${sid}', 'RECOVERED')">Recovered</button>
+                              <button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px; color:#FCA5A5; border-color:rgba(239,68,68,0.4);" onclick="app.markCheckoutRecovery('${sid}', 'LOST')">Lost</button>
+                            </div>
+                          </td>
+                        </tr>`;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            `}
           </div>
         ` : ''}
 
@@ -706,7 +870,7 @@ export const AdminComponents = {
                     <th>Flacon</th>
                     <th>Name & Concentration</th>
                     <th>Category</th>
-                    <th style="min-width: 310px;">Variant Pricing & SKUs (100ml Default • 50ml)</th>
+                    <th style="min-width: 310px;">Variant Pricing & SKUs (100ml • 50ml)</th>
                     <th>Status</th>
                     <th>Batch / Maceration</th>
                     <th>Actions</th>
@@ -753,7 +917,7 @@ export const AdminComponents = {
                           ${isCoffret ? 'Extrait de Parfum (6 × 8ml Deluxe Vials • 40% Concentration)' : (prod.concentration || 'Extrait de Parfum (40% Concentration)')}
                         </div>
                         <span class="glass-pill" style="font-size: 0.68rem; margin-top: 0.3rem; display: inline-block; color: var(--gold-light); border-color: rgba(212, 175, 55, 0.4); background: rgba(212, 175, 55, 0.08);">
-                          ${isCoffret ? '6 × 8ml Coffret (48ml)' : '100ml Default • 50ml Signature'}
+                          ${isCoffret ? '6 × 8ml Coffret (48ml)' : '100ml • 50ml'}
                         </span>
                       </td>
                       <td>
@@ -774,10 +938,10 @@ export const AdminComponents = {
                           </div>
                         ` : `
                           <div style="display: flex; flex-direction: column; gap: 0.35rem; min-width: 290px;">
-                            <!-- Row 1: 100ML (Default) -->
-                            <div style="background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.45); border-radius: 6px; padding: 0.35rem 0.6rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                            <!-- Row 1: 100ML -->
+                            <div style="background: rgba(212, 175, 55, 0.08); border: 1px solid rgba(212, 175, 55, 0.35); border-radius: 6px; padding: 0.35rem 0.6rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
                               <div style="display: flex; align-items: center; gap: 0.4rem;">
-                                <span class="glass-pill" style="font-size: 0.65rem; font-weight: 800; color: #FFF1C5; background: rgba(212, 175, 55, 0.25); border-color: var(--gold-primary);">100ML ★ DEFAULT</span>
+                                <span class="glass-pill" style="font-size: 0.68rem; font-weight: 700; color: #FFF1C5; background: rgba(212, 175, 55, 0.18); border-color: rgba(212, 175, 55, 0.4);">100ML</span>
                                 <span style="font-family: monospace; font-size: 0.72rem; color: var(--gold-light); font-weight: 600;">${v100.sku}</span>
                               </div>
                               <div style="display: flex; align-items: center; gap: 0.4rem;">
@@ -789,7 +953,7 @@ export const AdminComponents = {
                             <!-- Row 2: 50ML -->
                             <div style="background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(212, 175, 55, 0.22); border-radius: 6px; padding: 0.35rem 0.6rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
                               <div style="display: flex; align-items: center; gap: 0.4rem;">
-                                <span class="glass-pill" style="font-size: 0.65rem; font-weight: 600; color: var(--text-muted);">50ML</span>
+                                <span class="glass-pill" style="font-size: 0.68rem; font-weight: 600; color: var(--text-muted); border-color: rgba(212, 175, 55, 0.25);">50ML</span>
                                 <span style="font-family: monospace; font-size: 0.72rem; color: var(--text-muted);">${v50.sku}</span>
                               </div>
                               <div style="display: flex; align-items: center; gap: 0.4rem;">
@@ -802,7 +966,7 @@ export const AdminComponents = {
                         `}
                       </td>
                       <td>
-                        <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.6rem; border-color: ${prod.inStock !== false ? '#10B981' : '#EF4444'}; color: ${prod.inStock !== false ? '#6EE7B7' : '#FCA5A5'};" onclick="app.updateProductInline('${prod.id}', 'inStock', ${prod.inStock === false ? 'true' : 'false'})">
+                        <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.6rem; border-color: ${prod.inStock !== false ? '#10B981' : '#EF4444'}; color: ${prod.inStock !== false ? '#6EE7B7' : '#FCA5A5'};" onclick="app.updateProductInline('${safeId(prod.id)}', 'inStock', ${prod.inStock === false ? 'true' : 'false'})">
                           ${prod.inStock !== false ? 'In Stock' : 'Hidden'}
                         </button>
                       </td>
@@ -812,10 +976,10 @@ export const AdminComponents = {
                       </td>
                       <td>
                         <div style="display: flex; gap: 0.4rem;">
-                          <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.6rem;" onclick="app.openProductEditorModal('${prod.id}')">
+                          <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.6rem;" onclick="app.openProductEditorModal('${safeId(prod.id)}')">
                             Edit
                           </button>
-                          <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.6rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.deleteAdminProduct('${prod.id}')">
+                          <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.6rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.deleteAdminProduct('${safeId(prod.id)}')">
                             Delete
                           </button>
                         </div>
@@ -855,17 +1019,17 @@ export const AdminComponents = {
                 <div class="liquid-glass-card" style="display: flex; flex-direction: column; overflow: hidden; padding: 0;">
                   ${post.coverImage ? `
                     <div style="height: 180px; overflow: hidden; position: relative;">
-                      <img src="${post.coverImage}" style="width: 100%; height: 100%; object-fit: cover;" alt="${post.title}" />
+                      <img src="${safeHref(post.coverImage)}" style="width: 100%; height: 100%; object-fit: cover;" alt="${esc(post.title)}" />
                       <span class="glass-pill" style="position: absolute; top: 12px; left: 12px; font-size: 0.65rem; color: var(--gold-light); background: rgba(0, 0, 0, 0.7);">
-                        ${post.category || 'Olfactory Lore'}
+                        ${esc(post.category || 'Olfactory Lore')}
                       </span>
                     </div>
                   ` : ''}
                   <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
                     <div>
-                      <h4 class="font-title" style="font-size: 1.2rem; color: var(--gold-light); margin: 0 0 0.4rem;">${post.title}</h4>
+                      <h4 class="font-title" style="font-size: 1.2rem; color: var(--gold-light); margin: 0 0 0.4rem;">${esc(post.title)}</h4>
                       <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0 0 1rem;">
-                        ${post.subtitle || (post.body ? post.body.slice(0, 100) + '...' : '')}
+                        ${esc(post.subtitle || (post.body ? post.body.slice(0, 100) + '...' : ''))}
                       </p>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 1rem;">
@@ -873,10 +1037,10 @@ export const AdminComponents = {
                         ${post.isPublished ? 'Published Live' : 'Draft'}
                       </span>
                       <div style="display: flex; gap: 0.5rem;">
-                        <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.65rem;" onclick="app.openPostEditorModal('${post.id}')">
+                        <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.65rem;" onclick="app.openPostEditorModal('${safeId(post.id)}')">
                           Edit
                         </button>
-                        <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.65rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.deleteAdminPost('${post.id}')">
+                        <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.65rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.deleteAdminPost('${safeId(post.id)}')">
                           Delete
                         </button>
                       </div>
@@ -1047,7 +1211,7 @@ export const AdminComponents = {
                               </div>
                               <div style="font-size: 0.7rem; color: var(--text-muted); font-family: monospace; display: flex; align-items: center; gap: 4px; margin-top: 2px;">
                                 <span>UID: ${u.uid ? u.uid.slice(0, 10) + '...' : 'Guest'}</span>
-                                ${u.uid ? `<button type="button" class="btn btn-glass" style="font-size: 0.6rem; padding: 0 4px; line-height: 1.2;" onclick="navigator.clipboard.writeText('${u.uid}'); app.showToast('Copied UID');" title="Copy UID">📋</button>` : ''}
+                                ${u.uid ? `<button type="button" class="btn btn-glass" style="font-size: 0.6rem; padding: 0 4px; line-height: 1.2;" onclick="navigator.clipboard.writeText('${safeId(u.uid)}'); app.showToast('Copied UID');" title="Copy UID">📋</button>` : ''}
                               </div>
                             </div>
                           </div>
@@ -1082,7 +1246,7 @@ export const AdminComponents = {
                                 <span>📍</span> ${cityStatePin}
                               </div>
                             ` : ''}
-                            <button type="button" class="btn btn-glass" style="font-size: 0.65rem; padding: 1px 6px; margin-top: 0.35rem; display: inline-flex; align-items: center; gap: 3px;" onclick="navigator.clipboard.writeText('${copyAddrText}'); app.showToast('Copied full shipping address');">
+                            <button type="button" class="btn btn-glass" style="font-size: 0.65rem; padding: 1px 6px; margin-top: 0.35rem; display: inline-flex; align-items: center; gap: 3px;" onclick="navigator.clipboard.writeText('${safeId(copyAddrText)}'); app.showToast('Copied full shipping address');">
                               📋 Copy Address
                             </button>
                           ` : `
@@ -1114,21 +1278,21 @@ export const AdminComponents = {
                         </td>
                         <td>
                           <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
-                            <button class="btn btn-gold" style="font-size: 0.7rem; padding: 0.25rem 0.55rem;" onclick="app.openPatronDossier('${u.uid}')" title="View Full Collector Coordinates & Consignment Ledger">
+                            <button class="btn btn-gold" style="font-size: 0.7rem; padding: 0.25rem 0.55rem;" onclick="app.openPatronDossier('${safeId(u.uid)}')" title="View Full Collector Coordinates & Consignment Ledger">
                               🔍 Dossier
                             </button>
-                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem;" onclick="app.openAdjustMythosModal('${u.uid}', '${name.replace(/'/g, "\\'")}', ${spendable})">
+                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem;" onclick="app.openAdjustMythosModal('${safeId(u.uid)}', '${safeId(name)}', ${spendable})">
                               &plusmn; Adjust M
                             </button>
-                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem;" onclick="app.openOverrideTierModal('${u.uid}', '${name.replace(/'/g, "\\'")}', ${bottles}, ${currentTierLevel})">
+                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem;" onclick="app.openOverrideTierModal('${safeId(u.uid)}', '${safeId(name)}', ${bottles}, ${currentTierLevel})">
                               Tier
                             </button>
                             ${!u.isGuestOrder ? `
-                              <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem; border-color: ${isAdmin ? 'rgba(239, 68, 68, 0.4)' : 'rgba(212, 175, 55, 0.4)'};" onclick="app.togglePatronAdmin('${u.uid}', ${!isAdmin})">
+                              <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem; border-color: ${isAdmin ? 'rgba(239, 68, 68, 0.4)' : 'rgba(212, 175, 55, 0.4)'};" onclick="app.togglePatronAdmin('${safeId(u.uid)}', ${!isAdmin})">
                                 ${isAdmin ? 'Demote' : 'Admin'}
                               </button>
                             ` : ''}
-                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.handleAdminDeleteUser('${u.uid}', '${name.replace(/'/g, "\\'")}', '${email.replace(/'/g, "\\'")}', '${cleanPhone}', '${patronOrderIds}')" title="Permanently delete user and order records from database">
+                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.handleAdminDeleteUser('${safeId(u.uid)}', '${safeId(name)}', '${safeId(email)}', '${safeId(cleanPhone)}', '${safeId(patronOrderIds)}')" title="Permanently delete user and order records from database">
                               🗑️ Delete
                             </button>
                           </div>
@@ -1345,17 +1509,17 @@ export const AdminComponents = {
                     <tbody>
                       ${Array.isArray(globalSettings.promoCodes) && globalSettings.promoCodes.length > 0 ? globalSettings.promoCodes.map((pc, idx) => `
                         <tr>
-                          <td><strong style="color: var(--gold-primary); font-family: monospace; font-size: 0.95rem;">${pc.code}</strong></td>
+                          <td><strong style="color: var(--gold-primary); font-family: monospace; font-size: 0.95rem;">${esc(pc.code)}</strong></td>
                           <td><span class="glass-pill" style="font-size: 0.7rem;">${pc.discountType === 'percent' ? 'Percentage %' : 'Flat ₹'}</span></td>
-                          <td><strong style="color: var(--gold-light);">${pc.discountType === 'percent' ? `${pc.value}%` : `₹${pc.value}`}</strong></td>
-                          <td>₹${pc.minOrder || 0}</td>
+                          <td><strong style="color: var(--gold-light);">${pc.discountType === 'percent' ? `${esc(pc.value)}%` : `₹${esc(pc.value)}`}</strong></td>
+                          <td>₹${esc(pc.minOrder || 0)}</td>
                           <td>
-                            <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.6rem; border-color: ${pc.active !== false ? '#10B981' : '#EF4444'}; color: ${pc.active !== false ? '#6EE7B7' : '#FCA5A5'};" onclick="app.togglePromoCode('${pc.code}')">
+                            <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.6rem; border-color: ${pc.active !== false ? '#10B981' : '#EF4444'}; color: ${pc.active !== false ? '#6EE7B7' : '#FCA5A5'};" onclick="app.togglePromoCode('${safeId(pc.code)}')">
                               ${pc.active !== false ? 'Active' : 'Paused'}
                             </button>
                           </td>
                           <td>
-                            <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.6rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.deletePromoCode('${pc.code}')">
+                            <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.6rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.deletePromoCode('${safeId(pc.code)}')">
                               Delete
                             </button>
                           </td>
@@ -1537,7 +1701,7 @@ export const AdminComponents = {
             <div class="sovereign-form-grid">
               <div>
                 <label class="sovereign-field-label">Flacon Slug / ID</label>
-                <input type="text" id="prod-id" class="sovereign-form-input" value="${cleanId}" ${isEdit ? 'readonly style="opacity: 0.7; cursor: not-allowed; background: rgba(255,255,255,0.05);"' : 'required'} placeholder="e.g. oud-rion" />
+                <input type="text" id="prod-id" class="sovereign-form-input" value="${safeId(cleanId)}" ${isEdit ? 'readonly style="opacity: 0.7; cursor: not-allowed; background: rgba(255,255,255,0.05);"' : 'required'} placeholder="e.g. oud-rion" />
               </div>
               <div>
                 <label class="sovereign-field-label">Extrait Name</label>
@@ -1606,15 +1770,15 @@ export const AdminComponents = {
             ` : `
               <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.45); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.35);">
                 <div style="font-size: 0.78rem; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 0.8rem; display: flex; align-items: center; justify-content: space-between;">
-                  <span>✦ Flacon Editions & Volume Pricing (100ml Default • 50ml)</span>
+                  <span>✦ Flacon Editions & Volume Pricing (100ml • 50ml)</span>
                   <span class="glass-pill" style="font-size: 0.68rem; color: var(--gold-light); border-color: var(--gold-primary);">Authoritative Vault Variants</span>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
-                  <!-- Left Column: 100ml Grand Flacon (Default) -->
+                  <!-- Left Column: 100ml Grand Flacon -->
                   <div style="background: rgba(212, 175, 55, 0.08); padding: 1rem; border-radius: 6px; border: 1px solid rgba(212, 175, 55, 0.4);">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
                       <strong style="color: var(--gold-light); font-size: 0.85rem;">100ml Grand Flacon</strong>
-                      <span class="glass-pill" style="font-size: 0.65rem; background: rgba(212, 175, 55, 0.25); color: #FFF1C5; border-color: var(--gold-primary);">★ DEFAULT</span>
+                      <span class="glass-pill" style="font-size: 0.65rem; background: rgba(212, 175, 55, 0.18); color: #FFF1C5; border-color: rgba(212, 175, 55, 0.4);">100ML</span>
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 0.6rem;">
                       <div>
@@ -1676,7 +1840,7 @@ export const AdminComponents = {
                   📸 Product Media Pipeline (Up to 10 Gallery Photos)
                 </div>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                  <button type="button" class="btn btn-glass" style="padding: 0.35rem 0.8rem; font-size: 0.72rem; color: var(--gold-light);" onclick="app.adminAutoMapMedia('${cleanId}')" title="Auto-Map Canonical Local Assets for this SKU">
+                  <button type="button" class="btn btn-glass" style="padding: 0.35rem 0.8rem; font-size: 0.72rem; color: var(--gold-light);" onclick="app.adminAutoMapMedia('${safeId(cleanId)}')" title="Auto-Map Canonical Local Assets for this SKU">
                     ⚡ Auto-Map SKU Assets
                   </button>
                   <span class="glass-pill" id="admin-gallery-badge" style="font-size: 0.68rem; color: var(--gold-light);">${galleryList.length}/10 Photos</span>
@@ -2047,7 +2211,7 @@ export const AdminComponents = {
                 </div>
                 <div style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace; margin-top: 0.2rem; display: flex; align-items: center; gap: 6px;">
                   <span>Collector UID: ${patron.uid || 'N/A'}</span>
-                  ${patron.uid ? `<button type="button" class="btn btn-glass" style="font-size: 0.65rem; padding: 1px 5px;" onclick="navigator.clipboard.writeText('${patron.uid || ''}'); app.showToast('Copied UID');">📋 Copy</button>` : ''}
+                  ${patron.uid ? `<button type="button" class="btn btn-glass" style="font-size: 0.65rem; padding: 1px 5px;" onclick="navigator.clipboard.writeText('${safeId(patron.uid)}'); app.showToast('Copied UID');">📋 Copy</button>` : ''}
                 </div>
               </div>
             </div>
@@ -2071,10 +2235,10 @@ export const AdminComponents = {
                 <span>✉️</span> Email Collector
               </a>
             ` : ''}
-            <button type="button" class="btn btn-glass" style="font-size: 0.78rem; margin-left: auto;" onclick="navigator.clipboard.writeText('${addressCopyText.replace(/'/g, "\\'")}'); app.showToast('Copied full shipping label coordinates!');">
+            <button type="button" class="btn btn-glass" style="font-size: 0.78rem; margin-left: auto;" onclick="navigator.clipboard.writeText('${safeId(addressCopyText)}'); app.showToast('Copied full shipping label coordinates!');">
               📋 Copy Delivery Label Data
             </button>
-            <button type="button" class="btn" style="background: #EF4444; color: white; font-weight: 700; font-size: 0.78rem; padding: 0.45rem 1rem; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;" onclick="app.closeAdminModal(); app.handleAdminDeleteUser('${patron.uid}', '${name.replace(/'/g, "\\'")}', '${email.replace(/'/g, "\\'")}', '${cleanPhone}', '${dossierOrderIds}')" title="Permanently delete user and order records from database">
+            <button type="button" class="btn" style="background: #EF4444; color: white; font-weight: 700; font-size: 0.78rem; padding: 0.45rem 1rem; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;" onclick="app.closeAdminModal(); app.handleAdminDeleteUser('${safeId(patron.uid)}', '${safeId(name)}', '${safeId(email)}', '${safeId(cleanPhone)}', '${safeId(dossierOrderIds)}')" title="Permanently delete user and order records from database">
               <span>🗑️</span> Purge User & Data
             </button>
           </div>
@@ -2159,29 +2323,30 @@ export const AdminComponents = {
                   const items = Array.isArray(ord.items) ? ord.items : [];
                   const courier = ord.courierName || '';
                   const awb = ord.trackingNumber || '';
+                  const idOrd = safeId(ordId);
 
                   return `
                     <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(212, 175, 55, 0.15); border-radius: 8px; padding: 0.8rem;">
                       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; flex-wrap: wrap; gap: 0.5rem;">
                         <div style="display: flex; align-items: center; gap: 0.6rem;">
-                          <strong style="color: var(--gold-light); font-size: 0.95rem;">Order #${ordId}</strong>
-                          <span class="sovereign-pill status-${ordStatus.toLowerCase()}">${ordStatus}</span>
-                          <span class="sovereign-pill payment-${ordPay.toLowerCase()}">${ordPay}</span>
+                          <strong style="color: var(--gold-light); font-size: 0.95rem;">Order #${esc(ordId)}</strong>
+                          <span class="sovereign-pill status-${idOrd.toLowerCase()}">${esc(ordStatus)}</span>
+                          <span class="sovereign-pill payment-${esc(String(ordPay).toLowerCase())}">${esc(ordPay)}</span>
                         </div>
                         <div style="font-size: 0.78rem; color: var(--text-muted);">
-                          ${ordDate}
+                          ${esc(ordDate)}
                         </div>
                       </div>
                       <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.4rem;">
-                        Items: ${items.map(it => `<span style="color: var(--text-main); font-weight: 600;">${it.name || it.id} (${it.size || 50}ml &times; ${it.quantity || 1})</span>`).join(', ') || 'No items listed'}
+                        Items: ${items.map(it => `<span style="color: var(--text-main); font-weight: 600;">${esc(it.name || it.id)} (${esc(it.size || 50)}ml &times; ${esc(it.quantity || 1)})</span>`).join(', ') || 'No items listed'}
                       </div>
                       <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.4rem; font-size: 0.8rem;">
                         <div>
-                          ${courier || awb ? `<span style="color: var(--gold-primary);">🚚 ${courier} AWB: ${awb}</span>` : '<span style="color: var(--text-muted);">Dispatch Pending</span>'}
+                          ${courier || awb ? `<span style="color: var(--gold-primary);">🚚 ${esc(courier)} AWB: ${esc(awb)}</span>` : '<span style="color: var(--text-muted);">Dispatch Pending</span>'}
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.8rem;">
                           <strong class="gold-shimmer-text" style="font-size: 0.95rem;">₹${ordAmount.toLocaleString('en-IN')}</strong>
-                          <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;" onclick="app.closeAdminModal(); app.printShippingLabelForOrder('${ordId}')">
+                          <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;" onclick="app.closeAdminModal(); app.printShippingLabelForOrder('${idOrd}')">
                             🏷️ Shipping Label
                           </button>
                         </div>
@@ -2196,13 +2361,13 @@ export const AdminComponents = {
           <!-- Footer Actions -->
           <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(212, 175, 55, 0.2); padding-top: 0.8rem;">
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-              <button type="button" class="btn btn-glass" style="font-size: 0.75rem;" onclick="app.closeAdminModal(); app.openAdjustMythosModal('${patron.uid}', '${name.replace(/'/g, "\\'")}', ${spendable})">
+              <button type="button" class="btn btn-glass" style="font-size: 0.75rem;" onclick="app.closeAdminModal(); app.openAdjustMythosModal('${safeId(patron.uid)}', '${safeId(name)}', ${spendable})">
                 &plusmn; Adjust Mythos
               </button>
-              <button type="button" class="btn btn-glass" style="font-size: 0.75rem;" onclick="app.closeAdminModal(); app.openOverrideTierModal('${patron.uid}', '${name.replace(/'/g, "\\'")}', ${bottles}, ${currentTierLevel})">
+              <button type="button" class="btn btn-glass" style="font-size: 0.75rem;" onclick="app.closeAdminModal(); app.openOverrideTierModal('${safeId(patron.uid)}', '${safeId(name)}', ${bottles}, ${currentTierLevel})">
                 Override Tier
               </button>
-              <button type="button" class="btn btn-glass" style="font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.closeAdminModal(); app.handleAdminDeleteUser('${patron.uid}', '${name.replace(/'/g, "\\'")}', '${email.replace(/'/g, "\\'")}', '${cleanPhone}', '${dossierOrderIds}')" title="Permanently delete user and order records from database">
+              <button type="button" class="btn btn-glass" style="font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.closeAdminModal(); app.handleAdminDeleteUser('${safeId(patron.uid)}', '${safeId(name)}', '${safeId(email)}', '${safeId(cleanPhone)}', '${safeId(dossierOrderIds)}')" title="Permanently delete user and order records from database">
                 🗑️ Purge User & Data
               </button>
             </div>
@@ -2258,7 +2423,7 @@ export const AdminComponents = {
             <!-- Attached Order Context Bar -->
             <div style="background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 0.8rem 1rem; margin-bottom: 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.6rem;">
               <div>
-                <strong style="color: var(--gold-primary); font-size: 0.95rem;">Order #${orderId}</strong>
+                <strong style="color: var(--gold-primary); font-size: 0.95rem;">Order #${safeId(orderId)}</strong>
                 <span style="color: var(--text-muted); font-size: 0.85rem; margin-left: 0.5rem;">Collector: <strong style="color: var(--text-main);">${patronName}</strong></span>
               </div>
               <div style="font-size: 0.8rem; color: var(--text-muted);">
@@ -2452,11 +2617,11 @@ export const AdminComponents = {
                   <button type="button" class="btn btn-gold" style="flex: 1.5; padding: 0.75rem 1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.4rem;" onclick="app.printRebrandedLabel()">
                     🖨️ Direct Thermal Print
                   </button>
-                  <button type="button" class="btn btn-glass" style="flex: 1.2; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem;" onclick="app.downloadRebrandedLabel('${orderId}')">
+                  <button type="button" class="btn btn-glass" style="flex: 1.2; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem;" onclick="app.downloadRebrandedLabel('${safeId(orderId)}')">
                     ⬇️ Download PDF
                   </button>
                   ${targetOrder ? `
-                    <button type="button" class="btn btn-glass" style="flex: 1; padding: 0.75rem 1rem; color: #10B981; border-color: #10B981;" onclick="app.saveRebrandedLabelToOrder('${orderId}')">
+                    <button type="button" class="btn btn-glass" style="flex: 1; padding: 0.75rem 1rem; color: #10B981; border-color: #10B981;" onclick="app.saveRebrandedLabelToOrder('${safeId(orderId)}')">
                       ✓ Save to Order
                     </button>
                   ` : ''}

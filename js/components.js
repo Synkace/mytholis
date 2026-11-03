@@ -928,7 +928,7 @@ const Components = {
               <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6;">
                 Vasant Vihar 2, Nava Naroda,<br/>
                 Ahmedabad, Gujarat 382330, India<br/>
-                <strong>GSTIN:</strong> 24AAECM4821P1ZT<br/>
+                
                 Tel: +91 777000 9170 • concierge@mytholis.com
               </p>
             </div>
@@ -1085,7 +1085,7 @@ const Components = {
                   <button class="btn ${s.ml === currentMl ? 'btn-gold' : 'btn-glass'} size-btn" 
                           data-ml="${s.ml}" data-price="${s.price}"
                           onclick="app.selectProductSize(${s.ml}, ${s.price})">
-                    ${isCoffret ? `6 × 8ml (48ml Coffret) — ${store.formatPrice(s.price)}` : (s.ml === 100 ? `100ml Grand Flacon ★ DEFAULT — ${store.formatPrice(s.price)}` : `${s.ml}ml Signature Flacon — ${store.formatPrice(s.price)}`)}
+                    ${isCoffret ? `6 × 8ml (48ml Coffret) — ${store.formatPrice(s.price)}` : (s.ml === 100 ? `100ml Grand Flacon — ${store.formatPrice(s.price)}` : `${s.ml}ml Signature Flacon — ${store.formatPrice(s.price)}`)}
                   </button>
                 `).join('')}
               </div>
@@ -1165,7 +1165,7 @@ const Components = {
                 </div>
                 <div class="legal-metrology-item">
                   <span class="metrology-label">Marketed By:</span>
-                  <span class="metrology-val">Mytholis Luxury Fragrances Pvt. Ltd., Vasant Vihar 2, Nava Naroda, Ahmedabad, Gujarat 382330, India (GSTIN: 24AAECM4821P1ZT)</span>
+                  <span class="metrology-val">Mytholis Luxury Fragrances Pvt. Ltd., Vasant Vihar 2, Nava Naroda, Ahmedabad, Gujarat 382330, India</span>
                 </div>
                 <div class="legal-metrology-item">
                   <span class="metrology-label">Month & Year of Mfg:</span>
@@ -1441,18 +1441,18 @@ const Components = {
               <span class="modal-section-hint">Margin guardrails applied</span>
             </div>
 
-            <!-- First-Time Collector Offer (20% OFF) -->
+            <!-- First-Time Collector Offer (25% OFF) -->
             ${!appliedReward ? `
               <div class="first-buyer-offer-banner liquid-glass-card" style="background: linear-gradient(135deg, rgba(212,175,55,0.18), rgba(4,24,18,0.85)); border: 1px solid rgba(212, 175, 55, 0.45); padding: 0.55rem 0.75rem; border-radius: 8px; margin-bottom: 0.55rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
                 <div style="display: flex; align-items: center; gap: 0.45rem;">
                   <span style="font-size: 1rem;">👑</span>
                   <div>
-                    <div style="font-size: 0.76rem; font-weight: 700; color: var(--gold-light);">First-Time Collector Offer: 20% OFF</div>
-                    <div style="font-size: 0.66rem; color: var(--text-muted);">Enjoy 20% off your first order with code <strong style="color: var(--gold-primary);">FIRST20</strong></div>
+                    <div style="font-size: 0.76rem; font-weight: 700; color: var(--gold-light);">First-Time Collector Offer: 25% OFF</div>
+                    <div style="font-size: 0.66rem; color: var(--text-muted);">Enjoy 25% off your first order with code <strong style="color: var(--gold-primary);">FIRST25</strong></div>
                   </div>
                 </div>
-                <button type="button" class="btn btn-gold" style="font-size: 0.66rem; padding: 0.3rem 0.6rem; white-space: nowrap;" onclick="app.applyCartPromoCode('FIRST20')">
-                  Apply 20% ✦
+                <button type="button" class="btn btn-gold" style="font-size: 0.66rem; padding: 0.3rem 0.6rem; white-space: nowrap;" onclick="app.applyCartPromoCode('FIRST25')">
+                  Apply 25% ✦
                 </button>
               </div>
             ` : ''}
@@ -1509,7 +1509,7 @@ const Components = {
                 Select Payment Mode
               </h5>
               <span id="drawer-discount-badge" class="glass-pill" style="font-size: 0.65rem; color: #10B981; border-color: #10B981;">
-                ${promoDiscount > 0 ? `✦ 20% Privilege Active (${appliedReward ? appliedReward.code : 'FIRST20'})` : (rawSubtotal >= 2000 ? 'Save ₹200 via Prepaid UPI' : 'Complimentary Armored Delivery')}
+                ${promoDiscount > 0 ? `✦ 25% Privilege Active (${appliedReward ? appliedReward.code : 'FIRST25'})` : (rawSubtotal >= 2000 ? 'Save ₹200 via Prepaid UPI' : 'Complimentary Armored Delivery')}
               </span>
             </div>
 
@@ -1532,13 +1532,13 @@ const Components = {
                 <span>Credit / Debit Card</span>
               </div>
               <div class="razorpay-method-pill drawer-method-pill ${activePaymentMethod === 'cod' ? 'active' : ''}" onclick="app.selectDrawerPaymentMethod(this, 'cod')">
-                <span>Cash on Delivery</span>
+                <span>Partial COD &middot; 25% now</span>
               </div>
             </div>
 
             <!-- COD Guardrail Notice -->
             <div id="drawer-cod-notice" class="cod-guardrail-box" style="${isCOD ? 'display: block;' : 'display: none;'} margin-top: 0.75rem; padding: 0.65rem 0.85rem; border-radius: 8px; background: rgba(245, 158, 11, 0.12); border: 1px solid #F59E0B; font-size: 0.73rem; color: #FCD34D;">
-              <strong>COD Policy:</strong> Cash on Delivery is available for Sixth Sense (₹3,999). For full flacons (50ml/100ml), an automated WhatsApp dispatch confirmation OTP is required, or switch to UPI to save ₹200 instantly.
+              <strong>Partial COD:</strong> Pay 25% now (minimum Rs499) and the balance on delivery. Available for Sixth Sense (₹3,999). For full flacons (50ml/100ml), an automated WhatsApp dispatch confirmation OTP is required, or switch to UPI to save ₹200 instantly.
             </div>
           </div>
 
@@ -1612,7 +1612,7 @@ const Components = {
             ` : ''}
             ${promoDiscount > 0 ? `
               <div class="modal-concession-line" style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--gold-light); margin-bottom: 0.25rem;">
-                <span>Concession (${appliedReward ? appliedReward.code : 'FIRST20'} - 20%)</span>
+                <span>Concession (${appliedReward ? appliedReward.code : 'FIRST25'} - 25%)</span>
                 <span>-${store.formatPrice(promoDiscount)}</span>
               </div>
             ` : (upiDiscount > 0 ? `
@@ -2912,7 +2912,7 @@ const Components = {
               </button>
             </div>
             <div style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.5; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 0.7rem;">
-              <strong>Mytholis Luxury Fragrances Pvt. Ltd.</strong> · GC/1428-A · GSTIN: 24AAECM4821P1ZT<br/>
+              <strong>Mytholis Luxury Fragrances Pvt. Ltd.</strong> · GC/1428-A
               Mayfair, London UK · Ahmedabad, Gujarat 382330 India · Concierge: +91 777000 9170
             </div>
           </div>
@@ -3576,7 +3576,7 @@ const Components = {
       content = `
         <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">1. Entity & Jurisdiction</h4>
         <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.2rem;">
-          This website is operated by <strong>Mytholis Luxury Fragrances Pvt. Ltd.</strong>, a private limited entity incorporated under the laws of India, having its registered office at Vasant Vihar 2, Nava Naroda, Ahmedabad, Gujarat 382330, India (GSTIN: 24AAECM4821P1ZT). Formulations are originated in the United Kingdom and manufactured in India.
+          This website is operated by <strong>Mytholis Luxury Fragrances Pvt. Ltd.</strong>, a private limited entity incorporated under the laws of India, having its registered office at Vasant Vihar 2, Nava Naroda, Ahmedabad, Gujarat 382330, India. Formulations are originated in the United Kingdom and manufactured in India.
         </p>
         <h4 style="color: var(--gold-light); margin-bottom: 0.8rem;">2. Pricing & Payments</h4>
         <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.2rem;">
@@ -3725,7 +3725,7 @@ const Components = {
           <div id="checkout-modal-breakdown" style="${(discount > 0 || upiDiscount > 0 || appliedGift) ? 'display: block;' : 'display: none;'} margin-top: 0.8rem; padding-top: 0.6rem; border-top: 1px solid rgba(212, 175, 55, 0.2); font-size: 0.75rem;">
             ${discount > 0 ? `
               <div style="display: flex; justify-content: space-between; color: var(--gold-light);">
-                <span>Mythos Privilege (${appliedReward ? appliedReward.code : 'FIRST20'} - 20%):</span>
+                <span>Mythos Privilege (${appliedReward ? appliedReward.code : 'FIRST25'} - 25%):</span>
                 <span>-${store.formatPrice(discount)}</span>
               </div>
             ` : (upiDiscount > 0 ? `
@@ -3750,7 +3750,7 @@ const Components = {
               Select Payment Mode
             </h5>
             <span id="checkout-mode-discount-badge" class="glass-pill" style="font-size: 0.65rem; color: #10B981; border-color: #10B981;">
-              ${discount > 0 ? `✦ 20% Privilege Active (${appliedReward ? appliedReward.code : 'FIRST20'})` : 'Save ₹200 via Prepaid UPI'}
+              ${discount > 0 ? `✦ 25% Privilege Active (${appliedReward ? appliedReward.code : 'FIRST25'})` : 'Save ₹200 via Prepaid UPI'}
             </span>
           </div>
 
@@ -3773,13 +3773,13 @@ const Components = {
               <span>Credit / Debit Card</span>
             </div>
             <div class="razorpay-method-pill" onclick="app.selectPaymentMethod(this, 'cod')">
-              <span>Cash on Delivery</span>
+              <span>Partial COD &middot; 25% now</span>
             </div>
           </div>
 
           <!-- COD Notice / Guardrail (Only allowed for Sixth Sense or requires OTP confirmation) -->
           <div id="cod-guardrail-notice" class="cod-guardrail-box" style="display: none; padding: 0.75rem 1rem; border-radius: 8px; background: rgba(245, 158, 11, 0.12); border: 1px solid #F59E0B; font-size: 0.75rem; color: #FCD34D; margin-bottom: 1rem;">
-            <strong>COD Policy:</strong> Cash on Delivery is available for Sixth Sense (₹3,999). For full flacons (50ml/100ml), an automated WhatsApp dispatch confirmation OTP is required, or switch to UPI to save ₹200 instantly.
+            <strong>Partial COD:</strong> Pay 25% now (minimum Rs499) and the balance on delivery. Available for Sixth Sense (₹3,999). For full flacons (50ml/100ml), an automated WhatsApp dispatch confirmation OTP is required, or switch to UPI to save ₹200 instantly.
           </div>
 
           <!-- Gateway Status Notice -->
@@ -3897,12 +3897,11 @@ const Components = {
     if (typeof AdminComponents !== 'undefined' && AdminComponents.renderAdmin) {
       return AdminComponents.renderAdmin();
     }
-    const configuredAdminEmail = (import.meta.env.VITE_ADMIN_EMAIL || '').trim().toLowerCase();
-    const currentUser = (typeof firebaseService !== 'undefined' && firebaseService.currentUser) || (typeof store !== 'undefined' && store.firebaseUser);
-    const userEmail = (currentUser?.email || '').trim().toLowerCase();
-    
-    // Check if authenticated user matches configured admin email
-    const isAuthorized = Boolean(configuredAdminEmail && userEmail && (userEmail === configuredAdminEmail));
+    // Authorization is enforced by the server (`admin` custom claim). This is
+    // only a fallback renderer used when the admin bundle failed to load.
+    const isAuthorized = (typeof store !== 'undefined' && typeof store.isAdmin === 'function')
+      ? store.isAdmin()
+      : false;
 
     // 1. Unauthenticated or Unauthorized Gate
     if (!isAuthorized) {
@@ -3921,30 +3920,17 @@ const Components = {
               Operations desk, dispatch vault, VIP society ledger, and live inventory switchboard. Access restricted strictly to verified Mytholis Founders.
             </p>
 
-            ${currentUser ? `
-              <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 10px; padding: 1.2rem; margin-bottom: 1.8rem; text-align: left;">
-                <div style="color: #FCA5A5; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                  Access Denied
-                </div>
-                <div style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.5;">
-                  Authenticated account: <strong style="color: var(--text-main);">${userEmail}</strong> does not match the configured Founder email.<br/>
-                  ${configuredAdminEmail ? `<span style="font-size: 0.72rem; color: #F59E0B;">Target Founder Identity: ${configuredAdminEmail}</span>` : `<span style="font-size: 0.72rem; color: #F59E0B;">Note: VITE_ADMIN_EMAIL is not yet configured in your .env file.</span>`}
-                </div>
+            <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 10px; padding: 1.2rem; margin-bottom: 1.8rem; text-align: left;">
+              <div style="color: #FCA5A5; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                Access Denied
               </div>
-              <button class="btn btn-glass" style="width: 100%; border-color: rgba(239, 68, 68, 0.5); color: #FCA5A5;" onclick="app.handleFirebaseSignOut()">
-                Sign Out Current Session
-              </button>
-            ` : `
-              <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <button class="btn btn-gold" style="width: 100%; padding: 0.9rem; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 0.8rem;" onclick="app.handleAdminGoogleSignIn()">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/></svg>
-                  Founder Google Authentication
-                </button>
-                <div style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 0.5rem;">
-                  Sign in with the Google Account registered under <code style="color: var(--gold-light);">${configuredAdminEmail || 'VITE_ADMIN_EMAIL'}</code>
-                </div>
+              <div style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.5;">
+                This account does not hold the administrator claim. Ask the store owner to grant it from the Sanctum Command desk.
               </div>
-            `}
+            </div>
+            <button class="btn btn-glass" style="width: 100%; border-color: rgba(239, 68, 68, 0.5); color: #FCA5A5;" onclick="app.handleFirebaseSignOut()">
+              Sign Out Current Session
+            </button>
           </div>
         </div>
       `;
@@ -3975,9 +3961,6 @@ const Components = {
             </button>
             <button class="btn btn-gold" style="font-size: 0.75rem; padding: 0.6rem 1rem;" onclick="app.exitSanctum()" title="Return to Storefront without signing out">
               Exit Sanctum
-            </button>
-            <button class="btn btn-glass" style="font-size: 0.75rem; padding: 0.6rem 1rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.handleFirebaseSignOut()" title="Sign Out of Founder Account">
-              Sign Out
             </button>
           </div>
         </div>

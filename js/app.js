@@ -1852,7 +1852,7 @@ class MytholisApp {
     const badgeEl = document.getElementById('drawer-discount-badge');
     if (badgeEl) {
       if (promoDiscount > 0) {
-        badgeEl.textContent = `✦ 20% Privilege Active (${appliedReward ? appliedReward.code : 'FIRST20'})`;
+        badgeEl.textContent = `✦ 25% Privilege Active (${appliedReward ? appliedReward.code : 'FIRST25'})`;
       } else if (isUPI && rawSubtotal >= 2000) {
         badgeEl.textContent = 'Save ₹200 via Prepaid UPI';
       } else {
@@ -1925,7 +1925,7 @@ class MytholisApp {
       || null;
 
     if (!promoCode && (!store.user?.orders?.length && !store.loyalty?.promo_dismissed)) {
-      promoCode = 'FIRST20';
+      promoCode = 'FIRST25';
     }
 
     const promoDiscount = promoCode ? Math.floor(rawSubtotal * 0.20) : 0;
@@ -2154,7 +2154,7 @@ class MytholisApp {
       || null;
 
     if (!promoCode && (!store.user?.orders?.length && !store.loyalty?.promo_dismissed)) {
-      promoCode = 'FIRST20';
+      promoCode = 'FIRST25';
     }
 
     const activeMethodPill = (typeof document !== 'undefined') ? document.querySelector('.razorpay-method-pill.active') : null;
@@ -2260,7 +2260,7 @@ class MytholisApp {
     const badgeEl = document.getElementById('checkout-mode-discount-badge');
     if (badgeEl) {
       if (discount > 0) {
-        badgeEl.textContent = `✦ 20% Privilege Active (${appliedReward ? appliedReward.code : 'FIRST20'})`;
+        badgeEl.textContent = `✦ 25% Privilege Active (${appliedReward ? appliedReward.code : 'FIRST25'})`;
       } else if (isUPI && baseSubtotal >= 2000) {
         badgeEl.textContent = 'Save ₹200 via Prepaid UPI';
       } else {
@@ -2274,7 +2274,7 @@ class MytholisApp {
         breakdownEl.style.display = 'block';
         breakdownEl.innerHTML = `
           <div style="display: flex; justify-content: space-between; color: var(--gold-light);">
-            <span>Mythos Privilege (${appliedReward ? appliedReward.code : 'FIRST20'} - 20%):</span>
+            <span>Mythos Privilege (${appliedReward ? appliedReward.code : 'FIRST25'} - 25%):</span>
             <span>-${store.formatPrice(discount)}</span>
           </div>
         `;
@@ -2552,9 +2552,15 @@ class MytholisApp {
       });
     }
 
-    // Check payment method
+    // Check payment method.
+    // Deferred payment is "Partial COD": a 25% deposit is charged now through
+    // Razorpay and the balance is collected on delivery. It is NOT a separate
+    // path any more - plain COD has been removed, so every order goes through
+    // the gateway and the server decides how much to charge.
     const activeMethodPill = document.querySelector('.drawer-method-pill.active') || document.querySelector('.razorpay-method-pill.active');
-    const paymentMethod = activeMethodPill ? activeMethodPill.textContent.trim() : (this.drawerPaymentMethod === 'cod' ? 'Cash on Delivery (COD)' : 'Prepaid (Google Pay / UPI)');
+    const paymentMethod = activeMethodPill
+      ? activeMethodPill.textContent.trim()
+      : (this.drawerPaymentMethod === 'cod' ? 'Partial COD (25% Deposit)' : 'Prepaid (Google Pay / UPI)');
     const isCOD = paymentMethod.toLowerCase().includes('cash on delivery') || paymentMethod.toLowerCase().includes('cod');
 
     // Structured items array for server catalog calculation
@@ -2579,7 +2585,7 @@ class MytholisApp {
       || null;
 
     if (!activePromoCode && (!store.user?.orders?.length && !store.loyalty?.promo_dismissed)) {
-      activePromoCode = 'FIRST20';
+      activePromoCode = 'FIRST25';
     }
 
     const redeemMythos = (store.loyalty && typeof store.loyalty.spendable_mythos === 'number') 
@@ -2597,60 +2603,11 @@ class MytholisApp {
     };
 
     // If Cash on Delivery is selected
-    if (isCOD) {
-      try {
-        const codResp = await fetch('/api/complete-order', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            items: structuredItems,
-            promoCode: activePromoCode,
-            paymentMethod: 'Cash on Delivery (COD)',
-            redeemMythos: redeemMythos,
-            mythosPoints: redeemMythos,
-            customer: customerObj,
-            orderData: {
-              items: structuredItems,
-              promoCode: activePromoCode,
-              paymentMethod: 'Cash on Delivery (COD)',
-              redeemMythos: redeemMythos,
-              mythosPoints: redeemMythos,
-              customer: customerObj,
-              customerName,
-              customerPhone,
-              customerEmail,
-              customerAddress,
-              customerPincode,
-              customerCity,
-              customerState
-            }
-          })
-        });
-
-        const codData = codResp.ok ? await codResp.json() : null;
-        const codOrderId = codData?.orderId || `MYTH-${Date.now().toString().slice(-6)}`;
-        const verifiedTotal = Number(codData?.total) || amount;
-
-        restoreProceedBtn();
-        this.finalizeOrderPlacement(verifiedTotal, {
-          orderId: codOrderId,
-          customerName,
-          customerPhone,
-          customerEmail,
-          customerAddress,
-          customerPincode,
-          customerCity,
-          customerState,
-          paymentMethod: 'Cash on Delivery (COD)',
-          paymentId: 'COD-PENDING'
-        });
-      } catch (codErr) {
-        restoreProceedBtn();
-        this.showToast('Could not complete COD order. Please try again.');
-      }
-      return;
-    }
-
+    /* Plain COD is gone. "Partial COD" is handled by the SAME Razorpay flow
+       below: the server prices the cart, decides that only the 25% deposit is
+       chargeable, and returns that amount. The balance is collected on delivery
+       and settled by the courier webhook.
+       Nothing here may skip the payment step. */
     // Prepaid Order: Razorpay Standard Checkout
     let razorpayKey = (store.globalSettings && store.globalSettings.razorpayKeyId && store.globalSettings.razorpayKeyId.trim()) ||
                       (import.meta.env && import.meta.env.VITE_RAZORPAY_KEY_ID && import.meta.env.VITE_RAZORPAY_KEY_ID.trim()) ||
@@ -2811,7 +2768,7 @@ class MytholisApp {
               customerPincode,
               customerCity,
               customerState,
-              paymentMethod: 'Razorpay Instant (UPI / Cards)',
+              paymentMethod: isCOD ? 'Partial COD' : 'Razorpay Instant (UPI / Cards)',
               paymentId: response.razorpay_payment_id
             });
           } else {
@@ -2854,16 +2811,14 @@ class MytholisApp {
   finalizeOrderPlacement(amount, details = {}) {
     this.closeRazorpayModal();
     this.trackMetaEvent('Purchase', { value: amount, currency: 'INR' });
-    const purchasedItems = [...store.cart];
-    const loyaltyResult = store.recordLoyaltyPurchase(purchasedItems, amount);
 
-    let toastMsg = `Order of ${store.formatPrice(amount)} Placed! Earned +${loyaltyResult.spendEarned} Spendable & +${loyaltyResult.totalLegacyEarned} Legacy Mythos.`;
-    if (loyaltyResult.milestoneMsg) {
-      toastMsg += ' ' + loyaltyResult.milestoneMsg;
-    }
-    this.showToast(toastMsg);
+    // Loyalty is credited server-side only (payment webhook / settle-order).
+    // The old client-side recordLoyaltyPurchase() created a second, competing
+    // ledger and double-credited every purchase.
+    this.showToast(`Order of ${store.formatPrice(amount)} placed. Your Mythos will appear once the payment is confirmed.`);
 
     const authoritativeOrderId = details.orderId || `MYTH-${Math.floor(10000 + Math.random() * 90000)}`;
+    const purchasedItems = [...store.cart];
 
     const orderRecord = {
       orderId: authoritativeOrderId,
@@ -2921,12 +2876,13 @@ class MytholisApp {
       }).catch(() => {});
     }
 
-    // 2. Call serverless complete-order endpoint (with silent fallback)
-    fetch('/api/complete-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ orderId: authoritativeOrderId, orderData: orderRecord })
-    }).catch(() => {});
+    // 2. The order already exists server-side (created by /api/create-order and
+    //    settled by the payment webhook). There is no second write to make here.
+
+    // 3. Loyalty is credited server-side; pull the authoritative balance.
+    if (typeof firebaseService !== 'undefined' && typeof firebaseService.refreshLoyaltyFromServer === 'function') {
+      firebaseService.refreshLoyaltyFromServer(4).catch(() => {});
+    }
 
     if (store.cart.length > 0) {
       store.cart = [];
@@ -2940,8 +2896,8 @@ class MytholisApp {
      THE CIRCLE OF LEGENDS - LOYALTY ACTION DISPATCHERS
      -------------------------------------------------------------------------- */
 
-  redeemReward(rewardId) {
-    const res = store.redeemMythosReward(rewardId);
+  async redeemReward(rewardId) {
+    const res = await store.redeemMythosReward(rewardId);
     if (res.success) {
       this.showToast(`Concession ${res.code} added to your Active Vault Codes.`);
       this.renderProfileModalContent();
@@ -2966,14 +2922,14 @@ class MytholisApp {
     }
   }
 
-  applyCartPromoCode(code = 'FIRST20') {
+  applyCartPromoCode(code = 'FIRST25') {
     const res = store.applyRewardCode(code);
     if (res.success) {
-      this.showToast(`✦ Privilege code "${code}" activated: 20% discount applied!`);
+      this.showToast(`✦ Privilege code "${code}" activated: 25% discount applied!`);
       if (store.getCartCount() > 0) {
         this.openCartModal();
       } else {
-        this.showToast(`✦ Code ${code} (20% OFF) saved. Add any flacon to bag to enjoy the concession!`);
+        this.showToast(`✦ Code ${code} (25% OFF) saved. Add any flacon to bag to enjoy the concession!`);
       }
       this.renderCartModalContent();
     } else {
@@ -3491,7 +3447,14 @@ class MytholisApp {
 
     const toast = document.createElement('div');
     toast.className = 'toast';
-    toast.innerHTML = `<span class="toast-text">${message}</span>`;
+
+    // textContent, not innerHTML: server error strings can echo attacker input
+    // (e.g. `Unknown catalog product: <payload>`), which made this a DOM XSS sink.
+    const span = document.createElement('span');
+    span.className = 'toast-text';
+    span.textContent = String(message ?? '');
+    toast.appendChild(span);
+
     container.appendChild(toast);
 
     setTimeout(() => {
@@ -4701,6 +4664,108 @@ class MytholisApp {
     }
   }
 
+  /**
+   * Manually confirm that the balance on a Partial COD order was collected.
+   * There is no courier integration yet, so staff trigger this from the order
+   * card. It credits rewards exactly once and clears `balanceDue`.
+   */
+  /** Caller executive: record that we reached out about an abandoned checkout. */
+  async markCheckoutRecovery(orderId, status) {
+    if (!orderId) return;
+    try {
+      const user = typeof firebaseService !== 'undefined' ? firebaseService.currentUser : null;
+      if (!user) { this.showToast('Administrator sign-in required.'); return; }
+      const idToken = await user.getIdToken().catch(() => null);
+      const resp = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+        body: JSON.stringify({ action: 'MARK_CHECKOUT_RECOVERY', payload: { orderId, status } })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) { this.showToast(data.error || 'Could not update the checkout.'); return; }
+      this.showToast(`Checkout marked ${String(status).toLowerCase()}.`);
+      await this.loadAdminData?.();
+      this.renderCurrentView();
+    } catch (err) {
+      console.error('[Recovery] error:', err);
+      this.showToast('Network error updating the checkout.');
+    }
+  }
+
+  /** Remove abandoned checkout drafts older than 30 days (never touches paid orders). */
+  async purgeAbandonedDrafts() {
+    const ok = window.confirm('Delete abandoned checkout drafts older than 30 days?\n\nPaid and partially-paid orders are never touched.');
+    if (!ok) return;
+    try {
+      const user = typeof firebaseService !== 'undefined' ? firebaseService.currentUser : null;
+      if (!user) { this.showToast('Administrator sign-in required.'); return; }
+      const idToken = await user.getIdToken().catch(() => null);
+
+      const dry = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+        body: JSON.stringify({ action: 'PURGE_ABANDONED_DRAFTS', payload: { olderThanDays: 30, dryRun: true } })
+      }).then(r => r.ok ? r.json() : null).catch(() => null);
+
+      if (!dry || !dry.success) { this.showToast('Could not preview the purge.'); return; }
+      if (!dry.wouldDelete) { this.showToast('No abandoned drafts older than 30 days.'); return; }
+      if (!window.confirm(`This will delete ${dry.wouldDelete} abandoned draft(s). Continue?`)) return;
+
+      const resp = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+        body: JSON.stringify({ action: 'PURGE_ABANDONED_DRAFTS', payload: { olderThanDays: 30 } })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) { this.showToast(data.error || 'Purge failed.'); return; }
+      this.showToast(`Purged ${data.deleted} abandoned draft(s).`);
+      await this.loadAdminData?.();
+      this.renderCurrentView();
+    } catch (err) {
+      console.error('[Purge] error:', err);
+      this.showToast('Network error during purge.');
+    }
+  }
+  toggleAbandonedCheckouts() {
+    this.showAbandonedCheckouts = !this.showAbandonedCheckouts;
+    this.renderCurrentView();
+  }
+  async collectPartialBalance(orderId) {
+    if (!orderId) return;
+    const confirmed = window.confirm(
+      `Confirm that the remaining balance for order ${orderId} has been collected from the customer?\n\nThis marks the order PAID and credits the collector's Mythos.`
+    );
+    if (!confirmed) return;
+
+    try {
+      const user = typeof firebaseService !== 'undefined' ? firebaseService.currentUser : null;
+      if (!user) { this.showToast('Administrator sign-in required.'); return; }
+
+      const idToken = await user.getIdToken().catch(() => null);
+      const resp = await fetch('/api/patron/settle-balance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+        body: JSON.stringify({ orderId })
+      });
+      const data = await resp.json().catch(() => ({}));
+
+      if (!resp.ok) {
+        this.showToast(data.error || 'Could not settle the balance.');
+        return;
+      }
+      this.showToast(
+        data.alreadySettled
+          ? 'This balance was already settled.'
+          : `Balance collected. Rewards credited: +${data.rewards?.spendEarned ?? 0} Mythos.`
+      );
+      if (typeof this.loadAdminData === 'function') await this.loadAdminData();
+      else this.renderCurrentView();
+    } catch (err) {
+      console.error('[Settle Balance] error:', err);
+      this.showToast('Network error settling the balance.');
+    }
+  }
+
   async saveAdminOrderTracking(orderId) {
     const courierEl = document.getElementById(`courier-${orderId}`);
     const awbEl = document.getElementById(`awb-${orderId}`);
@@ -5633,9 +5698,9 @@ class MytholisApp {
       const supportPhone = getStr('setting-support-phone') || currentSettings.supportPhone || '+91 777000 9170';
       const supportEmail = getStr('setting-support-email') || currentSettings.supportEmail || 'concierge@mytholis.com';
       const adminEmailsRaw = getStr('setting-admin-emails');
-      const adminEmails = adminEmailsRaw 
+      const adminEmails = adminEmailsRaw
         ? adminEmailsRaw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
-        : (currentSettings.adminEmails || ['gunhegarr@gmail.com', 'admin@mytholis.com', 'alexander@mytholis.com', 'founder@mytholis.com']);
+        : (currentSettings.adminEmails || []);
 
       const settingsData = {
         ...currentSettings,

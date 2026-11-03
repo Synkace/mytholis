@@ -1,5 +1,8 @@
 import { defineConfig } from 'vite';
 
+const apiProxyTarget = process.env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:5001';
+const isLocalApi = apiProxyTarget.startsWith('http://127.0.0.1') || apiProxyTarget.startsWith('http://localhost');
+
 export default defineConfig({
   plugins: [],
   build: {
@@ -33,9 +36,9 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api': {
-        target: 'https://mytholis-1.web.app',
+        target: apiProxyTarget,
         changeOrigin: true,
-        secure: true
+        secure: !isLocalApi
       },
       '/__/auth': {
         target: 'https://mytholis-1.firebaseapp.com',
@@ -48,9 +51,9 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'https://mytholis-1.web.app',
+        target: apiProxyTarget,
         changeOrigin: true,
-        secure: true
+        secure: !isLocalApi
       },
       '/__/auth': {
         target: 'https://mytholis-1.firebaseapp.com',
