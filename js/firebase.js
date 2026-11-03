@@ -1313,6 +1313,50 @@ export class FirebaseService {
    * Crediting happens server-side (webhook / settle-order), so the client polls
    * briefly after a purchase instead of computing its own numbers.
    */
+  /**
+   * Save the delivery address used at checkout into the collector's address
+   * book (most recent first, max 5, de-duplicated). Lives under
+   * `profile.savedAddresses` because that is the only writable surface on the
+   * user document - loyalty/role are server-owned.
+   */
+  async saveCheckoutAddress(address = {}) {
+    if (!this.currentUser || !address?.address) return null;
+    try {
+      const key = canonicalAddressKey(address.address, address.pincode);
+      if (!key) return null;
+      const ref = doc(db, 'users', this.currentUser.uid);
+      const snap = await getDoc(ref).catch(() => null);
+      const existing = (snap && snap.exists() ? snap.data()?.profile?.savedAddresses : null) || [];
+      const entry = {
+        key,
+        name: address.name || '',
+        phone: address.phone || '',
+        address: address.address,
+        pincode: address.pincode || '',
+        city: address.city || '',
+        state: address.state || '',
+        savedAt: new Date().toISOString(),
+        lastUsedAt: new Date().toISOString()
+      };
+      const next = [entry, ...existing.filter((a) => a.key !== key)].slice(0, 5);
+      await setDoc(ref, { profile: { savedAddresses: next } }, { merge: true });
+      if (this.store?.user) this.store.user.savedAddresses = next;
+      return next;
+    } catch (err) {
+      console.warn('[Mytholis Firebase] Address book save note:', err.message);
+      return null;
+    }
+  }
+
+  /** Read the saved address book, most recently used first. */
+  async getSavedAddresses() {
+    if (!this.currentUser) return [];
+    try {
+      const snap = await getDoc(doc(db, 'users', this.currentUser.uid));
+      if (!snap.exists()) return [];
+      return snap.data()?.profile?.savedAddresses || [];
+    } catch (_) { return []; }
+  }
   async refreshLoyaltyFromServer(retries = 3, delayMs = 1200) {
     if (!this.currentUser) return null;
     for (let attempt = 0; attempt < retries; attempt += 1) {

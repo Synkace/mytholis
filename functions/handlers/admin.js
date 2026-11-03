@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { adminAuth, adminDb } from './_firebaseAdmin.js';
 import { requireAdmin } from '../lib/auth.js';
 
@@ -310,23 +311,65 @@ export default async function handler(req, res) {
          Abandoned checkout recovery desk (caller executive).
          ------------------------------------------------------------------ */
       case 'MARK_CHECKOUT_RECOVERY': {
-        const { orderId, status, note = '' } = payload;
+        const { orderId, status, note, issueCode = false, codeValue = 500 } = payload;
         if (!orderId) return res.status(400).json({ error: 'Missing orderId' });
 
         const allowed = ['CONTACTED', 'RECOVERED', 'LOST', 'NOT_CONTACTED'];
-        const next = String(status || '').toUpperCase();
-        if (!allowed.includes(next)) return res.status(400).json({ error: 'Invalid recovery status' });
+        const next = status ? String(status).toUpperCase() : null;
+        if (next && !allowed.includes(next)) return res.status(400).json({ error: 'Invalid recovery status' });
 
-        await adminDb.collection('orders').doc(orderId).set({
-          recoveryStatus: next,
-          recoveryNote: String(note || '').slice(0, 500),
+        const orderRef = adminDb.collection('orders').doc(orderId);
+        const orderSnap = await orderRef.get();
+        if (!orderSnap.exists) return res.status(404).json({ error: 'Checkout not found' });
+
+        const order = orderSnap.data() || {};
+        const update = {
           recoveryUpdatedAt: new Date().toISOString(),
           recoveryBy: tokenEmail || decodedToken.uid
-        }, { merge: true });
+        };
+        if (next) update.recoveryStatus = next;
+        if (note !== undefined) update.recoveryNote = String(note || '').slice(0, 500);
 
-        return res.status(200).json({ success: true, orderId, recoveryStatus: next });
+        /* Cart-recovery voucher: issued once, locked to the address that
+           abandoned the checkout, single use, 7-day expiry. Server-authored so
+           the caller cannot invent a larger discount. */
+        let issuedCode = null;
+        if (issueCode === true && !order.recoveryCode) {
+          const value = Math.max(100, Math.min(Number(codeValue) || 500, 1000));
+          const code = `MYTH-CART-${randomBytes(3).toString('hex').toUpperCase()}`;
+          const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+          await adminDb.collection('reward_codes').doc(code).set({
+            code,
+            title: `Cart Recovery Concession (₹${value} Off)`,
+            type: 'flat',
+            amount: value,
+            minOrder: 0,
+            maxUses: 1,
+            usesCount: 0,
+            used: false,
+            active: true,
+            targetEmail: String(order.userEmail || order.customer?.email || '').toLowerCase() || null,
+            note: `Issued for abandoned checkout ${orderId}`,
+            issuedForOrderId: orderId,
+            expiresAt,
+            createdAt: new Date().toISOString()
+          });
+
+          update.recoveryCode = code;
+          update.recoveryCodeValue = value;
+          update.recoveryCodeIssuedAt = new Date().toISOString();
+          issuedCode = code;
+        }
+
+        await orderRef.set(update, { merge: true });
+        return res.status(200).json({
+          success: true,
+          orderId,
+          recoveryStatus: update.recoveryStatus || order.recoveryStatus || 'NOT_CONTACTED',
+          recoveryCode: issuedCode || order.recoveryCode || null
+        });
       }
-
       case 'PURGE_ABANDONED_DRAFTS': {
         const olderThanDays = Number(payload.olderThanDays) || 30;
         const cutoffMs = Date.now() - olderThanDays * 24 * 60 * 60 * 1000;

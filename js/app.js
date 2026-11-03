@@ -2320,7 +2320,11 @@ class MytholisApp {
       const emailVal = normalizeEmail(profileData.email || currentUser?.email || store.user?.email || '');
       const rawPhone = profileData.phone || profileData.phoneNumber || currentUser?.phoneNumber || store.user?.phone || '';
       const phoneVal = normalizePhone(rawPhone) || rawPhone.replace(/\D/g, '').slice(-10);
-      const addressVal = profileData.address || profileData.shippingAddress || store.user?.address || '';
+      // Fall back to the most recently used saved address when the profile has
+      // none - a customer may have checked out as a guest before signing in.
+      const book = Array.isArray(profileData.savedAddresses) ? profileData.savedAddresses : [];
+      const lastUsed = book[0] || {};
+      const addressVal = profileData.address || profileData.shippingAddress || store.user?.address || lastUsed.address || '';
       const pincodeVal = profileData.pincode || store.user?.pincode || '';
       const cityVal = profileData.city || store.user?.city || '';
       const stateVal = profileData.state || store.user?.state || '';
@@ -2876,6 +2880,17 @@ class MytholisApp {
       }).catch(() => {});
     }
 
+    // Remember this address so the next checkout is one tap.
+    if (typeof firebaseService !== 'undefined' && typeof firebaseService.saveCheckoutAddress === 'function') {
+      firebaseService.saveCheckoutAddress({
+        name: details.customerName || store.user.name,
+        phone: details.customerPhone || store.user.phone,
+        address: details.customerAddress,
+        pincode: details.customerPincode,
+        city: details.customerCity,
+        state: details.customerState
+      }).catch(() => {});
+    }
     // 2. The order already exists server-side (created by /api/create-order and
     //    settled by the payment webhook). There is no second write to make here.
 
@@ -4669,6 +4684,57 @@ class MytholisApp {
    * There is no courier integration yet, so staff trigger this from the order
    * card. It credits rewards exactly once and clears `balanceDue`.
    */
+  /** Attach a call note to an abandoned checkout without changing its status. */
+  async addRecoveryNote(orderId) {
+    if (!orderId) return;
+    const note = window.prompt('What happened on the call? (max 500 chars)');
+    if (note === null) return;
+    try {
+      const user = typeof firebaseService !== 'undefined' ? firebaseService.currentUser : null;
+      if (!user) { this.showToast('Administrator sign-in required.'); return; }
+      const idToken = await user.getIdToken().catch(() => null);
+      const resp = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+        body: JSON.stringify({ action: 'MARK_CHECKOUT_RECOVERY', payload: { orderId, note } })
+      });
+      if (!resp.ok) { this.showToast('Could not save the note.'); return; }
+      this.showToast('Note saved.');
+      await this.loadAdminData?.();
+      this.renderCurrentView();
+    } catch (err) {
+      console.error('[Recovery note] error:', err);
+      this.showToast('Network error saving the note.');
+    }
+  }
+
+  /** Issue a single-use, email-locked recovery voucher (server-authored). */
+  async issueRecoveryCode(orderId) {
+    if (!orderId) return;
+    const ok = window.confirm('Issue a ₹500 recovery code to this customer?\n\nSingle use, locked to their email, expires in 7 days.');
+    if (!ok) return;
+    try {
+      const user = typeof firebaseService !== 'undefined' ? firebaseService.currentUser : null;
+      if (!user) { this.showToast('Administrator sign-in required.'); return; }
+      const idToken = await user.getIdToken().catch(() => null);
+      const resp = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+        body: JSON.stringify({
+          action: 'MARK_CHECKOUT_RECOVERY',
+          payload: { orderId, status: 'CONTACTED', issueCode: true, codeValue: 500 }
+        })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) { this.showToast(data.error || 'Could not issue the code.'); return; }
+      this.showToast(`Recovery code ${data.recoveryCode} issued.`);
+      await this.loadAdminData?.();
+      this.renderCurrentView();
+    } catch (err) {
+      console.error('[Recovery code] error:', err);
+      this.showToast('Network error issuing the code.');
+    }
+  }
   /** Caller executive: record that we reached out about an abandoned checkout. */
   async markCheckoutRecovery(orderId, status) {
     if (!orderId) return;

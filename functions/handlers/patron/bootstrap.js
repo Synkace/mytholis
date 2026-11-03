@@ -61,7 +61,32 @@ export default async function handler(req, res) {
         const fresh = await userRef.get();
         return res.status(200).json({ success: true, created: false, repaired: true, user: fresh.data() });
       }
-      return res.status(200).json({ success: true, created: false, user: data });
+      /* Refresh identity on every login: Google may have changed the display
+         name or photo since signup, and we want those, not a stale copy.
+         Only fields the provider actually supplies are overwritten. */
+      const refresh = {
+        lastLoginAt: new Date().toISOString()
+      };
+      const p = data.profile || {};
+      const merged = { ...p };
+      let changed = false;
+
+      if ((decoded.name || decoded.displayName) && (decoded.name || decoded.displayName) !== p.displayName) {
+        merged.name = decoded.name || decoded.displayName;
+        merged.displayName = merged.name;
+        changed = true;
+      }
+      if (decoded.picture && decoded.picture !== p.photoURL) { merged.photoURL = decoded.picture; changed = true; }
+      if (decoded.phone_number && decoded.phone_number !== p.phone) { merged.phone = decoded.phone_number; merged.phoneNumber = decoded.phone_number; changed = true; }
+      if (decoded.email && decoded.email !== p.email) { merged.email = decoded.email; changed = true; }
+      if (decoded.email_verified === true && p.emailVerified !== true) { merged.emailVerified = true; changed = true; }
+
+      if (changed) refresh.profile = merged;
+      if (data.emailVerified !== (decoded.email_verified === true)) refresh.emailVerified = decoded.email_verified === true;
+
+      await userRef.set(refresh, { merge: true }).catch(() => {});
+      const fresh = await userRef.get();
+      return res.status(200).json({ success: true, created: false, user: fresh.data() });
     }
 
     // First login: create the document server-side.
@@ -77,14 +102,28 @@ export default async function handler(req, res) {
 
     const isAdmin = isAdminToken(decoded);
 
+    /* Everything the identity provider gives us. Google's ID token carries a
+       display name, photo, verified-email flag and a sign-in provider; phone
+       auth carries the number. Storing all of it means the concierge can greet
+       a customer by name and we never have to ask for what Google already told
+       us. Anything absent stays empty - the checkout form fills the rest. */
+    const provider = decoded.firebase?.sign_in_provider || 'unknown';
     const newUser = {
       profile: {
-        name: decoded.name || '',
-        email: decoded.email_verified === true ? decoded.email : '',
+        name: decoded.name || decoded.displayName || '',
+        displayName: decoded.name || decoded.displayName || '',
+        email: decoded.email || '',
+        emailVerified: decoded.email_verified === true,
         phone: decoded.phone_number || '',
-        photoURL: decoded.picture || '',
+        phoneNumber: decoded.phone_number || '',
+        photoURL: decoded.picture || decoded.photo_url || '',
+        provider,
+        providers: [provider],
         createdAt: new Date().toISOString()
       },
+      signupProvider: provider,
+      emailVerified: decoded.email_verified === true,
+      lastLoginAt: new Date().toISOString(),
       loyalty: emptyLoyalty(bonus),
       isMergedDuplicate: false,
       createdAt: FieldValue.serverTimestamp(),

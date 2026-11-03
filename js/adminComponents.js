@@ -800,41 +800,71 @@ export const AdminComponents = {
                     </tr>
                   </thead>
                   <tbody>
-                    ${abandonedCheckouts.map((o) => {
-                      const id = o.orderId || o.id || '';
-                      const sid = safeId(id);
-                      const cust = o.customer || {};
-                      const name = o.customerName || cust.name || 'Guest';
-                      const phone = String(o.customerPhone || cust.phone || '').replace(/[^0-9]/g, '');
-                      const email = o.userEmail || cust.email || '';
-                      const items = Array.isArray(o.items) ? o.items : [];
-                      const value = Number(o.verifiedTotal || o.total || 0);
-                      const started = draftStartedMs(o) ? new Date(draftStartedMs(o)).toLocaleString('en-IN') : 'unknown';
-                      const status = String(o.recoveryStatus || '').toUpperCase();
-                      const statusPill = status === 'RECOVERED' ? '#10B981' : status === 'CONTACTED' ? '#FCD34D' : status === 'LOST' ? '#FCA5A5' : '#9AA39D';
-                      const statusLabel = status === 'RECOVERED' ? 'Recovered' : status === 'CONTACTED' ? 'Contacted' : status === 'LOST' ? 'Lost' : 'Not contacted';
-                      return `
-                        <tr>
-                          <td><strong style="color:var(--gold-light);">${esc(name)}</strong><br><span style="font-size:0.7rem; color:var(--text-muted);">#${esc(id)}</span></td>
-                          <td style="font-size:0.78rem;">
-                            ${phone ? `<a href="https://wa.me/${esc(phone.length === 10 ? '91' + phone : phone)}" target="_blank" rel="noopener" style="color:#25D366;">WhatsApp</a> · ${esc(phone)}` : '<span style="color:var(--text-muted);">no phone</span>'}<br>
-                            <span style="color:var(--text-muted); font-size:0.72rem;">${esc(email || 'no email')}</span>
-                          </td>
-                          <td style="font-size:0.76rem; color:var(--text-muted);">${items.length ? esc(items.map(i => `${i.name || i.id} (${i.size || 50}ml)`).join(', ')).slice(0, 90) : '—'}</td>
-                          <td style="color:var(--gold-primary); font-weight:600;">₹${value.toLocaleString('en-IN')}</td>
-                          <td style="font-size:0.72rem; color:var(--text-muted);">${esc(started)}</td>
-                          <td><span class="glass-pill" style="font-size:0.66rem; color:${statusPill}; border-color:${statusPill};">${statusLabel}</span>
-                            ${o.recoveryNote ? `<div style="font-size:0.68rem; color:var(--text-muted); margin-top:4px;">${esc(o.recoveryNote).slice(0, 60)}</div>` : ''}
-                          </td>
-                          <td>
-                            <div style="display:flex; gap:4px; flex-wrap:wrap;">
-                              <button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px;" onclick="app.markCheckoutRecovery('${sid}', 'CONTACTED')">Contacted</button>
-                              <button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px; color:#6EE7B7; border-color:#10B981;" onclick="app.markCheckoutRecovery('${sid}', 'RECOVERED')">Recovered</button>
-                              <button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px; color:#FCA5A5; border-color:rgba(239,68,68,0.4);" onclick="app.markCheckoutRecovery('${sid}', 'LOST')">Lost</button>
-                            </div>
-                          </td>
-                        </tr>`;
-                    }).join('')}
+${(() => {
+                      const buckets = [
+                        { label: 'Last 24 hours', min: 0, max: 24 },
+                        { label: '1-3 days', min: 24, max: 72 },
+                        { label: '3-7 days', min: 72, max: 168 },
+                        { label: 'Older than 7 days', min: 168, max: Infinity }
+                      ];
+                      const aged = abandonedCheckouts
+                        .map((o) => ({ o, hours: (nowMs - draftStartedMs(o)) / 3600000 }))
+                        .sort((a, b) => a.hours - b.hours);
+
+                      return buckets.map((bucket) => {
+                        const rows = aged.filter((x) => x.hours >= bucket.min && x.hours < bucket.max);
+                        if (!rows.length) return '';
+                        return `
+                          <tr>
+                            <td colspan="7" style="background:rgba(212,175,55,0.07); color:var(--gold-light); font-size:0.68rem; letter-spacing:0.10em; text-transform:uppercase; padding:0.5rem 0.6rem; border-bottom:1px solid rgba(212,175,55,0.2);">
+                              ${bucket.label} &middot; ${rows.length} checkout(s)
+                            </td>
+                          </tr>
+                          ${rows.map(({ o }) => {
+                            const id = o.orderId || o.id || '';
+                            const sid = safeId(id);
+                            const cust = o.customer || {};
+                            const name = o.customerName || cust.name || 'Guest';
+                            const phone = String(o.customerPhone || cust.phone || '').replace(/[^0-9]/g, '');
+                            const email = o.userEmail || cust.email || '';
+                            const items = Array.isArray(o.items) ? o.items : [];
+                            const value = Number(o.verifiedTotal || o.total || 0);
+                            const started = draftStartedMs(o) ? new Date(draftStartedMs(o)).toLocaleString('en-IN') : 'unknown';
+                            const status = String(o.recoveryStatus || '').toUpperCase();
+                            const statusPill = status === 'RECOVERED' ? '#10B981' : status === 'CONTACTED' ? '#FCD34D' : status === 'LOST' ? '#FCA5A5' : '#9AA39D';
+                            const statusLabel = status === 'RECOVERED' ? 'Recovered' : status === 'CONTACTED' ? 'Contacted' : status === 'LOST' ? 'Lost' : 'Not contacted';
+                            const recoveryCode = o.recoveryCode || '';
+                            return `
+                              <tr>
+                                <td><strong style="color:var(--gold-light);">${esc(name)}</strong><br><span style="font-size:0.7rem; color:var(--text-muted);">#${esc(id)}</span></td>
+                                <td style="font-size:0.78rem;">
+                                  ${phone ? `<a href="https://wa.me/${esc(phone.length === 10 ? '91' + phone : phone)}" target="_blank" rel="noopener" style="color:#25D366;">WhatsApp</a> · ${esc(phone)}` : '<span style="color:var(--text-muted);">no phone</span>'}<br>
+                                  <span style="color:var(--text-muted); font-size:0.72rem;">${esc(email || 'no email')}</span>
+                                </td>
+                                <td style="font-size:0.76rem; color:var(--text-muted);">${items.length ? esc(items.map(i => `${i.name || i.id} (${i.size || 50}ml)`).join(', ')).slice(0, 90) : '&mdash;'}</td>
+                                <td style="color:var(--gold-primary); font-weight:600;">₹${value.toLocaleString('en-IN')}</td>
+                                <td style="font-size:0.72rem; color:var(--text-muted);">${esc(started)}</td>
+                                <td>
+                                  <span class="glass-pill" style="font-size:0.66rem; color:${statusPill}; border-color:${statusPill};">${statusLabel}</span>
+                                  ${o.recoveryNote ? `<div style="font-size:0.68rem; color:var(--text-muted); margin-top:4px; max-width:220px;">${esc(o.recoveryNote)}</div>` : ''}
+                                  ${recoveryCode ? `<div style="font-size:0.66rem; margin-top:4px; color:var(--gold-light); font-family:monospace;">${esc(recoveryCode)}</div>` : ''}
+                                </td>
+                                <td>
+                                  <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                                    <button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px;" onclick="app.markCheckoutRecovery('${sid}', 'CONTACTED')">Contacted</button>
+                                    <button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px; color:#6EE7B7; border-color:#10B981;" onclick="app.markCheckoutRecovery('${sid}', 'RECOVERED')">Recovered</button>
+                                    <button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px; color:#FCA5A5; border-color:rgba(239,68,68,0.4);" onclick="app.markCheckoutRecovery('${sid}', 'LOST')">Lost</button>
+                                    <button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px;" onclick="app.addRecoveryNote('${sid}')">Note</button>
+                                    ${recoveryCode
+                                      ? `<button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px; color:var(--gold-light);" onclick="navigator.clipboard.writeText('${safeId(recoveryCode)}'); app.showToast('Recovery code copied');">Copy code</button>`
+                                      : `<button class="btn btn-gold" style="font-size:0.62rem; padding:2px 6px;" onclick="app.issueRecoveryCode('${sid}')">Issue Rs500 code</button>`}
+                                  </div>
+                                </td>
+                              </tr>`;
+                          }).join('')}
+                        `;
+                      }).join('');
+                    })()}
                   </tbody>
                 </table>
               </div>

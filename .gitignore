@@ -30,3 +30,8 @@ android/app/src/main/assets/public/
 android/app/build/
 *.apk
 *.aab
+# Firebase service account keys - NEVER commit
+*adminsdk*.json
+*service-account*.json
+*serviceAccount*.json
+backups/
