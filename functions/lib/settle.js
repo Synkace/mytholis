@@ -254,7 +254,86 @@ export async function settlePaidOrder({ orderId, paymentId = null, source = 'ver
      one) and is idempotent, so a webhook retry cannot send it twice. */
   if (settled && settled.ok && !settled.idempotent) {
     sendOrderConfirmation(orderRef.id).catch(() => {});
+    creditReferral(orderRef).catch(() => {});
   }
 
   return settled;
+}
+
+/**
+ * Circle of Legends referral credit.
+ *
+ * When a referred collector's order is paid for the FIRST time, the inviter
+ * receives 500 Mythos: 300 Spendable + 200 Legacy. Awarded exactly once per
+ * referred account (guarded by `referralRewarded` on the buyer), and never for
+ * self-referral.
+ */
+async function creditReferral(orderRef) {
+  try {
+    const orderSnap = await orderRef.get();
+    if (!orderSnap.exists) return;
+    const order = orderSnap.data() || {};
+    if (order.referralCredited) return;
+
+    const buyerUid = order.userId || order.uid;
+    if (!buyerUid || String(buyerUid).startsWith('guest')) return;
+
+    const buyerRef = adminDb.collection('users').doc(buyerUid);
+    const buyerSnap = await buyerRef.get();
+    if (!buyerSnap.exists) return;
+    const buyer = buyerSnap.data() || {};
+    if (buyer.referralRewarded === true) return;
+
+    const code = String(buyer.referredBy || order.referredBy || '').trim().toUpperCase();
+    if (!code.startsWith('MYTH-')) return;
+
+    let match = await adminDb.collection('users').where('referralCode', '==', code).limit(1).get();
+    if (match.empty) match = await adminDb.collection('users').where('profile.referralCode', '==', code).limit(1).get();
+    if (match.empty) {
+      console.warn(`[Referral] ${code} did not resolve to a collector`);
+      return;
+    }
+    const referrerUid = match.docs[0].id;
+    if (referrerUid === buyerUid) return;
+
+    await adminDb.runTransaction(async (tx) => {
+      const freshOrder = await tx.get(orderRef);
+      if (!freshOrder.exists || freshOrder.data().referralCredited) return;
+      const freshBuyer = await tx.get(buyerRef);
+      if (!freshBuyer.exists || freshBuyer.data().referralRewarded === true) return;
+
+      const referrerRef = adminDb.collection('users').doc(referrerUid);
+      const referrerSnap = await tx.get(referrerRef);
+      if (!referrerSnap.exists) return;
+      const l = referrerSnap.data().loyalty || {};
+
+      const buyerName = String(freshBuyer.data()?.profile?.name || 'A collector').slice(0, 60);
+
+      tx.set(referrerRef, {
+        loyalty: {
+          ...l,
+          spendable_mythos: (Number(l.spendable_mythos) || 0) + 300,
+          legacy_mythos: (Number(l.legacy_mythos) || 0) + 200,
+          referral_credits: (Number(l.referral_credits) || 0) + 1
+        },
+        /* Queued for the inviter's next visit. The client acknowledges it by
+           stamping referralNoticesSeenAt, so the toast shows exactly once. */
+        referralNotices: FieldValue.arrayUnion({
+          guest: buyerName,
+          spendable: 300,
+          legacy: 200,
+          at: new Date().toISOString()
+        }),
+        referralNoticesAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+
+      tx.set(buyerRef, { referralRewarded: true, referralRewardedAt: new Date().toISOString() }, { merge: true });
+      tx.set(orderRef, { referralCredited: true, referralCode: code, referralCreditedAt: new Date().toISOString() }, { merge: true });
+    });
+
+    console.log(`[Referral] Credited ${referrerUid} (+300 spendable, +200 legacy) for ${buyerUid}`);
+  } catch (err) {
+    console.warn('[Referral] credit note:', err.message);
+  }
 }

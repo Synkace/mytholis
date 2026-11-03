@@ -50,6 +50,7 @@ service cloud.firestore {
         'address', 'pincode', 'city', 'state',
         'emailCanonical', 'phoneCanonical', 'addressKey', 'emails', 'linkedUids',
         'profile',
+        'referralCode', 'referredBy', 'referralNoticesSeenAt',
         'updatedAt', 'lastLoginAt',
         'signup_bonus_popup_seen', 'isMergedDuplicate', 'activeDocUid'
       ];

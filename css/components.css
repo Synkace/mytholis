@@ -7031,8 +7031,17 @@ body.admin-view-active .view-section,
   color: var(--gold-light) !important;
 }
 
-
-
-
-
-
+/* Referral share pill beside the hero CTA */
+.hero-share-pill {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.55rem 1rem; margin-left: 0.55rem; border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  background: rgba(212, 175, 55, 0.08);
+  color: var(--gold-light, #F0DFA0);
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-size: 0.72rem; letter-spacing: 0.10em; text-transform: uppercase;
+  cursor: pointer; transition: background 0.25s ease, transform 0.2s ease, border-color 0.25s ease;
+}
+.hero-share-pill:hover { background: rgba(212, 175, 55, 0.18); border-color: var(--gold-primary, #D4AF37); transform: translateY(-1px); }
+.hero-share-pill:active { transform: translateY(0); }
+@media (max-width: 640px) { .hero-share-pill { margin-left: 0.4rem; padding: 0.5rem 0.75rem; font-size: 0.66rem; } }

@@ -136,6 +136,12 @@ export class FirebaseService {
       if (user) {
         console.log("[Mytholis Firebase] Client authenticated:", user.email || user.phoneNumber || user.uid);
         await this.syncUserDataOnLogin(user);
+        /* localStorage is only a cache. Reconcile it with the server on every
+           sign-in so a stale ledger can never be presented as real money. */
+        if (typeof this.refreshLoyaltyFromServer === 'function') {
+          this.refreshLoyaltyFromServer(2, 800).catch(() => {});
+          this.checkReferralNotices().catch(() => {});
+        }
         if (this.app) {
           this.app.updateNavAuth();
           if (this.store && (this.store.currentView === 'admin' || this.store.currentView === 'sanctum-command' || this.store.currentView === 'profile')) {
@@ -1348,6 +1354,37 @@ export class FirebaseService {
     }
   }
 
+  /**
+   * Show any unacknowledged referral credits, once.
+   * The server pushes a notice onto `referralNotices` when an invitation
+   * converts; this compares its timestamp with `referralNoticesSeenAt`.
+   */
+  async checkReferralNotices() {
+    if (!this.currentUser) return;
+    try {
+      const ref = doc(db, 'users', this.currentUser.uid);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) return;
+
+      const data = snap.data() || {};
+      const notices = Array.isArray(data.referralNotices) ? data.referralNotices : [];
+      const latest = data.referralNoticesAt || null;
+      const seen = data.referralNoticesSeenAt || null;
+      if (!latest || (seen && seen >= latest)) return;
+
+      const newest = notices[notices.length - 1] || {};
+      const guest = newest.guest || 'A collector';
+      const msg = `${guest} joined through your invitation. +${newest.spendable || 300} Spendable and +${newest.legacy || 200} Legacy Mythos credited.`;
+
+      if (typeof window !== 'undefined' && window.app && typeof window.app.showToast === 'function') {
+        window.app.showToast(msg);
+      }
+
+      await setDoc(ref, { referralNoticesSeenAt: latest }, { merge: true });
+    } catch (err) {
+      console.warn('[Mytholis Firebase] Referral notice note:', err.message);
+    }
+  }
   /** Read the saved address book, most recently used first. */
   async getSavedAddresses() {
     if (!this.currentUser) return [];

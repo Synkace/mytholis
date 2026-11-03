@@ -308,6 +308,18 @@ const Components = {
               </svg>
             </span>
           </button>
+
+          <!-- Referral share: opens the native share sheet where available -->
+          <button type="button" class="hero-share-pill" onclick="app.shareReferral()" title="Share your invitation and earn Mythos" aria-label="Share your referral link">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line>
+              <line x1="15.4" y1="6.5" x2="8.6" y2="10.5"></line>
+            </svg>
+            <span>Invite</span>
+          </button>
           <div class="subline-text" id="heroSublineText">
             <span id="heroSublineName">Oud Rion Extrait</span> · <span>40% Pure Concentration</span> · <span>Hand-Distilled in Mayfair &amp; Ahmedabad</span>
           </div>
@@ -2423,8 +2435,8 @@ const Components = {
     const referralCode = store.getUserReferralCode();
     const referralLink = store.getUserReferralLink();
     const loyalty = store.loyalty || {};
-    const referralsCount = loyalty.referrals_count || 0;
-    const earnedMythos = loyalty.referrals_earned_mythos || (referralsCount * 250);
+    const referralsCount = Number(loyalty.referral_credits || loyalty.referrals_count || 0);
+    const earnedMythos = Number(loyalty.referrals_earned_mythos || (referralsCount * 500));
 
     return `
       <div class="referral-panel-card liquid-glass-card" style="border: 1px solid rgba(212, 175, 55, 0.35); padding: ${isModal ? '1.25rem' : '2rem'}; margin-bottom: 2rem; position: relative; overflow: hidden; background: radial-gradient(circle at 10% 20%, rgba(212, 175, 55, 0.12) 0%, rgba(4, 24, 18, 0.7) 100%);">
@@ -2542,9 +2554,14 @@ const Components = {
             <div style="font-size: 1.35rem; font-weight: 700; color: #10B981; font-family: var(--font-serif-title);">₹500 Off</div>
           </div>
           <div style="padding: 0.8rem; border-radius: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(212, 175, 55, 0.15); text-align: center;">
-            <div style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase;">Tier Elevate</div>
-            <div style="font-size: 1.35rem; font-weight: 700; color: var(--gold-light); font-family: var(--font-serif-title);">+150 M</div>
+            <div style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase;">Per Invitation</div>
+            <div style="font-size: 1.35rem; font-weight: 700; color: var(--gold-light); font-family: var(--font-serif-title);">+500 M</div>
           </div>
+        </div>
+
+        <div style="margin: -0.6rem 0 1.4rem; font-size: 0.74rem; color: var(--text-muted); text-align: center;">
+          Every verified invitation earns you <strong style="color: var(--gold-light);">+300 Spendable</strong> and
+          <strong style="color: var(--gold-light);">+200 Legacy</strong> Mythos, credited when your guest's first order is paid.
         </div>
 
         <!-- 3-Step Protocol Walkthrough -->
