@@ -2329,6 +2329,15 @@ ${(() => {
                 Referral Code: <strong style="color: var(--gold-light);">${prof.referralCode || patron.referralCode || 'None generated'}</strong>
               </div>
             </div>
+
+            <!-- Points Ledger: auditable history of every Mythos movement -->
+            <div class="sovereign-subpanel" style="margin-top: 1rem;">
+              <div class="sovereign-subpanel-title" style="color: var(--gold-light); display: flex; justify-content: space-between; align-items: center;">
+                <span>Points Ledger</span>
+                <span class="glass-pill" style="font-size: 0.62rem;">Audit trail</span>
+              </div>
+              <div id="patron-ledger-slot" style="font-size: 0.76rem; color: var(--text-muted);">Loading points history...</div>
+            </div>
           </div>
 
           <!-- Consignments / Orders History Ledger -->

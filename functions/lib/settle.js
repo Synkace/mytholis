@@ -1,6 +1,7 @@
 import { FieldValue } from 'firebase-admin/firestore';
 import { adminDb } from '../handlers/_firebaseAdmin.js';
 import { sendOrderConfirmation } from './mailer.js';
+import { earnRate, tierFor, writeLedgerEntry } from './loyalty.js';
 
 /**
  * Single source of truth for "this order is paid".
@@ -114,14 +115,16 @@ export async function settlePaidOrder({ orderId, paymentId = null, source = 'ver
     const uid = order.userId || order.uid || null;
     const items = Array.isArray(order.items) ? order.items : [];
     const { count: fullBottles, bonus: bottleBonus } = bottleTotals(items);
-    const earnedMythos = Number(order.earnedMythos)
-      || Math.round(expectedTotal * 0.03);
+    // Tier multiplier is resolved at payment time, not at checkout, because the
+    // collector's tier can change between the two.
+    const earnedMythos = Math.round(expectedTotal * earnRate(preLoyalty.legacy_mythos, preLoyalty.full_bottles_purchased, preLoyalty.manual_tier_override));
 
     // ---- pre-read everything the transaction will touch ----
     const userRef = uid && !String(uid).startsWith('guest')
       ? adminDb.collection('users').doc(uid)
       : null;
     const userSnap = userRef ? await tx.get(userRef) : null;
+    const preLoyalty = (userSnap && userSnap.exists ? userSnap.data()?.loyalty : null) || {};
 
     const productRefs = [];
     const productSnaps = [];
@@ -182,14 +185,34 @@ export async function settlePaidOrder({ orderId, paymentId = null, source = 'ver
       const creditEarned = isPartialCod ? 0 : earnedMythos;
       const creditBottles = isPartialCod ? 0 : bottleBonus;
       const creditBottleCount = isPartialCod ? 0 : fullBottles;
+      // Burn the personal voucher that was accepted at checkout.
+      const voucherToBurn = String(order.personalVoucherCode || '').toUpperCase();
+      let nextCodes = Array.isArray(loyalty.active_reward_codes) ? [...loyalty.active_reward_codes] : [];
+      if (voucherToBurn) {
+        nextCodes = nextCodes.map((c) =>
+          String(c?.code || '').toUpperCase() === voucherToBurn
+            ? { ...c, used: true, usedAt: new Date().toISOString(), usedOnOrderId: orderRef.id }
+            : c
+        );
+      }
       const nextSpendable = currentSpendable - redeemed + creditEarned;
+      writeLedgerEntry(tx, {
+        uid,
+        type: isPartialCod ? 'deposit' : 'earn',
+        spendableDelta: creditEarned - redeemed,
+        legacyDelta: creditEarned + creditBottles,
+        balanceAfter: nextSpendable,
+        reason: 'Order ' + (order.orderId || orderRef.id),
+        orderId: orderRef.id
+      });
 
       tx.set(userRef, {
         loyalty: {
           ...loyalty,
           spendable_mythos: nextSpendable,
           legacy_mythos: (Number(loyalty.legacy_mythos) || 0) + creditEarned + creditBottles,
-          full_bottles_purchased: (Number(loyalty.full_bottles_purchased) || 0) + creditBottleCount
+          full_bottles_purchased: (Number(loyalty.full_bottles_purchased) || 0) + creditBottleCount,
+          active_reward_codes: nextCodes
         },
         points: nextSpendable,
         updatedAt: new Date().toISOString()
@@ -327,6 +350,17 @@ async function creditReferral(orderRef) {
         referralNoticesAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }, { merge: true });
+
+      writeLedgerEntry(tx, {
+        uid: referrerUid,
+        type: 'referral',
+        spendableDelta: 300,
+        legacyDelta: 200,
+        balanceAfter: (Number(l.spendable_mythos) || 0) + 300,
+        reason: 'Referral credit for ' + buyerUid,
+        orderId: orderRef.id,
+        actor: 'system'
+      });
 
       tx.set(buyerRef, { referralRewarded: true, referralRewardedAt: new Date().toISOString() }, { merge: true });
       tx.set(orderRef, { referralCredited: true, referralCode: code, referralCreditedAt: new Date().toISOString() }, { merge: true });

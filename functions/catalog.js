@@ -72,11 +72,11 @@ export const SERVER_CATALOG = [
     volumeMl: 100,
     variants: {
       "100ml": { sku: "MYTH-EDP-SP-100", volumeMl: 100, salePrice: 5499, mrp: 6874, stock: 50, mythosReward: 165 },
-      "50ml": { sku: "MYTH-EDP-SP-50", volumeMl: 50, salePrice: 3199, mrp: 3999, stock: 50, mythosReward: 96 }
+      "50ml": { sku: "MYTH-EDP-SP-50", volumeMl: 50, salePrice: 3199, mrp: 2999, stock: 50, mythosReward: 96 }
     },
     sizes: [
       { ml: 100, price: 5499, mrp: 6874, sku: "MYTH-EDP-SP-100", stock: 50 },
-      { ml: 50, price: 3199, mrp: 3999, sku: "MYTH-EDP-SP-50", stock: 50 }
+      { ml: 50, price: 3199, mrp: 2999, sku: "MYTH-EDP-SP-50", stock: 50 }
     ]
   },
   {
@@ -120,15 +120,15 @@ export const SERVER_CATALOG = [
     name: "Sixth Sense (Master Discovery Coffret)",
     sku: "MYTH-SET-6S-48",
     defaultSize: "48ml",
-    price: 3999,
-    salePrice: 3999,
+    price: 2999,
+    salePrice: 2999,
     mrp: 4999,
     volumeMl: 48,
     variants: {
-      "48ml": { sku: "MYTH-SET-6S-48", volumeMl: 48, salePrice: 3999, mrp: 4999, stock: 50, mythosReward: 150 }
+      "48ml": { sku: "MYTH-SET-6S-48", volumeMl: 48, salePrice: 2999, mrp: 4999, stock: 50, mythosReward: 150 }
     },
     sizes: [
-      { ml: 48, price: 3999, mrp: 4999, sku: "MYTH-SET-6S-48", stock: 50 }
+      { ml: 48, price: 2999, mrp: 4999, sku: "MYTH-SET-6S-48", stock: 50 }
     ]
   }
 ];
@@ -143,11 +143,11 @@ export const SERVER_CATALOG = [
  * the browser.
  */
 export const VALID_PROMO_CODES = {
-  'FIRST25': { type: 'percent', value: 25, maxDiscount: 5000, firstOrderOnly: true, excludeProductIds: ['mytholis-discovery-set'] },
+  'FIRST25': { type: 'percent', value: 25, maxDiscount: 5000, firstOrderOnly: true },
   'MYTHOLIS10': { type: 'percent', value: 10, maxDiscount: 5000 },
   'LEGEND10': { type: 'percent', value: 10, minOrder: 1999, maxDiscount: 5000 },
   'VIP500': { type: 'flat', value: 500, maxDiscount: 500, minOrder: 2500 },
-  'ROYAL500': { type: 'flat', value: 500, maxDiscount: 500, minOrder: 3999 },
+  'ROYAL500': { type: 'flat', value: 500, maxDiscount: 500, minOrder: 2999 },
   'MYTH-COFFRET-1000': { type: 'flat', value: 1000, maxDiscount: 1000 }
 };
 
@@ -530,7 +530,6 @@ export function calculateServerOrderTotal(items = [], promoCode = '', paymentMet
       promoRule = {
         ...promoRule,
         firstOrderOnly: true,
-        excludeProductIds: ['mytholis-discovery-set'],
         maxDiscount: Math.min(Number(promoRule.maxDiscount) || 5000, 5000)
       };
     }
@@ -680,3 +679,4 @@ export function calculateServerOrderTotal(items = [], promoCode = '', paymentMet
     validatedItems
   };
 }
+

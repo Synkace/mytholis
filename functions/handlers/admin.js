@@ -1,10 +1,11 @@
 import { randomBytes } from 'node:crypto';
 import { adminAuth, adminDb } from './_firebaseAdmin.js';
 import { requireAdmin } from '../lib/auth.js';
+import { tierFor, tierLabel, writeLedgerEntry } from '../lib/loyalty.js';
 
 // Dual-Key Tier Level Hierarchy matching store.js
 const LOYALTY_TIERS = [
-  { level: 1, name: "The Initiate", minLegacy: 0, minBottles: 0 },
+  { level: 1, name: "The Observer", minLegacy: 0, minBottles: 0 },
   { level: 2, name: "The Curator", minLegacy: 500, minBottles: 1 },
   { level: 3, name: "The Collector", minLegacy: 2500, minBottles: 3 },
   { level: 4, name: "The Archivist", minLegacy: 8000, minBottles: 6 },
@@ -20,7 +21,7 @@ function calculateTier(legacyMythos, fullBottles) {
       return `Level ${tier.level}: ${tier.name}`;
     }
   }
-  return "Level 1: The Initiate";
+  return "Level 1: The Observer";
 }
 
 export default async function handler(req, res) {
@@ -185,7 +186,7 @@ export default async function handler(req, res) {
         }
 
         // Auto-recalculate Dual-Key Tier (Levels 1 to 5)
-        const recalculatedTier = calculateTier(loyalty.legacy_mythos, loyalty.full_bottles_purchased);
+        const recalculatedTier = tierLabel(loyalty.legacy_mythos, loyalty.full_bottles_purchased, loyalty.manual_tier_override);
         const profile = Object.assign({}, userData.profile || {}, {
           tier: recalculatedTier,
           points: loyalty.spendable_mythos
@@ -196,6 +197,18 @@ export default async function handler(req, res) {
           profile,
           updatedAt: new Date().toISOString()
         }, { merge: true });
+
+        await adminDb.collection('loyalty_ledger').add({
+          uid: targetUid,
+          type: 'adjust',
+          spendableDelta: Number(spendableDelta) || 0,
+          legacyDelta: Number(legacyDelta) || 0,
+          balanceAfter: Number(loyalty.spendable_mythos) || 0,
+          reason: 'Admin adjustment',
+          orderId: null,
+          actor: tokenEmail || decodedToken.uid,
+          createdAt: new Date().toISOString()
+        });
 
         return res.status(200).json({
           success: true,
@@ -404,6 +417,60 @@ export default async function handler(req, res) {
 
         console.log(`[Admin] Purged ${deleted} abandoned checkout draft(s) older than ${olderThanDays} days`);
         return res.status(200).json({ success: true, deleted, olderThanDays });
+      }
+      /* Real manual tier override. The client reads loyalty.manual_tier_override,
+         which only the server can write - the old UI wrote profile.tier, a field
+         nothing on the payment path ever read. */
+      case 'SET_TIER_OVERRIDE': {
+        const { targetUid, level = null, note = '' } = payload;
+        if (!targetUid) return res.status(400).json({ error: 'Missing targetUid' });
+
+        const lvl = level === null ? null : Number(level);
+        if (lvl !== null && (!Number.isInteger(lvl) || lvl < 1 || lvl > 5)) {
+          return res.status(400).json({ error: 'level must be 1-5, or null to clear the override' });
+        }
+
+        const userRef = adminDb.collection('users').doc(targetUid);
+        const snap = await userRef.get();
+        if (!snap.exists) return res.status(404).json({ error: 'Collector not found' });
+
+        const loyalty = snap.data()?.loyalty || {};
+        const next = { ...loyalty };
+        if (lvl === null) delete next.manual_tier_override;
+        else next.manual_tier_override = lvl;
+
+        await userRef.set({
+          loyalty: next,
+          profile: {
+            ...(snap.data()?.profile || {}),
+            tier: tierLabel(loyalty.legacy_mythos, loyalty.full_bottles_purchased, lvl)
+          },
+          tierOverrideNote: String(note || '').slice(0, 200),
+          tierOverrideBy: tokenEmail || decodedToken.uid,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+
+        return res.status(200).json({
+          success: true,
+          targetUid,
+          manualTierOverride: lvl,
+          tier: tierLabel(loyalty.legacy_mythos, loyalty.full_bottles_purchased, lvl)
+        });
+      }
+      case 'GET_LOYALTY_LEDGER': {
+        const { targetUid, limit: lim = 25 } = payload;
+        if (!targetUid) return res.status(400).json({ error: 'Missing targetUid' });
+        const take = Math.min(Math.max(Number(lim) || 25, 1), 100);
+        const snap = await adminDb.collection('loyalty_ledger')
+          .where('uid', '==', targetUid)
+          .orderBy('createdAt', 'desc')
+          .limit(take)
+          .get();
+        return res.status(200).json({
+          success: true,
+          targetUid,
+          entries: snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+        });
       }
 
       default:        return res.status(400).json({ error: `Unsupported admin action: ${action}` });

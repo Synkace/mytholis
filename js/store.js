@@ -266,9 +266,8 @@ class MytholisStore {
       metaPixelId: '',
       adminEmails: [],
       promoCodes: [
-        { code: 'FIRST25', discountType: 'percent', value: 25, maxDiscount: 5000, minOrder: 0, active: true, firstOrderOnly: true, excludeProductIds: ['mytholis-discovery-set'] },
         { code: 'LEGEND10', discountType: 'percent', value: 10, minOrder: 1999, active: true },
-        { code: 'ROYAL500', discountType: 'flat', value: 500, minOrder: 3999, active: true }
+        { code: 'ROYAL500', discountType: 'flat', value: 500, minOrder: 2999, active: true }
       ]
     };
     const loadedSettings = this.loadLocalStorage('mytholis_global_settings', defaultGlobalSettings);
@@ -288,7 +287,6 @@ class MytholisStore {
         {
           code: 'FIRST25', discountType: 'percent', value: 25, maxDiscount: 5000,
           minOrder: 0, active: true, firstOrderOnly: true,
-          excludeProductIds: ['mytholis-discovery-set']
         },
         ...this.globalSettings.promoCodes.filter(
           (p) => !['FIRST20', 'WELCOME20'].includes(String(p?.code || '').trim().toUpperCase())
@@ -996,7 +994,7 @@ class MytholisStore {
           error: "The first-order privilege is reserved for a collector's first acquisition."
         };
       }
-      const excluded = new Set((existing.excludeProductIds || ['mytholis-discovery-set']).map(String));
+      const excluded = new Set((existing.excludeProductIds || []).map(String));
       const cartIds = (this.cart || []).map((i) => String(i.id || i.slug || ''));
       if (cartIds.some((id) => excluded.has(id))) {
         return {
@@ -1098,7 +1096,8 @@ class MytholisStore {
 
     // Guardrail: never exceed the cap the server enforces (₹5,000 / 30% of cart).
     const maxRedemptionPct = (this.globalSettings && this.globalSettings.maxMythosRedemptionPct) ? (this.globalSettings.maxMythosRedemptionPct / 100) : 0.30;
-    const maxAllowed = Math.min(Math.floor(subtotal * maxRedemptionPct), 5000);
+    const capRupees = String(reward.code || '').toUpperCase() === 'FIRST25' ? 5000 : 2500;
+    const maxAllowed = Math.min(Math.floor(subtotal * maxRedemptionPct), capRupees);
     return Math.min(calculatedDiscount, maxAllowed);
   }
 
@@ -1148,22 +1147,24 @@ class MytholisStore {
     };
   }
 
-  recordScentReview(scentId, hasMedia = false) {
-    const currentTier = this.getCurrentTier();
-    if (currentTier.level < 2) {
-      return { success: false, error: "Dossier reviews unlock at Level 2: The Curator." };
+  async recordScentReview(scentId, hasMedia = false) {
+    const svc = (typeof window !== 'undefined') ? window.firebaseService : null;
+    const user = svc?.currentUser;
+    if (!user) return { success: false, error: 'Please sign in to record a review.' };
+    try {
+      const token = await user.getIdToken();
+      const resp = await fetch('/api/loyalty/claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ action: 'review', scentId, hasMedia })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) return { success: false, error: data.error || 'Review could not be recorded.' };
+      if (data.loyalty) { this.loyalty = data.loyalty; this.syncUserWithLoyalty(); this.notify(); }
+      return { success: true, points: data.awarded ? data.awarded.spendable : 0, alreadyClaimed: !!data.alreadyClaimed };
+    } catch (_) {
+      return { success: false, error: 'Network error recording the review.' };
     }
-    if (this.loyalty.reviewed_scents.includes(scentId)) {
-      return { success: false, error: "You have already inscribed your review for this extrait." };
-    }
-
-    const pts = hasMedia ? 100 : 50;
-    this.loyalty.spendable_mythos += pts;
-    this.loyalty.reviewed_scents.push(scentId);
-    this.syncUserWithLoyalty();
-    this.notify();
-
-    return { success: true, points: pts };
   }
 }
 
@@ -1191,3 +1192,4 @@ if (typeof module !== 'undefined' && module.exports) {
     CORE_SCENT_IDS
   };
 }
+

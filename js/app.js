@@ -3656,6 +3656,42 @@ class MytholisApp {
       if (btn) { btn.disabled = false; btn.textContent = original; }
     }
   }
+  /** Render the collector's points ledger inside the open dossier. */
+  async loadPatronLedger(uid) {
+    const slot = document.getElementById('patron-ledger-slot');
+    if (!slot || !uid) return;
+    try {
+      const user = (typeof firebaseService !== 'undefined') ? firebaseService.currentUser : null;
+      const idToken = user ? await user.getIdToken().catch(() => null) : null;
+      if (!idToken) { slot.textContent = 'Sign in to view the ledger.'; return; }
+      const resp = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+        body: JSON.stringify({ action: 'GET_LOYALTY_LEDGER', payload: { targetUid: uid, limit: 25 } })
+      });
+      const data = await resp.json().catch(() => ({}));
+      const entries = Array.isArray(data.entries) ? data.entries : [];
+      if (!entries.length) {
+        slot.innerHTML = '<div style="padding:0.6rem 0;">No points activity recorded yet. Entries appear when an order is paid, points are redeemed, or an admin adjusts the balance.</div>';
+        return;
+      }
+      slot.innerHTML = entries.map((e) => {
+        const d = Number(e.spendableDelta) || 0;
+        const l = Number(e.legacyDelta) || 0;
+        const sign = d > 0 ? '+' : '';
+        const when = e.createdAt ? new Date(e.createdAt).toLocaleString('en-IN') : '';
+        const colour = d > 0 ? '#6EE7B7' : (d < 0 ? '#FCA5A5' : '#9AA39D');
+        const reason = String(e.reason || e.type || '');
+        return `<div style="display:flex; justify-content:space-between; gap:0.8rem; padding:0.4rem 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+          <span style="color:var(--text-main);">${esc(reason)}</span>
+          <span style="color:var(--text-muted); font-size:0.7rem;">${esc(when)}</span>
+          <span style="color:${colour}; font-weight:600; white-space:nowrap;">${sign}${d} M / ${l} legacy</span>
+        </div>`;
+      }).join('');
+    } catch (err) {
+      slot.textContent = 'Could not load the points ledger.';
+    }
+  }
   async shareReferralLink() {
     const code = store.getUserReferralCode();
     const link = store.getUserReferralLink();
@@ -5997,6 +6033,8 @@ class MytholisApp {
 
   async openCollectorDossier(uid) {
     if (!uid) return;
+    // Dossier is rendered below; hydrate the points ledger once it is on screen.
+    setTimeout(() => this.loadPatronLedger(uid).catch(() => {}), 250);
     const AdminComponents = await this.getAdminComponents();
     const patron = (this.adminData?.users || []).find(u => u.uid === uid || u.id === uid) ||
                    (this.adminData?.users || []).find(u => (u.profile?.email && u.profile.email.toLowerCase() === uid.toLowerCase()) || (u.email && u.email.toLowerCase() === uid.toLowerCase()));
@@ -6067,7 +6105,16 @@ class MytholisApp {
       }
 
       this.showToast(`Setting collector standing to Level ${tier}...`);
-      const res = await firebaseService.overridePatronTier(uid, tier, bottles);
+      /* The server owns manual_tier_override - a client write to `loyalty` is
+         rejected by the rules, which is why the old button silently did nothing. */
+      const liveUser = (typeof firebaseService !== 'undefined') ? firebaseService.currentUser : null;
+      const idToken = liveUser ? await liveUser.getIdToken().catch(() => null) : null;
+      const apiResp = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+        body: JSON.stringify({ action: 'SET_TIER_OVERRIDE', payload: { targetUid: uid, level: Number(tier), note: 'Admin override' } })
+      });
+      const res = apiResp.ok ? (await apiResp.json().catch(() => ({ success: true }))) : { success: false, error: 'Override rejected by server' };
       if (res.success) {
         this.closeAdminModal();
         this.showToast(`Collector standing updated to Level ${tier}.`);

@@ -206,11 +206,11 @@ const MYTHOLIS_CATALOG = [
     inventory: { stock: 50 },
     variants: {
       "100ml": { sku: "MYTH-EDP-SP-100", volumeMl: 100, salePrice: 5499, mrp: 6874, stock: 50, mythosReward: 165 },
-      "50ml": { sku: "MYTH-EDP-SP-50", volumeMl: 50, salePrice: 3199, mrp: 3999, stock: 50, mythosReward: 96 }
+      "50ml": { sku: "MYTH-EDP-SP-50", volumeMl: 50, salePrice: 3199, mrp: 2999, stock: 50, mythosReward: 96 }
     },
     sizes: [
       { ml: 100, price: 5499, mrp: 6874, sku: "MYTH-EDP-SP-100", stock: 50 },
-      { ml: 50, price: 3199, mrp: 3999, sku: "MYTH-EDP-SP-50", stock: 50 }
+      { ml: 50, price: 3199, mrp: 2999, sku: "MYTH-EDP-SP-50", stock: 50 }
     ],
     rating: 4.9,
     reviewsCount: 128,
@@ -366,22 +366,22 @@ const MYTHOLIS_CATALOG = [
     defaultSize: "48ml",
     volume: 48,
     volumeMl: 48,
-    price: 3999,
-    salePrice: 3999,
+    price: 2999,
+    salePrice: 2999,
     compareAtPrice: 4999,
     mrp: 4999,
     pricing: {
-      salePrice: 3999,
+      salePrice: 2999,
       mrp: 4999,
       currency: "INR"
     },
     stock: 50,
     inventory: { stock: 50 },
     variants: {
-      "48ml": { sku: "MYTH-SET-6S-48", volumeMl: 48, salePrice: 3999, mrp: 4999, stock: 50, mythosReward: 150 }
+      "48ml": { sku: "MYTH-SET-6S-48", volumeMl: 48, salePrice: 2999, mrp: 4999, stock: 50, mythosReward: 150 }
     },
     sizes: [
-      { ml: 48, price: 3999, mrp: 4999, sku: "MYTH-SET-6S-48", stock: 50 }
+      { ml: 48, price: 2999, mrp: 4999, sku: "MYTH-SET-6S-48", stock: 50 }
     ],
     rating: 5.0,
     reviewsCount: 240,

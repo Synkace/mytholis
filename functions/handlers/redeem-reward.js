@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { adminDb } from './_firebaseAdmin.js';
 import { authenticate } from '../lib/auth.js';
+import { writeLedgerEntry } from '../lib/loyalty.js';
 
 /**
  * Server-authoritative Mythos redemption.
@@ -128,6 +129,16 @@ export default async function handler(req, res) {
         },
         updatedAt: now
       }, { merge: true });
+
+      writeLedgerEntry(tx, {
+        uid,
+        type: 'redeem',
+        spendableDelta: -reward.cost,
+        legacyDelta: 0,
+        balanceAfter: spendable - reward.cost,
+        reason: 'Redeemed ' + rewardId,
+        actor: 'collector'
+      });
 
       return {
         status: 200,

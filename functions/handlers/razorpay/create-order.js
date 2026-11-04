@@ -52,6 +52,7 @@ export default async function handler(req, res) {
     let authenticatedEmail = null;
     let serverSpendable = 0;
     let mythosRedeemed = 0;
+    let personalVoucher = null;
 
     const authHeader = req.headers?.authorization || req.headers?.Authorization;
     if (authHeader && authHeader.startsWith('Bearer ') && adminAuth) {
@@ -64,6 +65,17 @@ export default async function handler(req, res) {
         if (userSnap && userSnap.exists) {
           const u = userSnap.data() || {};
           serverSpendable = Number(u.loyalty?.spendable_mythos) || 0;
+
+          /* Redeemed loyalty vouchers live ONLY on the user document, never in
+             vouchers/ or reward_codes/. Without this lookup the server ignored
+             them and the customer was charged full price after spending points. */
+          const wanted = String(promoCode || '').trim().toUpperCase();
+          const codes = Array.isArray(u.loyalty?.active_reward_codes) ? u.loyalty.active_reward_codes : [];
+          if (wanted) {
+            personalVoucher = codes.find((c) =>
+              String(c?.code || '').toUpperCase() === wanted && c?.used !== true
+            ) || null;
+          }
         }
       } catch (_) {
         authenticatedUid = null;
@@ -278,6 +290,7 @@ export default async function handler(req, res) {
       earnedMythos: earnedMythos,
       // Points this order consumes. Debited server-side at settlement.
       mythosRedeemed: mythosRedeemed,
+      personalVoucherCode: personalVoucher ? String(personalVoucher.code).toUpperCase() : null,
       paymentMethod: isPartialCod ? 'Partial COD' : (paymentMethod || 'Razorpay Instant'),
       paymentStatus: 'PENDING',
       /* A draft is a CHECKOUT, not an order. It exists so the server has a

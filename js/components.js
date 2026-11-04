@@ -352,7 +352,7 @@ const Components = {
           </p>
           <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
             <button class="btn btn-gold" onclick="app.openProductView('mytholis-discovery-set')">
-              Order Sixth Sense • ₹3,999
+              Order Sixth Sense • ₹2,999
             </button>
             <button class="btn btn-glass" onclick="app.navigateTo('know-us')">
               Read Our Heritage
@@ -414,65 +414,6 @@ const Components = {
       </section>
 
       <!-- Sixth Sense Spotlight Banner -->
-      <section class="container" style="margin-bottom: 6rem;">
-        <div class="discovery-vault-banner liquid-glass-card">
-          <div class="discovery-banner-content">
-            <span class="glass-pill" style="margin-bottom: 0.8rem;">Sixth Sense Edition</span>
-            <h2 class="font-title gold-shimmer-text" style="font-size: clamp(1.6rem, 3vw, 2.3rem); margin-bottom: 0.8rem;">
-              Sixth Sense
-            </h2>
-            <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">
-              Awaken your sixth sense. Experience all 6 master extrait creations in curated 8ml travel flacons. Includes a complimentary <strong>₹1,000 voucher</strong> redeemable against your first full 50ml flacon.
-            </p>
-            <div class="discovery-banner-perks">
-              <span>6 × 8ml Deluxe Atomizers</span>
-              <span>All 6 Extraits de Parfum</span>
-              <span>Free Pan-India Armored Delivery</span>
-            </div>
-            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
-              <button class="btn btn-glass" onclick="app.addProductToCart('mytholis-discovery-set')">
-                ADD TO CART
-              </button>
-              <button class="btn btn-gold" onclick="app.buyNow('mytholis-discovery-set', event)">
-                BUY NOW • ₹3,999
-              </button>
-            </div>
-          </div>
-          <div class="discovery-banner-visual bottle-pedestal-glow">
-            <div style="position: relative; width: 100%; max-width: 400px; margin: 0 auto;">
-              <img src="assets/product/sixthsense.webp" alt="Sixth Sense Luxury Coffret" loading="lazy" decoding="async" style="max-height: 250px; width: 100%; object-fit: cover; object-position: center 55%; border-radius: 16px; border: 1px solid rgba(212, 175, 55, 0.45); box-shadow: 0 15px 35px rgba(0,0,0,0.85);" />
-              
-              <!-- 6 Scent Archetypes Preview Grid -->
-              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px;">
-                <div style="background: rgba(3, 18, 13, 0.88); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 6px 8px; text-align: center;">
-                  <span style="display: block; font-size: 0.62rem; color: #D4AF37; letter-spacing: 0.1em; text-transform: uppercase;">01 · King Scar</span>
-                  <span style="font-size: 0.58rem; color: #A3B899;">Aromatic Spicy</span>
-                </div>
-                <div style="background: rgba(3, 18, 13, 0.88); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 6px 8px; text-align: center;">
-                  <span style="display: block; font-size: 0.62rem; color: #D4AF37; letter-spacing: 0.1em; text-transform: uppercase;">02 · Petralux</span>
-                  <span style="font-size: 0.58rem; color: #A3B899;">Fruity Amber</span>
-                </div>
-                <div style="background: rgba(3, 18, 13, 0.88); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 6px 8px; text-align: center;">
-                  <span style="display: block; font-size: 0.62rem; color: #D4AF37; letter-spacing: 0.1em; text-transform: uppercase;">03 · Oud Rion</span>
-                  <span style="font-size: 0.58rem; color: #A3B899;">Resinous Oud</span>
-                </div>
-                <div style="background: rgba(3, 18, 13, 0.88); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 6px 8px; text-align: center;">
-                  <span style="display: block; font-size: 0.62rem; color: #D4AF37; letter-spacing: 0.1em; text-transform: uppercase;">04 · Spark</span>
-                  <span style="font-size: 0.58rem; color: #A3B899;">Electric Neroli</span>
-                </div>
-                <div style="background: rgba(3, 18, 13, 0.88); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 6px 8px; text-align: center;">
-                  <span style="display: block; font-size: 0.62rem; color: #D4AF37; letter-spacing: 0.1em; text-transform: uppercase;">05 · Wood Sera</span>
-                  <span style="font-size: 0.58rem; color: #A3B899;">Amber Rose</span>
-                </div>
-                <div style="background: rgba(3, 18, 13, 0.88); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 6px 8px; text-align: center;">
-                  <span style="display: block; font-size: 0.62rem; color: #D4AF37; letter-spacing: 0.1em; text-transform: uppercase;">06 · Ash</span>
-                  <span style="font-size: 0.58rem; color: #A3B899;">Smoky Mineral</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <!-- Featured 3D Masterpieces Section (Hero Cards) -->
       <section class="container hero-cards-section" style="margin-bottom: 7rem;">
@@ -766,7 +707,7 @@ const Components = {
                     Experience this scent alongside all 5 other extraits in <strong>Sixth Sense</strong>. Includes a <strong>₹1,000 voucher</strong> redeemable against your first full 50ml flacon!
                   </p>
                 </div>
-                <div style="font-size: 1.3rem; font-weight: 700; color: var(--gold-primary);">₹3,999</div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: var(--gold-primary);">₹2,999</div>
               </div>
             </div>
 
@@ -1013,7 +954,7 @@ const Components = {
         name: "Sixth Sense",
         subtitle: "Sixth Sense",
         concentration: "Extrait de Parfum (6 × 8ml Deluxe Vials • 40% Concentration)",
-        sizes: [{ ml: 48, price: 3999 }]
+        sizes: [{ ml: 48, price: 2999 }]
       };
     }
 
@@ -1332,7 +1273,7 @@ const Components = {
                   ADD TO CART
                 </button>
                 <button class="btn btn-gold" style="font-size: 0.85rem; padding: 0.8rem 1.4rem; font-weight: 700;" onclick="app.buyNow('${product.id}', event)">
-                  BUY NOW • ₹3,999
+                  BUY NOW • ₹2,999
                 </button>
               </div>
             </div>
@@ -1428,7 +1369,7 @@ const Components = {
             <p class="modal-empty-desc font-garamond" style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">Explore our signature extraits or order Sixth Sense.</p>
             <div style="display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap;">
               <button class="btn btn-gold" onclick="app.closeCartModal(); app.openProductView('mytholis-discovery-set');">
-                Sixth Sense (₹3,999)
+                Sixth Sense (₹2,999)
               </button>
               <button class="btn btn-glass" onclick="app.closeCartModal(); app.navigateTo('collections');">
                 Explore Catalog
@@ -1580,7 +1521,7 @@ const Components = {
 
             <!-- COD Guardrail Notice -->
             <div id="drawer-cod-notice" class="cod-guardrail-box" style="${isCOD ? 'display: block;' : 'display: none;'} margin-top: 0.75rem; padding: 0.65rem 0.85rem; border-radius: 8px; background: rgba(245, 158, 11, 0.12); border: 1px solid #F59E0B; font-size: 0.73rem; color: #FCD34D;">
-              <strong>Partial COD:</strong> Pay 25% now (minimum Rs499) and the balance on delivery. Available for Sixth Sense (₹3,999). For full flacons (50ml/100ml), an automated WhatsApp dispatch confirmation OTP is required, or switch to UPI to save ₹200 instantly.
+              <strong>Partial COD:</strong> Pay 25% now (minimum Rs499) and the balance on delivery. Available for Sixth Sense (₹2,999). For full flacons (50ml/100ml), an automated WhatsApp dispatch confirmation OTP is required, or switch to UPI to save ₹200 instantly.
             </div>
           </div>
 
@@ -1838,21 +1779,6 @@ const Components = {
         `}
       </div>
 
-      <!-- Initiation Hook Banner if not completed -->
-      ${!loyalty.initiation_completed ? `
-        <div class="modal-section-box liquid-glass-card" style="border: 1px solid var(--gold-primary); background: radial-gradient(circle at 10% 50%, rgba(212, 175, 55, 0.15) 0%, rgba(4, 24, 18, 0.6) 100%);">
-          <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
-            <div>
-              <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">Scent Initiate Privilege</span>
-              <h5 style="font-size: 0.95rem; color: var(--gold-light); margin: 0.3rem 0 0.2rem;">Claim Your 150 Mythos Initiation Bounty</h5>
-              <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0;">Register your olfactory signature in the VIP Dossier to unlock +150 Spendable & +100 Legacy Mythos.</p>
-            </div>
-            <button class="btn btn-gold" style="font-size: 0.78rem; padding: 0.45rem 1rem;" onclick="app.completeUserInitiation()">
-              Claim Privilege
-            </button>
-          </div>
-        </div>
-      ` : ''}
 
       <!-- 2. The Pantheon Codex (6-Flacon Grid) -->
       <div class="modal-section-box liquid-glass-card">
@@ -2342,7 +2268,7 @@ const Components = {
               The maximum discount concession permitted through Mythos vouchers on any single order is hard-capped at <strong>30% of the cart subtotal (in base INR) or ₹2,500, whichever is lower</strong>.
             </p>
             <div style="background: rgba(4, 24, 18, 0.5); padding: 0.8rem 1rem; border-radius: 8px; font-size: 0.8rem; color: var(--gold-light);">
-              • On a ₹3,999 Sixth Sense order, the maximum concession allowable is 30% = <strong>₹1,199</strong>.<br/>
+              • On a ₹2,999 Sixth Sense order, the maximum concession allowable is 30% = <strong>₹1,199</strong>.<br/>
               • On a ₹6,999 Oud Rion order, a ₹2,500 voucher is utilized up to the ₹2,099 cap (30%). To utilize the full ₹2,500 voucher in a single order, the cart subtotal must be ₹8,334 or greater.
             </div>
           </div>
@@ -3816,7 +3742,7 @@ const Components = {
 
           <!-- COD Notice / Guardrail (Only allowed for Sixth Sense or requires OTP confirmation) -->
           <div id="cod-guardrail-notice" class="cod-guardrail-box" style="display: none; padding: 0.75rem 1rem; border-radius: 8px; background: rgba(245, 158, 11, 0.12); border: 1px solid #F59E0B; font-size: 0.75rem; color: #FCD34D; margin-bottom: 1rem;">
-            <strong>Partial COD:</strong> Pay 25% now (minimum Rs499) and the balance on delivery. Available for Sixth Sense (₹3,999). For full flacons (50ml/100ml), an automated WhatsApp dispatch confirmation OTP is required, or switch to UPI to save ₹200 instantly.
+            <strong>Partial COD:</strong> Pay 25% now (minimum Rs499) and the balance on delivery. Available for Sixth Sense (₹2,999). For full flacons (50ml/100ml), an automated WhatsApp dispatch confirmation OTP is required, or switch to UPI to save ₹200 instantly.
           </div>
 
           <!-- Gateway Status Notice -->
@@ -4419,6 +4345,8 @@ const Components = {
 
 window.Components = Components;
 window.components = Components;
+
+
 
 
 

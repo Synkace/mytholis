@@ -1,6 +1,7 @@
 import { FieldValue } from 'firebase-admin/firestore';
 import { adminDb } from '../_firebaseAdmin.js';
 import { requireAdmin } from '../../lib/auth.js';
+import { earnRate, writeLedgerEntry } from '../../lib/loyalty.js';
 
 /**
  * Server-authoritative order reward settlement.
@@ -16,11 +17,11 @@ import { requireAdmin } from '../../lib/auth.js';
 const EARN_PCT = 0.03;
 const BOTTLE_BONUS = { 50: 300, 100: 500 };
 
-function calculateRewards(order) {
+function calculateRewards(order, rate = EARN_PCT) {
   const total = Number(order.verifiedTotal ?? order.finalPayable ?? order.total ?? 0) || 0;
   const items = Array.isArray(order.items) ? order.items : [];
 
-  const spendEarned = Math.round(total * EARN_PCT);
+  const spendEarned = Math.round(total * rate);
   let bottleCount = 0;
   let bottleBonus = 0;
 
@@ -82,7 +83,8 @@ export default async function handler(req, res) {
 
       const userData = userSnap.data() || {};
       const loyalty = userData.loyalty || {};
-      const rewards = calculateRewards(order);
+      const rateForOrder = earnRate(loyalty.legacy_mythos, loyalty.full_bottles_purchased, loyalty.manual_tier_override);
+      const rewards = calculateRewards(order, rateForOrder);
 
       tx.set(userRef, {
         loyalty: {
@@ -93,6 +95,16 @@ export default async function handler(req, res) {
         },
         updatedAt: FieldValue.serverTimestamp()
       }, { merge: true });
+
+      writeLedgerEntry(tx, {
+        uid,
+        type: 'earn',
+        spendableDelta: rewards.spendEarned,
+        legacyDelta: rewards.legacyEarned,
+        balanceAfter: (Number(loyalty.spendable_mythos) || 0) + rewards.spendEarned,
+        reason: 'Partial COD balance settled',
+        orderId
+      });
 
       tx.set(orderRef, {
         rewardsCredited: true,
