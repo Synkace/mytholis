@@ -2463,7 +2463,9 @@ class MytholisApp {
       || null;
 
     if (!promoCode && (!store.user?.orders?.length && !store.loyalty?.promo_dismissed)) {
-      promoCode = 'FIRST25';
+      // FIRST25 is only sent when the collector explicitly applies it, so the
+      // cart total and the gateway charge can never disagree.
+      promoCode = null;
     }
 
     const activeMethodPill = (typeof document !== 'undefined') ? document.querySelector('.razorpay-method-pill.active') : null;
@@ -2911,7 +2913,8 @@ class MytholisApp {
       || null;
 
     if (!activePromoCode && (!store.user?.orders?.length && !store.loyalty?.promo_dismissed)) {
-      activePromoCode = 'FIRST25';
+      // Explicit opt-in only - see note above.
+      activePromoCode = null;
     }
 
     const redeemMythos = (store.loyalty && typeof store.loyalty.spendable_mythos === 'number') 
