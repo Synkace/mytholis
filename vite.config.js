@@ -15,6 +15,13 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          /* sanitize.js is used by both the storefront and the founder console.
+             Without an explicit home, Rollup folds it into the lazy admin
+             chunk, which turns that chunk into a static dependency of the entry
+             and pulls the whole console back into the shopper bundle. */
+          if (id.includes('/js/sanitize.js') || id.includes('\\js\\sanitize.js')) {
+            return 'sanitize';
+          }
           if (id.includes('node_modules/firebase')) {
             return 'vendor-firebase';
           }
@@ -24,8 +31,14 @@ export default defineConfig({
           if (id.includes('node_modules/pdf-lib')) {
             return 'vendor-pdf';
           }
-          if (id.includes('adminComponents') || id.includes('labelRebrander')) {
+          /* Founder-only code, split so the storefront never loads it and the
+             console does not drag in the PDF engine. Both are reached through
+             dynamic import() in js/app.js. */
+          if (id.includes('adminComponents')) {
             return 'admin-bundle';
+          }
+          if (id.includes('labelRebrander')) {
+            return 'label-bundle';
           }
         }
       }

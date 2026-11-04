@@ -27,6 +27,11 @@ class MytholisBackground {
     this.time = 0;
     this.isRunning = true;
     this.rafId = null;
+    // A full-screen 60fps canvas is decorative. If the visitor asked for
+    // reduced motion, paint one static frame and stop.
+    this.reducedMotion = window.matchMedia
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : false;
 
     // Pre-render glowing particle sprites to avoid expensive shadowBlur in animation loop
     this.spriteGold = this.createParticleSprite('#D4AF37');
@@ -36,6 +41,24 @@ class MytholisBackground {
     this.initParticles();
     this.bindEvents();
     this.animate();
+    if (this.reducedMotion) {
+      this.isRunning = false;
+    }
+  }
+
+  /* Pause the loop when the canvas is not the focus of the page (e.g. during
+     checkout or inside the account area) and resume when it is. */
+  setActive(active) {
+    if (active) {
+      if (!this.isRunning && !this.reducedMotion && !document.hidden) {
+        this.isRunning = true;
+        this.animate();
+      }
+    } else if (this.isRunning) {
+      this.isRunning = false;
+      if (this.rafId) cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
   }
 
   createParticleSprite(color) {

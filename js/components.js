@@ -2,13 +2,27 @@
    MYTHOLIS LUXURY PERFUME - COMPONENTS RENDERERS
    Generates dynamic HTML markup for views, modals, product cards, quiz, track order, faqs, contact,
    legal policies, and Razorpay/WhatsApp checkout integrations.
+
+   EVERY value that can originate from a customer (profile, address, engraving,
+   order records, query strings) MUST go through esc()/safeId()/safeHref()
+   before it lands in a template literal. Catalog copy is authored content and
+   is the only place markup is intentional.
    ========================================================================== */
+
+import { esc, safeId, safeHref } from './sanitize.js';
 
 const Components = {
   /* Helper to strip HTML tags and quotes from attribute values */
   cleanText(str) {
     if (!str) return '';
     return String(str).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').replace(/"/g, '&quot;').trim();
+  },
+
+  /* Plain-text version of a value that may contain authored markup.
+     Use where the value is rendered as text (not escaped again). */
+  plain(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   },
 
   /* Helper to format item arrays into readable strings (e.g. Petralux (50ml) x 1) */
@@ -28,7 +42,7 @@ const Components = {
     return arr.map(i => {
       if (!i) return '';
       if (typeof i === 'string') return i;
-      const name = i.name || i.title || i.id || 'Mytholis Extrait';
+      const name = this.plain(i.name || i.title || i.id || 'Mytholis Extrait');
       const sizeStr = i.size ? (String(i.size).toLowerCase().includes('ml') ? ` (${i.size})` : ` (${i.size}ml)`) : '';
       const qty = i.quantity || i.qty || 1;
       return `${name}${sizeStr}${qty > 1 ? ' × ' + qty : ''}`;
@@ -310,7 +324,7 @@ const Components = {
           </button>
 
           <!-- Referral share: opens the native share sheet where available -->
-          <button type="button" class="hero-share-pill" onclick="app.shareReferral()" title="Share your invitation and earn Mythos" aria-label="Share your referral link">
+          <button type="button" class="hero-share-pill" onclick="app.shareReferralLink()" title="Share your invitation and earn Mythos" aria-label="Share your referral link">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="18" cy="5" r="3"></circle>
               <circle cx="6" cy="12" r="3"></circle>
@@ -810,8 +824,8 @@ const Components = {
             <div style="margin-top: 0.9rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
               <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Your Orders:</span>
               ${userOrders.map(o => `
-                <button type="button" class="glass-pill" style="font-size: 0.7rem; cursor: pointer; color: var(--gold-light);" onclick="document.getElementById('track-order-input').value = '${o.orderId || o.id}'; app.searchTrackOrder();">
-                  #${o.orderId || o.id}
+                <button type="button" class="glass-pill" style="font-size: 0.7rem; cursor: pointer; color: var(--gold-light);" onclick="document.getElementById('track-order-input').value = '${safeId(o.orderId || o.id)}'; app.searchTrackOrder();">
+                  #${esc(o.orderId || o.id || '')}
                 </button>
               `).join('')}
             </div>
@@ -1360,13 +1374,15 @@ const Components = {
 
     const hasSavedAddress = typeof app !== 'undefined' && app.hasValidSavedAddress ? app.hasValidSavedAddress() : false;
     const savedUser = store.user || {};
-    const savedName = savedUser.name || '';
-    const savedPhone = savedUser.phone || '';
-    const savedAddress = savedUser.address || '';
-    const savedCity = savedUser.city || '';
-    const savedPincode = savedUser.pincode || '';
-    const savedState = savedUser.state || '';
-    const savedEmail = savedUser.email || '';
+    // Customer-supplied profile data: escape once, here, so every later
+    // interpolation (text nodes AND value="" attributes) is safe.
+    const savedName = esc(savedUser.name || '');
+    const savedPhone = esc(savedUser.phone || '');
+    const savedAddress = esc(savedUser.address || '');
+    const savedCity = esc(savedUser.city || '');
+    const savedPincode = esc(savedUser.pincode || '');
+    const savedState = esc(savedUser.state || '');
+    const savedEmail = esc(savedUser.email || '');
 
     return `
       <div class="modal-header">
@@ -1415,7 +1431,7 @@ const Components = {
                   <div class="modal-product-item-top">
                     <div class="modal-item-info-col">
                       <h5 class="modal-product-item-name">${item.name}</h5>
-                      <p class="modal-product-item-meta">${item.size}ml ${item.engraving ? `• "${item.engraving}"` : ''}</p>
+                      <p class="modal-product-item-meta">${item.size}ml ${item.engraving ? `• "${esc(item.engraving)}"` : ''}</p>
                     </div>
                     <button class="modal-remove-item-btn" onclick="store.removeFromCart(${idx})" title="Remove item from bag">
                       ✕
@@ -1473,11 +1489,11 @@ const Components = {
               <div class="applied-voucher-banner" style="background: rgba(212, 175, 55, 0.12); border: 1px solid var(--gold-primary); padding: 0.6rem 0.75rem; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem;">
                 <div>
                   <div style="display: flex; align-items: center; gap: 0.4rem;">
-                    <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">${appliedReward.code}</span>
-                    <strong style="color: var(--gold-light); font-size: 0.82rem;">${appliedReward.title}</strong>
+                    <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">${esc(appliedReward.code)}</span>
+                    <strong style="color: var(--gold-light); font-size: 0.82rem;">${esc(appliedReward.title)}</strong>
                   </div>
                   <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">
-                    ${appliedReward.type === 'discount' 
+                    ${['discount', 'percent', 'flat'].includes(appliedReward.type)
                       ? `Concession applied: -${store.formatPrice(promoDiscount)}` 
                       : `Complimentary Vault Gift: ${appliedGift ? appliedGift.name : 'Exclusive Flacon'} attached`
                     }
@@ -1499,8 +1515,8 @@ const Components = {
               <div style="display: flex; gap: 0.35rem; flex-wrap: wrap; align-items: center; margin-top: 0.4rem;">
                 <span style="font-size: 0.68rem; color: var(--text-muted);">Quick apply:</span>
                 ${unusedCodes.slice(0, 3).map(c => `
-                  <button class="glass-pill" style="font-size: 0.64rem; cursor: pointer; padding: 0.2rem 0.5rem;" onclick="app.applyCartRewardCode('${c.code}')">
-                    ${c.code} (${c.type === 'discount' ? `₹${c.amount}` : 'Gift'})
+                  <button class="glass-pill" style="font-size: 0.64rem; cursor: pointer; padding: 0.2rem 0.5rem;" onclick="app.applyCartRewardCode('${safeId(c.code)}')">
+                    ${esc(c.code)} (${c.type === 'discount' ? `₹${esc(c.amount)}` : 'Gift'})
                   </button>
                 `).join('')}
               </div>
@@ -1521,7 +1537,7 @@ const Components = {
                 Select Payment Mode
               </h5>
               <span id="drawer-discount-badge" class="glass-pill" style="font-size: 0.65rem; color: #10B981; border-color: #10B981;">
-                ${promoDiscount > 0 ? `✦ 25% Privilege Active (${appliedReward ? appliedReward.code : 'FIRST25'})` : (rawSubtotal >= 2000 ? 'Save ₹200 via Prepaid UPI' : 'Complimentary Armored Delivery')}
+                ${promoDiscount > 0 ? `✦ ${esc(appliedReward ? appliedReward.code : 'FIRST25')} applied` : (rawSubtotal >= 2000 ? 'Save ₹200 via Prepaid UPI' : 'Complimentary Armored Delivery')}
               </span>
             </div>
 
@@ -1624,7 +1640,7 @@ const Components = {
             ` : ''}
             ${promoDiscount > 0 ? `
               <div class="modal-concession-line" style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--gold-light); margin-bottom: 0.25rem;">
-                <span>Concession (${appliedReward ? appliedReward.code : 'FIRST25'} - 25%)</span>
+                <span>Concession (${esc(appliedReward ? appliedReward.code : 'FIRST25')})</span>
                 <span>-${store.formatPrice(promoDiscount)}</span>
               </div>
             ` : (upiDiscount > 0 ? `
@@ -1908,17 +1924,17 @@ const Components = {
             <div class="active-codes-grid">
               ${unusedCodes.map(c => `
                 <div class="active-code-card">
-                  <div class="active-code-tag">${c.code}</div>
-                  <div style="font-size: 0.85rem; color: var(--gold-light); font-weight: 600;">${c.title}</div>
+                  <div class="active-code-tag">${esc(c.code)}</div>
+                  <div style="font-size: 0.85rem; color: var(--gold-light); font-weight: 600;">${esc(c.title)}</div>
                   <div style="font-size: 0.74rem; color: var(--text-muted);">
-                    ${c.type === 'discount' ? `₹${c.amount} Concession (Min order ₹${(c.minOrder || 0).toLocaleString()})` : 'Complimentary Vault Gift'}
+                    ${c.type === 'discount' ? `₹${esc(c.amount)} Concession (Min order ₹${esc((c.minOrder || 0).toLocaleString())})` : 'Complimentary Vault Gift'}
                   </div>
                   <div style="display: flex; gap: 0.4rem; margin-top: 0.2rem;">
                     <button class="btn btn-gold" style="flex: 1; font-size: 0.72rem; padding: 0.4rem;"
-                            onclick="${isModal ? 'app.closeProfileModal();' : ''} app.openCartModal(); app.applyCartRewardCode('${c.code}');">
+                            onclick="${isModal ? 'app.closeProfileModal();' : ''} app.openCartModal(); app.applyCartRewardCode('${safeId(c.code)}');">
                       Apply to Cart
                     </button>
-                    <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.4rem 0.6rem;" onclick="app.copyRewardCode('${c.code}')">
+                    <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.4rem 0.6rem;" onclick="app.copyRewardCode('${safeId(c.code)}')">
                       Copy
                     </button>
                   </div>
@@ -2477,7 +2493,7 @@ const Components = {
             </span>
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; background: rgba(0,0,0,0.4); padding: 0.55rem 0.85rem; border-radius: 8px; border: 1px dashed rgba(212, 175, 55, 0.4);">
               <span id="patron-referral-code-display" style="font-family: monospace; font-size: 1.15rem; font-weight: 700; color: var(--gold-light); letter-spacing: 0.08em;">
-                ${referralCode}
+                ${esc(referralCode)}
               </span>
               <button type="button" class="btn btn-gold" style="font-size: 0.72rem; padding: 0.35rem 0.75rem;" onclick="app.copyReferralCode()">
                 Copy Key
@@ -2494,7 +2510,7 @@ const Components = {
               Direct Invitation URL
             </span>
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; background: rgba(0,0,0,0.4); padding: 0.45rem 0.65rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.2);">
-              <input type="text" readonly id="patron-referral-link-input" value="${referralLink}" style="background: none; border: none; color: var(--text-muted); font-size: 0.76rem; width: 100%; outline: none; font-family: monospace;" onclick="this.select()" />
+              <input type="text" readonly id="patron-referral-link-input" value="${esc(referralLink)}" style="background: none; border: none; color: var(--text-muted); font-size: 0.76rem; width: 100%; outline: none; font-family: monospace;" onclick="this.select()" />
               <button type="button" class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.75rem; white-space: nowrap;" onclick="app.copyReferralLink()">
                 Copy Link
               </button>
@@ -2861,7 +2877,7 @@ const Components = {
                       <span>🇮🇳</span>
                       <span>+91</span>
                     </div>
-                    <input type="tel" id="auth-phone-input" class="engraving-input" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric" pattern="[0-9]*" style="border: none; border-radius: 0; background: transparent; flex: 1; padding: 0.75rem 0.7rem; font-size: 0.95rem;" value="${(typeof app !== 'undefined' && app.phoneAuthNumber) || ''}" required autofocus />
+                    <input type="tel" id="auth-phone-input" class="engraving-input" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric" pattern="[0-9]*" style="border: none; border-radius: 0; background: transparent; flex: 1; padding: 0.75rem 0.7rem; font-size: 0.95rem;" value="${esc((typeof app !== 'undefined' && app.phoneAuthNumber) || '')}" required autofocus />
                   </div>
                 </div>
 
@@ -2971,8 +2987,12 @@ const Components = {
     const displayName = u.name || (fbUser && fbUser.displayName) || 'Mytholis Collector';
     const email = (fbUser && fbUser.email) || u.email || '';
     const photoURL = u.photoURL || (fbUser && fbUser.photoURL) || null;
-    const initial = displayName.charAt(0).toUpperCase() || 'M';
+    const initial = esc(displayName.charAt(0).toUpperCase() || 'M');
     const currentTier = store.getCurrentTier();
+    // Customer-controlled presentation values (name, email, avatar, address).
+    const safeName = esc(displayName);
+    const safeEmail = esc(email);
+    const safePhoto = safeHref(photoURL);
 
     return `
       <div class="container" style="padding-top: 2rem; padding-bottom: 5rem; max-width: 960px;">
@@ -2980,8 +3000,8 @@ const Components = {
         <div class="profile-header-card liquid-glass-card" style="margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;">
           <div style="display: flex; align-items: center; gap: 1.2rem;">
             <div class="vip-badge-icon" style="width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(212, 175, 55, 0.15); border: 1.5px solid var(--gold-primary); font-family: var(--font-serif-title); font-size: 1.4rem; color: var(--gold-light); position: relative; overflow: visible;">
-              ${photoURL ? `
-                <img src="${photoURL}" alt="${displayName}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />
+              ${safePhoto ? `
+                <img src="${safePhoto}" alt="${safeName}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />
               ` : initial}
               <label for="patron-page-avatar-upload" class="avatar-camera-btn" title="Upload Collector Portrait">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
@@ -2990,14 +3010,14 @@ const Components = {
             </div>
             <div>
               <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
-                <h2 class="profile-welcome-title" style="margin: 0; font-size: clamp(1.4rem, 2.8vw, 2rem);">${displayName}</h2>
+                <h2 class="profile-welcome-title" style="margin: 0; font-size: clamp(1.4rem, 2.8vw, 2rem);">${safeName}</h2>
                 <button type="button" class="btn-edit-inline-name" onclick="app.promptEditPatronName()" title="Edit Collector Name / Title" style="background: rgba(212, 175, 55, 0.12); border: 1px solid rgba(212, 175, 55, 0.4); color: var(--gold-primary); cursor: pointer; font-size: 0.8rem; padding: 0.22rem 0.55rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.35rem; transition: all 0.2s;">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                   <span>Edit Name</span>
                 </button>
                 <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-light);">${currentTier.name}</span>
               </div>
-              <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">${email} • Circle of Legends Collector</p>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">${safeEmail} • Circle of Legends Collector</p>
             </div>
           </div>
           <div style="display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center;">
@@ -3052,31 +3072,31 @@ const Components = {
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
               <div>
                 <label style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.4rem;">Full Name</label>
-                <input type="text" id="profile-edit-name" class="engraving-input" value="${displayName}" required />
+                <input type="text" id="profile-edit-name" class="engraving-input" value="${safeName}" required />
               </div>
               <div>
                 <label style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.4rem;">Mobile / WhatsApp</label>
-                <input type="tel" id="profile-edit-phone" class="engraving-input" value="${u.phone || ''}" placeholder="+91 98765 43210" />
+                <input type="tel" id="profile-edit-phone" class="engraving-input" value="${esc(u.phone || '')}" placeholder="+91 98765 43210" />
               </div>
             </div>
 
             <div style="margin-bottom: 1rem;">
               <label style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.4rem;">Delivery Address (Flat / House / Street / Landmark)</label>
-              <input type="text" id="profile-edit-address" class="engraving-input" value="${u.address || ''}" placeholder="e.g. Villa 42, The Sovereign Palms, DLF Phase 5" />
+              <input type="text" id="profile-edit-address" class="engraving-input" value="${esc(u.address || '')}" placeholder="e.g. Villa 42, The Sovereign Palms, DLF Phase 5" />
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.8rem; margin-bottom: 1.5rem;">
               <div>
                 <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.35rem;">City</label>
-                <input type="text" id="profile-edit-city" class="engraving-input" value="${u.city || ''}" placeholder="e.g. Gurgaon" />
+                <input type="text" id="profile-edit-city" class="engraving-input" value="${esc(u.city || '')}" placeholder="e.g. Gurgaon" />
               </div>
               <div>
                 <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.35rem;">State</label>
-                <input type="text" id="profile-edit-state" class="engraving-input" value="${u.state || ''}" placeholder="e.g. Haryana" />
+                <input type="text" id="profile-edit-state" class="engraving-input" value="${esc(u.state || '')}" placeholder="e.g. Haryana" />
               </div>
               <div>
                 <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.35rem;">PIN Code</label>
-                <input type="text" id="profile-edit-pincode" class="engraving-input" value="${u.pincode || ''}" placeholder="e.g. 122002" />
+                <input type="text" id="profile-edit-pincode" class="engraving-input" value="${esc(u.pincode || '')}" placeholder="e.g. 122002" />
               </div>
             </div>
 
@@ -3114,15 +3134,15 @@ const Components = {
                 <tbody>
                   ${u.orders.map(o => `
                     <tr>
-                      <td style="font-family: var(--font-serif-title); color: var(--gold-light); font-weight: 600;">${o.orderId || o.id}</td>
-                      <td>${o.date || new Date().toLocaleDateString()}</td>
-                      <td>${this.formatOrderItemsSummary(o.items)}</td>
+                      <td style="font-family: var(--font-serif-title); color: var(--gold-light); font-weight: 600;">${esc(o.orderId || o.id || '')}</td>
+                      <td>${esc(o.date || new Date().toLocaleDateString())}</td>
+                      <td>${esc(this.formatOrderItemsSummary(o.items))}</td>
                       <td class="gold-text" style="font-weight: 700;">${store.formatPrice(o.total)}</td>
-                      <td><span class="glass-pill" style="font-size: 0.7rem; color: #10B981;">${o.status || 'Processing'}</span></td>
+                      <td><span class="glass-pill" style="font-size: 0.7rem; color: #10B981;">${esc(o.status || 'Processing')}</span></td>
                       <td>
                         ${o.tracking ? `
-                          <button class="btn btn-glass btn-compact" style="font-size: 0.7rem;" onclick="app.navigateTo('track-order'); document.getElementById('track-order-input').value = '${o.id}'; app.searchTrackOrder();">
-                            ${o.tracking}
+                          <button class="btn btn-glass btn-compact" style="font-size: 0.7rem;" onclick="app.navigateTo('track-order'); document.getElementById('track-order-input').value = '${safeId(o.id || o.orderId)}'; app.searchTrackOrder();">
+                            ${esc(o.tracking)}
                           </button>
                         ` : '<span style="color: var(--text-muted); font-size: 0.75rem;">Armored Prep</span>'}
                       </td>
@@ -3151,7 +3171,7 @@ const Components = {
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 1.5rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; margin-top: 1.5rem; flex-wrap: wrap; gap: 1rem;">
           <div>
             <div style="font-size: 0.85rem; font-weight: 600; color: var(--gold-light);">Active Collector Session</div>
-            <div style="font-size: 0.78rem; color: var(--text-muted);">Authenticated as <strong style="color: var(--text-main);">${email}</strong></div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Authenticated as <strong style="color: var(--text-main);">${safeEmail}</strong></div>
           </div>
           <button type="button" class="btn btn-glass" style="border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1.1rem; font-size: 0.8rem;" onclick="app.logoutUser()">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
@@ -3189,31 +3209,17 @@ const Components = {
       { code: 'RUB', sym: '₽' }
     ];
 
-    // Ensure points are properly reflected and self-heal 0-points initiate state
-    let spendablePts = Number(store.loyalty?.spendable_mythos) || Number(store.user?.points) || 0;
-    let legacyPts = Number(store.loyalty?.legacy_mythos) || Number(store.user?.points) || 0;
-    if (store.isUserLoggedIn() && spendablePts === 0 && legacyPts === 0) {
-      const bonusPts = Number(store.globalSettings?.signupBonusMythos) || 200;
-      spendablePts = bonusPts;
-      legacyPts = bonusPts;
-      if (!store.loyalty) store.loyalty = {};
-      store.loyalty.spendable_mythos = bonusPts;
-      store.loyalty.legacy_mythos = bonusPts;
-      store.loyalty.signup_bonus_awarded = true;
-      store.saveLocalStorage('mytholis_loyalty', store.loyalty);
-      if (store.user) {
-        store.user.points = bonusPts;
-        store.saveLocalStorage('mytholis_user', store.user);
-      }
-      if (typeof window !== 'undefined' && window.firebaseService && typeof window.firebaseService.reconcileAndSavePatron === 'function') {
-        const uid = store.firebaseUser?.uid || store.user?.uid;
-        if (uid) {
-          window.firebaseService.reconcileAndSavePatron(uid, {
-            loyalty: store.loyalty
-          }).catch(() => {});
-        }
-      }
-    }
+    // Balances are server-owned. Never mint points in the browser: the old
+    // "self-heal" block credited 200 Mythos locally (and then tried to push
+    // them to Firestore) whenever the balance read as zero, so the profile
+    // could show money the server had not granted.
+    const spendablePts = Math.max(0, Number(store.loyalty?.spendable_mythos) || 0);
+    const legacyPts = Math.max(0, Number(store.loyalty?.legacy_mythos) || 0);
+
+    const safeName = esc(displayName);
+    const safeEmail = esc(email);
+    const safePhone = esc(phone);
+    const safePhoto = safeHref(photoURL);
 
     // Determine auth mode
     const isPhoneUser = email.endsWith('@phone.mytholis.com') || (fbUser && fbUser.phone && !fbUser.email);
@@ -3223,7 +3229,7 @@ const Components = {
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
           <div class="modal-crest-icon" style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(212, 175, 55, 0.15); border: 1px solid var(--gold-primary); font-family: var(--font-serif-title); font-size: 1rem; color: var(--gold-light); overflow: hidden;">
-            ${photoURL ? `<img src="${photoURL}" alt="${displayName}" class="profile-avatar-img" />` : initial}
+            ${safePhoto ? `<img src="${safePhoto}" alt="${safeName}" class="profile-avatar-img" />` : initial}
           </div>
           <div>
             <h3 class="modal-title font-title">Collector Dossier</h3>
@@ -3237,8 +3243,8 @@ const Components = {
         <!-- Client Member Card with Portrait Upload -->
         <div class="profile-modal-user-card liquid-glass-card" style="padding: 1.2rem; margin-bottom: 1rem;">
           <div class="profile-avatar-wrap">
-            ${photoURL ? `
-              <img src="${photoURL}" alt="${displayName}" class="profile-avatar-img" />
+            ${safePhoto ? `
+              <img src="${safePhoto}" alt="${safeName}" class="profile-avatar-img" />
             ` : `
               <span>${initial}</span>
             `}
@@ -3250,7 +3256,7 @@ const Components = {
           <div class="profile-modal-user-info">
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap;">
               <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                <h4 class="profile-user-name">${displayName}</h4>
+                <h4 class="profile-user-name">${safeName}</h4>
                 <button type="button" class="btn-edit-inline-name" onclick="app.promptEditPatronName()" title="Edit Collector Name / Title" style="background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.35); color: var(--gold-primary); cursor: pointer; font-size: 0.72rem; padding: 0.15rem 0.45rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.25rem; transition: all 0.2s;">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                   <span>Edit</span>
@@ -3267,7 +3273,7 @@ const Components = {
                 </label>
               `}
             </div>
-            <p class="profile-user-email">${isPhoneUser ? `Mobile Collector (${phone || email.replace('@phone.mytholis.com','')})` : email}</p>
+            <p class="profile-user-email">${isPhoneUser ? `Mobile Collector (${safePhone || safeEmail.replace('@phone.mytholis.com','')})` : safeEmail}</p>
             <div class="profile-points-pill">
               <strong>${spendablePts.toLocaleString()}</strong> Spendable Mythos &nbsp;|&nbsp; <strong>${legacyPts.toLocaleString()}</strong> Legacy M
             </div>
@@ -3299,7 +3305,7 @@ const Components = {
               <svg width="16" height="16" fill="none" stroke="#10B981" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
               <div>
                 <span class="glass-pill" style="font-size: 0.6rem; color: #10B981; border-color: #10B981; padding: 0.1rem 0.4rem;">Connected Collector</span>
-                <p style="font-size: 0.78rem; color: var(--gold-light); margin: 0.15rem 0 0;">${email}</p>
+                <p style="font-size: 0.78rem; color: var(--gold-light); margin: 0.15rem 0 0;">${safeEmail}</p>
               </div>
             </div>
           </div>
@@ -3328,10 +3334,10 @@ const Components = {
             </div>
             ${(u.address || u.city || u.pincode) ? `
               <div style="font-size: 0.82rem; color: var(--text-main); line-height: 1.5; background: rgba(0, 0, 0, 0.25); padding: 0.75rem 0.9rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.15);">
-                <div style="font-weight: 600; color: var(--gold-light); margin-bottom: 0.2rem;">${u.name || displayName}</div>
-                <div>${u.address || ''}</div>
-                <div>${[u.city, u.state, u.pincode].filter(Boolean).join(', ')}</div>
-                ${u.phone ? `<div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.3rem;">Tel: ${u.phone}</div>` : ''}
+                <div style="font-weight: 600; color: var(--gold-light); margin-bottom: 0.2rem;">${esc(u.name || displayName)}</div>
+                <div>${esc(u.address || '')}</div>
+                <div>${esc([u.city, u.state, u.pincode].filter(Boolean).join(', '))}</div>
+                ${u.phone ? `<div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.3rem;">Tel: ${esc(u.phone)}</div>` : ''}
               </div>
             ` : `
               <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(212, 175, 55, 0.05); border: 1px dashed rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 0.75rem 0.9rem;">
@@ -3372,13 +3378,13 @@ const Components = {
               <div class="modal-order-row">
                 <div>
                   <div style="font-family: var(--font-serif-title); color: var(--gold-light); font-size: 0.85rem;">
-                    ${u.orders[0].orderId || u.orders[0].id} <span style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-sans);">• ${u.orders[0].date || new Date().toLocaleDateString()}</span>
+                    ${esc(u.orders[0].orderId || u.orders[0].id || '')} <span style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-sans);">• ${esc(u.orders[0].date || new Date().toLocaleDateString())}</span>
                   </div>
-                  <p style="font-size: 0.78rem; color: var(--text-main); margin-top: 0.15rem;">${this.formatOrderItemsSummary(u.orders[0].items)}</p>
+                  <p style="font-size: 0.78rem; color: var(--text-main); margin-top: 0.15rem;">${esc(this.formatOrderItemsSummary(u.orders[0].items))}</p>
                 </div>
                 <div style="text-align: right;">
                   <span class="gold-text" style="font-weight: 700; font-size: 0.85rem;">${store.formatPrice(u.orders[0].total)}</span>
-                  <span class="glass-pill" style="font-size: 0.62rem; display: inline-block; margin-top: 0.2rem; padding: 0.15rem 0.5rem;">${u.orders[0].status || 'Processing'}</span>
+                  <span class="glass-pill" style="font-size: 0.62rem; display: inline-block; margin-top: 0.2rem; padding: 0.15rem 0.5rem;">${esc(u.orders[0].status || 'Processing')}</span>
                 </div>
               </div>
             ` : `
@@ -3407,7 +3413,7 @@ const Components = {
                 <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.35rem;">
                   Full Name / Title
                 </label>
-                <input type="text" id="dossier-name-input" class="engraving-input" value="${displayName}" placeholder="e.g. Your Full Name" required />
+                <input type="text" id="dossier-name-input" class="engraving-input" value="${safeName}" placeholder="e.g. Your Full Name" required />
               </div>
 
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
@@ -3415,13 +3421,13 @@ const Components = {
                   <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.35rem;">
                     Mobile Phone / WhatsApp
                   </label>
-                  <input type="tel" id="dossier-phone-input" class="engraving-input" value="${phone}" placeholder="+91 98765 43210" />
+                  <input type="tel" id="dossier-phone-input" class="engraving-input" value="${safePhone}" placeholder="+91 98765 43210" />
                 </div>
                 <div>
                   <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.35rem;">
                     Pincode / Postal Code
                   </label>
-                  <input type="text" id="dossier-pincode-input" class="engraving-input" value="${u.pincode || ''}" placeholder="122002" />
+                  <input type="text" id="dossier-pincode-input" class="engraving-input" value="${esc(u.pincode || '')}" placeholder="122002" />
                 </div>
               </div>
 
@@ -3429,7 +3435,7 @@ const Components = {
                 <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.35rem;">
                   Delivery Address (Apartment, Villa, Street)
                 </label>
-                <input type="text" id="dossier-address-input" class="engraving-input" value="${u.address || ''}" placeholder="Villa 42, The Sovereign Palms, DLF Phase 5" />
+                <input type="text" id="dossier-address-input" class="engraving-input" value="${esc(u.address || '')}" placeholder="Villa 42, The Sovereign Palms, DLF Phase 5" />
               </div>
 
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
@@ -3437,13 +3443,13 @@ const Components = {
                   <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.35rem;">
                     City
                   </label>
-                  <input type="text" id="dossier-city-input" class="engraving-input" value="${u.city || ''}" placeholder="Gurgaon / Mumbai" />
+                  <input type="text" id="dossier-city-input" class="engraving-input" value="${esc(u.city || '')}" placeholder="Gurgaon / Mumbai" />
                 </div>
                 <div>
                   <label style="font-size: 0.72rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.35rem;">
                     State / Region
                   </label>
-                  <input type="text" id="dossier-state-input" class="engraving-input" value="${u.state || ''}" placeholder="Haryana" />
+                  <input type="text" id="dossier-state-input" class="engraving-input" value="${esc(u.state || '')}" placeholder="Haryana" />
                 </div>
               </div>
 
@@ -3471,7 +3477,7 @@ const Components = {
                   ${isPhoneUser ? '📱 Mobile Phone SMS Verification' : (isGoogleUser ? '🌐 Google VIP Single Sign-On' : '🔑 Email & Master Password')}
                 </h5>
                 <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">
-                  ${isPhoneUser ? `Phone: ${phone || email.replace('@phone.mytholis.com', '')}` : `Email: ${email}`}
+                  ${isPhoneUser ? `Phone: ${safePhone || safeEmail.replace('@phone.mytholis.com', '')}` : `Email: ${safeEmail}`}
                 </p>
               </div>
               <span class="glass-pill" style="font-size: 0.65rem; color: #10B981; border-color: #10B981;">Active</span>
@@ -3557,7 +3563,7 @@ const Components = {
                   Your login is managed securely by your Google Account. If you would like to set up a direct password for Sanctuary Mytholis, click below.
                 </p>
                 <button type="button" class="btn btn-glass" style="font-size: 0.75rem; padding: 0.45rem 1rem; color: var(--gold-primary);" onclick="app.handleSendPasswordResetFromDossier()">
-                  Send Password Setup Link to ${email}
+                  Send Password Setup Link to ${safeEmail}
                 </button>
               </div>
             ` : ''}
@@ -3742,7 +3748,7 @@ const Components = {
           <div id="checkout-modal-breakdown" style="${(discount > 0 || upiDiscount > 0 || appliedGift) ? 'display: block;' : 'display: none;'} margin-top: 0.8rem; padding-top: 0.6rem; border-top: 1px solid rgba(212, 175, 55, 0.2); font-size: 0.75rem;">
             ${discount > 0 ? `
               <div style="display: flex; justify-content: space-between; color: var(--gold-light);">
-                <span>Mythos Privilege (${appliedReward ? appliedReward.code : 'FIRST25'} - 25%):</span>
+                <span>Mythos Privilege (${esc(appliedReward ? appliedReward.code : 'FIRST25')}):</span>
                 <span>-${store.formatPrice(discount)}</span>
               </div>
             ` : (upiDiscount > 0 ? `
@@ -3754,7 +3760,7 @@ const Components = {
             ${appliedGift ? `
               <div style="display: flex; justify-content: space-between; color: var(--gold-light); margin-top: 0.2rem;">
                 <span>Complimentary Gift Flacon:</span>
-                <span>${appliedGift.name} (Free)</span>
+                <span>${esc(appliedGift.name)} (Free)</span>
               </div>
             ` : ''}
           </div>
@@ -3767,7 +3773,7 @@ const Components = {
               Select Payment Mode
             </h5>
             <span id="checkout-mode-discount-badge" class="glass-pill" style="font-size: 0.65rem; color: #10B981; border-color: #10B981;">
-              ${discount > 0 ? `✦ 25% Privilege Active (${appliedReward ? appliedReward.code : 'FIRST25'})` : 'Save ₹200 via Prepaid UPI'}
+              ${discount > 0 ? `✦ ${esc(appliedReward ? appliedReward.code : 'FIRST25')} applied` : 'Save ₹200 via Prepaid UPI'}
             </span>
           </div>
 
@@ -3821,25 +3827,25 @@ const Components = {
           <!-- Shipping Details Form (Smart Checkout Autofill) -->
           <div style="display: flex; flex-direction: column; gap: 0.8rem;">
             <div style="display: flex; gap: 0.6rem;">
-              <input type="text" id="checkout-name" class="engraving-input" placeholder="Full Delivery Name" autocomplete="name" value="${store.user.name || ''}" style="flex: 1.2;" required />
-              <input type="email" id="checkout-email" class="engraving-input" placeholder="Email Address" autocomplete="email" value="${store.user.email || ''}" style="flex: 1;" required />
+              <input type="text" id="checkout-name" class="engraving-input" placeholder="Full Delivery Name" autocomplete="name" value="${esc(store.user.name || '')}" style="flex: 1.2;" required />
+              <input type="email" id="checkout-email" class="engraving-input" placeholder="Email Address" autocomplete="email" value="${esc(store.user.email || '')}" style="flex: 1;" required />
             </div>
 
             <div style="display: flex; gap: 0.6rem; align-items: flex-start;">
               <div style="flex: 1.2;">
-                <input type="tel" id="checkout-phone" class="engraving-input" placeholder="10-Digit Mobile (+91)" autocomplete="tel-national" value="${store.user.phone || ''}" oninput="app.handleCheckoutPhoneInput(this)" maxlength="14" style="width: 100%;" required />
+                <input type="tel" id="checkout-phone" class="engraving-input" placeholder="10-Digit Mobile (+91)" autocomplete="tel-national" value="${esc(store.user.phone || '')}" oninput="app.handleCheckoutPhoneInput(this)" maxlength="14" style="width: 100%;" required />
               </div>
               <div style="flex: 1; position: relative;">
-                <input type="text" id="checkout-pincode" class="engraving-input" placeholder="PIN Code (6 Digits)" autocomplete="postal-code" maxlength="6" value="${store.user.pincode || ''}" oninput="app.handlePincodeLookup(this.value)" style="width: 100%;" required />
+                <input type="text" id="checkout-pincode" class="engraving-input" placeholder="PIN Code (6 Digits)" autocomplete="postal-code" maxlength="6" value="${esc(store.user.pincode || '')}" oninput="app.handlePincodeLookup(this.value)" style="width: 100%;" required />
                 <div id="pincode-status-hint" style="font-size: 0.65rem; color: var(--gold-light); display: none; margin-top: 3px; position: absolute; bottom: -16px; left: 2px; white-space: nowrap;"></div>
               </div>
             </div>
 
-            <input type="text" id="checkout-address" class="engraving-input" placeholder="Flat / Building, Street, Area, Landmark" autocomplete="street-address" value="${store.user.address || ''}" required />
+            <input type="text" id="checkout-address" class="engraving-input" placeholder="Flat / Building, Street, Area, Landmark" autocomplete="street-address" value="${esc(store.user.address || '')}" required />
 
             <div style="display: flex; gap: 0.6rem;">
-              <input type="text" id="checkout-city" class="engraving-input" placeholder="City / District" autocomplete="address-level2" value="${store.user.city || ''}" style="flex: 1;" required />
-              <input type="text" id="checkout-state" class="engraving-input" placeholder="State" autocomplete="address-level1" value="${store.user.state || ''}" style="flex: 1;" required />
+              <input type="text" id="checkout-city" class="engraving-input" placeholder="City / District" autocomplete="address-level2" value="${esc(store.user.city || '')}" style="flex: 1;" required />
+              <input type="text" id="checkout-state" class="engraving-input" placeholder="State" autocomplete="address-level1" value="${esc(store.user.state || '')}" style="flex: 1;" required />
             </div>
           </div>
         </div>
@@ -3919,6 +3925,13 @@ const Components = {
     const isAuthorized = (typeof store !== 'undefined' && typeof store.isAdmin === 'function')
       ? store.isAdmin()
       : false;
+    // Referenced by the authorised branch below but never declared, so that
+    // branch used to throw a ReferenceError and blank the page.
+    const userEmail = esc(
+      (typeof firebaseService !== 'undefined' && firebaseService?.currentUser?.email) ||
+      (store && store.user && store.user.email) ||
+      ''
+    );
 
     // 1. Unauthenticated or Unauthorized Gate
     if (!isAuthorized) {
@@ -4220,7 +4233,7 @@ const Components = {
                       </div>
                     </div>
 
-                    <button class="btn btn-glass" style="width: 100%; font-size: 0.72rem; padding: 0.45rem;" onclick="app.populateUserAdjustmentForm('${u.uid}')">
+                    <button class="btn btn-glass" style="width: 100%; font-size: 0.72rem; padding: 0.45rem;" onclick="app.populateUserAdjustmentForm('${safeId(u.uid)}')">
                       Quick Select for Adjustment &rarr;
                     </button>
                   </div>

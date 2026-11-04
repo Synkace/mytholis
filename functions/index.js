@@ -7,6 +7,7 @@ import adminHandler from "./handlers/admin.js";
 import dispatchHandler from "./handlers/dispatch.js";
 import healthHandler from "./handlers/health.js";
 import redeemRewardHandler from "./handlers/redeem-reward.js";
+import subscribeHandler from "./handlers/subscribe.js";
 
 // Patron & Collector Deduplication & Reconciliation
 import patronReconcileHandler from "./handlers/patron/reconcile.js";
@@ -167,6 +168,7 @@ router.all("/admin", adminHandler);
 router.all("/dispatch", dispatchHandler);
 router.all("/health", healthHandler);
 router.all("/redeem-reward", redeemRewardHandler);
+router.all("/subscribe", subscribeHandler);
 
 // Patron Account Deduplication & Reconciliation
 router.all("/patron/reconcile", patronReconcileHandler);

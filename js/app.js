@@ -4,18 +4,46 @@
    ========================================================================== */
 
 import gsap from 'gsap';
-import { AdminComponents } from './adminComponents.js';
+import { esc, safeId, safeHref } from './sanitize.js';
 import { firebaseService, db, collection, getDocs, doc, getDoc, setDoc, firebaseConfig } from './firebase.js';
 import { normalizePhone, normalizeEmail } from '../utils/normalize.js';
-import { 
-  LABEL_PRESETS, 
-  rebrandLabelPdf, 
-  downloadPdfBlob, 
-  printPdfBlob, 
-  generateCourierOrderPayload,
-  generateSampleThermalLabelPdf,
-  generateMytholisShippingLabelPdf
-} from './labelRebrander.js';
+
+/* --------------------------------------------------------------------------
+   FOUNDER-ONLY BUNDLES (loaded on demand)
+   --------------------------------------------------------------------------
+   The operations console and the PDF label engine (which pulls in pdf-lib,
+   ~430KB) used to be static imports, so every shopper downloaded the founder
+   tooling. They are now fetched only when #admin is opened or a label action is
+   triggered. `AdminComponents` resolves from window once the chunk has loaded,
+   which keeps the existing call sites readable.
+   -------------------------------------------------------------------------- */
+let adminBundlePromise = null;
+let labelBundlePromise = null;
+
+function loadAdminBundle() {
+  if (!adminBundlePromise) {
+    adminBundlePromise = import('./adminComponents.js')
+      .then((mod) => {
+        if (typeof window !== 'undefined') window.AdminComponents = mod.AdminComponents;
+        return mod;
+      })
+      .catch((err) => {
+        adminBundlePromise = null;
+        throw err;
+      });
+  }
+  return adminBundlePromise;
+}
+
+function loadLabelBundle() {
+  if (!labelBundlePromise) {
+    labelBundlePromise = import('./labelRebrander.js').catch((err) => {
+      labelBundlePromise = null;
+      throw err;
+    });
+  }
+  return labelBundlePromise;
+}
 
 if (typeof window !== 'undefined') {
   window.gsap = gsap;
@@ -55,6 +83,59 @@ class MytholisApp {
     this.cachedRazorpayOrderPromise = null;
     this.cachedRazorpayOrderData = null;
     this.cachedRazorpayOrderAmount = null;
+    this._adminBundleLoading = null;
+    this._labelTools = null;
+  }
+
+  /* Resolve the founder console, loading it on first use. */
+  async getAdminComponents() {
+    if (typeof AdminComponents !== 'undefined' && AdminComponents) return AdminComponents;
+    const mod = await loadAdminBundle();
+    return mod.AdminComponents;
+  }
+
+  /* Resolve the PDF label engine (pdf-lib) on first use. */
+  async getLabelTools() {
+    if (!this._labelTools) {
+      this._labelTools = await loadLabelBundle();
+    }
+    return this._labelTools;
+  }
+
+  /* Placeholder shown for the one frame before the founder console chunk lands. */
+  renderAdminBootScreen() {
+    return `
+      <div class="container" style="min-height: 70vh; display: flex; align-items: center; justify-content: center;">
+        <div style="text-align: center;">
+          <span class="glass-pill" style="color: var(--gold-primary); letter-spacing: 0.25em; font-size: 0.68rem;">SECURE OPERATIONS DESK</span>
+          <h2 class="font-title" style="color: var(--gold-light); margin: 1rem 0 0.5rem; font-size: 1.8rem;">Opening Sanctum Command</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Loading the founder console&hellip;</p>
+          <span style="display:inline-block; margin-top: 1rem; animation: spin 1s linear infinite; color: var(--gold-primary); font-size: 1.4rem;">⟳</span>
+        </div>
+      </div>
+    `;
+  }
+
+  /* Fetch the founder console once and re-render the admin route when ready. */
+  async ensureAdminConsole() {
+    if (typeof AdminComponents !== 'undefined' && AdminComponents) return;
+    if (this._adminBundleLoading) return this._adminBundleLoading;
+
+    this._adminBundleLoading = (async () => {
+      try {
+        await loadAdminBundle();
+        if (store.currentView === 'admin' || store.currentView === 'sanctum-command') {
+          this.renderCurrentView();
+        }
+      } catch (err) {
+        console.error('[Mytholis Admin] Founder console failed to load:', err);
+        this.showToast('Could not load the founder console. Check your connection and retry.');
+      } finally {
+        this._adminBundleLoading = null;
+      }
+    })();
+
+    return this._adminBundleLoading;
   }
 
   init() {
@@ -166,12 +247,38 @@ class MytholisApp {
       }
     });
 
-    // Keyboard navigation & ESC key handler
+    // Keyboard navigation, ESC close and modal focus trap
     window.addEventListener('keydown', (e) => {
+      const activeOverlay = document.querySelector('.modal-overlay.active');
+      if (activeOverlay) {
+        if (e.key === 'Escape') {
+          this.closeAllModals();
+          return;
+        }
+        if (e.key === 'Tab') {
+          const focusables = [...activeOverlay.querySelectorAll(
+            'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )].filter((el) => el.offsetParent !== null);
+          if (focusables.length === 0) {
+            e.preventDefault();
+            return;
+          }
+          const first = focusables[0];
+          const last = focusables[focusables.length - 1];
+          if (e.shiftKey && (document.activeElement === first || document.activeElement === activeOverlay.querySelector('.modal-card'))) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+          return;
+        }
+      }
       if (e.key === 'Escape') {
         this.closeAllModals();
       }
-      if (store.currentView === 'home') {
+      if (store.currentView === 'home' && !activeOverlay) {
         if (window.innerWidth <= 768) {
           if (e.key === 'ArrowRight') this.stepMobileHeroCarousel(1);
           if (e.key === 'ArrowLeft') this.stepMobileHeroCarousel(-1);
@@ -181,6 +288,39 @@ class MytholisApp {
         }
       }
     });
+
+    // Dialog focus management. Every modal has its own open*() method, so watch
+    // the overlays instead of patching each one: move focus into the dialog on
+    // open and restore it to the trigger on close.
+    this._focusBeforeModal = null;
+    // The overlay animates in with `visibility: hidden` for ~300ms, and an
+    // element that is not visible cannot take focus. Retry until it lands.
+    const focusDialog = (card, attempt = 0) => {
+      if (!card || !card.isConnected) return;
+      const overlay = card.parentElement;
+      if (!overlay || !overlay.classList.contains('active')) return;
+      card.focus({ preventScroll: true });
+      if (document.activeElement === card) return;
+      if (attempt < 12) setTimeout(() => focusDialog(card, attempt + 1), 40);
+    };
+    const modalObserver = new MutationObserver((mutations) => {
+      mutations.forEach((m) => {
+        const el = m.target;
+        if (!(el instanceof Element) || !el.classList.contains('modal-overlay')) return;
+        if (el.classList.contains('active')) {
+          if (!this._focusBeforeModal) this._focusBeforeModal = document.activeElement;
+          focusDialog(el.querySelector('.modal-card'));
+        } else if (this._focusBeforeModal instanceof HTMLElement) {
+          const previous = this._focusBeforeModal;
+          this._focusBeforeModal = null;
+          if (document.contains(previous)) previous.focus({ preventScroll: true });
+        }
+      });
+    });
+    document.querySelectorAll('.modal-overlay').forEach((overlay) => {
+      modalObserver.observe(overlay, { attributes: true, attributeFilter: ['class'] });
+    });
+    this._modalObserver = modalObserver;
 
     // Cursor Glow tracking for mouse devices (GPU accelerated via RAF translate3d)
     const cursorGlow = document.getElementById('cursor-glow');
@@ -436,8 +576,22 @@ class MytholisApp {
     });
 
     this.updateMobileBottomNav(viewName, paramId);
-    this.renderCurrentView();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    /* One click used to rebuild the whole view four times: the anchor's
+       onclick called navigateTo(), the href hash fired `hashchange`, the
+       popstate listener fired as well, and each path rendered from scratch.
+       Collapse the burst, but still allow a later intentional re-render of the
+       same view (e.g. "Home" tapped again after a while). */
+    const navKey = `${viewName}|${paramId || ''}`;
+    const now = Date.now();
+    const isDuplicateRender = this._lastRenderKey === navKey && (now - (this._lastRenderAt || 0)) < 250;
+
+    if (!isDuplicateRender) {
+      this.renderCurrentView();
+      this._lastRenderKey = navKey;
+      this._lastRenderAt = now;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   /* Update Mobile Bottom Nav Active Tab */
@@ -585,7 +739,14 @@ class MytholisApp {
         break;
       case 'admin':
       case 'sanctum-command':
-        contentHtml = Components.renderAdmin();
+        // The founder console is a lazy chunk. Paint a boot screen, fetch it,
+        // then re-enter this method once `window.AdminComponents` exists.
+        if (typeof AdminComponents !== 'undefined' && AdminComponents) {
+          contentHtml = Components.renderAdmin();
+        } else {
+          contentHtml = this.renderAdminBootScreen();
+          this.ensureAdminConsole();
+        }
         break;
       default:
         contentHtml = Components.renderHome();
@@ -593,6 +754,13 @@ class MytholisApp {
 
     mainContainer.innerHTML = contentHtml;
     this.initTiltEffects();
+
+    // The decorative full-screen canvas only needs to animate on the storefront.
+    // Pausing it elsewhere (checkout, account, admin) saves significant mobile
+    // CPU/battery for no visual loss - the last frame stays as a static backdrop.
+    if (this.bgAnimation && typeof this.bgAnimation.setActive === 'function') {
+      this.bgAnimation.setActive(store.currentView === 'home');
+    }
 
     // If on admin view, load data if authenticated as admin
     if (store.currentView === 'admin' || store.currentView === 'sanctum-command') {
@@ -1394,7 +1562,7 @@ class MytholisApp {
       resultBox.innerHTML = `
         <div style="text-align: center; padding: 2rem;">
           <div style="color: var(--gold-light); font-size: 0.9rem; margin-bottom: 0.5rem;">
-            Searching sovereign cloud ledger for <strong>${queryTerm}</strong>...
+            Searching sovereign cloud ledger for <strong>${esc(queryTerm)}</strong>...
           </div>
           <span style="display:inline-block; animation: spin 1s linear infinite; color: var(--gold-primary);">⟳</span>
         </div>
@@ -1438,7 +1606,7 @@ class MytholisApp {
             <div style="text-align: center; padding: 2.5rem 1.5rem; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px;">
               <div style="color: #FCA5A5; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem;">Consignment Not Found</div>
               <p style="color: var(--text-muted); font-size: 0.85rem; max-width: 500px; margin: 0 auto; line-height: 1.5;">
-                No consignment matching <strong>${queryTerm}</strong> was found in our active dispatch ledger. Please verify your Order ID from your confirmation email or WhatsApp notification.
+                No consignment matching <strong>${esc(queryTerm)}</strong> was found in our active dispatch ledger. Please verify your Order ID from your confirmation email or WhatsApp notification.
               </p>
             </div>
           `;
@@ -1463,17 +1631,31 @@ class MytholisApp {
       const isOut = ['out for delivery', 'delivered'].includes(st);
       const isDelivered = st === 'delivered';
 
+      // Order documents contain values that originated from customer input
+      // (name/phone/address) and courier callbacks. Escape every one of them.
+      const safeOrderId = esc(foundOrder.orderId || foundOrder.id || '');
+      const safeItemsDesc = esc(itemsDesc);
+      const safeCourier = esc(courier);
+      const safeAwb = esc(awb);
+      const safeEstDate = esc(estDate);
+      const safeTrackingUrl = safeHref(trackingUrl);
+      const safeActivity = esc(
+        foundOrder.lastActivity || foundOrder.logisticsRawStatus || foundOrder.rawStatus ||
+        `Status: ${foundOrder.status || 'Dispatched'}`
+      );
+      const safeLocation = esc(foundOrder.lastLocation || '');
+
       if (resultBox) {
         resultBox.innerHTML = `
           <div class="track-order-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 1.2rem; margin-bottom: 1.5rem;">
             <div>
-              <span class="glass-pill" style="font-size: 0.68rem; color: var(--gold-light);">Order #${foundOrder.orderId || foundOrder.id}</span>
-              <h3 class="track-order-product-name" style="color: var(--gold-light); margin: 0.4rem 0 0.2rem; font-size: 1.15rem;">${itemsDesc}</h3>
-              <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">Courier: <strong style="color: var(--text-main);">${courier}</strong> ${awb ? `• AWB: <strong style="color: var(--gold-light);">${awb}</strong>` : ''}</p>
+              <span class="glass-pill" style="font-size: 0.68rem; color: var(--gold-light);">Order #${safeOrderId}</span>
+              <h3 class="track-order-product-name" style="color: var(--gold-light); margin: 0.4rem 0 0.2rem; font-size: 1.15rem;">${safeItemsDesc}</h3>
+              <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">Courier: <strong style="color: var(--text-main);">${safeCourier}</strong> ${safeAwb ? `• AWB: <strong style="color: var(--gold-light);">${safeAwb}</strong>` : ''}</p>
             </div>
             <div class="track-delivery-est" style="text-align: right;">
               <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Estimated Delivery:</span>
-              <p style="font-weight: 700; color: var(--gold-primary); font-size: 1rem; margin: 0.2rem 0 0;">${estDate}</p>
+              <p style="font-weight: 700; color: var(--gold-primary); font-size: 1rem; margin: 0.2rem 0 0;">${safeEstDate}</p>
             </div>
           </div>
 
@@ -1500,7 +1682,7 @@ class MytholisApp {
                 ${isShipped ? '✓' : '3'}
               </div>
               <h5 style="font-size: 0.8rem; margin: 0 0 0.15rem; color: var(--text-main);">In Transit</h5>
-              <span style="font-size: 0.72rem; color: var(--text-muted);">${courier}</span>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">${safeCourier}</span>
             </div>
 
             <div class="tracker-step-item">
@@ -1517,13 +1699,13 @@ class MytholisApp {
               <div>
                 <span class="glass-pill" style="font-size: 0.65rem; color: var(--gold-light);">Live Consignment Telemetry</span>
                 <p style="font-size: 0.84rem; color: var(--text-main); margin: 0.35rem 0 0;">
-                  ${foundOrder.lastActivity || foundOrder.logisticsRawStatus || foundOrder.rawStatus || `Status: ${foundOrder.status || 'Dispatched'}`}
-                  ${foundOrder.lastLocation ? ` &bull; Location: <strong style="color: var(--gold-light);">${foundOrder.lastLocation}</strong>` : ''}
+                  ${safeActivity}
+                  ${safeLocation ? ` &bull; Location: <strong style="color: var(--gold-light);">${safeLocation}</strong>` : ''}
                 </p>
               </div>
-              ${trackingUrl ? `
-                <a href="${trackingUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-gold" style="font-size: 0.78rem; padding: 0.5rem 1rem; text-decoration: none;">
-                  Track on ${courier} ↗
+              ${safeTrackingUrl ? `
+                <a href="${safeTrackingUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-gold" style="font-size: 0.78rem; padding: 0.5rem 1rem; text-decoration: none;">
+                  Track on ${safeCourier} ↗
                 </a>
               ` : ''}
             </div>
@@ -1686,7 +1868,7 @@ class MytholisApp {
 
     let rewardLine = '';
     if (appliedReward) {
-      if (appliedReward.type === 'discount') {
+      if (['discount', 'percent', 'flat'].includes(appliedReward.type)) {
         rewardLine = `\n*Mythos Concession (${appliedReward.code}):* -${store.formatPrice(discount)}\n`;
       } else if (appliedReward.type === 'gift') {
         rewardLine = `\n*Complimentary Vault Gift:* ${appliedReward.giftItem} (₹0)\n`;
@@ -1852,7 +2034,7 @@ class MytholisApp {
     const badgeEl = document.getElementById('drawer-discount-badge');
     if (badgeEl) {
       if (promoDiscount > 0) {
-        badgeEl.textContent = `✦ 25% Privilege Active (${appliedReward ? appliedReward.code : 'FIRST25'})`;
+        badgeEl.textContent = `✦ ${appliedReward ? appliedReward.code : 'Privilege'} applied`;
       } else if (isUPI && rawSubtotal >= 2000) {
         badgeEl.textContent = 'Save ₹200 via Prepaid UPI';
       } else {
@@ -1882,6 +2064,32 @@ class MytholisApp {
       || (product.variants && product.variants[variantKey]?.sku) 
       || product.sku 
       || `${product.id}-${activeSizeObj.ml}`;
+
+    // Apply the first-order privilege explicitly before pricing. The checkout
+    // and the server both read loyalty.applied_reward_code, so leaving it null
+    // here while the server defaulted to FIRST25 produced two different totals.
+    if (typeof store.getAppliedReward === 'function' && !store.getAppliedReward() &&
+        !store.loyalty?.promo_dismissed && !(Array.isArray(store.user?.orders) && store.user.orders.length > 0)) {
+      const applied = store.applyRewardCode('FIRST25');
+      if (applied && applied.success === false) {
+        // Not eligible (e.g. Sixth Sense coffret): leave the cart undiscounted.
+      }
+    }
+
+    // Replace the bag with this single line, but never silently: the old code
+    // wiped a multi-item cart with no warning.
+    if (Array.isArray(store.cart) && store.cart.length > 0) {
+      const alreadyJustThis = store.cart.length === 1 &&
+        store.cart[0].sku === targetSku &&
+        store.cart[0].engraving === '';
+      if (!alreadyJustThis) {
+        const confirmed = window.confirm(
+          `Your bag holds ${store.cart.length} item${store.cart.length > 1 ? 's' : ''}.\n\n` +
+          'Buy Now checks out this flacon only and will replace your current bag. Continue?'
+        );
+        if (!confirmed) return;
+      }
+    }
 
     // Set cart to this exact item so checkout processes this exact size, sku and price
     store.cart = [{
@@ -1918,17 +2126,13 @@ class MytholisApp {
 
   async launchExpressCheckout(product, sizeObj) {
     const rawSubtotal = sizeObj?.price || product.price;
-    const appliedReward = (typeof store.getAppliedReward === 'function') ? store.getAppliedReward() : null;
-    let promoCode = appliedReward?.code 
-      || store.loyalty?.applied_reward_code 
-      || store.appliedPromoCode 
-      || null;
-
-    if (!promoCode && (!store.user?.orders?.length && !store.loyalty?.promo_dismissed)) {
-      promoCode = 'FIRST25';
-    }
-
-    const promoDiscount = promoCode ? Math.floor(rawSubtotal * 0.20) : 0;
+    // The cart was replaced with this one line in buyNow(), so the store's own
+    // discount engine is authoritative here. This used to hardcode 20% while
+    // FIRST25 is 25%, so express checkout quoted a different price than every
+    // other surface (and than the server).
+    const promoDiscount = typeof store.getDiscountAmount === 'function'
+      ? store.getDiscountAmount(rawSubtotal)
+      : 0;
     // Default express payment is UPI (saves ₹200 if no promo and >= ₹2000)
     const upiDiscount = (!promoDiscount && rawSubtotal >= 2000) ? 200 : 0;
     const expressTotal = Math.max(1, rawSubtotal - promoDiscount - upiDiscount);
@@ -2106,6 +2310,14 @@ class MytholisApp {
   }
 
   precreateRazorpayOrder(productOrCart = null) {
+    // 0. Never ask the gateway to mint an order on speculation.
+    //    This used to run on every cart open with an empty bag and fell through
+    //    to MYTHOLIS_CATALOG[0], so merely opening the cart created a real
+    //    ₹5,999 server order (and one more on every subsequent open).
+    if (!productOrCart && (!Array.isArray(store.cart) || store.cart.length === 0)) {
+      return null;
+    }
+
     // 1. Kick off SDK preloading in background immediately
     this.ensureRazorpaySdk().catch(() => {});
 
@@ -2162,6 +2374,19 @@ class MytholisApp {
     const redeemMythos = (store.loyalty && typeof store.loyalty.spendable_mythos === 'number') 
       ? (store.redeemMythosPoints || store.loyalty.redeem_mythos || 0) 
       : 0;
+
+    // 2b. Reuse an in-flight/complete pre-creation for the exact same basket,
+    //     promo and payment mode. Without this, every drawer open and every
+    //     payment-pill tap created another gateway order.
+    const precreateSignature = JSON.stringify({
+      items: items.map(i => [i.id, Number(i.size) || null, Number(i.qty) || 1]),
+      promoCode: promoCode || '',
+      paymentMethod
+    });
+    if (this._precreateSignature === precreateSignature) {
+      return this.cachedRazorpayOrderPromise || this.cachedRazorpayOrderData || null;
+    }
+    this._precreateSignature = precreateSignature;
 
     this.cachedRazorpayOrderData = null;
 
@@ -2260,7 +2485,7 @@ class MytholisApp {
     const badgeEl = document.getElementById('checkout-mode-discount-badge');
     if (badgeEl) {
       if (discount > 0) {
-        badgeEl.textContent = `✦ 25% Privilege Active (${appliedReward ? appliedReward.code : 'FIRST25'})`;
+        badgeEl.textContent = `✦ ${appliedReward ? appliedReward.code : 'Privilege'} applied`;
       } else if (isUPI && baseSubtotal >= 2000) {
         badgeEl.textContent = 'Save ₹200 via Prepaid UPI';
       } else {
@@ -2274,7 +2499,7 @@ class MytholisApp {
         breakdownEl.style.display = 'block';
         breakdownEl.innerHTML = `
           <div style="display: flex; justify-content: space-between; color: var(--gold-light);">
-            <span>Mythos Privilege (${appliedReward ? appliedReward.code : 'FIRST25'} - 25%):</span>
+            <span>Mythos Privilege (${esc(appliedReward ? appliedReward.code : 'FIRST25')}):</span>
             <span>-${store.formatPrice(discount)}</span>
           </div>
         `;
@@ -2816,6 +3041,12 @@ class MytholisApp {
     this.closeRazorpayModal();
     this.trackMetaEvent('Purchase', { value: amount, currency: 'INR' });
 
+    // The pre-created gateway order has now been paid; it must never be reused
+    // for the next basket (which could be identical).
+    this.cachedRazorpayOrderData = null;
+    this.cachedRazorpayOrderPromise = null;
+    this._precreateSignature = null;
+
     // Loyalty is credited server-side only (payment webhook / settle-order).
     // The old client-side recordLoyaltyPurchase() created a second, competing
     // ledger and double-credited every purchase.
@@ -3120,8 +3351,12 @@ class MytholisApp {
 
     if (isLogged && user) {
       const displayName = store.user?.name || user.displayName || user.name || user.email || 'Collector';
-      const initial = displayName.charAt(0).toUpperCase();
+      const initial = esc(displayName.charAt(0).toUpperCase());
       const photoURL = store.user?.photoURL || user.photoURL || null;
+      // Customer-controlled: escape before it lands in innerHTML, including the
+      // title/alt attributes which the old code interpolated raw.
+      const safeDisplayName = esc(displayName);
+      const safePhoto = safeHref(photoURL);
       const adminCrown = isAdminUser ? `
         <button class="icon-btn sovereign-nav-admin-btn" onclick="app.navigateTo('admin')" title="👑 Open Sovereign Command Desk" style="margin-right: 0.4rem; color: var(--gold-primary); border: 1px solid rgba(212, 175, 55, 0.45); background: rgba(212, 175, 55, 0.15); border-radius: 50%; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;">
           <span style="font-size: 1.05rem;">👑</span>
@@ -3131,9 +3366,9 @@ class MytholisApp {
       slot.innerHTML = `
         <div style="display: flex; align-items: center; gap: 0.4rem;">
           ${adminCrown}
-          <button class="icon-btn vip-profile-btn" onclick="app.openProfileModal()" title="Client Profile (${displayName})" style="padding: 0; overflow: hidden; width: 38px; height: 38px; border-radius: 50%;">
-            ${photoURL ? `
-              <img src="${photoURL}" alt="${displayName}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;" />
+          <button class="icon-btn vip-profile-btn" onclick="app.openProfileModal()" title="Client Profile (${safeDisplayName})" style="padding: 0; overflow: hidden; width: 38px; height: 38px; border-radius: 50%;">
+            ${safePhoto ? `
+              <img src="${safePhoto}" alt="${safeDisplayName}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;" />
             ` : `
               <span class="nav-avatar-initial">${initial}</span>
             `}
@@ -3291,6 +3526,36 @@ class MytholisApp {
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
   }
 
+  /** Gazette / Concierge newsletter signup from the footer. */
+  async joinGazette(btn) {
+    const input = document.getElementById('gazette-email');
+    const email = (input?.value || '').trim();
+    if (!email) {
+      this.showToast('Please enter your email address.');
+      input?.focus();
+      return;
+    }
+    const original = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Joining...'; }
+    try {
+      const resp = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, source: 'footer-gazette' })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        this.showToast(data.error || 'Could not add you to the list.');
+      } else {
+        this.showToast(data.message || 'Welcome to the Gazette.');
+        if (input) input.value = '';
+      }
+    } catch (err) {
+      this.showToast('Network error. Please try again.');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = original; }
+    }
+  }
   async shareReferralLink() {
     const code = store.getUserReferralCode();
     const link = store.getUserReferralLink();
@@ -4932,7 +5197,8 @@ class MytholisApp {
     }
   }
 
-  openProductEditorModal(targetId = null) {
+  async openProductEditorModal(targetId = null) {
+    const AdminComponents = await this.getAdminComponents();
     let prod = null;
     if (targetId) {
       const tid = String(targetId).trim().toLowerCase();
@@ -5515,7 +5781,8 @@ class MytholisApp {
   }
 
   // --- Module D: Posts & Lore CRUD Handlers ---
-  openPostEditorModal(postId = null) {
+  async openPostEditorModal(postId = null) {
+    const AdminComponents = await this.getAdminComponents();
     let post = null;
     if (postId) {
       post = (this.adminData.posts || []).find(p => p.id === postId);
@@ -5629,8 +5896,9 @@ class MytholisApp {
     return this.openCollectorDossier(uid);
   }
 
-  openCollectorDossier(uid) {
+  async openCollectorDossier(uid) {
     if (!uid) return;
+    const AdminComponents = await this.getAdminComponents();
     const patron = (this.adminData?.users || []).find(u => u.uid === uid || u.id === uid) ||
                    (this.adminData?.users || []).find(u => (u.profile?.email && u.profile.email.toLowerCase() === uid.toLowerCase()) || (u.email && u.email.toLowerCase() === uid.toLowerCase()));
     if (!patron) {
@@ -5641,7 +5909,8 @@ class MytholisApp {
     this.injectAdminModal(modalHtml);
   }
 
-  openAdjustMythosModal(uid, name, currentPoints) {
+  async openAdjustMythosModal(uid, name, currentPoints) {
+    const AdminComponents = await this.getAdminComponents();
     const modalHtml = AdminComponents.renderAdjustMythosModal(uid, name, currentPoints);
     this.injectAdminModal(modalHtml);
   }
@@ -5678,7 +5947,8 @@ class MytholisApp {
     }
   }
 
-  openOverrideTierModal(uid, name, bottles = 0, currentLevel = 1) {
+  async openOverrideTierModal(uid, name, bottles = 0, currentLevel = 1) {
+    const AdminComponents = await this.getAdminComponents();
     const modalHtml = AdminComponents.renderOverrideTierModal(uid, name, bottles, currentLevel);
     this.injectAdminModal(modalHtml);
   }
@@ -5810,7 +6080,8 @@ class MytholisApp {
     }
   }
 
-  openAddPromoModal() {
+  async openAddPromoModal() {
+    const AdminComponents = await this.getAdminComponents();
     const modalHtml = AdminComponents.renderAddPromoModal();
     this.injectAdminModal(modalHtml);
   }
@@ -6037,6 +6308,7 @@ class MytholisApp {
      ========================================================================== */
 
   async openShippingLabelStudio(targetOrder = null) {
+    const AdminComponents = await this.getAdminComponents();
     this.targetRebranderOrder = targetOrder;
     this.currentRebranderPdfBytes = null;
     this.activeRebrandedResult = null;
@@ -6079,6 +6351,7 @@ class MytholisApp {
   }
 
   async generateAndPreviewOrderLabel(order) {
+    const { generateMytholisShippingLabelPdf } = await this.getLabelTools();
     this.updateRebranderStatus('Generating 4x6 Thermal Label...', 'var(--gold-primary)');
     try {
       const result = await generateMytholisShippingLabelPdf(order);
@@ -6205,6 +6478,7 @@ class MytholisApp {
   }
 
   async loadSampleThermalLabel() {
+    const { generateSampleThermalLabelPdf } = await this.getLabelTools();
     this.updateRebranderStatus('Generating sample 4x6 courier label...', 'var(--gold-primary)');
     try {
       const sampleBytes = await generateSampleThermalLabelPdf();
@@ -6223,7 +6497,8 @@ class MytholisApp {
     }
   }
 
-  applyLabelPreset(presetKey) {
+  async applyLabelPreset(presetKey) {
+    const { LABEL_PRESETS } = await this.getLabelTools();
     const preset = LABEL_PRESETS[presetKey];
     if (!preset) return;
 
@@ -6297,6 +6572,7 @@ class MytholisApp {
   async triggerRebrandPreview() {
     if (!this.currentRebranderPdfBytes) return;
 
+    const { rebrandLabelPdf } = await this.getLabelTools();
     this.updateRebranderStatus('Stamping vector brand...', 'var(--gold-primary)');
     try {
       const options = this.getRebranderFormOptions();
@@ -6330,22 +6606,23 @@ class MytholisApp {
     }
   }
 
-  printRebrandedLabel() {
+  async printRebrandedLabel() {
     if (!this.activeRebrandedResult || !this.activeRebrandedResult.blobUrl) {
       this.showToast('Please load a PDF label first before printing.');
       return;
     }
+    const { printPdfBlob } = await this.getLabelTools();
     this.showToast('Opening thermal print dialog...');
     printPdfBlob(this.activeRebrandedResult.blobUrl);
   }
 
-  downloadRebrandedLabel(orderId = '') {
+  async downloadRebrandedLabel(orderId = '') {
     if (!this.activeRebrandedResult || !this.activeRebrandedResult.blob) {
       this.showToast('Please load and rebrand a PDF label first.');
       return;
     }
+    const { downloadPdfBlob } = await this.getLabelTools();
     const filename = `MYTHOLIS-Label-${orderId || 'Rebranded'}.pdf`;
-    downloadPdfBlob(this.activeRebrandedResult.blob, filename);
     this.showToast(`Downloaded ${filename}`);
   }
 

@@ -26,6 +26,10 @@ import './catalog.js';
 import './store.js';
 import './background.js';
 import './components.js';
-import './adminComponents.js';
 import './firebase.js';
 import './app.js';
+
+/* The founder console (js/adminComponents.js) and the PDF label engine
+   (js/labelRebrander.js -> pdf-lib) are intentionally NOT imported here. They
+   are loaded on demand from app.js only when the operations desk is opened, so
+   storefront visitors never download code they cannot use. */

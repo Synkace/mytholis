@@ -7045,3 +7045,132 @@ body.admin-view-active .view-section,
 .hero-share-pill:hover { background: rgba(212, 175, 55, 0.18); border-color: var(--gold-primary, #D4AF37); transform: translateY(-1px); }
 .hero-share-pill:active { transform: translateY(0); }
 @media (max-width: 640px) { .hero-share-pill { margin-left: 0.4rem; padding: 0.5rem 0.75rem; font-size: 0.66rem; } }
+
+/* --- responsive hardening --- */
+@media (max-width: 768px) {
+  /* WhatsApp float was sitting on top of the hero strapline */
+  .floating-whatsapp-btn {
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+    right: 10px !important;
+    transform: scale(0.86);
+    transform-origin: bottom right;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Product card action button was breaking out of the card's right edge */
+  .product-card { padding: 1rem 1rem 1.1rem; overflow: visible !important; max-width: 100%; }
+  .product-card-actions {
+    position: static !important;
+    inset: auto !important;
+    width: 100%;
+    margin-top: 0.55rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .product-card-footer { gap: 0.5rem; flex-wrap: wrap; }
+  /* Keep long price/CTA rows inside the card */
+  .product-card-title, .product-card-accord { overflow-wrap: anywhere; }
+}
+
+@media (max-width: 480px) {
+  /* Trim the large dead band under the hero fan on phones */
+  .hero-section, #hero { min-height: 88dvh; }
+  #subline, .subline { bottom: clamp(10px, 1.6vh, 22px); }
+}
+
+/* cards must never bleed past the viewport */
+@media (max-width: 640px) {
+  .product-card { overflow: visible !important; width: 100%; max-width: 100%; }
+  .product-card > * { max-width: 100%; }
+  .product-card-img-wrap { max-width: 100%; }
+  .wishlist-toggle-btn { right: 8px; top: 8px; }
+}
+
+/* bottle: sit lower, scale up, overflow the card */
+.product-card-img-wrap {
+  margin-top: -46px !important;      /* was -110px: pulled the cap above the card edge */
+  height: 268px !important;
+  overflow: visible !important;
+  align-items: flex-end;
+}
+.product-card-img {
+  height: 320px !important;
+  max-height: 320px !important;
+  max-width: none !important;
+  transform: translateY(10px) scale(1.14) !important;
+}
+.product-card:hover .product-card-img {
+  transform: translateY(-4px) scale(1.2) !important;
+}
+@media (max-width: 640px) {
+  .product-card-img-wrap { margin-top: -34px !important; height: 240px !important; }
+  .product-card-img { height: 285px !important; max-height: 285px !important; transform: translateY(8px) scale(1.16) !important; }
+}
+
+/* product detail bottle: lower, larger, overflowing */
+.product-showcase-glass {
+  overflow: visible !important;
+}
+.transparent-bottle-frame {
+  overflow: visible !important;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-top: 30px;
+}
+.main-bottle-view-img {
+  height: auto !important;
+  max-height: none !important;
+  width: auto !important;
+  max-width: 118% !important;
+  transform: translateY(14px) scale(1.18) !important;
+  transform-origin: bottom center !important;
+  filter: drop-shadow(0 26px 42px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 34px rgba(212, 175, 55, 0.45));
+}
+@media (max-width: 640px) {
+  .transparent-bottle-frame { padding-top: 20px; }
+  .main-bottle-view-img { max-width: 112% !important; transform: translateY(10px) scale(1.22) !important; }
+}
+
+/* clearance above the fixed bottom nav */
+@media (max-width: 900px) {
+  #main-content-view,
+  main,
+  .main-content,
+  .catalog-section {
+    padding-bottom: calc(118px + env(safe-area-inset-bottom, 0px)) !important;
+    scroll-padding-bottom: calc(118px + env(safe-area-inset-bottom, 0px));
+  }
+  /* product grid must never end flush against the nav */
+  .products-grid, .catalog-grid, .hero-cards-section {
+    margin-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+/* footer subscribe form must never clip the Join button */
+.footer-subscribe-form {
+  display: flex !important;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.footer-subscribe-form .footer-input {
+  flex: 1 1 160px;
+  min-width: 0 !important;
+  width: auto;
+  box-sizing: border-box;
+}
+.footer-subscribe-form .footer-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  margin-left: 0 !important;
+}
+@media (max-width: 480px) {
+  .footer-subscribe-form { flex-direction: column; }
+  .footer-subscribe-form .footer-btn { width: 100%; }
+  .footer-subscribe-form .footer-input { width: 100%; flex: 1 1 auto; }
+}

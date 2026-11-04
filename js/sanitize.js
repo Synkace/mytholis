@@ -53,12 +53,17 @@ export function safeUrl(value) {
 }
 
 /**
- * Only allow http(s) or relative URLs in src/href, so a stored value cannot
- * become `javascript:` or `data:text/html`.
+ * Only allow http(s), relative URLs, and base64 raster images in src/href, so a
+ * stored value cannot become `javascript:` or `data:text/html`.
+ *
+ * `data:image/png|jpeg|webp;base64` is allowed because the profile-photo
+ * uploader stores the cropped avatar as an inline data URL. SVG is deliberately
+ * NOT allowed there: an SVG data URL can carry script.
  */
 export function safeHref(value, fallback = '') {
   const raw = String(value || '').trim();
   if (!raw) return fallback;
   if (/^(https?:\/\/|\/|assets\/)/i.test(raw)) return esc(raw);
+  if (/^data:image\/(png|jpe?g|webp);base64,[A-Za-z0-9+/=\s]+$/i.test(raw)) return raw;
   return fallback;
 }

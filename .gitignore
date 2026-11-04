@@ -35,3 +35,4 @@ android/app/build/
 *service-account*.json
 *serviceAccount*.json
 backups/
+visual-audit/

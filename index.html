@@ -2,7 +2,7 @@
 <html lang="en" class="has-announcement-bar">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Mytholis | Wear Your Legend</title>
   <meta name="description" content="Mytholis: Six elements. Six legends. One sanctuary. Haute Parfumerie extraits hand-distilled in dark emerald crystal flasks.">
   <meta name="theme-color" content="#041812">
@@ -36,16 +36,13 @@
   <link rel="dns-prefetch" href="https://checkout.razorpay.com">
   <link rel="dns-prefetch" href="https://api.razorpay.com">
   <link rel="preload" href="https://checkout.razorpay.com/v1/checkout.js" as="script">
-  <link rel="preload" as="image" href="assets/logo.webp" type="image/webp">
-  <link rel="preload" as="image" href="assets/product/1kingscar.webp" type="image/webp">
-  <link rel="preload" as="image" href="assets/product/3oudrion.webp" type="image/webp">
-  <link rel="preload" as="image" href="assets/product/4spark.webp" type="image/webp">
-  <link rel="preload" as="image" href="assets/hero/kingscarcard.webp" type="image/webp">
-  <link rel="preload" as="image" href="assets/hero/kingscarbg.webp" type="image/webp">
-  <link rel="preload" as="image" href="assets/hero/oudrioncard.webp" type="image/webp">
-  <link rel="preload" as="image" href="assets/hero/oudrionbg.webp" type="image/webp">
-  <link rel="preload" as="image" href="assets/hero/sparkcard.webp" type="image/webp">
-  <link rel="preload" as="image" href="assets/hero/sparkbg.webp" type="image/webp">
+  <!-- Only assets painted on first load. Everything else is lazy-loaded by the
+       app; the previous list preloaded 11 images (~2.6MB) and 9 were unused. -->
+  <link rel="preload" as="image" href="/assets/logo.webp" type="image/webp">
+  <link rel="preload" as="image" href="/assets/product/1kingscar.webp" type="image/webp" fetchpriority="high">
+  <link rel="preload" as="image" href="/assets/product/2petralux.webp" type="image/webp">
+  <link rel="preload" as="image" href="/assets/product/3oudrion.webp" type="image/webp">
+  <link rel="preload" as="image" href="/assets/hero/kingscarcard.webp" type="image/webp">
   
   <!-- Google Fonts: Cinzel, Cormorant Garamond, Montserrat -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=Montserrat:wght@200;300;400;500;600;700&display=swap">
@@ -77,7 +74,7 @@
   <header class="header-nav glass-panel">
     <div class="container nav-container">
       <a class="brand-logo-wrap" onclick="app.clickBrandLogo()" href="#home" title="Mytholis Haute Parfumerie">
-        <img src="assets/logo.webp" alt="Mytholis Logo" class="brand-logo-img" width="48" height="48" />
+        <img src="/assets/logo.webp" alt="Mytholis Logo" class="brand-logo-img" width="48" height="48" />
         <span class="brand-name gold-shimmer-text">MYTHOLIS</span>
       </a>
 
@@ -169,47 +166,59 @@
         <div class="initial-skeleton-btn skeleton-shimmer"></div>
       </div>
     </div>
+
+    <!-- If scripting is unavailable, the skeleton above would shimmer forever. -->
+    <noscript>
+      <div class="container" style="padding: 3rem 1rem; text-align: center;">
+        <h1 class="font-title" style="color: var(--gold-light);">MYTHOLIS</h1>
+        <p style="color: var(--text-main); margin: 1rem 0;">
+          This boutique needs JavaScript to display the collection and complete checkout.
+          Please enable JavaScript, or contact the concierge at
+          <a href="https://wa.me/917770009170" style="color: var(--gold-primary);">+91 777000 9170</a>.
+        </p>
+      </div>
+    </noscript>
   </main>
 
   <!-- UNIFORM MODAL OVERLAYS -->
   
   <!-- 1. Wishlist Modal Overlay -->
   <div class="modal-overlay" id="wishlist-modal-overlay" onclick="if(event.target === this) app.closeWishlistModal()">
-    <div class="modal-card glass-panel" id="wishlist-modal-body"></div>
+    <div class="modal-card glass-panel" id="wishlist-modal-body" role="dialog" aria-modal="true" aria-label="Wishlist" tabindex="-1"></div>
   </div>
 
   <!-- 2. Cart Modal Overlay -->
   <div class="modal-overlay" id="cart-modal-overlay" onclick="if(event.target === this) app.closeCartModal()">
-    <div class="modal-card glass-panel" id="cart-modal-body"></div>
+    <div class="modal-card glass-panel" id="cart-modal-body" role="dialog" aria-modal="true" aria-label="Shopping bag and checkout" tabindex="-1"></div>
   </div>
 
   <!-- 3. VIP Profile & Vault Modal Overlay -->
   <div class="modal-overlay" id="profile-modal-overlay" onclick="if(event.target === this) app.closeProfileModal()">
-    <div class="modal-card glass-panel" id="profile-modal-body"></div>
+    <div class="modal-card glass-panel" id="profile-modal-body" role="dialog" aria-modal="true" aria-label="Collector account" tabindex="-1"></div>
   </div>
 
   <!-- 4. Legal & Policy Modal Overlay -->
   <div class="modal-overlay" id="policy-modal-overlay" onclick="if(event.target === this) app.closePolicyModal()">
-    <div class="modal-card glass-panel" id="policy-modal-body"></div>
+    <div class="modal-card glass-panel" id="policy-modal-body" role="dialog" aria-modal="true" aria-label="Policies" tabindex="-1"></div>
   </div>
 
   <!-- 5. Razorpay & Instant Checkout Modal Overlay -->
   <div class="modal-overlay" id="razorpay-modal-overlay" onclick="if(event.target === this) app.closeRazorpayModal()">
-    <div class="modal-card glass-panel" id="razorpay-modal-body"></div>
+    <div class="modal-card glass-panel" id="razorpay-modal-body" role="dialog" aria-modal="true" aria-label="Checkout" tabindex="-1"></div>
   </div>
 
   <!-- 6. Collector Referral & Invitation Sanctum Modal Overlay -->
   <div class="modal-overlay" id="referral-modal-overlay" onclick="if(event.target === this) app.closeReferralModal()">
-    <div class="modal-card glass-panel" id="referral-modal-body"></div>
+    <div class="modal-card glass-panel" id="referral-modal-body" role="dialog" aria-modal="true" aria-label="Referral invitation" tabindex="-1"></div>
   </div>
 
   <!-- 7. Welcome Signup Bonus Celebration Modal Overlay -->
   <div class="modal-overlay" id="signup-bonus-modal-overlay" onclick="if(event.target === this) app.closeSignupBonusModal()">
-    <div class="modal-card glass-panel" id="signup-bonus-modal-body" style="max-width: 460px; border: 1px solid rgba(212, 175, 55, 0.4); box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85), 0 0 40px rgba(212, 175, 55, 0.25);"></div>
+    <div class="modal-card glass-panel" id="signup-bonus-modal-body" role="dialog" aria-modal="true" aria-label="Welcome bonus" tabindex="-1" style="max-width: 460px; border: 1px solid rgba(212, 175, 55, 0.4); box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85), 0 0 40px rgba(212, 175, 55, 0.25);"></div>
   </div>
 
-  <!-- Toast Notification Container -->
-  <div class="toast-container" id="toast-container"></div>
+  <!-- Toast Notification Container (announced to assistive tech) -->
+  <div class="toast-container" id="toast-container" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <!-- Luxury & Compliant Legal Footer -->
   <footer class="luxury-footer glass-panel site-footer" id="footer">
@@ -217,7 +226,7 @@
       <!-- Brand & Entity Column -->
       <div class="footer-brand-col">
         <a class="brand-logo-wrap" onclick="app.clickBrandLogo()" href="#home" title="Mytholis Haute Parfumerie">
-          <img src="assets/logo.webp" alt="Mytholis Logo" class="brand-logo-img" style="height: 38px;" width="38" height="38" />
+          <img src="/assets/logo.webp" alt="Mytholis Logo" class="brand-logo-img" style="height: 38px;" width="38" height="38" />
           <span class="brand-name gold-shimmer-text" style="font-size: 1.2rem;">MYTHOLIS</span>
         </a>
         <p class="footer-desc">
@@ -267,8 +276,8 @@
         <h5 class="footer-col-title">Concierge & Gazette</h5>
         <p class="footer-subtext">Receive private invitations to confidential reserve releases.</p>
         <div class="footer-subscribe-form">
-          <input type="email" placeholder="Your email address..." class="engraving-input footer-input" />
-          <button class="btn btn-gold footer-btn">Join</button>
+          <input type="email" id="gazette-email" placeholder="Your email address..." class="engraving-input footer-input" autocomplete="email" />
+          <button type="button" id="gazette-join" class="btn btn-gold footer-btn" onclick="app.joinGazette(this)">Join</button>
         </div>
         <div style="margin-top: 1.2rem;">
           <button class="btn btn-glass btn-compact" style="width: 100%; font-size: 0.75rem;" onclick="window.open('https://wa.me/917770009170', '_blank')">
@@ -287,7 +296,7 @@
       </div>
       <div class="footer-bottom-trust">
         <span class="trust-pill">256-Bit Encrypted Payment Vault</span>
-        <span class="trust-pill">UPI • Cards • NetBanking • COD</span>
+        <span class="trust-pill">UPI • Cards • NetBanking • Partial COD</span>
         <span class="trust-pill">Complimentary Express BlueDart Delivery</span>
       </div>
       <div class="footer-copyright-text">

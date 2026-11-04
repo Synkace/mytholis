@@ -48,8 +48,19 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  -webkit-tap-highlight-color: transparent !important;
-  -webkit-focus-ring-color: transparent !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Keyboard focus must stay visible. The old reset disabled the outline on
+   every element with !important, which made the store unusable by keyboard. */
+:focus-visible {
+  outline: 2px solid var(--gold-light, #F6E6B4) !important;
+  outline-offset: 3px !important;
+  border-radius: 4px;
+}
+
+/* Mouse/touch activation should not draw the ring. */
+:focus:not(:focus-visible) {
   outline: none;
 }
 
@@ -79,9 +90,13 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-touch-callout: none;
+  /* Text stays selectable (addresses, order IDs, policy copy). Only interactive
+     chrome opts out, so long-press selection keeps working on mobile. */
+}
+
+/* UI chrome should not be text-selectable */
+.btn, .icon-btn, .nav-link, .glass-pill, .mobile-nav-item, .dossier-tab-btn {
   -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   user-select: none;
 }
 
@@ -329,4 +344,17 @@ h1, h2, h3, h4, .font-title {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* Respect the OS "reduce motion" preference. The storefront is animation-heavy
+   (GSAP intro, canvas background, shimmer, hover lifts); this neutralises the
+   CSS half of it. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 
