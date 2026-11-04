@@ -440,7 +440,7 @@ const Components = {
           </div>
           <div class="discovery-banner-visual bottle-pedestal-glow">
             <div style="position: relative; width: 100%; max-width: 400px; margin: 0 auto;">
-              <img src="assets/coffret_banner.webp" alt="Sixth Sense Luxury Coffret" loading="lazy" decoding="async" style="max-height: 250px; width: 100%; object-fit: cover; border-radius: 16px; border: 1px solid rgba(212, 175, 55, 0.45); box-shadow: 0 15px 35px rgba(0,0,0,0.85);" />
+              <img src="assets/product/sixthsense.webp" alt="Sixth Sense Luxury Coffret" loading="lazy" decoding="async" style="max-height: 250px; width: 100%; object-fit: cover; object-position: center 55%; border-radius: 16px; border: 1px solid rgba(212, 175, 55, 0.45); box-shadow: 0 15px 35px rgba(0,0,0,0.85);" />
               
               <!-- 6 Scent Archetypes Preview Grid -->
               <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px;">
@@ -601,16 +601,6 @@ const Components = {
                 </p>
               </div>
             </div>
-
-            <!-- Direct CTA Buttons below Pyramid -->
-            <div id="pyramid-cta-wrap" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 3rem;">
-              <button id="pyramid-cart-btn" class="btn btn-glass" onclick="app.quickAddToCart('${activeScent.id}')">
-                ADD TO CART
-              </button>
-              <button id="pyramid-buy-btn" class="btn btn-gold" onclick="app.buyNow('${activeScent.id}', event)">
-                BUY NOW
-              </button>
-            </div>
           `;
         })()}
       </section>
@@ -622,9 +612,25 @@ const Components = {
     const categories = ['All', 'Woody · Mineral', 'Oud · Royal', 'Amber · Opulent', 'Fresh · Electric', 'Smoky · Sensual', 'Woody · Evening'];
     const active = store.activeCategory;
     const baseList = MYTHOLIS_CATALOG.filter(p => p.id !== 'mytholis-discovery-set');
-    const filteredProducts = active === 'All' 
-      ? baseList 
-      : baseList.filter(p => p.collection.toLowerCase() === active.toLowerCase());
+
+    /* The chips are editorial ("Oud · Royal"), while products store their own
+       collection ("Woody · Men"), scent family and accords. Exact string
+       equality meant every chip except All produced an empty grid, so match on
+       the structured scent metadata instead. */
+    const matchesCategory = (product, category) => {
+      if (category === 'All') return true;
+      const haystack = [
+        product.collection,
+        product.scentFamily,
+        product.tag,
+        product.subtitle,
+        ...(Array.isArray(product.accords) ? product.accords : [])
+      ].filter(Boolean).join(' ').toLowerCase();
+      const tokens = category.toLowerCase().split('·').map(t => t.trim()).filter(Boolean);
+      return tokens.some(token => new RegExp(`\\b${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(haystack));
+    };
+
+    const filteredProducts = baseList.filter(p => matchesCategory(p, active));
 
     return `
       <div class="container">
@@ -634,10 +640,11 @@ const Components = {
           <div class="divider"></div>
         </div>
 
-        <!-- Filter Bar -->
-        <div class="collection-filter-bar">
+        <!-- Filter Bar (horizontal slider on phones) -->
+        <div class="collection-filter-bar" role="group" aria-label="Filter extraits by scent family">
           ${categories.map(cat => `
             <button class="btn ${cat === active ? 'btn-gold' : 'btn-glass'} filter-pill-btn" 
+                    aria-pressed="${cat === active}"
                     onclick="store.activeCategory = '${cat}'; app.renderCurrentView();">
               ${cat}
             </button>
@@ -646,7 +653,13 @@ const Components = {
 
         <!-- Products Grid (3x2 Signature Extraits) -->
         <div class="products-grid">
-          ${filteredProducts.map(p => this.renderProductCard(p)).join('')}
+          ${filteredProducts.length
+            ? filteredProducts.map(p => this.renderProductCard(p)).join('')
+            : `<div class="collection-empty-state liquid-glass-card">
+                 <h4>No extraits in this family yet</h4>
+                 <p>Try another scent family, or view the full catalog.</p>
+                 <button class="btn btn-gold" onclick="store.activeCategory = 'All'; app.renderCurrentView();">View All Extraits</button>
+               </div>`}
         </div>
       </div>
     `;
@@ -1028,7 +1041,7 @@ const Components = {
 
     return `
       <div class="container">
-        <button class="btn btn-glass" onclick="app.navigateTo('collections')" style="margin-bottom: 2rem; padding: 0.5rem 1.2rem; font-size: 0.75rem;">
+        <button class="btn btn-glass pdp-back-btn" onclick="app.navigateTo('collections')" style="margin-bottom: 2rem; padding: 0.5rem 1.2rem; font-size: 0.75rem;">
           ← Back to Vault Catalog
         </button>
 
@@ -1065,7 +1078,7 @@ const Components = {
             <div class="showcase-bottle-caption" id="gallery-photo-caption">
               ${galleryImages.length > 1 ? `Photo 1 of ${galleryImages.length} · Flacon Edition` : 'Crystal Flacon'}
             </div>
-            <div style="margin-top: 0.4rem; display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center;">
+            <div class="showcase-meta-pills" style="margin-top: 0.4rem; display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center;">
               <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-primary);">${product.concentration}</span>
               ${product.sku ? `<span class="glass-pill" style="font-size: 0.65rem; color: var(--text-muted);">${product.sku}</span>` : ''}
             </div>
@@ -1080,7 +1093,7 @@ const Components = {
             
             <h1 class="product-detail-title">${product.name}</h1>
             <p class="subtitle" style="margin-bottom: 0.4rem;">${product.subtitle}</p>
-            <p style="font-style: italic; color: var(--gold-light); font-size: 0.95rem; margin-bottom: 1.2rem; font-family: var(--font-serif-title);">"${product.tagline}"</p>
+            <p class="pdp-quote" style="font-style: italic; color: var(--gold-light); font-size: 0.95rem; margin-bottom: 1.2rem; font-family: var(--font-serif-title);">"${product.tagline}"</p>
 
             <div class="product-detail-price-row">
               <div>
@@ -1097,12 +1110,8 @@ const Components = {
               </span>
             </div>
 
-            <p class="product-detail-desc">
-              ${product.description}
-            </p>
-
             <!-- Size Selector -->
-            <div style="margin-bottom: 1.5rem;">
+            <div class="pdp-size-block" style="margin-bottom: 1.5rem;">
               <label style="font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-light); display: block; margin-bottom: 0.6rem;">
                 Select Volume:
               </label>
@@ -1116,6 +1125,23 @@ const Components = {
                 `).join('')}
               </div>
             </div>
+
+            <!-- Action Buttons: Add to Cart and Buy Now (kept above the fold) -->
+            <div class="product-detail-actions-stacked" style="margin-top: 0.2rem;">
+              <div class="action-btn-row" style="display: flex; gap: 0.9rem;">
+                <button class="btn btn-glass" style="flex: 1; padding: 1rem 1.2rem; font-size: 0.92rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border-color: var(--gold-primary); color: var(--gold-light);" onclick="app.addProductToCart('${product.id}')">
+                  Add to Cart
+                </button>
+                <button class="btn btn-gold" style="flex: 1; padding: 1rem 1.2rem; font-size: 0.92rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;" onclick="app.buyNow('${product.id}', event)">
+                  Buy Now
+                </button>
+              </div>
+            </div>
+
+            <!-- Secondary: full composition story -->
+            <p class="product-detail-desc">
+              ${product.description}
+            </p>
 
             <!-- Performance Gauges & Quick-Glance Wear Indicators -->
             <div class="product-wear-summary-strip liquid-glass-card" style="margin-bottom: 1.5rem; padding: 0.9rem 1.2rem; display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
@@ -1147,18 +1173,6 @@ const Components = {
                 <div class="meter-bar-track">
                   <div class="meter-bar-fill" style="width: ${product.sillageRating}%;"></div>
                 </div>
-              </div>
-            </div>
-
-            <!-- Action Buttons: Add to Cart and Buy Now -->
-            <div class="product-detail-actions-stacked" style="margin-top: 1.8rem;">
-              <div class="action-btn-row" style="display: flex; gap: 0.9rem;">
-                <button class="btn btn-glass" style="flex: 1; padding: 1rem 1.2rem; font-size: 0.92rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border-color: var(--gold-primary); color: var(--gold-light);" onclick="app.addProductToCart('${product.id}')">
-                  Add to Cart
-                </button>
-                <button class="btn btn-gold" style="flex: 1; padding: 1rem 1.2rem; font-size: 0.92rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;" onclick="app.buyNow('${product.id}', event)">
-                  Buy Now
-                </button>
               </div>
             </div>
 

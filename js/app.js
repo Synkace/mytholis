@@ -229,6 +229,7 @@ class MytholisApp {
 
     // Handle window resize (only switch layout on actual mobile/desktop breakpoint change)
     let lastWidth = window.innerWidth;
+    let lastMobileWidth = window.innerWidth;
     window.addEventListener('resize', () => {
       const currentWidth = window.innerWidth;
       const crossedBreakpoint = (lastWidth <= 768 && currentWidth > 768) || (lastWidth > 768 && currentWidth <= 768);
@@ -240,10 +241,27 @@ class MytholisApp {
       }
       if (crossedBreakpoint && !this.isIntroAnimating) {
         if (currentWidth <= 768) {
+          this.stopMobileFanTweens();
           this.renderMobileFlaconCarousel(false);
         } else {
           this.resetDesktopFlaconCards();
         }
+        lastMobileWidth = currentWidth;
+        return;
+      }
+
+      /* Mobile fan spacing is derived from window.innerWidth. Rotation,
+         pinch-zoom or a split-screen resize changes the width without crossing
+         the breakpoint, which used to leave the bottles at the old spread. */
+      if (currentWidth <= 768 && Math.abs(currentWidth - lastMobileWidth) > 4) {
+        lastMobileWidth = currentWidth;
+        clearTimeout(this._mobileFanResizeTimer);
+        this._mobileFanResizeTimer = setTimeout(() => {
+          if (!this.isIntroAnimating && store.currentView === 'home') {
+            this.stopMobileFanTweens();
+            this.renderMobileFlaconCarousel(false);
+          }
+        }, 140);
       }
     });
 
@@ -667,12 +685,13 @@ class MytholisApp {
       }
     });
 
+    // Keep the pill the shopper just chose visible inside the scrolling row.
+    this.centerActivePyramidPill();
+
     const cardsContainer = document.getElementById('pyramid-resonance-cards');
     const topNotesEl = document.getElementById('pyramid-top-notes');
     const heartNotesEl = document.getElementById('pyramid-heart-notes');
     const baseNotesEl = document.getElementById('pyramid-base-notes');
-    const cartBtn = document.getElementById('pyramid-cart-btn');
-    const buyBtn = document.getElementById('pyramid-buy-btn');
 
     if (cardsContainer && topNotesEl && heartNotesEl && baseNotesEl) {
       cardsContainer.style.opacity = '0.3';
@@ -681,8 +700,6 @@ class MytholisApp {
         topNotesEl.innerHTML = scent.notes.top.join(' · ');
         heartNotesEl.innerHTML = scent.notes.heart.join(' · ');
         baseNotesEl.innerHTML = scent.notes.base.join(' · ');
-        if (cartBtn) cartBtn.setAttribute('onclick', `app.quickAddToCart('${scent.id}')`);
-        if (buyBtn) buyBtn.setAttribute('onclick', `app.buyNow('${scent.id}', event)`);
         cardsContainer.style.opacity = '1';
         cardsContainer.style.transform = 'translateY(0)';
       }, 150);
@@ -755,6 +772,12 @@ class MytholisApp {
     mainContainer.innerHTML = contentHtml;
     this.initTiltEffects();
 
+    // The mobile filter row is a horizontal slider; keep the selected chip in
+    // view after a filter tap re-renders the page.
+    if (store.currentView === 'collections') {
+      this.centerActiveFilterChip();
+    }
+
     // The decorative full-screen canvas only needs to animate on the storefront.
     // Pausing it elsewhere (checkout, account, admin) saves significant mobile
     // CPU/battery for no visual loss - the last frame stays as a static backdrop.
@@ -778,12 +801,47 @@ class MytholisApp {
       this.initHeroSwipeGestures();
       this.initHeroCardBackgroundSwitch();
       this.initProductSliderDrag();
+      requestAnimationFrame(() => this.centerActivePyramidPill());
       if (this.activateCenterCard) {
         setTimeout(() => this.activateCenterCard(), 50);
       }
     } else {
       mainContainer.classList.remove('home-view');
     }
+  }
+
+  /* Centre the active catalogue filter chip inside its horizontal scroller. */
+  centerActiveFilterChip() {
+    const bar = document.querySelector('.collection-filter-bar');
+    if (!bar) return;
+    const active = bar.querySelector('.btn-gold');
+    if (!active || bar.scrollWidth <= bar.clientWidth + 1) return;
+
+    const barRect = bar.getBoundingClientRect();
+    const chipRect = active.getBoundingClientRect();
+    const delta = (chipRect.left - barRect.left) - (bar.clientWidth - chipRect.width) / 2;
+    bar.scrollLeft += delta;
+  }
+
+  /* Centre the selected pyramid pill inside its horizontal scroller.
+     The row used to be centre-justified, which pushed the first pills into
+     unreachable negative scroll space - the selected scent could be invisible. */
+  centerActivePyramidPill() {
+    const row = document.getElementById('pyramidPillsRow');
+    if (!row) return;
+    const active = row.querySelector('.pyramid-tab-btn.active');
+    if (!active || row.scrollWidth <= row.clientWidth + 1) return;
+
+    const rowRect = row.getBoundingClientRect();
+    const chipRect = active.getBoundingClientRect();
+    const target = row.scrollLeft + (chipRect.left - rowRect.left) - (row.clientWidth - chipRect.width) / 2;
+
+    // Jump rather than animate on first paint; the CSS smooth behaviour would
+    // otherwise slide the row by itself when the page loads.
+    const previous = row.style.scrollBehavior;
+    row.style.scrollBehavior = 'auto';
+    row.scrollLeft = Math.max(0, target);
+    row.style.scrollBehavior = previous;
   }
 
   /* ------------------------------------------------------------------------
@@ -795,6 +853,13 @@ class MytholisApp {
 
     const cards = heroEl.querySelectorAll('#cardsRow .flacon-card, #cardsRow .card');
     if (!cards || cards.length === 0) return;
+
+    // A previous home render can leave ambient/timeline tweens attached to these
+    // nodes (they are rebuilt on every navigation). Clear them so two animations
+    // never write to the same transform.
+    if (typeof gsap !== 'undefined') {
+      cards.forEach((card) => gsap.killTweensOf(card));
+    }
 
     // Ensure rest rotation dataset is populated
     cards.forEach((card) => {
@@ -910,23 +975,33 @@ class MytholisApp {
         }
       }
 
-      // 3. Continuous floating animation
-      cards.forEach((card, i) => {
-        const rot = parseFloat(card.dataset.restRot) || 0;
-        gsap.to(card, {
-          y: `+=${6 + (i % 3) * 4}`,
-          rotation: rot + (i % 2 === 0 ? 1.2 : -1.2),
-          duration: 3.2 + (i % 4) * 0.5,
-          delay: (shouldRunIntro ? 1.8 : 0.3) + i * 0.12,
-          ease: 'sine.inOut',
-          yoyo: true,
-          repeat: -1
+      // 3. Continuous floating animation - DESKTOP FAN ONLY.
+      //    On mobile the carousel owns x/y/scale/rotation. An ambient tween here
+      //    wrote the *desktop* rest rotation (-10..+10) and a drifting `y` on top
+      //    of the mobile slot (-14..+14), so the fan slowly skewed and the
+      //    bottles sat at inconsistent heights the longer the page stayed open.
+      if (!isMobile) {
+        cards.forEach((card, i) => {
+          const rot = parseFloat(card.dataset.restRot) || 0;
+          gsap.to(card, {
+            y: `+=${6 + (i % 3) * 4}`,
+            rotation: rot + (i % 2 === 0 ? 1.2 : -1.2),
+            duration: 3.2 + (i % 4) * 0.5,
+            delay: (shouldRunIntro ? 1.8 : 0.3) + i * 0.12,
+            ease: 'sine.inOut',
+            yoyo: true,
+            repeat: -1
+          });
         });
-      });
+      }
 
-      // 4. Hover 3D tilt on individual cards (desktop only)
-      cards.forEach((card) => {
-        card.addEventListener('mousemove', (e) => {
+      // 4. Hover 3D tilt on individual cards (desktop only, bound once per node)
+      if (!isMobile) {
+        cards.forEach((card) => {
+          if (card.dataset.tiltBound === '1') return;
+          card.dataset.tiltBound = '1';
+
+          card.addEventListener('mousemove', (e) => {
           if (window.innerWidth <= 768) return;
           const r = card.getBoundingClientRect();
           const px = (e.clientX - r.left) / r.width - 0.5;
@@ -958,7 +1033,8 @@ class MytholisApp {
             overwrite: 'auto'
           });
         });
-      });
+        });
+      }
     } else {
       // Fallback without GSAP
       if (isMobile) {
@@ -976,8 +1052,9 @@ class MytholisApp {
       fallbackLetters.forEach(l => { l.style.opacity = '1'; l.style.transform = 'translateY(0)'; });
     }
 
+    // Centre halo / dots / subline are independent of the intro timeline.
     if (isMobile) {
-      this.renderMobileFlaconCarousel(false);
+      this.syncMobileFanIndicators();
     }
 
     // 5. Mouse parallax across cards (desktop only)
@@ -1102,7 +1179,10 @@ class MytholisApp {
 
     const isNarrow = window.innerWidth <= 480;
     // Elegant proportional spacing for scaled-up bottles with 3D overlap
-    const spacing = isNarrow ? Math.min(window.innerWidth * 0.19, 74) : Math.min(window.innerWidth * 0.23, 92);
+    const spacing = isNarrow 
+      ? Math.round(Math.min(window.innerWidth * 0.19, 74)) 
+      : Math.round(Math.min(window.innerWidth * 0.23, 92));
+    const outerSpacing = Math.round(spacing * 1.84);
 
     if (diff === 0) {
       // Center active bottle (front, prominently scaled up, glowing with clear headroom below title)
@@ -1137,7 +1217,7 @@ class MytholisApp {
     } else if (diff === -2) {
       // Outer left
       return {
-        x: -spacing * 1.84,
+        x: -outerSpacing,
         y: 32,
         scale: 0.82,
         rotation: -14,
@@ -1147,7 +1227,7 @@ class MytholisApp {
     } else if (diff === 2) {
       // Outer right
       return {
-        x: spacing * 1.84,
+        x: outerSpacing,
         y: 32,
         scale: 0.82,
         rotation: 14,
@@ -1177,16 +1257,6 @@ class MytholisApp {
     cards.forEach((card, i) => {
       const slot = this.getMobileSlotParams(i, this.mobileHeroIndex);
 
-      let diff = i - this.mobileHeroIndex;
-      while (diff > 3) diff -= 6;
-      while (diff < -2) diff += 6;
-
-      if (diff === 0) {
-        card.classList.add('is-mobile-center');
-      } else {
-        card.classList.remove('is-mobile-center');
-      }
-
       if (animate && typeof gsap !== 'undefined') {
         gsap.to(card, {
           x: slot.x,
@@ -1206,7 +1276,23 @@ class MytholisApp {
       }
     });
 
-    // Update dots indicator
+    this.syncMobileFanIndicators();
+  }
+
+  /* Centre halo + dot state + subline label. Split out so the intro path can
+     set them without re-running (and thereby killing) its own timeline. */
+  syncMobileFanIndicators() {
+    const cards = document.querySelectorAll('#cardsRow .flacon-card, #cardsRow .card');
+    if (!cards.length) return;
+
+    cards.forEach((card, i) => {
+      if (i === this.mobileHeroIndex) {
+        card.classList.add('is-mobile-center');
+      } else {
+        card.classList.remove('is-mobile-center');
+      }
+    });
+
     document.querySelectorAll('#mobileFlaconDots .m-dot').forEach((dot, idx) => {
       if (idx === this.mobileHeroIndex) {
         dot.classList.add('active');
@@ -1215,14 +1301,13 @@ class MytholisApp {
       }
     });
 
-    // Update subline text with active fragrance name & notes
     const activeCard = cards[this.mobileHeroIndex];
     if (activeCard) {
       const name = activeCard.dataset.name || 'Master Extrait';
       const note = activeCard.dataset.note || '40% Pure Concentration';
       const nameEl = document.getElementById('heroSublineName');
       if (nameEl) {
-        nameEl.innerHTML = `<strong>${name}</strong> · ${note}`;
+        nameEl.innerHTML = `<strong>${esc(name)}</strong> · ${esc(note)}`;
       }
     }
   }
@@ -1231,12 +1316,23 @@ class MytholisApp {
     window._justSwipedHero = true;
     setTimeout(() => { window._justSwipedHero = false; }, 320);
     this.mobileHeroIndex = ((this.mobileHeroIndex + dir) % 6 + 6) % 6;
+    this.stopMobileFanTweens();
     this.renderMobileFlaconCarousel(true);
   }
 
   setMobileFlaconIndex(index) {
     this.mobileHeroIndex = ((index % 6) + 6) % 6;
+    this.stopMobileFanTweens();
     this.renderMobileFlaconCarousel(true);
+  }
+
+  /* Cancel any running intro/slot tween before an interactive step so two
+     animations never interpolate the same transform. */
+  stopMobileFanTweens() {
+    if (typeof gsap === 'undefined') return;
+    document.querySelectorAll('#cardsRow .flacon-card, #cardsRow .card').forEach((card) => {
+      gsap.killTweensOf(card);
+    });
   }
 
   handleFlaconCardClick(index, productId) {
@@ -1732,11 +1828,12 @@ class MytholisApp {
     this.selectedPrice = price;
 
     document.querySelectorAll('#size-selector-group .btn').forEach(btn => {
-      if (parseInt(btn.getAttribute('data-ml')) === ml) {
-        btn.className = 'btn btn-gold';
-      } else {
-        btn.className = 'btn btn-glass';
-      }
+      // Toggle the state classes instead of reassigning className: the old
+      // version dropped `size-btn` (and any future modifier), so the buttons
+      // changed height the moment a shopper picked a volume.
+      const isActive = parseInt(btn.getAttribute('data-ml'), 10) === ml;
+      btn.classList.toggle('btn-gold', isActive);
+      btn.classList.toggle('btn-glass', !isActive);
     });
 
     const priceEl = document.getElementById('detail-product-price');
@@ -5589,11 +5686,10 @@ class MytholisApp {
       },
       'mytholis-discovery-set': {
         sku: 'MYTH-SET-6S-48',
-        bottleImage: 'assets/coffret_banner.webp',
+        bottleImage: 'assets/product/sixthsense.webp',
         cardImage: 'assets/product/sixthsense.webp',
-        backgroundImage: 'assets/coffret_banner.webp',
+        backgroundImage: 'assets/product/sixthsense.webp',
         gallery: [
-          'assets/coffret_banner.webp',
           'assets/product/sixthsense.webp',
           'assets/product/1kingscar.webp',
           'assets/product/2petralux.webp',

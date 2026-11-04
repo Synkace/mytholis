@@ -99,10 +99,9 @@ export const CANONICAL_MEDIA_MAP = {
     sku: 'MYTH-SET-6S-48',
     bottleImage: 'assets/product/sixthsense.webp',
     cardImage: 'assets/product/sixthsense.webp',
-    backgroundImage: 'assets/coffret_banner.webp',
+    backgroundImage: 'assets/product/sixthsense.webp',
     gallery: [
       'assets/product/sixthsense.webp',
-      'assets/coffret_banner.webp',
       'assets/product/7-1.webp',
       'assets/product/7-2.webp',
       'assets/product/1kingscar.webp',
@@ -117,10 +116,9 @@ export const CANONICAL_MEDIA_MAP = {
     sku: 'MYTH-SET-6S-48',
     bottleImage: 'assets/product/sixthsense.webp',
     cardImage: 'assets/product/sixthsense.webp',
-    backgroundImage: 'assets/coffret_banner.webp',
+    backgroundImage: 'assets/product/sixthsense.webp',
     gallery: [
       'assets/product/sixthsense.webp',
-      'assets/coffret_banner.webp',
       'assets/product/7-1.webp',
       'assets/product/7-2.webp',
       'assets/product/1kingscar.webp',

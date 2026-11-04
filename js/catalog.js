@@ -389,10 +389,9 @@ const MYTHOLIS_CATALOG = [
     media: {
       bottleImage: "assets/product/sixthsense.webp",
       cardImage: "assets/product/sixthsense.webp",
-      backgroundImage: "assets/coffret_banner.webp",
+      backgroundImage: "assets/product/sixthsense.webp",
       gallery: [
         "assets/product/sixthsense.webp",
-        "assets/coffret_banner.webp",
         "assets/product/7-1.webp",
         "assets/product/7-2.webp",
         "assets/product/1kingscar.webp",
