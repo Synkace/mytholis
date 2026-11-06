@@ -640,7 +640,7 @@ export function calculateServerOrderTotal(items = [], promoCode = '', paymentMet
      freight, which is the whole point of taking it.
      The deposit is computed AFTER discounts and shipping, so the customer's
      total outlay never changes - only WHEN they pay it. */
-  const PARTIAL_COD_PCT = 0.25;
+  const PARTIAL_COD_PCT = 0.10;
   const PARTIAL_COD_FLOOR = 499;
 
   const depositInRupees = isCOD

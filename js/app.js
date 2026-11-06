@@ -1,3 +1,4 @@
+import { track } from './analytics.js';
 /* ==========================================================================
    MYTHOLIS LUXURY PERFUME - APPLICATION CONTROLLER & ROUTER
    Handles routing, event listeners, 3D tilt effects, ambiance, and toasts.
@@ -406,7 +407,14 @@ class MytholisApp {
 
   /* Routing Handler with Deep-Linking & Browser Back Support */
   handleHashRoute() {
-    const rawHash = (window.location.hash || '').replace(/^#\/?/, '').trim();
+    let rawHash = (window.location.hash || '').replace(/^#\/?/, '').trim();
+
+    /* Real paths are indexable; #fragments are discarded by search engines.
+       Serve /product/<id> by reading the pathname when there is no hash. */
+    if (!rawHash && typeof window !== 'undefined') {
+      const cleanPath = window.location.pathname.replace(/^\/+|\/+$/g, '');
+      if (cleanPath.startsWith('product/')) rawHash = cleanPath;
+    }
 
     // Handle Payment Return Parameters (?payment=success or ?payment=failed)
     const fullSearch = window.location.search || (rawHash.includes('?') ? '?' + rawHash.split('?')[1] : '');
@@ -462,6 +470,13 @@ class MytholisApp {
     }
 
     // Support legacy #product?id=[id]
+    // Support #product/[id] and /product/[id]
+    if (rawHash.startsWith('product/')) {
+      const pathId = rawHash.replace('product/', '').split('?')[0].split('&')[0].trim();
+      this.navigateTo('product', pathId || 'king-scar', false);
+      return;
+    }
+
     if (rawHash.startsWith('product')) {
       const urlParams = new URLSearchParams(rawHash.split('?')[1]);
       const flaconId = urlParams.get('id') || 'king-scar';
@@ -566,6 +581,7 @@ class MytholisApp {
         const defaultSize = product.sizes[0];
         this.selectedSize = defaultSize.ml;
         this.selectedPrice = defaultSize.price;
+        track.viewItem(product, { sku: defaultSize.sku, size: `${defaultSize.ml}ml` }, Number(defaultSize.price) || 0);
       }
     }
 
@@ -1872,6 +1888,7 @@ class MytholisApp {
     const engraving = engravingEl ? engravingEl.value.trim() : '';
 
     store.addToCart(productId, activeSizeObj.ml, engraving, 1, activeSizeObj.sku);
+    track.addToCart(product, { sku: activeSizeObj.sku, size: `${activeSizeObj.ml}ml` }, Number(activeSizeObj.price) || 0, 1);
     this.showToast("Fragrance added to your cart.");
     this.openCartModal();
   }
@@ -1885,6 +1902,7 @@ class MytholisApp {
     const targetSku = sku || targetSize.sku;
     
     store.addToCart(productId, targetSize.ml, '', 1, targetSku);
+    track.addToCart(product, { sku: targetSku, size: `${targetSize.ml}ml` }, Number(targetSize.price) || 0, 1);
     const cleanName = (product.name || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     this.showToast(`${cleanName} (${targetSize.ml}ml) added to your cart.`);
     this.openCartModal();
@@ -2140,7 +2158,7 @@ class MytholisApp {
     }
   }
 
-  buyNow(productId, event, ml = null, price = null) {
+  async buyNow(productId, event, ml = null, price = null) {
     if (event && event.preventDefault) event.preventDefault();
     const catalog = (typeof store !== 'undefined' && store.getProducts) ? store.getProducts() : MYTHOLIS_CATALOG;
     const product = catalog.find(p => p.id === productId) || MYTHOLIS_CATALOG.find(p => p.id === productId) || { id: productId };
@@ -2180,7 +2198,7 @@ class MytholisApp {
         store.cart[0].sku === targetSku &&
         store.cart[0].engraving === '';
       if (!alreadyJustThis) {
-        const confirmed = window.confirm(
+        const confirmed = await this.askConfirm(
           `Your bag holds ${store.cart.length} item${store.cart.length > 1 ? 's' : ''}.\n\n` +
           'Buy Now checks out this flacon only and will replace your current bag. Continue?'
         );
@@ -2406,7 +2424,7 @@ class MytholisApp {
     return this._rzpSdkPromise;
   }
 
-  precreateRazorpayOrder(productOrCart = null) {
+  async precreateRazorpayOrder(productOrCart = null) {
     // 0. Never ask the gateway to mint an order on speculation.
     //    This used to run on every cart open with an empty bag and fell through
     //    to MYTHOLIS_CATALOG[0], so merely opening the cart created a real
@@ -2490,9 +2508,26 @@ class MytholisApp {
     this.cachedRazorpayOrderData = null;
 
     // 3. Initiate order creation on backend sending structured items array
+    /* The draft created here is what the abandoned-checkout desk shows, so it
+       must carry the collector's identity. It previously sent neither a token
+       nor a customer object, so every draft was anonymous. */
+    const prewarmUser = (typeof firebaseService !== 'undefined') ? firebaseService.currentUser : null;
+    const prewarmToken = prewarmUser ? await prewarmUser.getIdToken().catch(() => null) : null;
+    const prewarmCustomer = {
+      name: store.user?.name || '',
+      email: store.user?.email || '',
+      phone: store.user?.phone || '',
+      address: store.user?.address || '',
+      city: store.user?.city || '',
+      state: store.user?.state || '',
+      pincode: store.user?.pincode || ''
+    };
+
     const promise = fetch('/api/create-order', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: prewarmToken
+        ? { 'Content-Type': 'application/json', 'Authorization': `Bearer ${prewarmToken}` }
+        : { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         items,
         promoCode,
@@ -2500,6 +2535,7 @@ class MytholisApp {
         redeemMythos,
         mythosPoints: redeemMythos,
         currency: 'INR',
+        customer: prewarmCustomer,
         receipt: `MYTH-${Date.now().toString().slice(-6)}`
       })
     })
@@ -2888,7 +2924,7 @@ class MytholisApp {
     const activeMethodPill = document.querySelector('.drawer-method-pill.active') || document.querySelector('.razorpay-method-pill.active');
     const paymentMethod = activeMethodPill
       ? activeMethodPill.textContent.trim()
-      : (this.drawerPaymentMethod === 'cod' ? 'Partial COD (25% Deposit)' : 'Prepaid (Google Pay / UPI)');
+      : (this.drawerPaymentMethod === 'cod' ? 'Partial COD (10% Deposit)' : 'Prepaid (Google Pay / UPI)');
     const isCOD = paymentMethod.toLowerCase().includes('cash on delivery') || paymentMethod.toLowerCase().includes('cod');
 
     // Structured items array for server catalog calculation
@@ -3019,6 +3055,15 @@ class MytholisApp {
       this.showToast('Failed to create authoritative order on server.');
       return;
     }
+
+    /* Fires only once the SERVER priced the order, so the value matches what
+       the gateway will charge (not the client cart estimate). */
+    try {
+      track.beginCheckout(
+        store.cart.map((i) => ({ sku: i.sku, name: i.name, unitPrice: i.price, qty: i.quantity || 1 })),
+        orderData.verifiedTotal || Math.round((orderData.amount || 0) / 100)
+      );
+    } catch (_) {}
 
     rzpOrderId = orderData.order_id || orderData.orderId;
     rzpAmount = orderData.amount;
@@ -3154,6 +3199,15 @@ class MytholisApp {
 
     const authoritativeOrderId = details.orderId || `MYTH-${Math.floor(10000 + Math.random() * 90000)}`;
     const purchasedItems = [...store.cart];
+
+    track.purchase({
+      orderNumber: authoritativeOrderId,
+      total: amount,
+      shippingFee: details.shippingFee || 0,
+      items: purchasedItems.map((i) => ({
+        sku: i.sku, name: i.name, unitPrice: i.price, qty: i.quantity || 1
+      }))
+    });
 
     const orderRecord = {
       orderId: authoritativeOrderId,
@@ -3692,6 +3746,67 @@ class MytholisApp {
       slot.textContent = 'Could not load the points ledger.';
     }
   }
+  /* ------------------------------------------------------------------
+     Themed dialogs. Native window.confirm / window.prompt render an
+     OS-chrome box (or, on iOS, the page URL) that breaks the brand and
+     looks like a browser warning. Everything now goes through these.
+     ------------------------------------------------------------------ */
+  _dialogShell(innerHtml) {
+    const overlay = document.createElement('div');
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:1.2rem;background:rgba(2,8,6,0.72);backdrop-filter:blur(6px);';
+    overlay.innerHTML = `
+      <div class="liquid-glass-card" style="max-width:460px;width:100%;padding:1.5rem 1.6rem;border:1px solid rgba(212,175,55,0.45);background:linear-gradient(160deg, rgba(8,32,24,0.98), rgba(3,16,12,0.99));box-shadow:0 30px 70px rgba(0,0,0,0.75);">
+        ${innerHtml}
+      </div>`;
+    document.body.appendChild(overlay);
+    return overlay;
+  }
+
+  askConfirm(message, options = {}) {
+    const { title = 'Please confirm', confirmLabel = 'Confirm', cancelLabel = 'Cancel', danger = false } = options;
+    return new Promise((resolve) => {
+      const overlay = this._dialogShell(`
+        <div style="font-size:0.68rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold-primary);margin-bottom:0.5rem;">${title}</div>
+        <div style="font-size:0.92rem;line-height:1.6;color:var(--text-main);white-space:pre-line;margin-bottom:1.4rem;">${String(message || '').replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]))}</div>
+        <div style="display:flex;gap:0.7rem;justify-content:flex-end;">
+          <button type="button" data-act="cancel" class="btn btn-glass" style="font-size:0.78rem;padding:0.5rem 1.1rem;">${cancelLabel}</button>
+          <button type="button" data-act="ok" class="btn ${danger ? 'btn-glass' : 'btn-gold'}" style="font-size:0.78rem;padding:0.5rem 1.2rem;${danger ? 'border-color:rgba(239,68,68,0.6);color:#FCA5A5;' : ''}">${confirmLabel}</button>
+        </div>`);
+      const done = (val) => { overlay.remove(); document.removeEventListener('keydown', onKey); resolve(val); };
+      const onKey = (e) => { if (e.key === 'Escape') done(false); if (e.key === 'Enter') done(true); };
+      overlay.querySelector('[data-act="ok"]').addEventListener('click', () => done(true));
+      overlay.querySelector('[data-act="cancel"]').addEventListener('click', () => done(false));
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) done(false); });
+      document.addEventListener('keydown', onKey);
+      overlay.querySelector('[data-act="ok"]').focus();
+    });
+  }
+
+  askText(message, defaultValue = '', options = {}) {
+    const { title = 'Edit', confirmLabel = 'Save' } = options;
+    return new Promise((resolve) => {
+      const overlay = this._dialogShell(`
+        <div style="font-size:0.68rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold-primary);margin-bottom:0.5rem;">${title}</div>
+        <label style="display:block;font-size:0.85rem;color:var(--text-muted);margin-bottom:0.7rem;">${message}</label>
+        <input type="text" data-act="input" value="${String(defaultValue || '').replace(/"/g, '&quot;')}" style="width:100%;padding:0.7rem 0.9rem;border-radius:8px;border:1px solid rgba(212,175,55,0.45);background:rgba(0,0,0,0.45);color:var(--text-main);font-size:0.9rem;outline:none;margin-bottom:1.3rem;" />
+        <div style="display:flex;gap:0.7rem;justify-content:flex-end;">
+          <button type="button" data-act="cancel" class="btn btn-glass" style="font-size:0.78rem;padding:0.5rem 1.1rem;">Cancel</button>
+          <button type="button" data-act="ok" class="btn btn-gold" style="font-size:0.78rem;padding:0.5rem 1.2rem;">${confirmLabel}</button>
+        </div>`);
+      const input = overlay.querySelector('[data-act="input"]');
+      const done = (val) => { overlay.remove(); document.removeEventListener('keydown', onKey); resolve(val); };
+      const save = () => done(input.value.trim());
+      const onKey = (e) => { if (e.key === 'Escape') done(null); if (e.key === 'Enter') save(); };
+      overlay.querySelector('[data-act="ok"]').addEventListener('click', save);
+      overlay.querySelector('[data-act="cancel"]').addEventListener('click', () => done(null));
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) done(null); });
+      document.addEventListener('keydown', onKey);
+      input.focus();
+      input.select();
+    });
+  }
   async shareReferralLink() {
     const code = store.getUserReferralCode();
     const link = store.getUserReferralLink();
@@ -4074,7 +4189,7 @@ class MytholisApp {
 
   async promptEditPatronName() {
     const currentName = store.user?.name || store.firebaseUser?.displayName || '';
-    const newName = prompt('Enter your preferred collector name / title:', currentName);
+    const newName = await this.askText('Enter your preferred collector name / title:', currentName);
     if (newName === null) return;
     const trimmed = newName.trim();
     if (!trimmed) {
@@ -4154,7 +4269,7 @@ class MytholisApp {
     let targetEmail = userEmail;
 
     if (!targetEmail || targetEmail.endsWith('@phone.mytholis.com')) {
-      targetEmail = prompt('Enter your personal email address to receive password setup instructions:');
+      targetEmail = await this.askText('Enter your personal email address to receive password setup instructions:');
     }
 
     if (!targetEmail || !targetEmail.includes('@')) {
@@ -4320,7 +4435,7 @@ class MytholisApp {
     const emailEl = document.getElementById('auth-email-input');
     let email = emailEl ? emailEl.value.trim() : '';
     if (!email) {
-      email = prompt('Enter your registered Collector email to receive a password reset link:');
+      email = await this.askText('Enter your registered Collector email to receive a password reset link:');
     }
     if (!email) return;
 
@@ -4560,7 +4675,7 @@ class MytholisApp {
   /* Dev Test: Purge Current Authenticated Account & Data */
   async handlePurgeCurrentAccount() {
     const userEmail = store.user?.email || (firebaseService?.currentUser?.email) || '';
-    const confirm = window.confirm(
+    const confirm = await this.askConfirm(
       `⚠️ PERMANENT ACCOUNT DELETION (DEV TEST)\n\n` +
       `Are you sure you want to permanently delete your account (${userEmail || 'current user'}) and all its data?\n\n` +
       `This will:\n` +
@@ -4609,7 +4724,7 @@ class MytholisApp {
   /* Sovereign Admin: Purge Test Collector Account & Data */
   async handleAdminDeleteUser(targetUid, name = 'Collector', email = '', phone = '', orderIdsEncoded = '') {
     if (!targetUid) return;
-    const confirm = window.confirm(
+    const confirm = await this.askConfirm(
       `⚠️ PURGE COLLECTOR (ADMIN TEST TOOL)\n\n` +
       `Are you sure you want to permanently delete collector "${name}" (${email || targetUid})?\n\n` +
       `This will remove the user profile, authentication record, and all associated consignment order records from the database.`
@@ -4979,7 +5094,7 @@ class MytholisApp {
   }
 
   async handleBatchDeduplicateUsers() {
-    const isConfirmed = window.confirm(
+    const isConfirmed = await this.askConfirm(
       "⚡ Run Sovereign Registry Deduplication?\n\n" +
       "This will scan all collectors and past orders across Firestore, permanently merge duplicate accounts sharing the same phone or email into authoritative primary vaults, sum their Mythos balances, and prune redundant records."
     );
@@ -5088,7 +5203,7 @@ class MytholisApp {
   /** Attach a call note to an abandoned checkout without changing its status. */
   async addRecoveryNote(orderId) {
     if (!orderId) return;
-    const note = window.prompt('What happened on the call? (max 500 chars)');
+    const note = await this.askText('What happened on the call? (max 500 chars)');
     if (note === null) return;
     try {
       const user = typeof firebaseService !== 'undefined' ? firebaseService.currentUser : null;
@@ -5112,7 +5227,7 @@ class MytholisApp {
   /** Issue a single-use, email-locked recovery voucher (server-authored). */
   async issueRecoveryCode(orderId) {
     if (!orderId) return;
-    const ok = window.confirm('Issue a ₹500 recovery code to this customer?\n\nSingle use, locked to their email, expires in 7 days.');
+    const ok = await this.askConfirm('Issue a ₹500 recovery code to this customer?\n\nSingle use, locked to their email, expires in 7 days.');
     if (!ok) return;
     try {
       const user = typeof firebaseService !== 'undefined' ? firebaseService.currentUser : null;
@@ -5161,7 +5276,7 @@ class MytholisApp {
 
   /** Remove abandoned checkout drafts older than 30 days (never touches paid orders). */
   async purgeAbandonedDrafts() {
-    const ok = window.confirm('Delete abandoned checkout drafts older than 30 days?\n\nPaid and partially-paid orders are never touched.');
+    const ok = await this.askConfirm('Delete abandoned checkout drafts older than 30 days?\n\nPaid and partially-paid orders are never touched.');
     if (!ok) return;
     try {
       const user = typeof firebaseService !== 'undefined' ? firebaseService.currentUser : null;
@@ -5176,7 +5291,7 @@ class MytholisApp {
 
       if (!dry || !dry.success) { this.showToast('Could not preview the purge.'); return; }
       if (!dry.wouldDelete) { this.showToast('No abandoned drafts older than 30 days.'); return; }
-      if (!window.confirm(`This will delete ${dry.wouldDelete} abandoned draft(s). Continue?`)) return;
+      if (!await this.askConfirm(`This will delete ${dry.wouldDelete} abandoned draft(s). Continue?`)) return;
 
       const resp = await fetch('/api/admin', {
         method: 'POST',
@@ -5199,7 +5314,7 @@ class MytholisApp {
   }
   async collectPartialBalance(orderId) {
     if (!orderId) return;
-    const confirmed = window.confirm(
+    const confirmed = await this.askConfirm(
       `Confirm that the remaining balance for order ${orderId} has been collected from the customer?\n\nThis marks the order PAID and credits the collector's Mythos.`
     );
     if (!confirmed) return;
@@ -5318,7 +5433,7 @@ class MytholisApp {
   // --- Module C: Fragrance Vault & Product CRUD Handlers ---
   async seedCatalogToFirestore() {
     if (typeof firebaseService === 'undefined') return;
-    if (!confirm('Seed local default catalog (6 Extrait de Parfum creations at 40% concentration) to Firestore? Existing products will be preserved.')) {
+    if (!await this.askConfirm('Seed local default catalog (6 Extrait de Parfum creations at 40% concentration) to Firestore? Existing products will be preserved.')) {
       return;
     }
 
@@ -5838,7 +5953,7 @@ class MytholisApp {
   }
 
   async deleteAdminProduct(productId) {
-    if (!confirm(`Are you certain you wish to purge "${productId}" from the vault catalog?`)) {
+    if (!await this.askConfirm(`Are you certain you wish to purge "${productId}" from the vault catalog?`)) {
       return;
     }
     try {
@@ -5959,7 +6074,7 @@ class MytholisApp {
   }
 
   async deleteAdminPost(postId) {
-    if (!confirm('Are you certain you wish to purge this chronicle from the archives?')) {
+    if (!await this.askConfirm('Are you certain you wish to purge this chronicle from the archives?')) {
       return;
     }
     try {
@@ -6130,7 +6245,7 @@ class MytholisApp {
 
   async togglePatronAdmin(uid, makeAdmin) {
     const label = makeAdmin ? 'Promote collector to Sovereign Administrator' : 'Revoke Sovereign Administrator privileges';
-    if (!confirm(`Are you certain you wish to ${label.toLowerCase()}?`)) {
+    if (!await this.askConfirm(`Are you certain you wish to ${label.toLowerCase()}?`)) {
       return;
     }
     try {
@@ -6300,7 +6415,7 @@ class MytholisApp {
   }
 
   async deletePromoCode(target) {
-    if (!confirm(`Permanently revoke Sanctum Key?`)) return;
+    if (!await this.askConfirm(`Permanently revoke Sanctum Key?`)) return;
     try {
       const updatedCodes = store.deletePromoCode(target);
       if (!this.adminData) this.adminData = {};
@@ -6829,3 +6944,5 @@ if (document.readyState === 'loading') {
 } else {
   app.init();
 }
+
+

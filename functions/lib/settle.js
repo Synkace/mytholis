@@ -117,7 +117,9 @@ export async function settlePaidOrder({ orderId, paymentId = null, source = 'ver
     const { count: fullBottles, bonus: bottleBonus } = bottleTotals(items);
     // Tier multiplier is resolved at payment time, not at checkout, because the
     // collector's tier can change between the two.
-    const earnedMythos = Math.round(expectedTotal * earnRate(preLoyalty.legacy_mythos, preLoyalty.full_bottles_purchased, preLoyalty.manual_tier_override));
+    // Assigned once the collector's ledger is read (below), so the tier
+    // multiplier reflects their standing BEFORE this order.
+    let earnedMythos = Math.round(expectedTotal * 0.03);
 
     // ---- pre-read everything the transaction will touch ----
     const userRef = uid && !String(uid).startsWith('guest')
@@ -125,6 +127,7 @@ export async function settlePaidOrder({ orderId, paymentId = null, source = 'ver
       : null;
     const userSnap = userRef ? await tx.get(userRef) : null;
     const preLoyalty = (userSnap && userSnap.exists ? userSnap.data()?.loyalty : null) || {};
+    earnedMythos = Math.round(expectedTotal * earnRate(preLoyalty.legacy_mythos, preLoyalty.full_bottles_purchased, preLoyalty.manual_tier_override));
 
     const productRefs = [];
     const productSnaps = [];

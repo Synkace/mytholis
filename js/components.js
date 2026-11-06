@@ -622,13 +622,13 @@ const Components = {
             Founded on the principle of uncompromised olfactory artistry, Sanctuary Mytholis unites British formulation heritage with the richness of Indian distillation mastery. Designed in Mayfair, London and handcrafted in Ahmedabad, India.
           </p>
           <p class="craft-story-text">
-            Each composition is blended with 40% IFRA-certified fine perfume oils and undergoes 120 days of cold maceration inside dark emerald glass carboys before receiving hand-blown crystal encapsulation.
+            Each composition is blended with 40% IFRA-certified fine perfume oils and undergoes 45 days of cold barrel maceration inside dark emerald glass carboys before receiving hand-blown crystal encapsulation.
           </p>
         </div>
 
         <div class="scent-pyramid-container" style="margin-top: 2rem;">
           <div class="pyramid-node liquid-glass-card">
-            <h4 class="gold-text" style="font-size: 2.2rem; margin-bottom: 0.5rem;">120</h4>
+            <h4 class="gold-text" style="font-size: 2.2rem; margin-bottom: 0.5rem;">45</h4>
             <p>Days Cold Barrel Maceration</p>
           </div>
           <div class="pyramid-node liquid-glass-card">
@@ -812,7 +812,7 @@ const Components = {
       },
       {
         q: "Where are Mytholis fragrances formulated and manufactured?",
-        a: "Mytholis formulas are designed in our Mayfair London Studio in the UK, and artisanally compounded, macerated for 120 days, and bottled at our state-of-the-art licensed laboratory in Ahmedabad, Gujarat, India."
+        a: "Mytholis formulas are designed in our Mayfair London Studio in the UK, and artisanally compounded, macerated for 45 days, and bottled at our state-of-the-art licensed laboratory in Ahmedabad, Gujarat, India."
       },
       {
         q: "What is your shipping and delivery timeline across India?",
@@ -975,9 +975,10 @@ const Components = {
     const unitPricePerMl = (currentPrice / currentMl).toFixed(2);
     const detailMythosInfo = store.calculateProductMythos(currentPrice);
 
-    // Extract ordered gallery images (up to 10 photos)
+    // Extract ordered gallery images. Capped at 2: the showcase shows the
+    // flacon and its presentation box only.
     const galleryImages = (product.media && Array.isArray(product.media.gallery) && product.media.gallery.length > 0)
-      ? product.media.gallery.filter(Boolean).slice(0, 10)
+      ? product.media.gallery.filter(Boolean).slice(0, 2)
       : [product.image || 'assets/product/1kingscar.webp'];
 
     return `
@@ -1515,13 +1516,13 @@ const Components = {
                 <span>Credit / Debit Card</span>
               </div>
               <div class="razorpay-method-pill drawer-method-pill ${activePaymentMethod === 'cod' ? 'active' : ''}" onclick="app.selectDrawerPaymentMethod(this, 'cod')">
-                <span>Partial COD &middot; 25% now</span>
+                <span>Partial COD &middot; 10% now</span>
               </div>
             </div>
 
             <!-- COD Guardrail Notice -->
             <div id="drawer-cod-notice" class="cod-guardrail-box" style="${isCOD ? 'display: block;' : 'display: none;'} margin-top: 0.75rem; padding: 0.65rem 0.85rem; border-radius: 8px; background: rgba(245, 158, 11, 0.12); border: 1px solid #F59E0B; font-size: 0.73rem; color: #FCD34D;">
-              <strong>Partial COD:</strong> Pay 25% now (minimum Rs499) and the balance on delivery. Available for Sixth Sense (₹2,999). For full flacons (50ml/100ml), an automated WhatsApp dispatch confirmation OTP is required, or switch to UPI to save ₹200 instantly.
+              <strong>Partial COD:</strong> Pay 10% now (minimum Rs499) and the balance on delivery. Available for Sixth Sense (₹2,999). For full flacons (50ml/100ml), an automated WhatsApp dispatch confirmation OTP is required, or switch to UPI to save ₹200 instantly.
             </div>
           </div>
 
@@ -3395,7 +3396,7 @@ const Components = {
 
               <div style="display: flex; gap: 0.6rem; margin-top: 0.6rem;">
                 <button type="submit" id="btn-save-dossier" class="btn btn-gold" style="flex: 1.5; padding: 0.75rem 1rem; font-size: 0.85rem; font-weight: 700;">
-                  Save Collector Coordinates
+                  Save
                 </button>
                 <button type="button" class="btn btn-glass" style="flex: 1; padding: 0.75rem 1rem; font-size: 0.8rem;" onclick="app.setDossierTab('overview')">
                   Cancel
@@ -3502,8 +3503,8 @@ const Components = {
                 <p style="font-size: 0.76rem; color: var(--text-muted); line-height: 1.5; margin: 0 0 0.9rem;">
                   Your login is managed securely by your Google Account. If you would like to set up a direct password for Sanctuary Mytholis, click below.
                 </p>
-                <button type="button" class="btn btn-glass" style="font-size: 0.75rem; padding: 0.45rem 1rem; color: var(--gold-primary);" onclick="app.handleSendPasswordResetFromDossier()">
-                  Send Password Setup Link to ${safeEmail}
+                <button type="button" class="btn btn-glass" style="font-size: 0.75rem; padding: 0.5rem 1rem; color: var(--gold-primary); width: 100%; max-width: 100%; white-space: normal; overflow-wrap: anywhere; line-height: 1.35; text-align: center;" onclick="app.handleSendPasswordResetFromDossier()">
+                  Send Password Setup Link
                 </button>
               </div>
             ` : ''}
@@ -3736,13 +3737,13 @@ const Components = {
               <span>Credit / Debit Card</span>
             </div>
             <div class="razorpay-method-pill" onclick="app.selectPaymentMethod(this, 'cod')">
-              <span>Partial COD &middot; 25% now</span>
+              <span>Partial COD &middot; 10% now</span>
             </div>
           </div>
 
           <!-- COD Notice / Guardrail (Only allowed for Sixth Sense or requires OTP confirmation) -->
           <div id="cod-guardrail-notice" class="cod-guardrail-box" style="display: none; padding: 0.75rem 1rem; border-radius: 8px; background: rgba(245, 158, 11, 0.12); border: 1px solid #F59E0B; font-size: 0.75rem; color: #FCD34D; margin-bottom: 1rem;">
-            <strong>Partial COD:</strong> Pay 25% now (minimum Rs499) and the balance on delivery. Available for Sixth Sense (₹2,999). For full flacons (50ml/100ml), an automated WhatsApp dispatch confirmation OTP is required, or switch to UPI to save ₹200 instantly.
+            <strong>Partial COD:</strong> Pay 10% now (minimum Rs499) and the balance on delivery. Available for Sixth Sense (₹2,999). For full flacons (50ml/100ml), an automated WhatsApp dispatch confirmation OTP is required, or switch to UPI to save ₹200 instantly.
           </div>
 
           <!-- Gateway Status Notice -->

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Transactional and private surfaces - nothing here is indexable content.
+Disallow: /api/
+Disallow: /admin
+
+Sitemap: https://mytholis.com/sitemap.xml

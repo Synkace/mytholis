@@ -7457,3 +7457,23 @@ body.admin-view-active .view-section,
   }
 }
 
+/* admin tab bar: even spacing, no overflow */
+.sovereign-nav-bar {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  row-gap: 0.5rem;
+  align-items: center;
+}
+.sovereign-nav-bar .sovereign-tab {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  margin: 0 !important;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+@media (max-width: 1100px) {
+  .sovereign-nav-bar { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 0.4rem; }
+  .sovereign-nav-bar::-webkit-scrollbar { height: 4px; }
+  .sovereign-nav-bar::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.35); border-radius: 4px; }
+}

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://mytholis.com/</loc><priority>1.0</priority></url>
+
+  <!-- Product detail (real paths, indexable) -->
+  <url><loc>https://mytholis.com/product/king-scar</loc><priority>0.9</priority></url>
+  <url><loc>https://mytholis.com/product/petralux</loc><priority>0.9</priority></url>
+  <url><loc>https://mytholis.com/product/oud-rion</loc><priority>0.9</priority></url>
+  <url><loc>https://mytholis.com/product/spark</loc><priority>0.9</priority></url>
+  <url><loc>https://mytholis.com/product/wood-sera</loc><priority>0.9</priority></url>
+  <url><loc>https://mytholis.com/product/ash</loc><priority>0.9</priority></url>
+  <url><loc>https://mytholis.com/product/mytholis-discovery-set</loc><priority>0.8</priority></url>
+
+  <!-- Storefront sections -->
+  <url><loc>https://mytholis.com/#collections</loc><priority>0.8</priority></url>
+  <url><loc>https://mytholis.com/#circle-of-legends</loc><priority>0.7</priority></url>
+  <url><loc>https://mytholis.com/#know-us</loc><priority>0.6</priority></url>
+  <url><loc>https://mytholis.com/#faqs</loc><priority>0.5</priority></url>
+  <url><loc>https://mytholis.com/#contact</loc><priority>0.5</priority></url>
+
+  <!-- Real URLs (hosting rewrites, independently indexable) -->
+  <url><loc>https://mytholis.com/privacy</loc><priority>0.4</priority></url>
+  <url><loc>https://mytholis.com/terms</loc><priority>0.4</priority></url>
+  <url><loc>https://mytholis.com/refund</loc><priority>0.4</priority></url>
+  <url><loc>https://mytholis.com/shipping</loc><priority>0.4</priority></url>
+  <url><loc>https://mytholis.com/data-deletion</loc><priority>0.2</priority></url>
+</urlset>

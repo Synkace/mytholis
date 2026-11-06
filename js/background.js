@@ -111,6 +111,23 @@ class MytholisBackground {
       }
     }, { passive: true });
 
+    /* Also pause when the canvas is scrolled out of view - a decorative layer
+       nobody can see should not compete with scroll and tap handlers. */
+    if (typeof IntersectionObserver !== 'undefined' && this.canvas) {
+      const io = new IntersectionObserver((entries) => {
+        const visible = entries.some((e) => e.isIntersecting);
+        if (!visible && this.isRunning) {
+          this.isRunning = false;
+          if (this.rafId) cancelAnimationFrame(this.rafId);
+          this.rafId = null;
+        } else if (visible && !this.isRunning && !this.reducedMotion && !document.hidden) {
+          this.isRunning = true;
+          this.animate();
+        }
+      }, { threshold: 0 });
+      io.observe(this.canvas);
+    }
+
     // Pause loop when tab is hidden to conserve battery/GPU
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
@@ -203,6 +220,12 @@ class MytholisBackground {
 
   animate() {
     if (!this.isRunning) return;
+
+    this.frameCount++;
+    if (this.frameSkip > 1 && this.frameCount % this.frameSkip !== 0) {
+      this.rafId = requestAnimationFrame(() => this.animate());
+      return;
+    }
 
     // Smooth velocity lerp for cursor
     this.mouse.vx = this.mouse.targetX - this.mouse.lastX;

@@ -53,6 +53,7 @@ export default async function handler(req, res) {
     let serverSpendable = 0;
     let mythosRedeemed = 0;
     let personalVoucher = null;
+    let serverProfile = {};
 
     const authHeader = req.headers?.authorization || req.headers?.Authorization;
     if (authHeader && authHeader.startsWith('Bearer ') && adminAuth) {
@@ -65,6 +66,7 @@ export default async function handler(req, res) {
         if (userSnap && userSnap.exists) {
           const u = userSnap.data() || {};
           serverSpendable = Number(u.loyalty?.spendable_mythos) || 0;
+          serverProfile = u.profile || {};
 
           /* Redeemed loyalty vouchers live ONLY on the user document, never in
              vouchers/ or reward_codes/. Without this lookup the server ignored
@@ -229,6 +231,20 @@ export default async function handler(req, res) {
       pincode: (rawCustomer.pincode || req.body.customerPincode || req.body.pincode || '').trim()
     };
 
+    /* The pre-warm draft can arrive before the checkout form is filled, so the
+       identity may be blank. Backfill it from the collector's profile rather
+       than storing "Collector" with no phone. */
+    if (authenticatedUid) {
+      if (!sanitizedCustomer.name || sanitizedCustomer.name === 'Collector') {
+        sanitizedCustomer.name = serverProfile.name || serverProfile.displayName || sanitizedCustomer.name;
+      }
+      if (!sanitizedCustomer.email) sanitizedCustomer.email = (serverProfile.email || '').toLowerCase();
+      if (!sanitizedCustomer.phone) sanitizedCustomer.phone = serverProfile.phone || serverProfile.phoneNumber || '';
+      if (!sanitizedCustomer.address) sanitizedCustomer.address = serverProfile.address || '';
+      if (!sanitizedCustomer.city) sanitizedCustomer.city = serverProfile.city || '';
+      if (!sanitizedCustomer.state) sanitizedCustomer.state = serverProfile.state || '';
+      if (!sanitizedCustomer.pincode) sanitizedCustomer.pincode = serverProfile.pincode || '';
+    }
     const razorpayRes = await fetch('https://api.razorpay.com/v1/orders', {
       method: 'POST',
       headers: {

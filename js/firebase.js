@@ -5,6 +5,7 @@
    ========================================================================== */
 
 import { initializeApp } from "firebase/app";
+import { getAnalytics, isSupported } from 'firebase/analytics';
 import { 
   getAuth, 
   signInWithPopup, 
@@ -88,6 +89,16 @@ export const firebaseConfig = {
 
 // Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
+
+/* Analytics is optional: unsupported browsers (or blocked cookies) resolve to
+   null, and js/analytics.js becomes a no-op. Never let it break boot. */
+export let analytics = null;
+isSupported()
+  .then((ok) => {
+    if (!ok) return;
+    try { analytics = getAnalytics(firebaseApp); } catch (_) {}
+  })
+  .catch(() => {});
 const auth = getAuth(firebaseApp);
 let db;
 try {

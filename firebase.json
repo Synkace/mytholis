@@ -26,6 +26,18 @@
         ]
       },
       {
+        "source": "**/*.@(png|jpg|jpeg|webp|svg|ico|woff2|woff)",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        ]
+      },
+      {
+        "source": "/{robots.txt,sitemap.xml,manifest.json,site.webmanifest}",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=3600" }
+        ]
+      },
+      {
         "source": "**",
         "headers": [
           {
@@ -52,6 +64,14 @@
       }
     ],
     "rewrites": [
+      {
+        "source": "/robots.txt",
+        "destination": "/robots.txt"
+      },
+      {
+        "source": "/sitemap.xml",
+        "destination": "/sitemap.xml"
+      },
       {
         "source": "/privacy",
         "destination": "/privacy.html"

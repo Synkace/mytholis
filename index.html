@@ -36,16 +36,22 @@
   <link rel="dns-prefetch" href="https://checkout.razorpay.com">
   <link rel="dns-prefetch" href="https://api.razorpay.com">
   <link rel="preload" href="https://checkout.razorpay.com/v1/checkout.js" as="script">
+  <!-- Single LCP preload: the centred hero flacon. Everything else loads in document order. -->
+  <link rel="preload" as="image" href="/assets/hero/oudrioncard.webp" type="image/webp" fetchpriority="high">
   <!-- Only assets painted on first load. Everything else is lazy-loaded by the
        app; the previous list preloaded 11 images (~2.6MB) and 9 were unused. -->
-  <link rel="preload" as="image" href="/assets/logo.webp" type="image/webp">
-  <link rel="preload" as="image" href="/assets/product/1kingscar.webp" type="image/webp" fetchpriority="high">
-  <link rel="preload" as="image" href="/assets/product/2petralux.webp" type="image/webp">
-  <link rel="preload" as="image" href="/assets/product/3oudrion.webp" type="image/webp">
-  <link rel="preload" as="image" href="/assets/hero/kingscarcard.webp" type="image/webp">
+  
+  
+  
+  
+  
   
   <!-- Google Fonts: Cinzel, Cormorant Garamond, Montserrat -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=Montserrat:wght@200;300;400;500;600;700&display=swap">
+  <!-- Fonts loaded non-blocking: preload as style, flip to stylesheet on load -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap">
+  </noscript>
 
   <!-- CSS Stylesheets -->
   <link rel="stylesheet" href="css/main.css">

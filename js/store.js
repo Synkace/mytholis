@@ -1082,7 +1082,7 @@ class MytholisStore {
     if (String(reward.code || '').toUpperCase() === 'FIRST25' || reward.firstOrderOnly === true) {
       const hasPriorOrders = Array.isArray(this.user?.orders) && this.user.orders.length > 0;
       if (hasPriorOrders) return 0;
-      const excluded = new Set(['mytholis-discovery-set']);
+      const excluded = new Set((reward.excludeProductIds || []).map(String));
       const cartIds = (this.cart || []).map((i) => String(i.id || i.slug || ''));
       if (cartIds.some((id) => excluded.has(id))) return 0;
     }

@@ -1,2686 +1,2686 @@
 /* ==========================================================================
-   MYTHOLIS LUXURY PERFUME - SOVEREIGN COMMAND ADMIN PANEL COMPONENTS
-   Haute Parfumerie Dark Emerald & Liquid Gold 6-Module Operations Desk
-   ========================================================================== */
+ MYTHOLIS LUXURY PERFUME - SOVEREIGN COMMAND ADMIN PANEL COMPONENTS
+ Haute Parfumerie Dark Emerald & Liquid Gold 6-Module Operations Desk
+ ========================================================================== */
 
 import { esc, safeId, safeHref } from './sanitize.js';
 
 export const CANONICAL_SKU_MAP = {
-  'king-scar': 'MYTH-EDP-KS-100',
-  'petralux': 'MYTH-EDP-PX-100',
-  'oud-rion': 'MYTH-EDP-OR-100',
-  'spark': 'MYTH-EDP-SP-100',
-  'wood-sera': 'MYTH-EDP-WS-100',
-  'ash': 'MYTH-EDP-AS-100',
-  'sixth-sense': 'MYTH-SET-6S-48',
-  'mytholis-discovery-set': 'MYTH-SET-6S-48'
+ 'king-scar': 'MYTH-EDP-KS-100',
+ 'petralux': 'MYTH-EDP-PX-100',
+ 'oud-rion': 'MYTH-EDP-OR-100',
+ 'spark': 'MYTH-EDP-SP-100',
+ 'wood-sera': 'MYTH-EDP-WS-100',
+ 'ash': 'MYTH-EDP-AS-100',
+ 'sixth-sense': 'MYTH-SET-6S-48',
+ 'mytholis-discovery-set': 'MYTH-SET-6S-48'
 };
 
 export const CANONICAL_MEDIA_MAP = {
-  'king-scar': {
-    sku: 'MYTH-EDP-KS-50',
-    bottleImage: 'assets/product/1kingscar.webp',
-    cardImage: 'assets/product/1kingscarbox.webp',
-    backgroundImage: 'assets/hero/kingscarbg.webp',
-    gallery: [
-      'assets/product/1kingscar.webp',
-      'assets/product/1kingscarbox.webp',
-      'assets/product/1-1.webp',
-      'assets/product/1-2.webp',
-      'assets/hero/kingscarcard.webp',
-      'assets/hero/kingscarbg.webp'
-    ]
-  },
-  'petralux': {
-    sku: 'MYTH-EDP-PX-50',
-    bottleImage: 'assets/product/2petralux.webp',
-    cardImage: 'assets/product/2petraluxbox.webp',
-    backgroundImage: 'assets/product/2petraluxbox.webp',
-    gallery: [
-      'assets/product/2petralux.webp',
-      'assets/product/2petraluxbox.webp',
-      'assets/product/2-1.webp',
-      'assets/product/2-2.webp'
-    ]
-  },
-  'oud-rion': {
-    sku: 'MYTH-EDP-OR-50',
-    bottleImage: 'assets/product/3oudrion.webp',
-    cardImage: 'assets/product/3oudrionbox.webp',
-    backgroundImage: 'assets/hero/oudrionbg.webp',
-    gallery: [
-      'assets/product/3oudrion.webp',
-      'assets/product/3oudrionbox.webp',
-      'assets/product/3-1.webp',
-      'assets/product/3-2.webp',
-      'assets/hero/oudrioncard.webp',
-      'assets/hero/oudrionbg.webp'
-    ]
-  },
-  'spark': {
-    sku: 'MYTH-EDP-SP-50',
-    bottleImage: 'assets/product/4spark.webp',
-    cardImage: 'assets/product/4sparkbox.webp',
-    backgroundImage: 'assets/hero/sparkbg.webp',
-    gallery: [
-      'assets/product/4spark.webp',
-      'assets/product/4sparkbox.webp',
-      'assets/product/4-1.webp',
-      'assets/product/4-2.webp',
-      'assets/hero/sparkcard.webp',
-      'assets/hero/sparkbg.webp'
-    ]
-  },
-  'wood-sera': {
-    sku: 'MYTH-EDP-WS-50',
-    bottleImage: 'assets/product/5woodsera.webp',
-    cardImage: 'assets/product/5woodserabox.webp',
-    backgroundImage: 'assets/product/5woodserabox.webp',
-    gallery: [
-      'assets/product/5woodsera.webp',
-      'assets/product/5woodserabox.webp',
-      'assets/product/5-1.webp',
-      'assets/product/5-2.webp'
-    ]
-  },
-  'ash': {
-    sku: 'MYTH-EDP-AS-50',
-    bottleImage: 'assets/product/6ash.webp',
-    cardImage: 'assets/product/6ashbox.webp',
-    backgroundImage: 'assets/product/6ashbox.webp',
-    gallery: [
-      'assets/product/6ash.webp',
-      'assets/product/6ashbox.webp',
-      'assets/product/6-1.webp',
-      'assets/product/6-2.webp'
-    ]
-  },
-  'sixth-sense': {
-    sku: 'MYTH-SET-6S-48',
-    bottleImage: 'assets/product/sixthsense.webp',
-    cardImage: 'assets/product/sixthsense.webp',
-    backgroundImage: 'assets/product/sixthsense.webp',
-    gallery: [
-      'assets/product/sixthsense.webp',
-      'assets/product/7-1.webp',
-      'assets/product/7-2.webp',
-      'assets/product/1kingscar.webp',
-      'assets/product/2petralux.webp',
-      'assets/product/3oudrion.webp',
-      'assets/product/4spark.webp',
-      'assets/product/5woodsera.webp',
-      'assets/product/6ash.webp'
-    ]
-  },
-  'mytholis-discovery-set': {
-    sku: 'MYTH-SET-6S-48',
-    bottleImage: 'assets/product/sixthsense.webp',
-    cardImage: 'assets/product/sixthsense.webp',
-    backgroundImage: 'assets/product/sixthsense.webp',
-    gallery: [
-      'assets/product/sixthsense.webp',
-      'assets/product/7-1.webp',
-      'assets/product/7-2.webp',
-      'assets/product/1kingscar.webp',
-      'assets/product/2petralux.webp',
-      'assets/product/3oudrion.webp',
-      'assets/product/4spark.webp',
-      'assets/product/5woodsera.webp',
-      'assets/product/6ash.webp'
-    ]
-  }
+ 'king-scar': {
+ sku: 'MYTH-EDP-KS-50',
+ bottleImage: 'assets/product/1kingscar.webp',
+ cardImage: 'assets/product/1kingscarbox.webp',
+ backgroundImage: 'assets/hero/kingscarbg.webp',
+ gallery: [
+ 'assets/product/1kingscar.webp',
+ 'assets/product/1kingscarbox.webp',
+ 'assets/product/1-1.webp',
+ 'assets/product/1-2.webp',
+ 'assets/hero/kingscarcard.webp',
+ 'assets/hero/kingscarbg.webp'
+ ]
+ },
+ 'petralux': {
+ sku: 'MYTH-EDP-PX-50',
+ bottleImage: 'assets/product/2petralux.webp',
+ cardImage: 'assets/product/2petraluxbox.webp',
+ backgroundImage: 'assets/product/2petraluxbox.webp',
+ gallery: [
+ 'assets/product/2petralux.webp',
+ 'assets/product/2petraluxbox.webp',
+ 'assets/product/2-1.webp',
+ 'assets/product/2-2.webp'
+ ]
+ },
+ 'oud-rion': {
+ sku: 'MYTH-EDP-OR-50',
+ bottleImage: 'assets/product/3oudrion.webp',
+ cardImage: 'assets/product/3oudrionbox.webp',
+ backgroundImage: 'assets/hero/oudrionbg.webp',
+ gallery: [
+ 'assets/product/3oudrion.webp',
+ 'assets/product/3oudrionbox.webp',
+ 'assets/product/3-1.webp',
+ 'assets/product/3-2.webp',
+ 'assets/hero/oudrioncard.webp',
+ 'assets/hero/oudrionbg.webp'
+ ]
+ },
+ 'spark': {
+ sku: 'MYTH-EDP-SP-50',
+ bottleImage: 'assets/product/4spark.webp',
+ cardImage: 'assets/product/4sparkbox.webp',
+ backgroundImage: 'assets/hero/sparkbg.webp',
+ gallery: [
+ 'assets/product/4spark.webp',
+ 'assets/product/4sparkbox.webp',
+ 'assets/product/4-1.webp',
+ 'assets/product/4-2.webp',
+ 'assets/hero/sparkcard.webp',
+ 'assets/hero/sparkbg.webp'
+ ]
+ },
+ 'wood-sera': {
+ sku: 'MYTH-EDP-WS-50',
+ bottleImage: 'assets/product/5woodsera.webp',
+ cardImage: 'assets/product/5woodserabox.webp',
+ backgroundImage: 'assets/product/5woodserabox.webp',
+ gallery: [
+ 'assets/product/5woodsera.webp',
+ 'assets/product/5woodserabox.webp',
+ 'assets/product/5-1.webp',
+ 'assets/product/5-2.webp'
+ ]
+ },
+ 'ash': {
+ sku: 'MYTH-EDP-AS-50',
+ bottleImage: 'assets/product/6ash.webp',
+ cardImage: 'assets/product/6ashbox.webp',
+ backgroundImage: 'assets/product/6ashbox.webp',
+ gallery: [
+ 'assets/product/6ash.webp',
+ 'assets/product/6ashbox.webp',
+ 'assets/product/6-1.webp',
+ 'assets/product/6-2.webp'
+ ]
+ },
+ 'sixth-sense': {
+ sku: 'MYTH-SET-6S-48',
+ bottleImage: 'assets/product/sixthsense.webp',
+ cardImage: 'assets/product/sixthsense.webp',
+ backgroundImage: 'assets/product/sixthsense.webp',
+ gallery: [
+ 'assets/product/sixthsense.webp',
+ 'assets/product/7-1.webp',
+ 'assets/product/7-2.webp',
+ 'assets/product/1kingscar.webp',
+ 'assets/product/2petralux.webp',
+ 'assets/product/3oudrion.webp',
+ 'assets/product/4spark.webp',
+ 'assets/product/5woodsera.webp',
+ 'assets/product/6ash.webp'
+ ]
+ },
+ 'mytholis-discovery-set': {
+ sku: 'MYTH-SET-6S-48',
+ bottleImage: 'assets/product/sixthsense.webp',
+ cardImage: 'assets/product/sixthsense.webp',
+ backgroundImage: 'assets/product/sixthsense.webp',
+ gallery: [
+ 'assets/product/sixthsense.webp',
+ 'assets/product/7-1.webp',
+ 'assets/product/7-2.webp',
+ 'assets/product/1kingscar.webp',
+ 'assets/product/2petralux.webp',
+ 'assets/product/3oudrion.webp',
+ 'assets/product/4spark.webp',
+ 'assets/product/5woodsera.webp',
+ 'assets/product/6ash.webp'
+ ]
+ }
 };
 
 if (typeof window !== 'undefined') {
-  window.MYTHOLIS_CANONICAL_SKUS = CANONICAL_SKU_MAP;
-  window.MYTHOLIS_CANONICAL_MEDIA = CANONICAL_MEDIA_MAP;
+ window.MYTHOLIS_CANONICAL_SKUS = CANONICAL_SKU_MAP;
+ window.MYTHOLIS_CANONICAL_MEDIA = CANONICAL_MEDIA_MAP;
 }
 
 export const AdminComponents = {
-  renderAdmin() {
-    // Authorization is decided by the server (`admin` custom claim mirrored on
-    // the user document). This gate only avoids rendering a panel that the API
-    // would reject anyway.
-    const isAuthorized = store.isAdmin();
-    const currentUser = (typeof firebaseService !== 'undefined' && firebaseService?.currentUser) || store.firebaseUser || null;
-    const userEmail = (currentUser?.email || store.user?.email || '').trim().toLowerCase();
+ renderAdmin() {
+ // Authorization is decided by the server (`admin` custom claim mirrored on
+ // the user document). This gate only avoids rendering a panel that the API
+ // would reject anyway.
+ const isAuthorized = store.isAdmin();
+ const currentUser = (typeof firebaseService !== 'undefined' && firebaseService?.currentUser) || store.firebaseUser || null;
+ const userEmail = (currentUser?.email || store.user?.email || '').trim().toLowerCase();
 
-    // 1. Unauthenticated or Unauthorized Gate
-    if (!isAuthorized) {
-      return `
-        <div class="container" style="min-height: 80vh; max-width: 900px; margin: 0 auto; padding-top: 3rem;">
-          <div class="admin-auth-card liquid-glass-card" style="margin: 2rem auto; text-align: center;">
-            <span class="glass-pill" style="color: var(--gold-primary); letter-spacing: 0.25em; margin-bottom: 1.2rem; font-size: 0.7rem;">
-              RESTRICTED SOVEREIGN GATEWAY
-            </span>
-            <h1 class="gold-shimmer-text font-title" style="font-size: 2.2rem; margin-bottom: 0.5rem;">
-              Sovereign Command
-            </h1>
-            <p class="font-garamond" style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.6; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
-              Operations desk, dispatch vault, VIP society ledger, and fragrance alchemy switchboard. Access restricted strictly to verified Mytholis Founders & Sovereign Administrators.
-            </p>
+ // 1. Unauthenticated or Unauthorized Gate
+ if (!isAuthorized) {
+ return `
+ <div class="container" style="min-height: 80vh; max-width: 900px; margin: 0 auto; padding-top: 3rem;">
+ <div class="admin-auth-card liquid-glass-card" style="margin: 2rem auto; text-align: center;">
+ <span class="glass-pill" style="color: var(--gold-primary); letter-spacing: 0.25em; margin-bottom: 1.2rem; font-size: 0.7rem;">
+ RESTRICTED SOVEREIGN GATEWAY
+ </span>
+ <h1 class="gold-shimmer-text font-title" style="font-size: 2.2rem; margin-bottom: 0.5rem;">
+ Sovereign Command
+ </h1>
+ <p class="font-garamond" style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.6; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+ Operations desk, dispatch vault, VIP society ledger, and fragrance alchemy switchboard. Access restricted strictly to verified Mytholis Founders & Sovereign Administrators.
+ </p>
 
-            ${currentUser ? `
-              <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 10px; padding: 1.2rem; margin-bottom: 1.8rem; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
-                <div style="color: #FCA5A5; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                  Access Denied
-                </div>
-                <div style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.5;">
-                  Authenticated account: <strong style="color: var(--text-main);">${userEmail}</strong> does not possess Sovereign Administrator privileges.
-                </div>
-              </div>
-              <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <button class="btn btn-gold" onclick="app.navigateTo('home')">
-                  Return to Storefront
-                </button>
-                <button class="btn btn-glass" onclick="app.logoutUser()">
-                  Sign Out
-                </button>
-              </div>
-            ` : `
-              <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 400px; margin: 0 auto;">
-                <button class="btn btn-gold" style="width: 100%; padding: 0.9rem; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 0.8rem;" onclick="app.handleAdminGoogleSignIn()">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/></svg>
-                  Founder Google Authentication
-                </button>
-                <button class="btn btn-glass" style="width: 100%;" onclick="app.openAuthModal('signin')">
-                  Collector Email Sign In
-                </button>
-              </div>
-            `}
-          </div>
-        </div>
-      `;
-    }
+ ${currentUser ? `
+ <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 10px; padding: 1.2rem; margin-bottom: 1.8rem; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
+ <div style="color: #FCA5A5; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em;">
+ Access Denied
+ </div>
+ <div style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.5;">
+ Authenticated account: <strong style="color: var(--text-main);">${userEmail}</strong> does not possess Sovereign Administrator privileges.
+ </div>
+ </div>
+ <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+ <button class="btn btn-gold" onclick="app.navigateTo('home')">
+ Return to Storefront
+ </button>
+ <button class="btn btn-glass" onclick="app.logoutUser()">
+ Sign Out
+ </button>
+ </div>
+ ` : `
+ <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 400px; margin: 0 auto;">
+ <button class="btn btn-gold" style="width: 100%; padding: 0.9rem; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 0.8rem;" onclick="app.handleAdminGoogleSignIn()">
+ <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/></svg>
+ Founder Google Authentication
+ </button>
+ <button class="btn btn-glass" style="width: 100%;" onclick="app.openAuthModal('signin')">
+ Collector Email Sign In
+ </button>
+ </div>
+ `}
+ </div>
+ </div>
+ `;
+ }
 
-    // 2. Authorized Sovereign Admin Panel
-    const activeTab = app.adminActiveTab || 'telemetry';
-    const adminData = app.adminData || { orders: [], users: [], products: [], posts: [], settings: {} };
-    const ordersList = adminData.orders || [];
+ // 2. Authorized Sovereign Admin Panel
+ const activeTab = app.adminActiveTab || 'telemetry';
+ const adminData = app.adminData || { orders: [], users: [], products: [], posts: [], settings: {} };
+ const ordersList = adminData.orders || [];
 
-    /* ------------------------------------------------------------------
-       A checkout is NOT an order.
-       `/api/create-order` writes a priced draft BEFORE the customer pays, so
-       the server has something to settle against. Counting those drafts made
-       every abandoned cart look like a sale. Split them here:
-         realOrders          - paid, partially paid, or COD-committed
-         inProgressCheckouts - draft younger than 30 minutes (customer may
-                               still be in the Razorpay sheet)
-         abandonedCheckouts  - draft older than 30 minutes
-       ------------------------------------------------------------------ */
-    const ABANDON_MINUTES = 30;
-    const nowMs = Date.now();
-    const draftStartedMs = (o) => {
-      const raw = o.checkoutStartedAt || o.createdAt || o.timestamp;
-      const ms = raw?.toMillis ? raw.toMillis() : new Date(raw || 0).getTime();
-      return Number.isFinite(ms) && ms > 0 ? ms : 0;
-    };
-    const isDraftOrder = (o) =>
-      o.isDraft === true ||
-      ['CREATED', 'AWAITING_PAYMENT'].includes(String(o.status || '').toUpperCase());
+ /* ------------------------------------------------------------------
+ A checkout is NOT an order.
+ `/api/create-order` writes a priced draft BEFORE the customer pays, so
+ the server has something to settle against. Counting those drafts made
+ every abandoned cart look like a sale. Split them here:
+ realOrders - paid, partially paid, or COD-committed
+ inProgressCheckouts - draft younger than 30 minutes (customer may
+ still be in the Razorpay sheet)
+ abandonedCheckouts - draft older than 30 minutes
+ ------------------------------------------------------------------ */
+ const ABANDON_MINUTES = 30;
+ const nowMs = Date.now();
+ const draftStartedMs = (o) => {
+ const raw = o.checkoutStartedAt || o.createdAt || o.timestamp;
+ const ms = raw?.toMillis ? raw.toMillis() : new Date(raw || 0).getTime();
+ return Number.isFinite(ms) && ms > 0 ? ms : 0;
+ };
+ const isDraftOrder = (o) =>
+ o.isDraft === true ||
+ ['CREATED', 'AWAITING_PAYMENT'].includes(String(o.status || '').toUpperCase());
 
-    const realOrders = ordersList.filter((o) => !isDraftOrder(o));
-    const draftOrders = ordersList.filter((o) => isDraftOrder(o));
-    const inProgressCheckouts = draftOrders.filter((o) => (nowMs - draftStartedMs(o)) / 60000 < ABANDON_MINUTES);
-    const abandonedCheckouts = draftOrders.filter((o) => (nowMs - draftStartedMs(o)) / 60000 >= ABANDON_MINUTES);
-    
-    // Strict In-Memory Patron Deduplication: group duplicate records by canonical 10-digit phone or email
-    const deduplicatedUsers = [];
-    const seenPatronsMap = new Map();
+ const realOrders = ordersList.filter((o) => !isDraftOrder(o));
+ const draftOrders = ordersList.filter((o) => isDraftOrder(o));
+ const inProgressCheckouts = draftOrders.filter((o) => (nowMs - draftStartedMs(o)) / 60000 < ABANDON_MINUTES);
+ const abandonedCheckouts = draftOrders.filter((o) => (nowMs - draftStartedMs(o)) / 60000 >= ABANDON_MINUTES);
+ 
+ // Strict In-Memory Patron Deduplication: group duplicate records by canonical 10-digit phone or email
+ const deduplicatedUsers = [];
+ const seenPatronsMap = new Map();
 
-    (adminData.users || []).forEach(u => {
-      if (u.isMergedDuplicate === true) return;
-      const prof = u.profile || {};
-      const rawEmail = prof.email || u.email || '';
-      const normEmail = (rawEmail && !rawEmail.endsWith('@phone.mytholis.com') && rawEmail !== 'N/A') ? rawEmail.trim().toLowerCase() : '';
-      const rawPhone = prof.phone || u.phone || '';
-      const digits = (rawPhone || '').replace(/\D/g, '');
-      const p10 = u.phoneCanonical || (digits.length >= 10 ? digits.slice(-10) : (digits || ''));
+ (adminData.users || []).forEach(u => {
+ if (u.isMergedDuplicate === true) return;
+ const prof = u.profile || {};
+ const rawEmail = prof.email || u.email || '';
+ const normEmail = (rawEmail && !rawEmail.endsWith('@phone.mytholis.com') && rawEmail !== 'N/A') ? rawEmail.trim().toLowerCase() : '';
+ const rawPhone = prof.phone || u.phone || '';
+ const digits = (rawPhone || '').replace(/\D/g, '');
+ const p10 = u.phoneCanonical || (digits.length >= 10 ? digits.slice(-10) : (digits || ''));
 
-      const key = (p10 && p10.length === 10) ? `phone_${p10}` : (normEmail ? `email_${normEmail}` : `uid_${u.uid || Math.random()}`);
+ const key = (p10 && p10.length === 10) ? `phone_${p10}` : (normEmail ? `email_${normEmail}` : `uid_${u.uid || Math.random()}`);
 
-      if (!seenPatronsMap.has(key)) {
-        const entry = { ...u, profile: { ...prof }, loyalty: { ...(u.loyalty || {}) }, orders: Array.isArray(u.orders) ? [...u.orders] : [] };
-        seenPatronsMap.set(key, entry);
-        deduplicatedUsers.push(entry);
-      } else {
-        const master = seenPatronsMap.get(key);
-        const masterIsAdmin = master.role === 'admin' || master.isAdmin === true || master.profile?.role === 'admin' || master.profile?.isAdmin === true;
-        const currentIsAdmin = u.role === 'admin' || u.isAdmin === true || prof.role === 'admin' || prof.isAdmin === true;
+ if (!seenPatronsMap.has(key)) {
+ const entry = { ...u, profile: { ...prof }, loyalty: { ...(u.loyalty || {}) }, orders: Array.isArray(u.orders) ? [...u.orders] : [] };
+ seenPatronsMap.set(key, entry);
+ deduplicatedUsers.push(entry);
+ } else {
+ const master = seenPatronsMap.get(key);
+ const masterIsAdmin = master.role === 'admin' || master.isAdmin === true || master.profile?.role === 'admin' || master.profile?.isAdmin === true;
+ const currentIsAdmin = u.role === 'admin' || u.isAdmin === true || prof.role === 'admin' || prof.isAdmin === true;
 
-        if (currentIsAdmin && !masterIsAdmin) {
-          master.role = 'admin';
-          master.isAdmin = true;
-          if (master.profile) {
-            master.profile.role = 'admin';
-            master.profile.isAdmin = true;
-          }
-        }
+ if (currentIsAdmin && !masterIsAdmin) {
+ master.role = 'admin';
+ master.isAdmin = true;
+ if (master.profile) {
+ master.profile.role = 'admin';
+ master.profile.isAdmin = true;
+ }
+ }
 
-        // Merge spendable and legacy mythos (transfer points from duplicate, e.g. 150M from firefox to Samar Khan)
-        const curSpendable = Number(u.loyalty?.spendable_mythos || 0);
-        const curLegacy = Number(u.loyalty?.legacy_mythos || 0);
-        if (curSpendable > 0) {
-          master.loyalty.spendable_mythos = Math.max(Number(master.loyalty?.spendable_mythos || 0), curSpendable);
-        }
-        if (curLegacy > 0) {
-          master.loyalty.legacy_mythos = Math.max(Number(master.loyalty?.legacy_mythos || 0), curLegacy);
-        }
+ // Merge spendable and legacy mythos (transfer points from duplicate, e.g. 150M from firefox to Samar Khan)
+ const curSpendable = Number(u.loyalty?.spendable_mythos || 0);
+ const curLegacy = Number(u.loyalty?.legacy_mythos || 0);
+ if (curSpendable > 0) {
+ master.loyalty.spendable_mythos = Math.max(Number(master.loyalty?.spendable_mythos || 0), curSpendable);
+ }
+ if (curLegacy > 0) {
+ master.loyalty.legacy_mythos = Math.max(Number(master.loyalty?.legacy_mythos || 0), curLegacy);
+ }
 
-        // Merge orders without duplicates
-        const existingOrderIds = new Set((master.orders || []).map(o => o.orderId || o.id));
-        (u.orders || []).forEach(ord => {
-          const ordId = ord.orderId || ord.id;
-          if (ordId && !existingOrderIds.has(ordId)) {
-            existingOrderIds.add(ordId);
-            master.orders.push(ord);
-          }
-        });
-        master.ordersCount = master.orders.length;
-        master.lifetimeSpend = master.orders.reduce((sum, o) => sum + Number(o.finalPayable || o.total || o.subtotal || 0), 0);
+ // Merge orders without duplicates
+ const existingOrderIds = new Set((master.orders || []).map(o => o.orderId || o.id));
+ (u.orders || []).forEach(ord => {
+ const ordId = ord.orderId || ord.id;
+ if (ordId && !existingOrderIds.has(ordId)) {
+ existingOrderIds.add(ordId);
+ master.orders.push(ord);
+ }
+ });
+ master.ordersCount = master.orders.length;
+ master.lifetimeSpend = master.orders.reduce((sum, o) => sum + Number(o.finalPayable || o.total || o.subtotal || 0), 0);
 
-        if (!master.linkedUids) master.linkedUids = [master.uid];
-        if (u.uid && !master.linkedUids.includes(u.uid)) master.linkedUids.push(u.uid);
-      }
-    });
+ if (!master.linkedUids) master.linkedUids = [master.uid];
+ if (u.uid && !master.linkedUids.includes(u.uid)) master.linkedUids.push(u.uid);
+ }
+ });
 
-    const usersList = deduplicatedUsers;
-    const productsList = (adminData.products && adminData.products.length) ? adminData.products : store.getProducts();
-    const postsList = adminData.posts || [];
-    const globalSettings = adminData.settings || store.globalSettings || {};
+ const usersList = deduplicatedUsers;
+ const productsList = (adminData.products && adminData.products.length) ? adminData.products : store.getProducts();
+ const postsList = adminData.posts || [];
+ const globalSettings = adminData.settings || store.globalSettings || {};
 
-    // Module A: Telemetry KPIs Calculation
-    let settledRevenue = 0;
-    let pendingCodCount = 0;
-    let pendingCodValue = 0;
-    let pendingCount = 0;
-    let confirmedCount = 0;
-    let packedCount = 0;
-    let shippedCount = 0;
-    let deliveredCount = 0;
-    let cancelledCount = 0;
+ // Module A: Telemetry KPIs Calculation
+ let settledRevenue = 0;
+ let pendingCodCount = 0;
+ let pendingCodValue = 0;
+ let pendingCount = 0;
+ let confirmedCount = 0;
+ let packedCount = 0;
+ let shippedCount = 0;
+ let deliveredCount = 0;
+ let cancelledCount = 0;
 
-    ordersList.forEach(o => {
-      const st = (o.status || 'Pending').toLowerCase();
-      const pm = (o.paymentMethod || 'Prepaid').toUpperCase();
-      const ps = (o.paymentStatus || 'Pending').toLowerCase();
-      const val = Number(o.finalPayable || o.total || o.subtotal || 0);
+ ordersList.forEach(o => {
+ const st = (o.status || 'Pending').toLowerCase();
+ const pm = (o.paymentMethod || 'Prepaid').toUpperCase();
+ const ps = (o.paymentStatus || 'Pending').toLowerCase();
+ const val = Number(o.finalPayable || o.total || o.subtotal || 0);
 
-      // Status counters
-      if (st === 'pending') pendingCount++;
-      else if (st === 'confirmed') confirmedCount++;
-      else if (st === 'packed') packedCount++;
-      else if (st === 'shipped') shippedCount++;
-      else if (st === 'delivered') deliveredCount++;
-      else if (st === 'cancelled' || st === 'rto') cancelledCount++;
+ // Status counters
+ if (st === 'pending') pendingCount++;
+ else if (st === 'confirmed') confirmedCount++;
+ else if (st === 'packed') packedCount++;
+ else if (st === 'shipped') shippedCount++;
+ else if (st === 'delivered') deliveredCount++;
+ else if (st === 'cancelled' || st === 'rto') cancelledCount++;
 
-      // Revenue: Settled Paid orders + Delivered Paid COD orders
-      if (ps === 'paid') {
-        settledRevenue += val;
-      }
+ // Revenue: Settled Paid orders + Delivered Paid COD orders
+ if (ps === 'paid') {
+ settledRevenue += val;
+ }
 
-      // COD Pipeline
-      if (pm === 'COD' && ps !== 'paid' && st !== 'cancelled' && st !== 'rto') {
-        pendingCodCount++;
-        pendingCodValue += val;
-      }
-    });
+ // COD Pipeline
+ if (pm === 'COD' && ps !== 'paid' && st !== 'cancelled' && st !== 'rto') {
+ pendingCodCount++;
+ pendingCodValue += val;
+ }
+ });
 
-    // Total Mythos Economy Liability across all patrons
-    let totalMythosLiability = 0;
-    usersList.forEach(u => {
-      totalMythosLiability += Number(u.loyalty?.spendable_mythos || 0);
-    });
+ // Total Mythos Economy Liability across all patrons
+ let totalMythosLiability = 0;
+ usersList.forEach(u => {
+ totalMythosLiability += Number(u.loyalty?.spendable_mythos || 0);
+ });
 
-    // Low Stock Alerts (stock <= 5)
-    const lowStockItems = productsList.filter(p => Number(p.stock !== undefined ? p.stock : 50) <= 5);
+ // Low Stock Alerts (stock <= 5)
+ const lowStockItems = productsList.filter(p => Number(p.stock !== undefined ? p.stock : 50) <= 5);
 
-    return `
-      <div class="sovereign-container">
-        <!-- Sovereign Header Bar -->
-        <div class="sovereign-header-card">
-          <div class="sovereign-header-left">
-            <div class="sovereign-crest">M</div>
-            <div class="sovereign-title-group">
-              <span class="glass-pill" style="color: var(--gold-primary); font-size: 0.65rem; margin-bottom: 0.3rem;">SOVEREIGN COMMAND DESK</span>
-              <h1 class="gold-shimmer-text font-title">Operations & Alchemy Ledger</h1>
-              <div class="sovereign-auth-indicator">
-                <span class="sovereign-live-dot"></span>
-                <span>Founder: <strong style="color: var(--gold-light);">${userEmail}</strong> &bull; Verified High Sovereign</span>
-              </div>
-            </div>
-          </div>
-          <div class="sovereign-header-actions">
-            <button class="btn btn-glass" style="font-size: 0.78rem; padding: 0.6rem 1.1rem;" onclick="app.refreshAdminDashboard()" title="Synchronize with Firestore">
-              ↻ Refresh Cloud Ledger
-            </button>
-            <button class="btn btn-gold" style="font-size: 0.78rem; padding: 0.6rem 1.1rem;" onclick="app.exitSanctum()" title="Return to Storefront without signing out">
-              Exit Sanctum
-            </button>
-          </div>
-        </div>
+ return `
+ <div class="sovereign-container">
+ <!-- Sovereign Header Bar -->
+ <div class="sovereign-header-card">
+ <div class="sovereign-header-left">
+ <div class="sovereign-crest">M</div>
+ <div class="sovereign-title-group">
+ <span class="glass-pill" style="color: var(--gold-primary); font-size: 0.65rem; margin-bottom: 0.3rem;">SOVEREIGN COMMAND DESK</span>
+ <h1 class="gold-shimmer-text font-title">Operations & Alchemy Ledger</h1>
+ <div class="sovereign-auth-indicator">
+ <span class="sovereign-live-dot"></span>
+ <span>Founder: <strong style="color: var(--gold-light);">${userEmail}</strong> &bull; Verified High Sovereign</span>
+ </div>
+ </div>
+ </div>
+ <div class="sovereign-header-actions">
+ <button class="btn btn-glass" style="font-size: 0.78rem; padding: 0.6rem 1.1rem;" onclick="app.refreshAdminDashboard()" title="Synchronize with Firestore">
+ ↻ Refresh Cloud Ledger
+ </button>
+ <button class="btn btn-gold" style="font-size: 0.78rem; padding: 0.6rem 1.1rem;" onclick="app.exitSanctum()" title="Return to Storefront without signing out">
+ Exit Sanctum
+ </button>
+ </div>
+ </div>
 
-        <!-- Sticky Sovereign Navigation Tabs -->
-        <div class="sovereign-nav-bar">
-          <button class="sovereign-tab ${activeTab === 'telemetry' ? 'active' : ''}" onclick="app.setAdminTab('telemetry')">
-            📊 Executive Telemetry
-          </button>
-          <button class="sovereign-tab ${activeTab === 'orders' ? 'active' : ''}" onclick="app.setAdminTab('orders')">
-            📦 Orders & COD (${realOrders.length})
-          </button>
-          <button class="sovereign-tab ${activeTab === 'abandoned' ? 'active' : ''}" onclick="app.setAdminTab('abandoned')">
-            🕳️ Abandoned Carts (${abandonedCheckouts.length})
-          </button>
-          <button class="sovereign-tab ${activeTab === 'vault' ? 'active' : ''}" onclick="app.setAdminTab('vault')">
-            🏺 Fragrance Vault (${productsList.length})
-          </button>
-          <button class="sovereign-tab ${activeTab === 'editorial' ? 'active' : ''}" onclick="app.setAdminTab('editorial')">
-            📜 Lore & Editorial (${postsList.length})
-          </button>
-          <button class="sovereign-tab ${activeTab === 'patrons' || activeTab === 'collectors' ? 'active' : ''}" onclick="app.setAdminTab('patrons')">
-            👑 Collector Registry (${usersList.length})
-          </button>
-          <button class="sovereign-tab ${activeTab === 'economy' ? 'active' : ''}" onclick="app.setAdminTab('economy')">
-            ⚙️ Economy & Settings
-          </button>
-        </div>
+ <!-- Sticky Sovereign Navigation Tabs -->
+ <div class="sovereign-nav-bar">
+ <button class="sovereign-tab ${activeTab === 'telemetry' ? 'active' : ''}" onclick="app.setAdminTab('telemetry')">
+ Executive Telemetry
+ </button>
+ <button class="sovereign-tab ${activeTab === 'orders' ? 'active' : ''}" onclick="app.setAdminTab('orders')">
+ Orders & COD (${realOrders.length})
+ </button>
+ <button class="sovereign-tab ${activeTab === 'abandoned' ? 'active' : ''}" onclick="app.setAdminTab('abandoned')">
+ Abandoned Carts (${abandonedCheckouts.length})
+ </button>
+ <button class="sovereign-tab ${activeTab === 'vault' ? 'active' : ''}" onclick="app.setAdminTab('vault')">
+ Fragrance Vault (${productsList.length})
+ </button>
+ <button class="sovereign-tab ${activeTab === 'editorial' ? 'active' : ''}" onclick="app.setAdminTab('editorial')">
+ Lore & Editorial (${postsList.length})
+ </button>
+ <button class="sovereign-tab ${activeTab === 'patrons' || activeTab === 'collectors' ? 'active' : ''}" onclick="app.setAdminTab('patrons')">
+ Collector Registry (${usersList.length})
+ </button>
+ <button class="sovereign-tab ${activeTab === 'economy' ? 'active' : ''}" onclick="app.setAdminTab('economy')">
+ Economy & Settings
+ </button>
+ </div>
 
-        <!-- ====================================================================
-             MODULE A: EXECUTIVE TELEMETRY
-             ==================================================================== -->
-        ${activeTab === 'telemetry' ? `
-          <div class="sovereign-tab-content">
-            <!-- 5 Real-Time KPI Cards -->
-            <div class="sovereign-kpi-grid">
-              <div class="sovereign-kpi-card">
-                <div class="sovereign-kpi-header">
-                  <span class="sovereign-kpi-title">Settled Revenue</span>
-                  <span class="sovereign-kpi-icon">💰</span>
-                </div>
-                <div class="sovereign-kpi-value gold-shimmer-text">₹${Math.round(settledRevenue).toLocaleString('en-IN')}</div>
-                <div class="sovereign-kpi-hint">Paid Online + Delivered COD</div>
-              </div>
+ <!-- ====================================================================
+ MODULE A: EXECUTIVE TELEMETRY
+ ==================================================================== -->
+ ${activeTab === 'telemetry' ? `
+ <div class="sovereign-tab-content">
+ <!-- 5 Real-Time KPI Cards -->
+ <div class="sovereign-kpi-grid">
+ <div class="sovereign-kpi-card">
+ <div class="sovereign-kpi-header">
+ <span class="sovereign-kpi-title">Settled Revenue</span>
+ <span class="sovereign-kpi-icon"></span>
+ </div>
+ <div class="sovereign-kpi-value gold-shimmer-text">₹${Math.round(settledRevenue).toLocaleString('en-IN')}</div>
+ <div class="sovereign-kpi-hint">Paid Online + Delivered COD</div>
+ </div>
 
-              <div class="sovereign-kpi-card">
-                <div class="sovereign-kpi-header">
-                  <span class="sovereign-kpi-title">Pending COD Pipeline</span>
-                  <span class="sovereign-kpi-icon">⏳</span>
-                </div>
-                <div class="sovereign-kpi-value" style="color: #FBBF24;">₹${Math.round(pendingCodValue).toLocaleString('en-IN')}</div>
-                <div class="sovereign-kpi-hint">${pendingCodCount} uncollected COD consignments</div>
-              </div>
+ <div class="sovereign-kpi-card">
+ <div class="sovereign-kpi-header">
+ <span class="sovereign-kpi-title">Pending COD Pipeline</span>
+ <span class="sovereign-kpi-icon">⏳</span>
+ </div>
+ <div class="sovereign-kpi-value" style="color: #FBBF24;">₹${Math.round(pendingCodValue).toLocaleString('en-IN')}</div>
+ <div class="sovereign-kpi-hint">${pendingCodCount} uncollected COD consignments</div>
+ </div>
 
-              <div class="sovereign-kpi-card">
-                <div class="sovereign-kpi-header">
-                  <span class="sovereign-kpi-title">Total Consignments</span>
-                  <span class="sovereign-kpi-icon">📦</span>
-                </div>
-                <div class="sovereign-kpi-value">${realOrders.length}</div>
-                <div class="sovereign-kpi-hint">${deliveredCount} successfully delivered</div>
-              </div>
+ <div class="sovereign-kpi-card">
+ <div class="sovereign-kpi-header">
+ <span class="sovereign-kpi-title">Total Consignments</span>
+ <span class="sovereign-kpi-icon"></span>
+ </div>
+ <div class="sovereign-kpi-value">${realOrders.length}</div>
+ <div class="sovereign-kpi-hint">${deliveredCount} successfully delivered</div>
+ </div>
 
-              <div class="sovereign-kpi-card">
-                <div class="sovereign-kpi-header">
-                  <span class="sovereign-kpi-title">Mythos Liability</span>
-                  <span class="sovereign-kpi-icon">🪙</span>
-                </div>
-                <div class="sovereign-kpi-value gold-shimmer-text">${totalMythosLiability.toLocaleString()} M</div>
-                <div class="sovereign-kpi-hint">₹${totalMythosLiability.toLocaleString()} concession exposure</div>
-              </div>
+ <div class="sovereign-kpi-card">
+ <div class="sovereign-kpi-header">
+ <span class="sovereign-kpi-title">Mythos Liability</span>
+ <span class="sovereign-kpi-icon"></span>
+ </div>
+ <div class="sovereign-kpi-value gold-shimmer-text">${totalMythosLiability.toLocaleString()} M</div>
+ <div class="sovereign-kpi-hint">₹${totalMythosLiability.toLocaleString()} concession exposure</div>
+ </div>
 
-              <div class="sovereign-kpi-card">
-                <div class="sovereign-kpi-header">
-                  <span class="sovereign-kpi-title">Low Stock Reserves</span>
-                  <span class="sovereign-kpi-icon">⚠️</span>
-                </div>
-                <div class="sovereign-kpi-value" style="color: ${lowStockItems.length > 0 ? '#EF4444' : '#10B981'};">
-                  ${lowStockItems.length}
-                </div>
-                <div class="sovereign-kpi-hint">${lowStockItems.length > 0 ? 'Extraits with &le; 5 flacons' : 'All flacons well-stocked'}</div>
-              </div>
-            </div>
+ <div class="sovereign-kpi-card">
+ <div class="sovereign-kpi-header">
+ <span class="sovereign-kpi-title">Low Stock Reserves</span>
+ <span class="sovereign-kpi-icon">⚠</span>
+ </div>
+ <div class="sovereign-kpi-value" style="color: ${lowStockItems.length > 0 ? '#EF4444' : '#10B981'};">
+ ${lowStockItems.length}
+ </div>
+ <div class="sovereign-kpi-hint">${lowStockItems.length > 0 ? 'Extraits with &le; 5 flacons' : 'All flacons well-stocked'}</div>
+ </div>
+ </div>
 
-            <!-- Order Status Breakdown Bar -->
-            <div class="liquid-glass-card" style="padding: 1.5rem; margin-bottom: 2rem;">
-              <h3 class="font-title" style="color: var(--gold-light); font-size: 1.15rem; margin-bottom: 1rem;">
-                Consignment Pipeline Status Breakdown
-              </h3>
-              <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
-                <div class="sovereign-counter-pill">
-                  <span style="color: #FCD34D;">Pending:</span>
-                  <span class="sovereign-counter-num">${pendingCount}</span>
-                </div>
-                <div class="sovereign-counter-pill">
-                  <span style="color: #93C5FD;">Confirmed:</span>
-                  <span class="sovereign-counter-num">${confirmedCount}</span>
-                </div>
-                <div class="sovereign-counter-pill">
-                  <span style="color: #E9D5FF;">Packed:</span>
-                  <span class="sovereign-counter-num">${packedCount}</span>
-                </div>
-                <div class="sovereign-counter-pill">
-                  <span style="color: #BAE6FD;">Shipped:</span>
-                  <span class="sovereign-counter-num">${shippedCount}</span>
-                </div>
-                <div class="sovereign-counter-pill">
-                  <span style="color: #6EE7B7;">Delivered:</span>
-                  <span class="sovereign-counter-num">${deliveredCount}</span>
-                </div>
-                <div class="sovereign-counter-pill">
-                  <span style="color: #FCA5A5;">Cancelled / RTO:</span>
-                  <span class="sovereign-counter-num">${cancelledCount}</span>
-                </div>
-              </div>
-            </div>
+ <!-- Order Status Breakdown Bar -->
+ <div class="liquid-glass-card" style="padding: 1.5rem; margin-bottom: 2rem;">
+ <h3 class="font-title" style="color: var(--gold-light); font-size: 1.15rem; margin-bottom: 1rem;">
+ Consignment Pipeline Status Breakdown
+ </h3>
+ <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+ <div class="sovereign-counter-pill">
+ <span style="color: #FCD34D;">Pending:</span>
+ <span class="sovereign-counter-num">${pendingCount}</span>
+ </div>
+ <div class="sovereign-counter-pill">
+ <span style="color: #93C5FD;">Confirmed:</span>
+ <span class="sovereign-counter-num">${confirmedCount}</span>
+ </div>
+ <div class="sovereign-counter-pill">
+ <span style="color: #E9D5FF;">Packed:</span>
+ <span class="sovereign-counter-num">${packedCount}</span>
+ </div>
+ <div class="sovereign-counter-pill">
+ <span style="color: #BAE6FD;">Shipped:</span>
+ <span class="sovereign-counter-num">${shippedCount}</span>
+ </div>
+ <div class="sovereign-counter-pill">
+ <span style="color: #6EE7B7;">Delivered:</span>
+ <span class="sovereign-counter-num">${deliveredCount}</span>
+ </div>
+ <div class="sovereign-counter-pill">
+ <span style="color: #FCA5A5;">Cancelled / RTO:</span>
+ <span class="sovereign-counter-num">${cancelledCount}</span>
+ </div>
+ </div>
+ </div>
 
-            <!-- Low Stock Warnings Table if any -->
-            ${lowStockItems.length > 0 ? `
-              <div class="liquid-glass-card" style="padding: 1.5rem; margin-bottom: 2rem; border-color: rgba(239, 68, 68, 0.4);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                  <h3 class="font-title" style="color: #FCA5A5; font-size: 1.15rem; margin: 0;">
-                    ⚠️ Immediate Stock Attention Required
-                  </h3>
-                  <button class="btn btn-gold" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;" onclick="app.setAdminTab('vault')">
-                    Adjust in Fragrance Vault &rarr;
-                  </button>
-                </div>
-                <div class="sovereign-table-wrap">
-                  <table class="sovereign-table">
-                    <thead>
-                      <tr>
-                        <th>Flacon</th>
-                        <th>Extrait Name</th>
-                        <th>Category</th>
-                        <th>Remaining Stock</th>
-                        <th>Price</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      ${lowStockItems.map(p => `
-                        <tr>
-                          <td><img src="${safeHref(p.image, 'assets/product/1kingscar.webp')}" class="sovereign-table-img" alt="${esc((p.name || '').replace(/<[^>]*>/g, ' ').trim())}" /></td>
-                          <td><strong style="color: var(--gold-light);">${esc(p.name)}</strong></td>
-                          <td><span style="color: var(--text-muted); font-size: 0.78rem;">${esc(p.collection || p.subtitle || 'Signature')}</span></td>
-                          <td><strong style="color: #EF4444; font-size: 0.95rem;">${esc(p.stock !== undefined ? p.stock : 50)} left</strong></td>
-                          <td>₹${Number(p.price || 0).toLocaleString('en-IN')}</td>
-                        </tr>
-                      `).join('')}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ` : ''}
+ <!-- Low Stock Warnings Table if any -->
+ ${lowStockItems.length > 0 ? `
+ <div class="liquid-glass-card" style="padding: 1.5rem; margin-bottom: 2rem; border-color: rgba(239, 68, 68, 0.4);">
+ <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+ <h3 class="font-title" style="color: #FCA5A5; font-size: 1.15rem; margin: 0;">
+ ⚠ Immediate Stock Attention Required
+ </h3>
+ <button class="btn btn-gold" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;" onclick="app.setAdminTab('vault')">
+ Adjust in Fragrance Vault &rarr;
+ </button>
+ </div>
+ <div class="sovereign-table-wrap">
+ <table class="sovereign-table">
+ <thead>
+ <tr>
+ <th>Flacon</th>
+ <th>Extrait Name</th>
+ <th>Category</th>
+ <th>Remaining Stock</th>
+ <th>Price</th>
+ </tr>
+ </thead>
+ <tbody>
+ ${lowStockItems.map(p => `
+ <tr>
+ <td><img src="${safeHref(p.image, 'assets/product/1kingscar.webp')}" class="sovereign-table-img" alt="${esc((p.name || '').replace(/<[^>]*>/g, ' ').trim())}" /></td>
+ <td><strong style="color: var(--gold-light);">${esc(p.name)}</strong></td>
+ <td><span style="color: var(--text-muted); font-size: 0.78rem;">${esc(p.collection || p.subtitle || 'Signature')}</span></td>
+ <td><strong style="color: #EF4444; font-size: 0.95rem;">${esc(p.stock !== undefined ? p.stock : 50)} left</strong></td>
+ <td>₹${Number(p.price || 0).toLocaleString('en-IN')}</td>
+ </tr>
+ `).join('')}
+ </tbody>
+ </table>
+ </div>
+ </div>
+ ` : ''}
 
-            <!-- Quick Action Shortcuts -->
-            <div class="liquid-glass-card" style="padding: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
-              <div>
-                <h4 style="color: var(--gold-light); margin: 0 0 0.3rem; font-size: 1rem;">Direct Cloud Catalog Seeder</h4>
-                <p style="color: var(--text-muted); font-size: 0.82rem; margin: 0;">Upload all 7 local extraits into the Firestore <code>products</code> collection.</p>
-              </div>
-              <button class="btn btn-gold" onclick="app.seedCatalogToFirestore()">
-                Seed Local Catalog to Firestore
-              </button>
-            </div>
-          </div>
-        ` : ''}
+ <!-- Quick Action Shortcuts -->
+ <div class="liquid-glass-card" style="padding: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+ <div>
+ <h4 style="color: var(--gold-light); margin: 0 0 0.3rem; font-size: 1rem;">Direct Cloud Catalog Seeder</h4>
+ <p style="color: var(--text-muted); font-size: 0.82rem; margin: 0;">Upload all 7 local extraits into the Firestore <code>products</code> collection.</p>
+ </div>
+ <button class="btn btn-gold" onclick="app.seedCatalogToFirestore()">
+ Seed Local Catalog to Firestore
+ </button>
+ </div>
+ </div>
+ ` : ''}
 
-        <!-- ====================================================================
-             MODULE B: ORDER, PAYMENT & COD COMMAND
-             ==================================================================== -->
-        ${activeTab === 'orders' ? `
-          <div class="sovereign-tab-content">
-            <!-- Filter Bar -->
-            <div class="sovereign-filter-bar">
-              <input type="text" id="admin-order-search" class="sovereign-search-input" placeholder="Search by Order ID, Collector Name, Email, or WhatsApp..." oninput="app.filterAdminOrders()" />
-              <select id="admin-order-status-filter" class="sovereign-select" onchange="app.filterAdminOrders()">
-                <option value="All">Filter Status: All</option>
-                <option value="Pending">Pending</option>
-                <option value="Confirmed">Confirmed</option>
-                <option value="Packed">Packed</option>
-                <option value="Shipped">Shipped</option>
-                <option value="Delivered">Delivered</option>
-                <option value="Cancelled">Cancelled</option>
-                <option value="RTO">RTO</option>
-              </select>
-              <select id="admin-order-payment-filter" class="sovereign-select" onchange="app.filterAdminOrders()">
-                <option value="All">Filter Payment: All</option>
-                <option value="COD">Cash on Delivery (COD)</option>
-                <option value="Prepaid">Prepaid / Online</option>
-                <option value="Paid">Status: Paid</option>
-                <option value="PendingPay">Status: Unpaid / Pending COD</option>
-              </select>
-              <button class="btn btn-gold" style="font-size: 0.78rem; padding: 0.5rem 1rem; display: inline-flex; align-items: center; gap: 0.4rem;" onclick="app.openShippingLabelStudio()">
-                🏷️ Shipping Label Studio
-              </button>
-              <button class="btn btn-glass" onclick="app.refreshAdminDashboard()">
-                ↻ Reload Orders
-              </button>
-            </div>
+ <!-- ====================================================================
+ MODULE B: ORDER, PAYMENT & COD COMMAND
+ ==================================================================== -->
+ ${activeTab === 'orders' ? `
+ <div class="sovereign-tab-content">
+ <!-- Filter Bar -->
+ <div class="sovereign-filter-bar">
+ <input type="text" id="admin-order-search" class="sovereign-search-input" placeholder="Search by Order ID, Collector Name, Email, or WhatsApp..." oninput="app.filterAdminOrders()" />
+ <select id="admin-order-status-filter" class="sovereign-select" onchange="app.filterAdminOrders()">
+ <option value="All">Filter Status: All</option>
+ <option value="Pending">Pending</option>
+ <option value="Confirmed">Confirmed</option>
+ <option value="Packed">Packed</option>
+ <option value="Shipped">Shipped</option>
+ <option value="Delivered">Delivered</option>
+ <option value="Cancelled">Cancelled</option>
+ <option value="RTO">RTO</option>
+ </select>
+ <select id="admin-order-payment-filter" class="sovereign-select" onchange="app.filterAdminOrders()">
+ <option value="All">Filter Payment: All</option>
+ <option value="COD">Cash on Delivery (COD)</option>
+ <option value="Prepaid">Prepaid / Online</option>
+ <option value="Paid">Status: Paid</option>
+ <option value="PendingPay">Status: Unpaid / Pending COD</option>
+ </select>
+ <button class="btn btn-gold" style="font-size: 0.78rem; padding: 0.5rem 1rem; display: inline-flex; align-items: center; gap: 0.4rem;" onclick="app.openShippingLabelStudio()">
+ Shipping Label Studio
+ </button>
+ <button class="btn btn-glass" onclick="app.refreshAdminDashboard()">
+ ↻ Reload Orders
+ </button>
+ </div>
 
-            <!-- Checkout vs order separation -->
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.8rem; padding:0.75rem 1rem; margin-bottom:1rem; border:1px solid rgba(212,175,55,0.18); border-radius:8px; background:rgba(0,0,0,0.25);">
-              <div style="font-size:0.78rem; color:var(--text-muted); line-height:1.6;">
-                <strong style="color:var(--gold-light);">${realOrders.length}</strong> orders &middot;
-                <strong style="color:#FCD34D;">${inProgressCheckouts.length}</strong> checkout(s) in progress &middot;
-                <strong style="color:#FCA5A5;">${abandonedCheckouts.length}</strong> abandoned
-                <span style="opacity:0.75;">&nbsp;— checkouts are excluded from order counts and revenue.</span>
-              </div>
-              ${abandonedCheckouts.length > 0 ? `
-                <button class="btn btn-glass" style="font-size:0.7rem; padding:0.3rem 0.7rem;" onclick="app.toggleAbandonedCheckouts()">
-                  ${app.showAbandonedCheckouts ? 'Hide' : 'Show'} abandoned checkouts
-                </button>
-              ` : ''}
-            </div>
+ <!-- Checkout vs order separation -->
+ <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.8rem; padding:0.75rem 1rem; margin-bottom:1rem; border:1px solid rgba(212,175,55,0.18); border-radius:8px; background:rgba(0,0,0,0.25);">
+ <div style="font-size:0.78rem; color:var(--text-muted); line-height:1.6;">
+ <strong style="color:var(--gold-light);">${realOrders.length}</strong> orders &middot;
+ <strong style="color:#FCD34D;">${inProgressCheckouts.length}</strong> checkout(s) in progress &middot;
+ <strong style="color:#FCA5A5;">${abandonedCheckouts.length}</strong> abandoned
+ <span style="opacity:0.75;">&nbsp;— checkouts are excluded from order counts and revenue.</span>
+ </div>
+ ${abandonedCheckouts.length > 0 ? `
+ <button class="btn btn-glass" style="font-size:0.7rem; padding:0.3rem 0.7rem;" onclick="app.toggleAbandonedCheckouts()">
+ ${app.showAbandonedCheckouts ? 'Hide' : 'Show'} abandoned checkouts
+ </button>
+ ` : ''}
+ </div>
 
-            ${app.showAbandonedCheckouts && abandonedCheckouts.length > 0 ? `
-              <div class="liquid-glass-card" style="padding:1rem; margin-bottom:1rem;">
-                <div style="font-size:0.75rem; letter-spacing:0.08em; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.6rem;">Abandoned checkouts (not orders)</div>
-                ${abandonedCheckouts.slice(0, 25).map((o) => {
-                  const id = o.orderId || o.id || '—';
-                  const started = draftStartedMs(o) ? new Date(draftStartedMs(o)).toLocaleString('en-IN') : 'unknown';
-                  return `<div style="display:flex; justify-content:space-between; gap:1rem; font-size:0.78rem; padding:0.35rem 0; border-bottom:1px solid rgba(255,255,255,0.05);">
-                    <span style="color:var(--text-main);">#${esc(id)}</span>
-                    <span style="color:var(--text-muted);">${esc(started)}</span>
-                    <span style="color:var(--gold-primary);">₹${Number(o.verifiedTotal || o.total || 0).toLocaleString('en-IN')}</span>
-                  </div>`;
-                }).join('')}
-                ${abandonedCheckouts.length > 25 ? `<div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.5rem;">…and ${abandonedCheckouts.length - 25} more</div>` : ''}
-              </div>
-            ` : ''}
+ ${app.showAbandonedCheckouts && abandonedCheckouts.length > 0 ? `
+ <div class="liquid-glass-card" style="padding:1rem; margin-bottom:1rem;">
+ <div style="font-size:0.75rem; letter-spacing:0.08em; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.6rem;">Abandoned checkouts (not orders)</div>
+ ${abandonedCheckouts.slice(0, 25).map((o) => {
+ const id = o.orderId || o.id || '—';
+ const started = draftStartedMs(o) ? new Date(draftStartedMs(o)).toLocaleString('en-IN') : 'unknown';
+ return `<div style="display:flex; justify-content:space-between; gap:1rem; font-size:0.78rem; padding:0.35rem 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+ <span style="color:var(--text-main);">#${esc(id)}</span>
+ <span style="color:var(--text-muted);">${esc(started)}</span>
+ <span style="color:var(--gold-primary);">₹${Number(o.verifiedTotal || o.total || 0).toLocaleString('en-IN')}</span>
+ </div>`;
+ }).join('')}
+ ${abandonedCheckouts.length > 25 ? `<div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.5rem;">…and ${abandonedCheckouts.length - 25} more</div>` : ''}
+ </div>
+ ` : ''}
 
-            <!-- Orders Cards List -->
-            <div class="sovereign-orders-list" id="admin-orders-container">
-              ${realOrders.length === 0 ? `
-                <div class="liquid-glass-card" style="padding: 3rem; text-align: center; color: var(--text-muted);">
-                  <div style="font-size: 2rem; margin-bottom: 0.5rem;">📦</div>
-                  <h3 class="font-title" style="color: var(--gold-light);">No Consignments Recorded</h3>
-                  <p style="font-size: 0.85rem;">Orders placed by collectors will stream into this real-time ledger automatically.</p>
-                </div>
-              ` : realOrders.map(order => {
-                const orderId = order.orderId || order.id || 'MYTH-0000';
-                const patronName = order.userName || order.customer?.name || order.shipping?.name || 'Collector';
-                const patronEmail = order.userEmail || order.customer?.email || order.shipping?.email || 'N/A';
-                const patronPhone = order.phone || order.customer?.phone || order.shipping?.phone || '';
-                const shippingAddr = order.address || order.shippingAddress || order.shipping?.address || 'Standard Address';
-                const items = Array.isArray(order.items) ? order.items : [];
-                const currentStatus = order.status || 'Pending';
-                const paymentMethod = (order.paymentMethod || 'Prepaid').toUpperCase();
-                const paymentStatus = (order.paymentStatus || (paymentMethod === 'PREPAID' ? 'Paid' : 'Pending')).toLowerCase();
-                const isPaid = paymentStatus === 'paid';
-                const finalPayable = Number(order.finalPayable || order.total || order.subtotal || 0);
-                const subtotal = Number(order.subtotal || order.cartTotal || finalPayable);
-                const discount = Number(order.discount || 0);
-                const mythosUsed = Number(order.mythosUsed || 0);
-                const courier = order.courierName || '';
-                const awb = order.trackingNumber || '';
-                const orderDate = order.timestamp?.toMillis ? new Date(order.timestamp.toMillis()).toLocaleString('en-IN') : (order.date || order.createdAt ? new Date(order.date || order.createdAt).toLocaleString('en-IN') : 'Recent');
+ <!-- Orders Cards List -->
+ <div class="sovereign-orders-list" id="admin-orders-container">
+ ${realOrders.length === 0 ? `
+ <div class="liquid-glass-card" style="padding: 3rem; text-align: center; color: var(--text-muted);">
+ <div style="font-size: 2rem; margin-bottom: 0.5rem;"></div>
+ <h3 class="font-title" style="color: var(--gold-light);">No Consignments Recorded</h3>
+ <p style="font-size: 0.85rem;">Orders placed by collectors will stream into this real-time ledger automatically.</p>
+ </div>
+ ` : realOrders.map(order => {
+ const orderId = order.orderId || order.id || 'MYTH-0000';
+ const patronName = order.userName || order.customer?.name || order.shipping?.name || 'Collector';
+ const patronEmail = order.userEmail || order.customer?.email || order.shipping?.email || 'N/A';
+ const patronPhone = order.phone || order.customer?.phone || order.shipping?.phone || '';
+ const shippingAddr = order.address || order.shippingAddress || order.shipping?.address || 'Standard Address';
+ const items = Array.isArray(order.items) ? order.items : [];
+ const currentStatus = order.status || 'Pending';
+ const paymentMethod = (order.paymentMethod || 'Prepaid').toUpperCase();
+ const paymentStatus = (order.paymentStatus || (paymentMethod === 'PREPAID' ? 'Paid' : 'Pending')).toLowerCase();
+ const isPaid = paymentStatus === 'paid';
+ const finalPayable = Number(order.finalPayable || order.total || order.subtotal || 0);
+ const subtotal = Number(order.subtotal || order.cartTotal || finalPayable);
+ const discount = Number(order.discount || 0);
+ const mythosUsed = Number(order.mythosUsed || 0);
+ const courier = order.courierName || '';
+ const awb = order.trackingNumber || '';
+ const orderDate = order.timestamp?.toMillis ? new Date(order.timestamp.toMillis()).toLocaleString('en-IN') : (order.date || order.createdAt ? new Date(order.date || order.createdAt).toLocaleString('en-IN') : 'Recent');
 
-                /* Every value below originates from a customer-controlled order
-                   document, so none of it may reach innerHTML raw. */
-                const eOrderId = esc(orderId);
-                const idOrder = safeId(orderId);
-                const eName = esc(patronName);
-                const eEmail = esc(patronEmail);
-                const ePhone = esc(patronPhone);
-                const eAddr = esc(shippingAddr);
-                const eStatus = esc(currentStatus);
-                const eMethod = esc(paymentMethod);
-                const eCourier = esc(courier);
-                const eAwb = esc(awb);
+ /* Every value below originates from a customer-controlled order
+ document, so none of it may reach innerHTML raw. */
+ const eOrderId = esc(orderId);
+ const idOrder = safeId(orderId);
+ const eName = esc(patronName);
+ const eEmail = esc(patronEmail);
+ const ePhone = esc(patronPhone);
+ const eAddr = esc(shippingAddr);
+ const eStatus = esc(currentStatus);
+ const eMethod = esc(paymentMethod);
+ const eCourier = esc(courier);
+ const eAwb = esc(awb);
 
-                return `
-                  <div class="sovereign-order-card" id="order-card-${idOrder}" data-orderid="${idOrder.toLowerCase()}" data-name="${esc(patronName.toLowerCase())}" data-email="${esc(patronEmail.toLowerCase())}" data-phone="${esc(patronPhone)}" data-status="${esc(currentStatus)}" data-method="${esc(paymentMethod)}" data-paid="${isPaid}">
-                    <!-- Head -->
-                    <div class="sovereign-order-head">
-                      <div>
-                        <div class="sovereign-order-id">Order #${eOrderId}</div>
-                        <div class="sovereign-order-date">${esc(orderDate)} &bull; Consignment UID: ${esc(order.userId || 'Guest')}</div>
-                      </div>
-                      <div class="sovereign-badges-wrap">
-                        <span class="sovereign-pill status-${idOrder.toLowerCase()}">${eStatus}</span>
-                        <span class="sovereign-pill payment-${esc(String(paymentMethod).toLowerCase())}">${eMethod}</span>
-                        <span class="sovereign-pill payment-${isPaid ? 'paid' : 'pending'}">${isPaid ? 'Paid' : 'Pending Payment'}</span>
-                        ${order.rewardsCredited ? `
-                          <span class="sovereign-pill" style="background: rgba(212, 175, 55, 0.2); border: 1px solid var(--gold-primary); color: var(--gold-light);">🪙 Rewards Settled</span>
-                        ` : ''}
-                      </div>
-                    </div>
+ return `
+ <div class="sovereign-order-card" id="order-card-${idOrder}" data-orderid="${idOrder.toLowerCase()}" data-name="${esc(patronName.toLowerCase())}" data-email="${esc(patronEmail.toLowerCase())}" data-phone="${esc(patronPhone)}" data-status="${esc(currentStatus)}" data-method="${esc(paymentMethod)}" data-paid="${isPaid}">
+ <!-- Head -->
+ <div class="sovereign-order-head">
+ <div>
+ <div class="sovereign-order-id">Order #${eOrderId}</div>
+ <div class="sovereign-order-date">${esc(orderDate)} &bull; Consignment UID: ${esc(order.userId || 'Guest')}</div>
+ </div>
+ <div class="sovereign-badges-wrap">
+ <span class="sovereign-pill status-${idOrder.toLowerCase()}">${eStatus}</span>
+ <span class="sovereign-pill payment-${esc(String(paymentMethod).toLowerCase())}">${eMethod}</span>
+ <span class="sovereign-pill payment-${isPaid ? 'paid' : 'pending'}">${isPaid ? 'Paid' : 'Pending Payment'}</span>
+ ${order.rewardsCredited ? `
+ <span class="sovereign-pill" style="background: rgba(212, 175, 55, 0.2); border: 1px solid var(--gold-primary); color: var(--gold-light);"> Rewards Settled</span>
+ ` : ''}
+ </div>
+ </div>
 
-                    <!-- Body -->
-                    <div class="sovereign-order-body">
-                      <!-- Collector Coordinates -->
-                      <div class="sovereign-subpanel">
-                        <div class="sovereign-subpanel-title">Collector Coordinates</div>
-                        <div style="font-weight: 700; color: var(--gold-light); font-size: 0.95rem; margin-bottom: 0.2rem;">${eName}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.2rem;">${eEmail}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">WhatsApp / Tel: <strong style="color: var(--text-main);">${ePhone || 'Not provided'}</strong></div>
-                        <div style="font-size: 0.78rem; line-height: 1.4; color: var(--text-muted); background: rgba(0, 0, 0, 0.3); padding: 0.5rem; border-radius: 6px;">
-                          📍 ${eAddr}
-                        </div>
-                      </div>
+ <!-- Body -->
+ <div class="sovereign-order-body">
+ <!-- Collector Coordinates -->
+ <div class="sovereign-subpanel">
+ <div class="sovereign-subpanel-title">Collector Coordinates</div>
+ <div style="font-weight: 700; color: var(--gold-light); font-size: 0.95rem; margin-bottom: 0.2rem;">${eName}</div>
+ <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.2rem;">${eEmail}</div>
+ <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">WhatsApp / Tel: <strong style="color: var(--text-main);">${ePhone || 'Not provided'}</strong></div>
+ <div style="font-size: 0.78rem; line-height: 1.4; color: var(--text-muted); background: rgba(0, 0, 0, 0.3); padding: 0.5rem; border-radius: 6px;">
+ ${eAddr}
+ </div>
+ </div>
 
-                      <!-- Itemized Bottles -->
-                      <div class="sovereign-subpanel">
-                        <div class="sovereign-subpanel-title">Itemized Extraits (${items.length} Bottles)</div>
-                        ${items.map(item => `
-                          <div class="sovereign-item-row">
-                            <span>${esc(item.name || item.id)} <span style="color: var(--gold-primary);">(${esc(item.size || 50)}ml)</span> &times; ${esc(item.quantity || 1)}</span>
-                            <span style="color: var(--gold-light);">₹${(Number(item.price || 0) * Number(item.quantity || 1)).toLocaleString('en-IN')}</span>
-                          </div>
-                        `).join('')}
-                      </div>
+ <!-- Itemized Bottles -->
+ <div class="sovereign-subpanel">
+ <div class="sovereign-subpanel-title">Itemized Extraits (${items.length} Bottles)</div>
+ ${items.map(item => `
+ <div class="sovereign-item-row">
+ <span>${esc(item.name || item.id)} <span style="color: var(--gold-primary);">(${esc(item.size || 50)}ml)</span> &times; ${esc(item.quantity || 1)}</span>
+ <span style="color: var(--gold-light);">₹${(Number(item.price || 0) * Number(item.quantity || 1)).toLocaleString('en-IN')}</span>
+ </div>
+ `).join('')}
+ </div>
 
-                      <!-- Financial Breakdown -->
-                      <div class="sovereign-subpanel">
-                        <div class="sovereign-subpanel-title">Financial Ledger</div>
-                        <div class="sovereign-finance-row">
-                          <span style="color: var(--text-muted);">Subtotal:</span>
-                          <span>₹${subtotal.toLocaleString('en-IN')}</span>
-                        </div>
-                        ${discount > 0 ? `
-                          <div class="sovereign-finance-row" style="color: #10B981;">
-                            <span>Discount / Key Voucher:</span>
-                            <span>-₹${discount.toLocaleString('en-IN')}</span>
-                          </div>
-                        ` : ''}
-                        ${mythosUsed > 0 ? `
-                          <div class="sovereign-finance-row" style="color: var(--gold-light);">
-                            <span>Mythos Coins Redeemed:</span>
-                            <span>${mythosUsed} M</span>
-                          </div>
-                        ` : ''}
-                        <div class="sovereign-finance-row total-row">
-                          <span>Final Payable:</span>
-                          <span class="gold-shimmer-text">₹${finalPayable.toLocaleString('en-IN')}</span>
-                        </div>
-                      </div>
-                    </div>
+ <!-- Financial Breakdown -->
+ <div class="sovereign-subpanel">
+ <div class="sovereign-subpanel-title">Financial Ledger</div>
+ <div class="sovereign-finance-row">
+ <span style="color: var(--text-muted);">Subtotal:</span>
+ <span>₹${subtotal.toLocaleString('en-IN')}</span>
+ </div>
+ ${discount > 0 ? `
+ <div class="sovereign-finance-row" style="color: #10B981;">
+ <span>Discount / Key Voucher:</span>
+ <span>-₹${discount.toLocaleString('en-IN')}</span>
+ </div>
+ ` : ''}
+ ${mythosUsed > 0 ? `
+ <div class="sovereign-finance-row" style="color: var(--gold-light);">
+ <span>Mythos Coins Redeemed:</span>
+ <span>${mythosUsed} M</span>
+ </div>
+ ` : ''}
+ <div class="sovereign-finance-row total-row">
+ <span>Final Payable:</span>
+ <span class="gold-shimmer-text">₹${finalPayable.toLocaleString('en-IN')}</span>
+ </div>
+ </div>
+ </div>
 
-                    <!-- Interactive Admin Controls & Actions -->
-                    <div class="sovereign-order-actions">
-                      <!-- Status Dropdown -->
-                      <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="font-size: 0.75rem; color: var(--text-muted);">Status:</span>
-                        <select id="status-${idOrder}" class="sovereign-select" style="min-width: 140px; padding: 0.45rem 0.6rem; font-size: 0.8rem;" onchange="app.updateAdminOrderStatus('${idOrder}', this.value)">
-                          <option value="Pending" ${currentStatus === 'Pending' ? 'selected' : ''}>Pending</option>
-                          <option value="Confirmed" ${currentStatus === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
-                          <option value="Packed" ${currentStatus === 'Packed' ? 'selected' : ''}>Packed</option>
-                          <option value="Shipped" ${currentStatus === 'Shipped' ? 'selected' : ''}>Shipped</option>
-                          <option value="Delivered" ${currentStatus === 'Delivered' ? 'selected' : ''}>Delivered</option>
-                          <option value="Cancelled" ${currentStatus === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
-                          <option value="RTO" ${currentStatus === 'RTO' ? 'selected' : ''}>RTO</option>
-                        </select>
-                      </div>
+ <!-- Interactive Admin Controls & Actions -->
+ <div class="sovereign-order-actions">
+ <!-- Status Dropdown -->
+ <div style="display: flex; align-items: center; gap: 0.5rem;">
+ <span style="font-size: 0.75rem; color: var(--text-muted);">Status:</span>
+ <select id="status-${idOrder}" class="sovereign-select" style="min-width: 140px; padding: 0.45rem 0.6rem; font-size: 0.8rem;" onchange="app.updateAdminOrderStatus('${idOrder}', this.value)">
+ <option value="Pending" ${currentStatus === 'Pending' ? 'selected' : ''}>Pending</option>
+ <option value="Confirmed" ${currentStatus === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+ <option value="Packed" ${currentStatus === 'Packed' ? 'selected' : ''}>Packed</option>
+ <option value="Shipped" ${currentStatus === 'Shipped' ? 'selected' : ''}>Shipped</option>
+ <option value="Delivered" ${currentStatus === 'Delivered' ? 'selected' : ''}>Delivered</option>
+ <option value="Cancelled" ${currentStatus === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+ <option value="RTO" ${currentStatus === 'RTO' ? 'selected' : ''}>RTO</option>
+ </select>
+ </div>
 
-                      <!-- Payment Status Toggle -->
-                      <button class="btn btn-glass" style="font-size: 0.75rem; padding: 0.45rem 0.8rem; border-color: ${isPaid ? '#10B981' : '#F59E0B'}; color: ${isPaid ? '#6EE7B7' : '#FCD34D'};" onclick="app.toggleAdminPaymentStatus('${idOrder}', '${isPaid ? 'Paid' : 'Pending'}')">
-                        ${isPaid ? '✓ Marked Paid (Click to Unpay)' : '⚠ Unpaid (Mark as Paid)'}
-                      </button>
+ <!-- Payment Status Toggle -->
+ <button class="btn btn-glass" style="font-size: 0.75rem; padding: 0.45rem 0.8rem; border-color: ${isPaid ? '#10B981' : '#F59E0B'}; color: ${isPaid ? '#6EE7B7' : '#FCD34D'};" onclick="app.toggleAdminPaymentStatus('${idOrder}', '${isPaid ? 'Paid' : 'Pending'}')">
+ ${isPaid ? '✓ Marked Paid (Click to Unpay)' : '⚠ Unpaid (Mark as Paid)'}
+ </button>
 
-                      <!-- Partial COD: collect the deferred balance on delivery -->
-                      ${Number(order.balanceDue) > 0 ? `
-                        <button class="btn btn-gold" style="font-size: 0.75rem; padding: 0.45rem 0.8rem;" onclick="app.collectPartialBalance('${idOrder}')">
-                          💰 Collect Balance ₹${Number(order.balanceDue).toLocaleString('en-IN')}
-                        </button>
-                      ` : ''}
+ <!-- Partial COD: collect the deferred balance on delivery -->
+ ${Number(order.balanceDue) > 0 ? `
+ <button class="btn btn-gold" style="font-size: 0.75rem; padding: 0.45rem 0.8rem;" onclick="app.collectPartialBalance('${idOrder}')">
+ Collect Balance ₹${Number(order.balanceDue).toLocaleString('en-IN')}
+ </button>
+ ` : ''}
 
-                      <!-- Courier & Tracking -->
-                      <div style="display: flex; gap: 0.4rem; flex: 1; min-width: 280px;">
-                        <input type="text" id="courier-${idOrder}" class="sovereign-form-input" style="padding: 0.45rem 0.6rem; font-size: 0.8rem; flex: 1;" placeholder="Courier (e.g. BlueDart)" value="${eCourier}" />
-                        <input type="text" id="tracking-${idOrder}" class="sovereign-form-input" style="padding: 0.45rem 0.6rem; font-size: 0.8rem; flex: 1.2;" placeholder="AWB / Tracking #" value="${eAwb}" />
-                        <button class="btn btn-gold" style="font-size: 0.72rem; padding: 0.45rem 0.8rem;" onclick="app.saveAdminOrderTracking('${idOrder}')">
-                          Save
-                        </button>
-                      </div>
+ <!-- Courier & Tracking -->
+ <div style="display: flex; gap: 0.4rem; flex: 1; min-width: 280px;">
+ <input type="text" id="courier-${idOrder}" class="sovereign-form-input" style="padding: 0.45rem 0.6rem; font-size: 0.8rem; flex: 1;" placeholder="Courier (e.g. BlueDart)" value="${eCourier}" />
+ <input type="text" id="tracking-${idOrder}" class="sovereign-form-input" style="padding: 0.45rem 0.6rem; font-size: 0.8rem; flex: 1.2;" placeholder="AWB / Tracking #" value="${eAwb}" />
+ <button class="btn btn-gold" style="font-size: 0.72rem; padding: 0.45rem 0.8rem;" onclick="app.saveAdminOrderTracking('${idOrder}')">
+ Save
+ </button>
+ </div>
 
-                      <!-- 1-Click Actions: Shipping Label & WhatsApp -->
-                      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                        <button class="btn btn-gold" style="font-size: 0.72rem; padding: 0.45rem 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem; background: linear-gradient(135deg, #D4AF37 0%, #AA820A 100%); color: #041812; font-weight: 700;" onclick="app.printShippingLabelForOrder('${idOrder}')" title="Generate & Print 4x6 Thermal Shipping Label">
-                          🏷️ Print Shipping Label
-                        </button>
-                        ${paymentMethod === 'COD' ? `
-                          <button class="btn-whatsapp-verify" onclick="app.verifyCodWhatsApp('${idOrder}', '${safeId(patronPhone)}', ${Number(finalPayable) || 0})" title="Send WhatsApp COD Confirmation">
-                            <span>💬</span> Verify COD
-                          </button>
-                        ` : ''}
-                        <button class="btn-whatsapp-dispatch" onclick="app.sendDispatchWhatsApp('${idOrder}', '${safeId(patronPhone)}')" title="Send WhatsApp Dispatch Notice">
-                          <span>📦</span> Send Dispatch
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-        ` : ''}
+ <!-- 1-Click Actions: Shipping Label & WhatsApp -->
+ <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+ <button class="btn btn-gold" style="font-size: 0.72rem; padding: 0.45rem 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem; background: linear-gradient(135deg, #D4AF37 0%, #AA820A 100%); color: #041812; font-weight: 700;" onclick="app.printShippingLabelForOrder('${idOrder}')" title="Generate & Print 4x6 Thermal Shipping Label">
+ Print Shipping Label
+ </button>
+ ${paymentMethod === 'COD' ? `
+ <button class="btn-whatsapp-verify" onclick="app.verifyCodWhatsApp('${idOrder}', '${safeId(patronPhone)}', ${Number(finalPayable) || 0})" title="Send WhatsApp COD Confirmation">
+ <span></span> Verify COD
+ </button>
+ ` : ''}
+ <button class="btn-whatsapp-dispatch" onclick="app.sendDispatchWhatsApp('${idOrder}', '${safeId(patronPhone)}')" title="Send WhatsApp Dispatch Notice">
+ <span></span> Send Dispatch
+ </button>
+ </div>
+ </div>
+ </div>
+ `;
+ }).join('')}
+ </div>
+ </div>
+ ` : ''}
 
-        <!-- ====================================================================
-             MODULE B2: ABANDONED CHECKOUT RECOVERY DESK
-             For the caller executive: who started a checkout, what it was worth,
-             whether anyone has called them, and what happened next.
-             ==================================================================== -->
-        ${activeTab === 'abandoned' ? `
-          <div class="sovereign-tab-content">
-            <div class="liquid-glass-card" style="padding: 1.5rem; margin-bottom: 1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
-              <div>
-                <h3 class="font-title" style="color: var(--gold-light); margin: 0 0 0.3rem;">Abandoned Checkout Recovery</h3>
-                <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">
-                  ${abandonedCheckouts.length} checkout(s) started but never paid &middot;
-                  ₹${abandonedCheckouts.reduce((s, o) => s + (Number(o.verifiedTotal || o.total || 0) || 0), 0).toLocaleString('en-IN')} of recoverable value.
-                  <span style="opacity:0.75;">These are NOT orders and are excluded from revenue.</span>
-                </p>
-              </div>
-              <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
-                <button class="btn btn-glass" style="font-size:0.75rem;" onclick="app.refreshAdminDashboard()">↻ Reload</button>
-                <button class="btn btn-glass" style="font-size:0.75rem; border-color:rgba(239,68,68,0.4); color:#FCA5A5;" onclick="app.purgeAbandonedDrafts()">🧹 Purge older than 30 days</button>
-              </div>
-            </div>
+ <!-- ====================================================================
+ MODULE B2: ABANDONED CHECKOUT RECOVERY DESK
+ For the caller executive: who started a checkout, what it was worth,
+ whether anyone has called them, and what happened next.
+ ==================================================================== -->
+ ${activeTab === 'abandoned' ? `
+ <div class="sovereign-tab-content">
+ <div class="liquid-glass-card" style="padding: 1.5rem; margin-bottom: 1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+ <div>
+ <h3 class="font-title" style="color: var(--gold-light); margin: 0 0 0.3rem;">Abandoned Checkout Recovery</h3>
+ <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">
+ ${abandonedCheckouts.length} checkout(s) started but never paid &middot;
+ ₹${abandonedCheckouts.reduce((s, o) => s + (Number(o.verifiedTotal || o.total || 0) || 0), 0).toLocaleString('en-IN')} of recoverable value.
+ <span style="opacity:0.75;">These are NOT orders and are excluded from revenue.</span>
+ </p>
+ </div>
+ <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+ <button class="btn btn-glass" style="font-size:0.75rem;" onclick="app.refreshAdminDashboard()">↻ Reload</button>
+ <button class="btn btn-glass" style="font-size:0.75rem; border-color:rgba(239,68,68,0.4); color:#FCA5A5;" onclick="app.purgeAbandonedDrafts()"> Purge older than 30 days</button>
+ </div>
+ </div>
 
-            ${abandonedCheckouts.length === 0 ? `
-              <div class="liquid-glass-card" style="padding: 3rem; text-align: center; color: var(--text-muted);">
-                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🕳️</div>
-                <h3 class="font-title" style="color: var(--gold-light);">No Abandoned Checkouts</h3>
-                <p style="font-size: 0.85rem;">Nothing to recover right now.</p>
-              </div>
-            ` : `
-              <div class="liquid-glass-card" style="padding: 0; overflow-x: auto;">
-                <table class="sovereign-table" style="width:100%; min-width: 980px;">
-                  <thead>
-                    <tr>
-                      <th>Collector</th>
-                      <th>Contact</th>
-                      <th>Basket</th>
-                      <th>Value</th>
-                      <th>Started</th>
-                      <th>Recovery</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+ ${abandonedCheckouts.length === 0 ? `
+ <div class="liquid-glass-card" style="padding: 3rem; text-align: center; color: var(--text-muted);">
+ <div style="font-size: 2rem; margin-bottom: 0.5rem;"></div>
+ <h3 class="font-title" style="color: var(--gold-light);">No Abandoned Checkouts</h3>
+ <p style="font-size: 0.85rem;">Nothing to recover right now.</p>
+ </div>
+ ` : `
+ <div class="liquid-glass-card" style="padding: 0; overflow-x: auto;">
+ <table class="sovereign-table" style="width:100%; min-width: 980px;">
+ <thead>
+ <tr>
+ <th>Collector</th>
+ <th>Contact</th>
+ <th>Basket</th>
+ <th>Value</th>
+ <th>Started</th>
+ <th>Recovery</th>
+ <th>Actions</th>
+ </tr>
+ </thead>
+ <tbody>
 ${(() => {
-                      const buckets = [
-                        { label: 'Last 24 hours', min: 0, max: 24 },
-                        { label: '1-3 days', min: 24, max: 72 },
-                        { label: '3-7 days', min: 72, max: 168 },
-                        { label: 'Older than 7 days', min: 168, max: Infinity }
-                      ];
-                      const aged = abandonedCheckouts
-                        .map((o) => ({ o, hours: (nowMs - draftStartedMs(o)) / 3600000 }))
-                        .sort((a, b) => a.hours - b.hours);
-
-                      return buckets.map((bucket) => {
-                        const rows = aged.filter((x) => x.hours >= bucket.min && x.hours < bucket.max);
-                        if (!rows.length) return '';
-                        return `
-                          <tr>
-                            <td colspan="7" style="background:rgba(212,175,55,0.07); color:var(--gold-light); font-size:0.68rem; letter-spacing:0.10em; text-transform:uppercase; padding:0.5rem 0.6rem; border-bottom:1px solid rgba(212,175,55,0.2);">
-                              ${bucket.label} &middot; ${rows.length} checkout(s)
-                            </td>
-                          </tr>
-                          ${rows.map(({ o }) => {
-                            const id = o.orderId || o.id || '';
-                            const sid = safeId(id);
-                            const cust = o.customer || {};
-                            const name = o.customerName || cust.name || 'Guest';
-                            const phone = String(o.customerPhone || cust.phone || '').replace(/[^0-9]/g, '');
-                            const email = o.userEmail || cust.email || '';
-                            const items = Array.isArray(o.items) ? o.items : [];
-                            const value = Number(o.verifiedTotal || o.total || 0);
-                            const started = draftStartedMs(o) ? new Date(draftStartedMs(o)).toLocaleString('en-IN') : 'unknown';
-                            const status = String(o.recoveryStatus || '').toUpperCase();
-                            const statusPill = status === 'RECOVERED' ? '#10B981' : status === 'CONTACTED' ? '#FCD34D' : status === 'LOST' ? '#FCA5A5' : '#9AA39D';
-                            const statusLabel = status === 'RECOVERED' ? 'Recovered' : status === 'CONTACTED' ? 'Contacted' : status === 'LOST' ? 'Lost' : 'Not contacted';
-                            const recoveryCode = o.recoveryCode || '';
-                            return `
-                              <tr>
-                                <td><strong style="color:var(--gold-light);">${esc(name)}</strong><br><span style="font-size:0.7rem; color:var(--text-muted);">#${esc(id)}</span></td>
-                                <td style="font-size:0.78rem;">
-                                  ${phone ? `<a href="https://wa.me/${esc(phone.length === 10 ? '91' + phone : phone)}" target="_blank" rel="noopener" style="color:#25D366;">WhatsApp</a> · ${esc(phone)}` : '<span style="color:var(--text-muted);">no phone</span>'}<br>
-                                  <span style="color:var(--text-muted); font-size:0.72rem;">${esc(email || 'no email')}</span>
-                                </td>
-                                <td style="font-size:0.76rem; color:var(--text-muted);">${items.length ? esc(items.map(i => `${i.name || i.id} (${i.size || 50}ml)`).join(', ')).slice(0, 90) : '&mdash;'}</td>
-                                <td style="color:var(--gold-primary); font-weight:600;">₹${value.toLocaleString('en-IN')}</td>
-                                <td style="font-size:0.72rem; color:var(--text-muted);">${esc(started)}</td>
-                                <td>
-                                  <span class="glass-pill" style="font-size:0.66rem; color:${statusPill}; border-color:${statusPill};">${statusLabel}</span>
-                                  ${o.recoveryNote ? `<div style="font-size:0.68rem; color:var(--text-muted); margin-top:4px; max-width:220px;">${esc(o.recoveryNote)}</div>` : ''}
-                                  ${recoveryCode ? `<div style="font-size:0.66rem; margin-top:4px; color:var(--gold-light); font-family:monospace;">${esc(recoveryCode)}</div>` : ''}
-                                </td>
-                                <td>
-                                  <div style="display:flex; gap:4px; flex-wrap:wrap;">
-                                    <button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px;" onclick="app.markCheckoutRecovery('${sid}', 'CONTACTED')">Contacted</button>
-                                    <button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px; color:#6EE7B7; border-color:#10B981;" onclick="app.markCheckoutRecovery('${sid}', 'RECOVERED')">Recovered</button>
-                                    <button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px; color:#FCA5A5; border-color:rgba(239,68,68,0.4);" onclick="app.markCheckoutRecovery('${sid}', 'LOST')">Lost</button>
-                                    <button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px;" onclick="app.addRecoveryNote('${sid}')">Note</button>
-                                    ${recoveryCode
-                                      ? `<button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px; color:var(--gold-light);" onclick="navigator.clipboard.writeText('${safeId(recoveryCode)}'); app.showToast('Recovery code copied');">Copy code</button>`
-                                      : `<button class="btn btn-gold" style="font-size:0.62rem; padding:2px 6px;" onclick="app.issueRecoveryCode('${sid}')">Issue Rs500 code</button>`}
-                                  </div>
-                                </td>
-                              </tr>`;
-                          }).join('')}
-                        `;
-                      }).join('');
-                    })()}
-                  </tbody>
-                </table>
-              </div>
-            `}
-          </div>
-        ` : ''}
-
-        <!-- ====================================================================
-             MODULE C: FRAGRANCE VAULT & PRODUCT MANAGER
-             ==================================================================== -->
-        ${activeTab === 'vault' ? `
-          <div class="sovereign-tab-content">
-            <div class="liquid-glass-card" style="padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-              <div>
-                <h3 class="font-title" style="color: var(--gold-light); margin: 0 0 0.3rem;">Fragrance Vault Inventory</h3>
-                <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Adjust bottle pricing, stock counts, batch codes, and formula notes in real-time.</p>
-              </div>
-              <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
-                <button class="btn btn-glass" onclick="app.seedCatalogToFirestore()">
-                  ↻ Sync Local Catalog to Firestore
-                </button>
-                <button class="btn btn-gold" onclick="app.openProductEditorModal()">
-                  + Inscribe New Fragrance Extrait
-                </button>
-              </div>
-            </div>
-
-            <!-- Products Table -->
-            <div class="liquid-glass-card" style="padding: 0; overflow-x: auto;">
-              <table class="sovereign-table">
-                <thead>
-                  <tr>
-                    <th>Flacon</th>
-                    <th>Name & Concentration</th>
-                    <th>Category</th>
-                    <th style="min-width: 310px;">Variant Pricing & SKUs (100ml • 50ml)</th>
-                    <th>Status</th>
-                    <th>Batch / Maceration</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${productsList.map(prod => {
-                    const catalogMatch = (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []).find(c => c.id === prod.id || c.slug === prod.id || c.sku === prod.sku);
-                    const cleanName = (prod.name || catalogMatch?.name || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-                    const isCoffret = prod.id === 'mytholis-discovery-set' || prod.id === 'sixth-sense' || (prod.collection && prod.collection.toLowerCase().includes('sixth sense')) || (cleanName.toLowerCase().includes('sixth sense'));
-                    const officialSku = prod.sku || catalogMatch?.sku || CANONICAL_SKU_MAP[prod.id] || (isCoffret ? 'MYTH-SET-6S-48' : 'MYTH-EDP-100');
-
-                    // Resolve 100ml (default), 50ml, and 48ml variants
-                    const v100 = prod.variants?.['100ml'] || catalogMatch?.variants?.['100ml'] || (Array.isArray(prod.sizes) ? prod.sizes.find(s => s.ml === 100) : null) || {
-                      sku: prod.sku || `MYTH-EDP-${prod.id.slice(0, 2).toUpperCase()}-100`,
-                      salePrice: Number(prod.pricing?.salePrice ?? prod.salePrice ?? prod.price ?? 5999),
-                      mrp: Number(prod.pricing?.mrp ?? prod.compareAtPrice ?? prod.mrp ?? 7499),
-                      stock: prod.inventory?.stock ?? prod.stock ?? 50
-                    };
-                    const v50 = prod.variants?.['50ml'] || catalogMatch?.variants?.['50ml'] || (Array.isArray(prod.sizes) ? prod.sizes.find(s => s.ml === 50) : null) || {
-                      sku: `MYTH-EDP-${prod.id.slice(0, 2).toUpperCase()}-50`,
-                      salePrice: Math.round(Number(v100.salePrice || 5999) * 0.58),
-                      mrp: Math.round(Number(v100.mrp || 7499) * 0.58),
-                      stock: 50
-                    };
-                    const v48 = prod.variants?.['48ml'] || catalogMatch?.variants?.['48ml'] || (Array.isArray(prod.sizes) ? prod.sizes.find(s => s.ml === 48) : null) || {
-                      sku: 'MYTH-SET-6S-48',
-                      salePrice: Number(prod.pricing?.salePrice ?? prod.salePrice ?? prod.price ?? 3999),
-                      mrp: Number(prod.pricing?.mrp ?? prod.compareAtPrice ?? prod.mrp ?? 4999),
-                      stock: prod.inventory?.stock ?? prod.stock ?? 50
-                    };
-
-                    const media = prod.media || catalogMatch?.media || CANONICAL_MEDIA_MAP[prod.id] || {};
-                    const bottleImg = media.bottleImage || prod.image || (isCoffret ? 'assets/product/sixthsense.webp' : (CANONICAL_MEDIA_MAP[prod.id]?.bottleImage || 'assets/product/1kingscar.webp'));
-
-                    return `
-                    <tr>
-                      <td>
-                        <img src="${bottleImg}" class="sovereign-table-img" alt="${cleanName.replace(/"/g, '&quot;')}" onerror="this.src='${isCoffret ? 'assets/product/sixthsense.webp' : 'assets/product/1kingscar.webp'}'" />
-                      </td>
-                      <td>
-                        <strong style="color: var(--gold-light); font-size: 0.95rem;">${isCoffret ? 'Sixth Sense' : cleanName}</strong>
-                        <div style="font-size: 0.72rem; color: var(--gold-primary); margin-top: 0.15rem;">
-                          ${isCoffret ? 'Extrait de Parfum (6 × 8ml Deluxe Vials • 40% Concentration)' : (prod.concentration || 'Extrait de Parfum (40% Concentration)')}
-                        </div>
-                        <span class="glass-pill" style="font-size: 0.68rem; margin-top: 0.3rem; display: inline-block; color: var(--gold-light); border-color: rgba(212, 175, 55, 0.4); background: rgba(212, 175, 55, 0.08);">
-                          ${isCoffret ? '6 × 8ml Coffret (48ml)' : '100ml • 50ml'}
-                        </span>
-                      </td>
-                      <td>
-                        <span class="glass-pill" style="font-size: 0.7rem; color: var(--text-muted);">${prod.category || prod.collection || prod.subtitle || 'Signature'}</span>
-                      </td>
-                      <td>
-                        ${isCoffret ? `
-                          <div style="background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 6px; padding: 0.45rem 0.75rem; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;">
-                            <div style="display: flex; align-items: center; gap: 0.4rem;">
-                              <span class="glass-pill" style="font-size: 0.68rem; font-weight: 700; color: #FFF1C5; background: rgba(212, 175, 55, 0.25); border-color: var(--gold-primary);">6 × 8ML</span>
-                              <span style="font-family: monospace; font-size: 0.75rem; color: var(--gold-light); font-weight: 600;">${v48.sku}</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                              <strong style="color: var(--gold-light); font-size: 0.85rem;">₹${Number(v48.salePrice).toLocaleString('en-IN')}</strong>
-                              <span style="font-size: 0.7rem; color: var(--text-muted); text-decoration: line-through;">MRP ₹${Number(v48.mrp).toLocaleString('en-IN')}</span>
-                              <span class="glass-pill" style="font-size: 0.65rem; color: ${Number(v48.stock) <= 5 ? '#EF4444' : 'var(--gold-primary)'};">Stock: ${v48.stock}</span>
-                            </div>
-                          </div>
-                        ` : `
-                          <div style="display: flex; flex-direction: column; gap: 0.35rem; min-width: 290px;">
-                            <!-- Row 1: 100ML -->
-                            <div style="background: rgba(212, 175, 55, 0.08); border: 1px solid rgba(212, 175, 55, 0.35); border-radius: 6px; padding: 0.35rem 0.6rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
-                              <div style="display: flex; align-items: center; gap: 0.4rem;">
-                                <span class="glass-pill" style="font-size: 0.68rem; font-weight: 700; color: #FFF1C5; background: rgba(212, 175, 55, 0.18); border-color: rgba(212, 175, 55, 0.4);">100ML</span>
-                                <span style="font-family: monospace; font-size: 0.72rem; color: var(--gold-light); font-weight: 600;">${v100.sku}</span>
-                              </div>
-                              <div style="display: flex; align-items: center; gap: 0.4rem;">
-                                <strong style="color: var(--gold-light); font-size: 0.82rem;">₹${Number(v100.salePrice).toLocaleString('en-IN')}</strong>
-                                <span style="font-size: 0.68rem; color: var(--text-muted); text-decoration: line-through;">MRP ₹${Number(v100.mrp).toLocaleString('en-IN')}</span>
-                                <span class="glass-pill" style="font-size: 0.65rem; color: ${Number(v100.stock) <= 5 ? '#EF4444' : 'var(--gold-primary)'};">Stock: ${v100.stock}</span>
-                              </div>
-                            </div>
-                            <!-- Row 2: 50ML -->
-                            <div style="background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(212, 175, 55, 0.22); border-radius: 6px; padding: 0.35rem 0.6rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
-                              <div style="display: flex; align-items: center; gap: 0.4rem;">
-                                <span class="glass-pill" style="font-size: 0.68rem; font-weight: 600; color: var(--text-muted); border-color: rgba(212, 175, 55, 0.25);">50ML</span>
-                                <span style="font-family: monospace; font-size: 0.72rem; color: var(--text-muted);">${v50.sku}</span>
-                              </div>
-                              <div style="display: flex; align-items: center; gap: 0.4rem;">
-                                <strong style="color: var(--gold-light); font-size: 0.82rem;">₹${Number(v50.salePrice).toLocaleString('en-IN')}</strong>
-                                <span style="font-size: 0.68rem; color: var(--text-muted); text-decoration: line-through;">MRP ₹${Number(v50.mrp).toLocaleString('en-IN')}</span>
-                                <span class="glass-pill" style="font-size: 0.65rem; color: ${Number(v50.stock) <= 5 ? '#EF4444' : 'var(--gold-primary)'};">Stock: ${v50.stock}</span>
-                              </div>
-                            </div>
-                          </div>
-                        `}
-                      </td>
-                      <td>
-                        <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.6rem; border-color: ${prod.inStock !== false ? '#10B981' : '#EF4444'}; color: ${prod.inStock !== false ? '#6EE7B7' : '#FCA5A5'};" onclick="app.updateProductInline('${safeId(prod.id)}', 'inStock', ${prod.inStock === false ? 'true' : 'false'})">
-                          ${prod.inStock !== false ? 'In Stock' : 'Hidden'}
-                        </button>
-                      </td>
-                      <td>
-                        <div style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace;">${prod.batchCode || 'MYTH-2026-X'}</div>
-                        <div style="font-size: 0.7rem; color: var(--gold-primary);">${prod.macerationDate || 'Jan 2026'}</div>
-                      </td>
-                      <td>
-                        <div style="display: flex; gap: 0.4rem;">
-                          <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.6rem;" onclick="app.openProductEditorModal('${safeId(prod.id)}')">
-                            Edit
-                          </button>
-                          <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.6rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.deleteAdminProduct('${safeId(prod.id)}')">
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                    `;
-                  }).join('')}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ` : ''}
-
-        <!-- ====================================================================
-             MODULE D: POSTS, EDITORIAL & LORE MANAGER
-             ==================================================================== -->
-        ${activeTab === 'editorial' ? `
-          <div class="sovereign-tab-content">
-            <div class="liquid-glass-card" style="padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-              <div>
-                <h3 class="font-title" style="color: var(--gold-light); margin: 0 0 0.3rem;">Sanctuary Chronicles & Scent Lore</h3>
-                <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Inscribe olfactory stories, launch announcements, behind-the-alchemy lore, and press pieces.</p>
-              </div>
-              <button class="btn btn-gold" onclick="app.openPostEditorModal()">
-                + Inscribe New Lore / Post
-              </button>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
-              ${postsList.length === 0 ? `
-                <div class="liquid-glass-card" style="grid-column: 1 / -1; padding: 3rem; text-align: center; color: var(--text-muted);">
-                  <div style="font-size: 2rem; margin-bottom: 0.5rem;">📜</div>
-                  <h3 class="font-title" style="color: var(--gold-light);">No Lore Inscribed Yet</h3>
-                  <p style="font-size: 0.85rem;">Click the button above to publish your first olfactory chronicle or launch post!</p>
-                </div>
-              ` : postsList.map(post => `
-                <div class="liquid-glass-card" style="display: flex; flex-direction: column; overflow: hidden; padding: 0;">
-                  ${post.coverImage ? `
-                    <div style="height: 180px; overflow: hidden; position: relative;">
-                      <img src="${safeHref(post.coverImage)}" style="width: 100%; height: 100%; object-fit: cover;" alt="${esc(post.title)}" />
-                      <span class="glass-pill" style="position: absolute; top: 12px; left: 12px; font-size: 0.65rem; color: var(--gold-light); background: rgba(0, 0, 0, 0.7);">
-                        ${esc(post.category || 'Olfactory Lore')}
-                      </span>
-                    </div>
-                  ` : ''}
-                  <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
-                    <div>
-                      <h4 class="font-title" style="font-size: 1.2rem; color: var(--gold-light); margin: 0 0 0.4rem;">${esc(post.title)}</h4>
-                      <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0 0 1rem;">
-                        ${esc(post.subtitle || (post.body ? post.body.slice(0, 100) + '...' : ''))}
-                      </p>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 1rem;">
-                      <span class="sovereign-pill" style="background: ${post.isPublished ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; border: 1px solid ${post.isPublished ? '#10B981' : '#F59E0B'}; color: ${post.isPublished ? '#6EE7B7' : '#FCD34D'};">
-                        ${post.isPublished ? 'Published Live' : 'Draft'}
-                      </span>
-                      <div style="display: flex; gap: 0.5rem;">
-                        <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.65rem;" onclick="app.openPostEditorModal('${safeId(post.id)}')">
-                          Edit
-                        </button>
-                        <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.65rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.deleteAdminPost('${safeId(post.id)}')">
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        ` : ''}
-
-        <!-- ====================================================================
-             MODULE E: COLLECTORS, MYTHOS COINS & TIER LEVELS
-             ==================================================================== -->
-        ${activeTab === 'patrons' || activeTab === 'collectors' ? `
-          <div class="sovereign-tab-content">
-            <!-- Collector Intelligence KPI Strip -->
-            <div class="sovereign-kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 1.5rem;">
-              <div class="sovereign-kpi-card">
-                <div class="sovereign-kpi-header">
-                  <span class="sovereign-kpi-title">Total Collectors & Customers</span>
-                  <span class="sovereign-kpi-icon">👑</span>
-                </div>
-                <div class="sovereign-kpi-value gold-shimmer-text">${usersList.length}</div>
-                <div class="sovereign-kpi-hint">Registered Profiles + Order Collectors</div>
-              </div>
-              <div class="sovereign-kpi-card">
-                <div class="sovereign-kpi-header">
-                  <span class="sovereign-kpi-title">Verified Contact Phones</span>
-                  <span class="sovereign-kpi-icon">📱</span>
-                </div>
-                <div class="sovereign-kpi-value" style="color: #25D366;">${usersList.filter(u => Boolean(u.phone || u.profile?.phone)).length}</div>
-                <div class="sovereign-kpi-hint">Direct WhatsApp Reachable</div>
-              </div>
-              <div class="sovereign-kpi-card">
-                <div class="sovereign-kpi-header">
-                  <span class="sovereign-kpi-title">Delivery Coordinates Saved</span>
-                  <span class="sovereign-kpi-icon">📍</span>
-                </div>
-                <div class="sovereign-kpi-value" style="color: var(--gold-light);">${usersList.filter(u => Boolean(u.fullAddress || u.address || u.profile?.address)).length}</div>
-                <div class="sovereign-kpi-hint">Full Shipping Address on File</div>
-              </div>
-              <div class="sovereign-kpi-card">
-                <div class="sovereign-kpi-header">
-                  <span class="sovereign-kpi-title">Collector Lifetime Spend (LTV)</span>
-                  <span class="sovereign-kpi-icon">💰</span>
-                </div>
-                <div class="sovereign-kpi-value gold-shimmer-text">₹${Math.round(usersList.reduce((s, u) => s + Number(u.lifetimeSpend || 0), 0)).toLocaleString('en-IN')}</div>
-                <div class="sovereign-kpi-hint">Total Gross Collector Commerce</div>
-              </div>
-            </div>
-
-            <!-- Filter & Search Bar -->
-            <div class="sovereign-filter-bar" style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
-              <input type="text" id="admin-patron-search" class="sovereign-search-input" style="flex: 2; min-width: 260px;" placeholder="Search collectors by Name, Email, Phone / WhatsApp, Address, City, State, or UID..." oninput="app.filterAdminPatrons()" />
-              <select id="admin-patron-filter-type" class="sovereign-select" onchange="app.filterAdminPatrons()" style="flex: 1; min-width: 170px;">
-                <option value="ALL">Filter: All Collectors (${usersList.length})</option>
-                <option value="HAS_PHONE">Has Phone / WhatsApp</option>
-                <option value="HAS_ADDRESS">Has Delivery Address</option>
-                <option value="HAS_ORDERS">Has Placed Orders</option>
-                <option value="ADMINS">Admins Only</option>
-              </select>
-              <button class="btn btn-gold" onclick="app.handleBatchDeduplicateUsers()" title="Permanently merge duplicate collector accounts sharing the same phone or email">
-                ⚡ Auto-Deduplicate Registry
-              </button>
-              <button class="btn btn-glass" onclick="app.refreshAdminDashboard()">
-                ↻ Synchronize Collectors
-              </button>
-            </div>
-
-            <!-- Collectors Table -->
-            <div class="liquid-glass-card" style="padding: 0; overflow-x: auto;">
-              <table class="sovereign-table">
-                <thead>
-                  <tr>
-                    <th style="min-width: 180px;">Collector & Identity</th>
-                    <th style="min-width: 190px;">Contact & WhatsApp</th>
-                    <th style="min-width: 250px;">Shipping & Delivery Address</th>
-                    <th style="min-width: 130px;">Orders & LTV</th>
-                    <th style="min-width: 130px;">Standing & Tier</th>
-                    <th style="min-width: 120px;">Mythos Balance</th>
-                    <th style="min-width: 200px;">Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="admin-patrons-table-body">
-                  ${usersList.length === 0 ? `
-                    <tr>
-                      <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 3rem;">
-                        No collector profiles registered in Firestore yet.
-                      </td>
-                    </tr>
-                  ` : usersList.map(u => {
-                    const prof = u.profile || {};
-                    const loyalty = u.loyalty || {};
-                    const name = prof.name || u.name || 'Collector';
-                    const email = prof.email || u.email || 'N/A';
-                    const rawPhone = prof.phone || u.phone || '';
-                    const cleanPhone = (rawPhone || '').replace(/[^0-9]/g, '');
-                    const p10 = u.phoneCanonical || (cleanPhone.length >= 10 ? cleanPhone.slice(-10) : '');
-                    const displayPhone = p10 && p10.length === 10 ? `+91 ${p10}` : (rawPhone || '');
-                    const initial = name.charAt(0).toUpperCase();
-                    const isAdmin = u.role === 'admin' || u.isAdmin === true || prof.role === 'admin' || prof.isAdmin === true;
-                    let spendable = Number(loyalty.spendable_mythos || 0);
-                    const bottles = Number(loyalty.full_bottles_purchased || u.fullFlaconsOrdered || 0);
-                    let legacy = Number(loyalty.legacy_mythos || spendable || 0);
-                    const ordersCount = Number(u.ordersCount !== undefined ? u.ordersCount : (Array.isArray(u.orders) ? u.orders.length : 0));
-                    // Self-heal initiate if 0 points and 0 orders
-                    if (spendable === 0 && legacy === 0 && ordersCount === 0) {
-                      spendable = 200;
-                      legacy = 200;
-                    }
-                    const lifetimeSpend = Number(u.lifetimeSpend || 0);
-                    const lastOrder = u.lastOrder || (Array.isArray(u.orders) && u.orders[0]) || null;
-                    const lastOrderId = lastOrder ? (lastOrder.orderId || lastOrder.id || '') : '';
-
-                    const rawAddr = u.fullAddress || prof.fullAddress || u.address || prof.address || '';
-                    const city = u.city || prof.city || '';
-                    const state = u.state || prof.state || '';
-                    const pincode = u.pincode || prof.pincode || '';
-                    const hasAddr = Boolean(rawAddr || city || state || pincode);
-                    const cityStatePin = [city, state, pincode ? `(${pincode})` : ''].filter(Boolean).join(', ');
-                    const copyAddrText = [name, displayPhone, rawAddr, city, state, pincode].filter(Boolean).join(', ').replace(/'/g, "\\'");
-
-                    // Dynamically resolve tier from manual_tier_override or milestones
-                    const tiers = (typeof store !== 'undefined' && store.LOYALTY_TIERS) || (typeof window !== 'undefined' && window.LOYALTY_TIERS) || [];
-                    let tierObj = null;
-                    if (loyalty.manual_tier_override) {
-                      tierObj = tiers.find(t => t.level === Number(loyalty.manual_tier_override));
-                    }
-                    if (!tierObj) {
-                      for (let i = tiers.length - 1; i >= 0; i--) {
-                        const t = tiers[i];
-                        if (legacy >= t.minLegacy && bottles >= t.minBottles) {
-                          tierObj = t;
-                          break;
-                        }
-                      }
-                    }
-                    if (!tierObj && tiers.length > 0) tierObj = tiers[0];
-                    const currentTierName = (tierObj ? `Level ${tierObj.level}: ${tierObj.name}` : null) || prof.tier || 'Level 1: The Observer';
-                    const currentTierLevel = tierObj ? tierObj.level : 1;
-                    const patronOrderIds = encodeURIComponent(JSON.stringify((u.orders || []).map(o => o.orderId || o.id).filter(Boolean)));
-
-                    return `
-                      <tr class="admin-patron-row" 
-                          data-name="${name.toLowerCase()}" 
-                          data-email="${email.toLowerCase()}" 
-                          data-phone="${cleanPhone}" 
-                          data-address="${rawAddr.toLowerCase()}" 
-                          data-city="${city.toLowerCase()}" 
-                          data-state="${state.toLowerCase()}" 
-                          data-pincode="${pincode}" 
-                          data-uid="${u.uid || ''}"
-                          data-hasphone="${Boolean(cleanPhone)}"
-                          data-hasaddress="${hasAddr}"
-                          data-hasorders="${ordersCount > 0}"
-                          data-isadmin="${isAdmin}">
-                        <td>
-                          <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(212, 175, 55, 0.15); border: 1px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--gold-light); font-size: 0.95rem;">
-                              ${initial}
-                            </div>
-                            <div>
-                              <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
-                                <strong style="color: var(--gold-light); font-size: 0.92rem;">${name}</strong>
-                                ${isAdmin ? '<span class="sovereign-pill" style="font-size: 0.65rem; padding: 1px 5px; background: rgba(212, 175, 55, 0.2); border: 1px solid var(--gold-primary); color: var(--gold-light);">👑 Admin</span>' : ''}
-                                ${u.isGuestOrder ? '<span class="glass-pill" style="font-size: 0.65rem; color: #6EE7B7; padding: 1px 5px;">Consignment</span>' : ''}
-                              </div>
-                              <div style="font-size: 0.7rem; color: var(--text-muted); font-family: monospace; display: flex; align-items: center; gap: 4px; margin-top: 2px;">
-                                <span>UID: ${u.uid ? u.uid.slice(0, 10) + '...' : 'Guest'}</span>
-                                ${u.uid ? `<button type="button" class="btn btn-glass" style="font-size: 0.6rem; padding: 0 4px; line-height: 1.2;" onclick="navigator.clipboard.writeText('${safeId(u.uid)}'); app.showToast('Copied UID');" title="Copy UID">📋</button>` : ''}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <div style="margin-bottom: 0.2rem;">
-                            ${displayPhone ? `
-                              <strong style="color: var(--text-main); font-size: 0.85rem; letter-spacing: 0.02em;">${displayPhone}</strong>
-                              <div style="display: flex; gap: 0.4rem; margin-top: 0.3rem; flex-wrap: wrap;">
-                                <a href="https://wa.me/91${cleanPhone}?text=${encodeURIComponent(`Hello ${name}, greetings from Sanctuary of Mytholis!`)}" target="_blank" class="sovereign-pill" style="background: rgba(37, 211, 102, 0.15); border: 1px solid rgba(37, 211, 102, 0.4); color: #25D366; text-decoration: none; display: inline-flex; align-items: center; gap: 3px; font-size: 0.72rem; padding: 2px 7px;">
-                                  <span>💬</span> WhatsApp
-                                </a>
-                                <a href="tel:+91${cleanPhone}" class="sovereign-pill" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 3px; font-size: 0.72rem; padding: 2px 6px;">
-                                  <span>📞</span> Call
-                                </a>
-                              </div>
-                            ` : `
-                              <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">No Phone Provided</span>
-                            `}
-                          </div>
-                          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-                            ${email && email !== 'N/A' ? `<a href="mailto:${email}" style="color: var(--text-muted); text-decoration: none;">${email}</a>` : 'No Email'}
-                          </div>
-                        </td>
-                        <td>
-                          ${hasAddr ? `
-                            <div style="font-size: 0.8rem; line-height: 1.4; color: var(--text-main); max-width: 280px; word-break: break-word;">
-                              ${rawAddr}
-                            </div>
-                            ${cityStatePin ? `
-                              <div style="font-size: 0.73rem; color: var(--gold-light); margin-top: 0.25rem; display: flex; align-items: center; gap: 4px;">
-                                <span>📍</span> ${cityStatePin}
-                              </div>
-                            ` : ''}
-                            <button type="button" class="btn btn-glass" style="font-size: 0.65rem; padding: 1px 6px; margin-top: 0.35rem; display: inline-flex; align-items: center; gap: 3px;" onclick="navigator.clipboard.writeText('${safeId(copyAddrText)}'); app.showToast('Copied full shipping address');">
-                              📋 Copy Address
-                            </button>
-                          ` : `
-                            <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">No shipping address on file</span>
-                          `}
-                        </td>
-                        <td>
-                          <div style="font-weight: 700; color: var(--gold-light); font-size: 0.92rem;">
-                            ₹${lifetimeSpend.toLocaleString('en-IN')}
-                          </div>
-                          <div style="font-size: 0.75rem; color: var(--text-main); margin-top: 2px;">
-                            ${ordersCount} ${ordersCount === 1 ? 'order' : 'orders'}
-                          </div>
-                          ${lastOrderId ? `
-                            <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">
-                              Last: #${lastOrderId}
-                            </div>
-                          ` : ''}
-                        </td>
-                        <td>
-                          <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-light);">${currentTierName}</span>
-                          <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem;">
-                            <strong style="color: var(--text-main);">${bottles}</strong> flacons
-                          </div>
-                        </td>
-                        <td>
-                          <strong class="gold-shimmer-text" style="font-size: 0.95rem;">${spendable.toLocaleString()} M</strong>
-                          <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">${loyalty.legacy_mythos || spendable} Legacy M</div>
-                        </td>
-                        <td>
-                          <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
-                            <button class="btn btn-gold" style="font-size: 0.7rem; padding: 0.25rem 0.55rem;" onclick="app.openPatronDossier('${safeId(u.uid)}')" title="View Full Collector Coordinates & Consignment Ledger">
-                              🔍 Dossier
-                            </button>
-                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem;" onclick="app.openAdjustMythosModal('${safeId(u.uid)}', '${safeId(name)}', ${spendable})">
-                              &plusmn; Adjust M
-                            </button>
-                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem;" onclick="app.openOverrideTierModal('${safeId(u.uid)}', '${safeId(name)}', ${bottles}, ${currentTierLevel})">
-                              Tier
-                            </button>
-                            ${!u.isGuestOrder ? `
-                              <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem; border-color: ${isAdmin ? 'rgba(239, 68, 68, 0.4)' : 'rgba(212, 175, 55, 0.4)'};" onclick="app.togglePatronAdmin('${safeId(u.uid)}', ${!isAdmin})">
-                                ${isAdmin ? 'Demote' : 'Admin'}
-                              </button>
-                            ` : ''}
-                            <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.handleAdminDeleteUser('${safeId(u.uid)}', '${safeId(name)}', '${safeId(email)}', '${safeId(cleanPhone)}', '${safeId(patronOrderIds)}')" title="Permanently delete user and order records from database">
-                              🗑️ Delete
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    `;
-                  }).join('')}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ` : ''}
-
-        <!-- ====================================================================
-             MODULE F: ECONOMY, LEVELS & CHECKOUT SETTINGS
-             ==================================================================== -->
-        ${activeTab === 'economy' ? `
-          <div class="sovereign-tab-content">
-            <div class="liquid-glass-card" style="padding: 1.5rem; margin-bottom: 2rem;">
-              <h3 class="font-title" style="color: var(--gold-light); margin: 0 0 0.3rem;">Sanctuary Economy & Checkout Settings</h3>
-              <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Configure loyalty cashback rates, coin redemptions, Cash on Delivery boundaries, and discount promo keys.</p>
-            </div>
-
-            <form onsubmit="app.saveGlobalSettings(event)">
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-                <!-- Mythos Coin Economy -->
-                <div class="liquid-glass-card" style="padding: 1.5rem;">
-                  <h4 class="font-title" style="color: var(--gold-light); margin-bottom: 1.2rem; font-size: 1.1rem; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 0.6rem;">
-                    🪙 Mythos Coin Economy
-                  </h4>
-                  <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <div>
-                      <label class="sovereign-field-label">Cashback Earn Rate (% Return on Paid Orders)</label>
-                      <input type="number" id="setting-mythos-earn" class="sovereign-form-input" value="${globalSettings.mythosEarnPct !== undefined ? globalSettings.mythosEarnPct : 3}" min="1" max="25" required />
-                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Default 3% base return for Level 1 collectors.</div>
-                    </div>
-
-                    <div>
-                      <label class="sovereign-field-label">Coin Redemption Ratio (₹ Concession per 1 Mythos)</label>
-                      <input type="number" id="setting-redemption-ratio" class="sovereign-form-input" value="${globalSettings.redemptionRatio !== undefined ? globalSettings.redemptionRatio : 1}" min="0.1" step="0.1" required />
-                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">1 Mythos = ₹1 concession credit.</div>
-                    </div>
-
-                    <div>
-                      <label class="sovereign-field-label">Max Cart Redemption Allowance (%)</label>
-                      <input type="number" id="setting-max-redemption-pct" class="sovereign-form-input" value="${globalSettings.maxMythosRedemptionPct !== undefined ? globalSettings.maxMythosRedemptionPct : 30}" min="1" max="100" required />
-                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Max percentage of cart subtotal payable via Mythos coins (Default: 30%).</div>
-                    </div>
-
-                    <div>
-                      <label class="sovereign-field-label">New Collector Registration Bonus (M Coins)</label>
-                      <input type="number" id="setting-signup-bonus" class="sovereign-form-input" value="${globalSettings.signupBonusMythos !== undefined ? globalSettings.signupBonusMythos : 200}" min="0" required />
-                    </div>
-                  </div>
-                </div>
-
-                <!-- COD & Shipping Rules -->
-                <div class="liquid-glass-card" style="padding: 1.5rem;">
-                  <h4 class="font-title" style="color: var(--gold-light); margin-bottom: 1.2rem; font-size: 1.1rem; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 0.6rem;">
-                    🚚 COD & Shipping Governance
-                  </h4>
-                  <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.8rem; background: rgba(0, 0, 0, 0.4); border-radius: 8px;">
-                      <div>
-                        <strong style="color: var(--gold-light); font-size: 0.88rem;">Enable Cash on Delivery (COD)</strong>
-                        <div style="font-size: 0.72rem; color: var(--text-muted);">Allow collectors to pay upon flacon delivery.</div>
-                      </div>
-                      <input type="checkbox" id="setting-cod-enabled" style="width: 20px; height: 20px; accent-color: var(--gold-primary);" ${globalSettings.codEnabled !== false ? 'checked' : ''} />
-                    </div>
-
-                    <div>
-                      <label class="sovereign-field-label">COD Convenience Fee (₹)</label>
-                      <input type="number" id="setting-cod-fee" class="sovereign-form-input" value="${globalSettings.codFee || 0}" min="0" />
-                    </div>
-
-                    <div>
-                      <label class="sovereign-field-label">Max Order Value Allowed for COD (₹)</label>
-                      <input type="number" id="setting-max-cod-amount" class="sovereign-form-input" value="${globalSettings.maxCodAmount || 15000}" min="1000" />
-                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Orders above this limit mandate prepaid clearance.</div>
-                    </div>
-
-                    <div>
-                      <label class="sovereign-field-label">Complimentary Shipping Threshold (₹)</label>
-                      <input type="number" id="setting-free-ship-threshold" class="sovereign-form-input" value="${globalSettings.freeShippingThreshold || 3000}" min="0" />
-                    </div>
-
-                    <div>
-                      <label class="sovereign-field-label">Standard Shipping Fee (₹)</label>
-                      <input type="number" id="setting-standard-ship-fee" class="sovereign-form-input" value="${globalSettings.standardShippingFee !== undefined ? globalSettings.standardShippingFee : 150}" min="0" />
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Razorpay Standard & UPI Payment Gateway Configuration -->
-                ${(() => {
-                  const activeKey = (globalSettings.razorpayKeyId || '').trim() || (typeof import.meta !== 'undefined' && import.meta.env?.VITE_RAZORPAY_KEY_ID) || '';
-                  return `
-                <div class="liquid-glass-card" style="padding: 1.5rem; grid-column: 1 / -1;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem;">
-                    <h4 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
-                      <span>💳</span> Razorpay Instant &amp; UPI Payment Gateway
-                    </h4>
-                    <div>
-                      ${activeKey ? `
-                        <span class="glass-pill" style="font-size: 0.72rem; color: #10B981; border-color: #10B981; background: rgba(16, 185, 129, 0.1);">
-                          ● Razorpay Active (${activeKey.startsWith('rzp_live') ? 'Production Live' : 'Test Mode'})
-                        </span>
-                      ` : `
-                        <span class="glass-pill" style="font-size: 0.72rem; color: #F59E0B; border-color: #F59E0B; background: rgba(245, 158, 11, 0.1);">
-                          ⚠️ Razorpay Key Pending
-                        </span>
-                      `}
-                    </div>
-                  </div>
-
-                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem;">
-                    <div>
-                      <label class="sovereign-field-label">Razorpay Key ID (Client-Facing)</label>
-                      <input type="text" id="setting-razorpay-key-id" class="sovereign-form-input" style="font-family: monospace;" placeholder="rzp_test_... or rzp_live_..." value="${activeKey}" />
-                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
-                        Public Key ID from Razorpay Dashboard &gt; Settings &gt; API Keys.
-                      </div>
-                    </div>
-
-                    <div>
-                      <label class="sovereign-field-label">Razorpay Key Secret (Server-Only)</label>
-                      <div style="padding: 0.65rem 0.85rem; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 8px; font-size: 0.8rem; color: var(--gold-light); font-family: monospace;">
-                        🔒 Protected: RAZORPAY_KEY_SECRET in server environment
-                      </div>
-                      <div style="font-size: 0.72rem; color: #10B981; margin-top: 0.35rem;">
-                        Key Secret is strictly isolated in server runtime environment (never stored in client Firestore).
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: rgba(212, 175, 55, 0.05); border: 1px dashed rgba(212, 175, 55, 0.2); border-radius: 6px; font-size: 0.75rem; color: var(--text-muted); line-height: 1.5;">
-                    🔒 <strong>Razorpay Standard Checkout:</strong> Provides a 256-bit SSL encrypted popup supporting UPI (GPay, PhonePe, Paytm, QR scan), Credit &amp; Debit Cards, NetBanking across all Indian banks, and Wallets.
-                  </div>
-                </div>
-                  `;
-                })()}
-
-                <!-- Marketing, Ad Tracking & Concierge Communications -->
-                <div class="liquid-glass-card" style="padding: 1.5rem; grid-column: 1 / -1; margin-top: 1rem;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 0.6rem;">
-                    <h4 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
-                      <span>🎯</span> Ad Attribution, Pixel &amp; Concierge Contacts
-                    </h4>
-                    <span class="glass-pill" style="font-size: 0.72rem; color: var(--gold-light);">Dynamic Global Configuration</span>
-                  </div>
-
-                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem;">
-                    <div>
-                      <label class="sovereign-field-label">Meta Pixel ID (Facebook / Instagram Ads)</label>
-                      <input type="text" id="setting-meta-pixel-id" class="sovereign-form-input" style="font-family: monospace;" placeholder="e.g. 123456789012345" value="${globalSettings.metaPixelId || ''}" />
-                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
-                        Automatically fires PageView, AddToCart, InitiateCheckout &amp; Purchase events.
-                      </div>
-                    </div>
-
-                    <div>
-                      <label class="sovereign-field-label">Concierge WhatsApp Number</label>
-                      <input type="text" id="setting-support-phone" class="sovereign-form-input" style="font-family: monospace;" placeholder="+91 777000 9170" value="${globalSettings.supportPhone || '+91 777000 9170'}" />
-                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
-                        Updates all WhatsApp Concierge direct links across the storefront and orders.
-                      </div>
-                    </div>
-
-                    <div>
-                      <label class="sovereign-field-label">Concierge Support Email</label>
-                      <input type="email" id="setting-support-email" class="sovereign-form-input" placeholder="concierge@mytholis.com" value="${globalSettings.supportEmail || 'concierge@mytholis.com'}" />
-                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
-                        Displayed in customer policy, metrology, and dispatch communications.
-                      </div>
-                    </div>
-
-                    <div>
-                      <label class="sovereign-field-label">Additional Sovereign Admin Emails</label>
-                      <input type="text" id="setting-admin-emails" class="sovereign-form-input" placeholder="founder@mytholis.com, partner@mytholis.com" value="${Array.isArray(globalSettings.adminEmails) ? globalSettings.adminEmails.join(', ') : (globalSettings.adminEmails || '')}" />
-                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
-                        Comma-separated list of emails authorized to access Sovereign Command.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Promo Codes & Vault Keys Manager -->
-              <div class="liquid-glass-card" style="padding: 1.5rem; margin-bottom: 2rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 0.8rem;">
-                  <div>
-                    <h4 class="font-title" style="color: var(--gold-light); margin: 0 0 0.2rem; font-size: 1.1rem;">
-                      🗝️ Promo Codes & Vault Keys
-                    </h4>
-                    <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">Active discount voucher keys accepted across checkout.</p>
-                  </div>
-                  <button type="button" class="btn btn-gold" style="font-size: 0.75rem; padding: 0.4rem 0.9rem;" onclick="app.openAddPromoModal()">
-                    + Add Promo Key
-                  </button>
-                </div>
-
-                <div class="sovereign-table-wrap">
-                  <table class="sovereign-table">
-                    <thead>
-                      <tr>
-                        <th>Code</th>
-                        <th>Type</th>
-                        <th>Discount Value</th>
-                        <th>Min. Order</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      ${Array.isArray(globalSettings.promoCodes) && globalSettings.promoCodes.length > 0 ? globalSettings.promoCodes.map((pc, idx) => `
-                        <tr>
-                          <td><strong style="color: var(--gold-primary); font-family: monospace; font-size: 0.95rem;">${esc(pc.code)}</strong></td>
-                          <td><span class="glass-pill" style="font-size: 0.7rem;">${pc.discountType === 'percent' ? 'Percentage %' : 'Flat ₹'}</span></td>
-                          <td><strong style="color: var(--gold-light);">${pc.discountType === 'percent' ? `${esc(pc.value)}%` : `₹${esc(pc.value)}`}</strong></td>
-                          <td>₹${esc(pc.minOrder || 0)}</td>
-                          <td>
-                            <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.6rem; border-color: ${pc.active !== false ? '#10B981' : '#EF4444'}; color: ${pc.active !== false ? '#6EE7B7' : '#FCA5A5'};" onclick="app.togglePromoCode('${safeId(pc.code)}')">
-                              ${pc.active !== false ? 'Active' : 'Paused'}
-                            </button>
-                          </td>
-                          <td>
-                            <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.6rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.deletePromoCode('${safeId(pc.code)}')">
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
-                      `).join('') : `
-                        <tr>
-                          <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
-                            No custom promo keys configured. Click "+ Add Promo Key" above!
-                          </td>
-                        </tr>
-                      `}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div style="text-align: right;">
-                <button type="submit" class="btn btn-gold" style="padding: 0.9rem 2.5rem; font-size: 0.95rem;">
-                  Save Global Economy Configuration
-                </button>
-              </div>
-            </form>
-          </div>
-        ` : ''}
-
-        <!-- Active Admin Modals Container -->
-        <div id="sovereign-modal-container"></div>
-      </div>
-    `;
-  },
-
-  /* Product Modal (Create / Edit) */
-  renderProductModal(prod = null) {
-    const isEdit = Boolean(prod && (prod.id || prod.slug || prod.sku));
-    const cleanId = prod ? String(prod.slug || prod.id || '').trim().toLowerCase() : '';
-    const catalogMatch = cleanId 
-      ? (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []).find(c => 
-          String(c.id).toLowerCase() === cleanId || 
-          String(c.slug).toLowerCase() === cleanId || 
-          (prod.sku && String(c.sku).toUpperCase() === String(prod.sku).toUpperCase())
-        ) 
-      : null;
-
-    const canonicalMedia = (cleanId && CANONICAL_MEDIA_MAP[cleanId]) || 
-                           (catalogMatch?.id && CANONICAL_MEDIA_MAP[catalogMatch.id]) || 
-                           null;
-    const canonicalSku = (cleanId && CANONICAL_SKU_MAP[cleanId]) || 
-                         (catalogMatch?.id && CANONICAL_SKU_MAP[catalogMatch.id]) || 
-                         '';
-
-    const isCoffret = cleanId === 'mytholis-discovery-set' || 
-                      cleanId === 'sixth-sense' || 
-                      (prod && (prod.collection?.toLowerCase().includes('sixth sense') || 
-                               prod.name?.toLowerCase().includes('sixth sense') || 
-                               cleanId.includes('coffret') || 
-                               cleanId.includes('discovery')));
-
-    const cleanName = (prod?.name || catalogMatch?.name || (isCoffret ? 'Sixth Sense' : (isEdit ? cleanId : '')))
-      .replace(/<[^>]*>/g, '')
-      .replace(/Extrait\s*de\s*Parfum/gi, '')
-      .trim();
-
-    const officialSku = prod?.sku || canonicalSku || catalogMatch?.sku || '';
-    const tagline = prod?.tagline || prod?.subtitle || catalogMatch?.tagline || catalogMatch?.subtitle || '';
-    const category = prod?.category || prod?.collection || catalogMatch?.category || catalogMatch?.collection || (isCoffret ? 'Discovery Wardrobe · Unisex' : 'Woody · Men');
-
-    // Resolve 100ml (default), 50ml, and 48ml variants
-    const v100Data = prod?.variants?.['100ml'] || 
-                     catalogMatch?.variants?.['100ml'] || 
-                     (Array.isArray(prod?.sizes) ? prod.sizes.find(s => s.ml === 100) : null) || 
-                     (Array.isArray(catalogMatch?.sizes) ? catalogMatch.sizes.find(s => s.ml === 100) : null);
-
-    const v50Data = prod?.variants?.['50ml'] || 
-                    catalogMatch?.variants?.['50ml'] || 
-                    (Array.isArray(prod?.sizes) ? prod.sizes.find(s => s.ml === 50) : null) || 
-                    (Array.isArray(catalogMatch?.sizes) ? catalogMatch.sizes.find(s => s.ml === 50) : null);
-
-    const v48Data = prod?.variants?.['48ml'] || 
-                    catalogMatch?.variants?.['48ml'] || 
-                    (Array.isArray(prod?.sizes) ? prod.sizes.find(s => s.ml === 48) : null) || 
-                    (Array.isArray(catalogMatch?.sizes) ? catalogMatch.sizes.find(s => s.ml === 48) : null);
-
-    const shortCode = cleanId === 'king-scar' ? 'KS' :
-                      cleanId === 'petralux' ? 'PX' :
-                      cleanId === 'oud-rion' ? 'OR' :
-                      cleanId === 'spark' ? 'SP' :
-                      cleanId === 'wood-sera' ? 'WS' :
-                      cleanId === 'ash' ? 'AS' : 'FL';
-
-    const sku100 = v100Data?.sku || prod?.sku || `MYTH-EDP-${shortCode}-100`;
-    const price100 = Number(v100Data?.salePrice ?? v100Data?.price ?? prod?.pricing?.salePrice ?? prod?.price ?? (catalogMatch?.pricing?.salePrice ?? catalogMatch?.price ?? 5999));
-    const mrp100 = Number(v100Data?.mrp ?? prod?.pricing?.mrp ?? prod?.compareAtPrice ?? (catalogMatch?.pricing?.mrp ?? catalogMatch?.compareAtPrice ?? 7499));
-    const stock100 = Number(v100Data?.stock ?? prod?.inventory?.stock ?? prod?.stock ?? 50);
-
-    const sku50 = v50Data?.sku || `MYTH-EDP-${shortCode}-50`;
-    const price50 = Number(v50Data?.salePrice ?? v50Data?.price ?? (catalogMatch?.variants?.['50ml']?.salePrice ?? Math.round(price100 * 0.58)));
-    const mrp50 = Number(v50Data?.mrp ?? (catalogMatch?.variants?.['50ml']?.mrp ?? Math.round(mrp100 * 0.58)));
-    const stock50 = Number(v50Data?.stock ?? 50);
-
-    const sku48 = v48Data?.sku || prod?.sku || 'MYTH-SET-6S-48';
-    const price48 = Number(v48Data?.salePrice ?? v48Data?.price ?? prod?.pricing?.salePrice ?? prod?.price ?? 3999);
-    const mrp48 = Number(v48Data?.mrp ?? prod?.pricing?.mrp ?? prod?.compareAtPrice ?? 4999);
-    const stock48 = Number(v48Data?.stock ?? prod?.inventory?.stock ?? prod?.stock ?? 50);
-
-    const concentration = prod?.concentration || catalogMatch?.concentration || (isCoffret ? 'Extrait de Parfum (6 × 8ml Deluxe Vials • 40% Concentration)' : 'Extrait de Parfum (40% Concentration)');
-    const batchCode = prod?.batchCode || catalogMatch?.batchCode || 'MYTH-2026-X01';
-    const macerationDate = prod?.macerationDate || catalogMatch?.macerationDate || 'March 2026';
-
-    // Primary Assets
-    const bottleImage = prod?.media?.bottleImage || 
-                        prod?.bottleImage || 
-                        prod?.image || 
-                        canonicalMedia?.bottleImage || 
-                        catalogMatch?.media?.bottleImage || 
-                        (isEdit ? '' : 'assets/product/1kingscar.webp');
-
-    const cardImage = prod?.media?.cardImage || 
-                      prod?.cardImage || 
-                      canonicalMedia?.cardImage || 
-                      catalogMatch?.media?.cardImage || 
-                      (isEdit ? '' : 'assets/product/1kingscarbox.webp');
-
-    const backgroundImage = prod?.media?.backgroundImage || 
-                            prod?.backgroundImage || 
-                            canonicalMedia?.backgroundImage || 
-                            catalogMatch?.media?.backgroundImage || 
-                            (isEdit ? '' : 'assets/hero/kingscarbg.webp');
-
-    // Storefront Multi-Photo Carousel Gallery (up to 10 photos)
-    const rawGallery = prod?.media?.gallery || 
-                       prod?.gallery || 
-                       canonicalMedia?.gallery || 
-                       catalogMatch?.media?.gallery || 
-                       [];
-    const galleryList = (Array.isArray(rawGallery) && rawGallery.length > 0)
-      ? rawGallery.filter(Boolean).slice(0, 10)
-      : (isEdit 
-          ? [bottleImage, cardImage].filter(Boolean) 
-          : ['assets/product/1kingscar.webp']);
-
-    // Olfactory Notes & Pyramids
-    const topNotes = Array.isArray(prod?.olfactory?.top) 
-      ? prod.olfactory.top.join(', ')
-      : (Array.isArray(prod?.notes?.top) 
-          ? prod.notes.top.join(', ')
-          : (prod?.notesTop || catalogMatch?.notesTop || (Array.isArray(catalogMatch?.olfactory?.top) ? catalogMatch.olfactory.top.join(', ') : '') || (isEdit ? '' : 'Bergamot, Pink Pepper')));
-
-    const heartNotes = Array.isArray(prod?.olfactory?.heart) 
-      ? prod.olfactory.heart.join(', ')
-      : (Array.isArray(prod?.notes?.heart) 
-          ? prod.notes.heart.join(', ')
-          : (prod?.notesHeart || catalogMatch?.notesHeart || (Array.isArray(catalogMatch?.olfactory?.heart) ? catalogMatch.olfactory.heart.join(', ') : '') || (isEdit ? '' : 'Lavender, Rose')));
-
-    const baseNotes = Array.isArray(prod?.olfactory?.base) 
-      ? prod.olfactory.base.join(', ')
-      : (Array.isArray(prod?.notes?.base) 
-          ? prod.notes.base.join(', ')
-          : (prod?.notesBase || catalogMatch?.notesBase || (Array.isArray(catalogMatch?.olfactory?.base) ? catalogMatch.olfactory.base.join(', ') : '') || (isEdit ? '' : 'Vetiver, Amber, Musk')));
-
-    const accords = Array.isArray(prod?.olfactory?.accords) 
-      ? prod.olfactory.accords.join(', ')
-      : (Array.isArray(prod?.accords) 
-          ? prod.accords.join(', ')
-          : (prod?.accords || catalogMatch?.accords || (Array.isArray(catalogMatch?.olfactory?.accords) ? catalogMatch.olfactory.accords.join(', ') : '') || (isEdit ? '' : 'Aromatic, Spicy, Woody')));
-
-    const description = prod?.description || catalogMatch?.description || '';
-
-    return `
-      <div class="sovereign-modal-backdrop" onclick="if(event.target === this) app.closeAdminModal()">
-        <div class="sovereign-modal-box">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.8rem;">
-            <h3 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.3rem;">
-              ${isEdit ? `EDIT FRAGRANCE EXTRAIT — ${cleanName.toUpperCase()}` : 'INSCRIBE NEW FRAGRANCE EXTRAIT'}
-            </h3>
-            <button type="button" class="icon-btn" onclick="app.closeAdminModal()" style="font-size: 1.2rem; color: var(--gold-light);">✕</button>
-          </div>
-
-          <form onsubmit="app.saveAdminProduct(event, '${isEdit ? cleanId : ''}')">
-            <div class="sovereign-form-grid">
-              <div>
-                <label class="sovereign-field-label">Flacon Slug / ID</label>
-                <input type="text" id="prod-id" class="sovereign-form-input" value="${safeId(cleanId)}" ${isEdit ? 'readonly style="opacity: 0.7; cursor: not-allowed; background: rgba(255,255,255,0.05);"' : 'required'} placeholder="e.g. oud-rion" />
-              </div>
-              <div>
-                <label class="sovereign-field-label">Extrait Name</label>
-                <input type="text" id="prod-name" class="sovereign-form-input" value="${cleanName}" required placeholder="e.g. Oud Rion Extrait de Parfum" />
-              </div>
-              <div>
-                <label class="sovereign-field-label">Tagline / Subtitle</label>
-                <input type="text" id="prod-tagline" class="sovereign-form-input" value="${tagline}" placeholder="A commanding presence..." />
-              </div>
-              <div>
-                <label class="sovereign-field-label">Collection / Category</label>
-                <input type="text" id="prod-collection" class="sovereign-form-input" value="${category}" placeholder="e.g. Woody · Men" />
-              </div>
-              <div>
-                <label class="sovereign-field-label">Concentration</label>
-                <input type="text" id="prod-concentration" class="sovereign-form-input" value="${concentration}" placeholder="Extrait de Parfum (40% Concentration)" />
-              </div>
-              <div>
-                <label class="sovereign-field-label">Batch Code</label>
-                <input type="text" id="prod-batch" class="sovereign-form-input" value="${batchCode}" placeholder="MYTH-2026-X01" />
-              </div>
-              <div>
-                <label class="sovereign-field-label">Maceration Date</label>
-                <input type="text" id="prod-maceration" class="sovereign-form-input" value="${macerationDate}" placeholder="March 2026" />
-              </div>
-              <div>
-                <label class="sovereign-field-label">Primary Bottle Image URL</label>
-                <input type="text" id="prod-bottle-image" class="sovereign-form-input" value="${bottleImage}" oninput="document.getElementById('prod-image').value = this.value; if(window.app) app.adminUpdateMediaThumb('prod-bottle-preview', this.value);" required placeholder="assets/product/..." />
-                <input type="hidden" id="prod-image" value="${bottleImage}" />
-              </div>
-              <div>
-                <label class="sovereign-field-label">Packaging / Box Image URL</label>
-                <input type="text" id="prod-card-image" class="sovereign-form-input" value="${cardImage}" oninput="if(window.app) app.adminUpdateMediaThumb('prod-card-preview', this.value);" placeholder="assets/product/...box.webp" />
-              </div>
-              <div>
-                <label class="sovereign-field-label">Atmosphere / Background URL</label>
-                <input type="text" id="prod-bg-image" class="sovereign-form-input" value="${backgroundImage}" oninput="if(window.app) app.adminUpdateMediaThumb('prod-bg-preview', this.value);" placeholder="assets/hero/...bg.webp" />
-              </div>
-            </div>
-
-            <!-- FLACON EDITIONS & VOLUME PRICING (100ML • 50ML) -->
-            ${isCoffret ? `
-              <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.45); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.35);">
-                <div style="font-size: 0.78rem; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 0.8rem;">
-                  ✦ Sixth Sense Discovery Coffret Edition (6 × 8ml = 48ml)
-                </div>
-                <div class="sovereign-form-grid" style="margin-bottom: 0;">
-                  <div>
-                    <label class="sovereign-field-label">Official SKU Code</label>
-                    <input type="text" id="prod-sku-48" class="sovereign-form-input" value="${sku48}" placeholder="MYTH-SET-6S-48" required />
-                  </div>
-                  <div>
-                    <label class="sovereign-field-label">Sale Price (₹)</label>
-                    <input type="number" id="prod-price-48" class="sovereign-form-input" value="${price48}" min="0" required />
-                  </div>
-                  <div>
-                    <label class="sovereign-field-label">Compare At / MRP (₹)</label>
-                    <input type="number" id="prod-mrp-48" class="sovereign-form-input" value="${mrp48}" min="0" required />
-                  </div>
-                  <div>
-                    <label class="sovereign-field-label">Stock Quantity</label>
-                    <input type="number" id="prod-stock-48" class="sovereign-form-input" value="${stock48}" min="0" required />
-                  </div>
-                </div>
-              </div>
-            ` : `
-              <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.45); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.35);">
-                <div style="font-size: 0.78rem; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 0.8rem; display: flex; align-items: center; justify-content: space-between;">
-                  <span>✦ Flacon Editions & Volume Pricing (100ml • 50ml)</span>
-                  <span class="glass-pill" style="font-size: 0.68rem; color: var(--gold-light); border-color: var(--gold-primary);">Authoritative Vault Variants</span>
-                </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
-                  <!-- Left Column: 100ml Grand Flacon -->
-                  <div style="background: rgba(212, 175, 55, 0.08); padding: 1rem; border-radius: 6px; border: 1px solid rgba(212, 175, 55, 0.4);">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
-                      <strong style="color: var(--gold-light); font-size: 0.85rem;">100ml Grand Flacon</strong>
-                      <span class="glass-pill" style="font-size: 0.65rem; background: rgba(212, 175, 55, 0.18); color: #FFF1C5; border-color: rgba(212, 175, 55, 0.4);">100ML</span>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 0.6rem;">
-                      <div>
-                        <label class="sovereign-field-label">100ml SKU Code</label>
-                        <input type="text" id="prod-sku-100" class="sovereign-form-input" value="${sku100}" placeholder="e.g. MYTH-EDP-KS-100" required />
-                      </div>
-                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                        <div>
-                          <label class="sovereign-field-label">Sale Price (₹)</label>
-                          <input type="number" id="prod-price-100" class="sovereign-form-input" value="${price100}" min="0" required />
-                        </div>
-                        <div>
-                          <label class="sovereign-field-label">MRP (₹)</label>
-                          <input type="number" id="prod-mrp-100" class="sovereign-form-input" value="${mrp100}" min="0" required />
-                        </div>
-                      </div>
-                      <div>
-                        <label class="sovereign-field-label">100ml Stock Quantity</label>
-                        <input type="number" id="prod-stock-100" class="sovereign-form-input" value="${stock100}" min="0" required />
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Right Column: 50ml Signature Flacon -->
-                  <div style="background: rgba(0, 0, 0, 0.35); padding: 1rem; border-radius: 6px; border: 1px solid rgba(212, 175, 55, 0.25);">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
-                      <strong style="color: var(--gold-light); font-size: 0.85rem;">50ml Signature Flacon</strong>
-                      <span class="glass-pill" style="font-size: 0.65rem; color: var(--text-muted);">SECONDARY</span>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 0.6rem;">
-                      <div>
-                        <label class="sovereign-field-label">50ml SKU Code</label>
-                        <input type="text" id="prod-sku-50" class="sovereign-form-input" value="${sku50}" placeholder="e.g. MYTH-EDP-KS-50" required />
-                      </div>
-                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                        <div>
-                          <label class="sovereign-field-label">Sale Price (₹)</label>
-                          <input type="number" id="prod-price-50" class="sovereign-form-input" value="${price50}" min="0" required />
-                        </div>
-                        <div>
-                          <label class="sovereign-field-label">MRP (₹)</label>
-                          <input type="number" id="prod-mrp-50" class="sovereign-form-input" value="${mrp50}" min="0" required />
-                        </div>
-                      </div>
-                      <div>
-                        <label class="sovereign-field-label">50ml Stock Quantity</label>
-                        <input type="number" id="prod-stock-50" class="sovereign-form-input" value="${stock50}" min="0" required />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            `}
-
-            <!-- 📸 Product Media Pipeline & 10-Photo Gallery Manager -->
-            <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.45); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
-                <div style="font-size: 0.78rem; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">
-                  📸 Product Media Pipeline (Up to 10 Gallery Photos)
-                </div>
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                  <button type="button" class="btn btn-glass" style="padding: 0.35rem 0.8rem; font-size: 0.72rem; color: var(--gold-light);" onclick="app.adminAutoMapMedia('${safeId(cleanId)}')" title="Auto-Map Canonical Local Assets for this SKU">
-                    ⚡ Auto-Map SKU Assets
-                  </button>
-                  <span class="glass-pill" id="admin-gallery-badge" style="font-size: 0.68rem; color: var(--gold-light);">${galleryList.length}/10 Photos</span>
-                </div>
-              </div>
-
-              <!-- Live Preview Row for Primary Assets -->
-              <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.2rem; background: rgba(212, 175, 55, 0.05); padding: 0.8rem; border-radius: 6px; border: 1px dashed rgba(212, 175, 55, 0.25); flex-wrap: wrap;">
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                  <img id="prod-bottle-preview" src="${bottleImage || 'assets/product/1kingscar.webp'}" style="width: 44px; height: 44px; object-fit: contain; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.4); background: #041812;" onerror="this.src='assets/product/1kingscar.webp'" />
-                  <div>
-                    <div style="font-size: 0.72rem; color: var(--gold-light); font-weight: 600;">Bottle</div>
-                    <div style="font-size: 0.65rem; color: var(--text-muted);">Transparent Flacon</div>
-                  </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                  <img id="prod-card-preview" src="${cardImage || 'assets/product/1kingscarbox.webp'}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.4); background: #041812;" onerror="this.src='assets/product/1kingscarbox.webp'" />
-                  <div>
-                    <div style="font-size: 0.72rem; color: var(--gold-light); font-weight: 600;">Box / Packaging</div>
-                    <div style="font-size: 0.65rem; color: var(--text-muted);">Sovereign Coffret</div>
-                  </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                  <img id="prod-bg-preview" src="${backgroundImage || 'assets/hero/kingscarbg.webp'}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.4); background: #041812;" onerror="this.src='assets/hero/kingscarbg.webp'" />
-                  <div>
-                    <div style="font-size: 0.72rem; color: var(--gold-light); font-weight: 600;">Atmosphere</div>
-                    <div style="font-size: 0.65rem; color: var(--text-muted);">Hero Environment</div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Ordered Storefront Gallery List (Up to 10 Photos) -->
-              <div style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
-                <span>Storefront Multi-Photo Carousel Order</span>
-                <button type="button" class="btn btn-gold" id="admin-add-photo-btn" style="padding: 0.25rem 0.7rem; font-size: 0.7rem;" onclick="app.adminAddGallerySlot()" ${galleryList.length >= 10 ? 'disabled' : ''}>
-                  + Add Photo Slot (<span id="admin-add-slot-count">${galleryList.length}</span>/10)
-                </button>
-              </div>
-
-              <div id="admin-gallery-slots" style="display: flex; flex-direction: column; gap: 0.6rem;">
-                ${galleryList.map((imgUrl, idx) => `
-                  <div class="admin-gallery-row" data-idx="${idx}" style="display: flex; align-items: center; gap: 0.6rem; background: rgba(0, 0, 0, 0.35); padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid rgba(212, 175, 55, 0.2);">
-                    <span class="admin-slot-num" style="font-size: 0.75rem; color: var(--gold-light); font-weight: 700; width: 22px;">#${idx + 1}</span>
-                    <img class="admin-slot-preview" src="${imgUrl}" style="width: 38px; height: 38px; object-fit: contain; border-radius: 4px; background: #041812; border: 1px solid rgba(212, 175, 55, 0.3);" onerror="this.src='assets/product/1kingscar.webp'" />
-                    <input type="text" class="sovereign-form-input admin-gallery-input" style="flex: 1; padding: 0.4rem 0.7rem; font-size: 0.8rem;" value="${imgUrl}" oninput="if(window.app) app.adminPreviewGalleryRow(this)" placeholder="assets/product/..." required />
-                    <button type="button" class="btn btn-glass" style="padding: 0.3rem 0.6rem; font-size: 0.7rem;" onclick="app.adminMoveGallerySlot(${idx}, -1)" title="Move Up" ${idx === 0 ? 'disabled' : ''}>↑</button>
-                    <button type="button" class="btn btn-glass" style="padding: 0.3rem 0.6rem; font-size: 0.7rem;" onclick="app.adminMoveGallerySlot(${idx}, 1)" title="Move Down" ${idx === galleryList.length - 1 ? 'disabled' : ''}>↓</button>
-                    <button type="button" class="btn btn-glass" style="padding: 0.3rem 0.6rem; font-size: 0.7rem; color: #FCA5A5; border-color: rgba(239, 68, 68, 0.4);" onclick="app.adminRemoveGallerySlot(${idx})" title="Remove Photo" ${galleryList.length <= 1 ? 'disabled' : ''}>✕</button>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-
-            <!-- Notes & Accords -->
-            <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.4); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.2);">
-              <div style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; font-weight: 600;">Olfactory Pyramids & Accords</div>
-              <div class="sovereign-form-grid" style="margin-bottom: 0;">
-                <div>
-                  <label class="sovereign-field-label">Top Notes (comma-separated)</label>
-                  <input type="text" id="prod-notes-top" class="sovereign-form-input" value="${topNotes}" placeholder="Bergamot, Pink Pepper" />
-                </div>
-                <div>
-                  <label class="sovereign-field-label">Heart Notes (comma-separated)</label>
-                  <input type="text" id="prod-notes-heart" class="sovereign-form-input" value="${heartNotes}" placeholder="Lavender, Rose" />
-                </div>
-                <div>
-                  <label class="sovereign-field-label">Base Notes (comma-separated)</label>
-                  <input type="text" id="prod-notes-base" class="sovereign-form-input" value="${baseNotes}" placeholder="Vetiver, Amber, Musk" />
-                </div>
-                <div>
-                  <label class="sovereign-field-label">Accords (comma-separated)</label>
-                  <input type="text" id="prod-accords" class="sovereign-form-input" value="${accords}" placeholder="Aromatic, Spicy, Woody" />
-                </div>
-              </div>
-            </div>
-
-            <div style="margin-bottom: 1.5rem;">
-              <label class="sovereign-field-label">Poetic Lore / Description</label>
-              <textarea id="prod-description" class="sovereign-form-textarea" placeholder="Detailed description of the fragrance...">${description}</textarea>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">
-              <button type="button" class="btn btn-glass" onclick="app.closeAdminModal()">Cancel</button>
-              <button type="submit" class="btn btn-gold" style="padding: 0.7rem 2rem;">Save Extrait to Vault</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    `;
-  },
-
-  /* Post/Lore Modal (Create / Edit) */
-  renderPostModal(post = null) {
-    const isEdit = Boolean(post && post.id);
-    const p = post || {
-      id: '',
-      title: '',
-      subtitle: '',
-      category: 'Olfactory Lore',
-      coverImage: 'assets/hero/kingscarbg.webp',
-      body: '',
-      linkedProductId: '',
-      isPublished: true
-    };
-
-    return `
-      <div class="sovereign-modal-backdrop" onclick="if(event.target === this) app.closeAdminModal()">
-        <div class="sovereign-modal-box">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.8rem;">
-            <h3 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.3rem;">
-              ${isEdit ? 'Edit Lore Entry' : 'Inscribe New Chronicle & Lore'}
-            </h3>
-            <button class="icon-btn" onclick="app.closeAdminModal()" style="font-size: 1.2rem; color: var(--gold-light);">✕</button>
-          </div>
-
-          <form onsubmit="app.saveAdminPost(event, '${isEdit ? p.id : ''}')">
-            <div class="sovereign-form-grid">
-              <div style="grid-column: 1 / -1;">
-                <label class="sovereign-field-label">Post Title</label>
-                <input type="text" id="post-title" class="sovereign-form-input" value="${p.title}" required placeholder="The Alchemy of King Scar..." />
-              </div>
-              <div style="grid-column: 1 / -1;">
-                <label class="sovereign-field-label">Subtitle / Excerpt</label>
-                <input type="text" id="post-subtitle" class="sovereign-form-input" value="${p.subtitle || ''}" placeholder="A reflection on maceration in Mayfair..." />
-              </div>
-              <div>
-                <label class="sovereign-field-label">Category</label>
-                <select id="post-category" class="sovereign-select" style="width: 100%;">
-                  <option value="Olfactory Lore" ${p.category === 'Olfactory Lore' ? 'selected' : ''}>Olfactory Lore</option>
-                  <option value="New Drop" ${p.category === 'New Drop' ? 'selected' : ''}>New Drop</option>
-                  <option value="Behind the Alchemy" ${p.category === 'Behind the Alchemy' ? 'selected' : ''}>Behind the Alchemy</option>
-                  <option value="Press & Society" ${p.category === 'Press & Society' ? 'selected' : ''}>Press & Society</option>
-                </select>
-              </div>
-              <div>
-                <label class="sovereign-field-label">Linked Extrait Flacon (Optional)</label>
-                <select id="post-linked-product" class="sovereign-select" style="width: 100%;">
-                  <option value="">None</option>
-                  <option value="king-scar" ${p.linkedProductId === 'king-scar' ? 'selected' : ''}>King Scar</option>
-                  <option value="petralux" ${p.linkedProductId === 'petralux' ? 'selected' : ''}>Petralux</option>
-                  <option value="oud-rion" ${p.linkedProductId === 'oud-rion' ? 'selected' : ''}>Oud Rion</option>
-                  <option value="spark" ${p.linkedProductId === 'spark' ? 'selected' : ''}>Spark</option>
-                  <option value="wood-sera" ${p.linkedProductId === 'wood-sera' ? 'selected' : ''}>Wood Sera</option>
-                  <option value="ash" ${p.linkedProductId === 'ash' ? 'selected' : ''}>Ash</option>
-                </select>
-              </div>
-              <div style="grid-column: 1 / -1;">
-                <label class="sovereign-field-label">Cover Artwork / Image URL</label>
-                <input type="text" id="post-cover" class="sovereign-form-input" value="${p.coverImage || ''}" placeholder="assets/hero/kingscarbg.webp" />
-              </div>
-            </div>
-
-            <div style="margin-bottom: 1.5rem;">
-              <label class="sovereign-field-label">Chronicle Body Content</label>
-              <textarea id="post-body" class="sovereign-form-textarea" style="min-height: 180px;" required placeholder="Write the story, formula notes, or announcement here...">${p.body || ''}</textarea>
-            </div>
-
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.4); padding: 0.8rem 1rem; border-radius: 8px;">
-              <div>
-                <strong style="color: var(--gold-light); font-size: 0.85rem;">Publish Live to Storefront</strong>
-                <div style="font-size: 0.72rem; color: var(--text-muted);">When active, collectors will discover this entry in Sanctuary Lore.</div>
-              </div>
-              <input type="checkbox" id="post-published" style="width: 20px; height: 20px; accent-color: var(--gold-primary);" ${p.isPublished !== false ? 'checked' : ''} />
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">
-              <button type="button" class="btn btn-glass" onclick="app.closeAdminModal()">Cancel</button>
-              <button type="submit" class="btn btn-gold" style="padding: 0.7rem 2rem;">Inscribe Lore Entry</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    `;
-  },
-
-  /* Adjust Mythos Modal */
-  renderAdjustMythosModal(uid, patronName, currentBalance) {
-    return `
-      <div class="sovereign-modal-backdrop" onclick="if(event.target === this) app.closeAdminModal()">
-        <div class="sovereign-modal-box" style="max-width: 520px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.8rem;">
-            <h3 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.2rem;">
-              Adjust Mythos Coins: ${patronName}
-            </h3>
-            <button class="icon-btn" onclick="app.closeAdminModal()" style="font-size: 1.2rem; color: var(--gold-light);">✕</button>
-          </div>
-
-          <div style="background: rgba(212, 175, 55, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1.2rem; border: 1px solid rgba(212, 175, 55, 0.25);">
-            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Current Balance</div>
-            <div class="gold-shimmer-text" style="font-size: 1.8rem; font-family: var(--font-serif-title);">${currentBalance.toLocaleString()} M</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace;">Collector UID: ${uid}</div>
-          </div>
-
-          <form onsubmit="app.submitAdjustMythos(event, '${uid}')">
-            <input type="hidden" id="adjust-mythos-uid" value="${uid}" />
-            <div style="margin-bottom: 1rem;">
-              <label class="sovereign-field-label">Coin Adjustment (+ to Grant, - to Deduct)</label>
-              <input type="number" id="adjust-mythos-delta" class="sovereign-form-input" placeholder="e.g. +500 or -200" required />
-            </div>
-
-            <div style="margin-bottom: 1.5rem;">
-              <label class="sovereign-field-label">Audit Reason / Justification</label>
-              <input type="text" id="adjust-mythos-reason" class="sovereign-form-input" placeholder="e.g. VIP Concierge Courtesy, Sixth Sense credit" required />
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">
-              <button type="button" class="btn btn-glass" onclick="app.closeAdminModal()">Cancel</button>
-              <button type="submit" class="btn btn-gold" style="padding: 0.7rem 1.8rem;">Confirm Adjustment</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    `;
-  },
-
-  /* Override Tier Modal */
-  renderOverrideTierModal(uid, patronName, currentBottles = 0, currentLevel = 1) {
-    const tierLevel = Number(currentLevel) || 1;
-    return `
-      <div class="sovereign-modal-backdrop" onclick="if(event.target === this) app.closeAdminModal()">
-        <div class="sovereign-modal-box" style="max-width: 520px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.8rem;">
-            <h3 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.2rem;">
-              Override Standing: ${patronName}
-            </h3>
-            <button class="icon-btn" onclick="app.closeAdminModal()" style="font-size: 1.2rem; color: var(--gold-light);">✕</button>
-          </div>
-
-          <form onsubmit="app.submitOverrideTier(event, '${uid}')">
-            <input type="hidden" id="override-tier-uid" value="${uid}" />
-            <div style="margin-bottom: 1rem;">
-              <label class="sovereign-field-label">Full Flacons Owned Count</label>
-              <input type="number" id="override-bottles-input" class="sovereign-form-input" value="${currentBottles}" min="0" required />
-            </div>
-
-            <div style="margin-bottom: 1.5rem;">
-              <label class="sovereign-field-label">Promote to Circle of Legends Standing Tier</label>
-              <select id="override-tier-select" class="sovereign-select" style="width: 100%;">
-                <option value="1" ${tierLevel === 1 ? 'selected' : ''}>Level 1: The Observer (Initiate)</option>
-                <option value="2" ${tierLevel === 2 ? 'selected' : ''}>Level 2: The Curator (1+ Bottles, 2x Return)</option>
-                <option value="3" ${tierLevel === 3 ? 'selected' : ''}>Level 3: The Collector (3+ Bottles, 3x Return)</option>
-                <option value="4" ${tierLevel === 4 ? 'selected' : ''}>Level 4: The Archivist (6+ Bottles, 4x Return)</option>
-                <option value="5" ${tierLevel === 5 ? 'selected' : ''}>Level 5: The Sovereign (12+ Bottles, 5x Return)</option>
-              </select>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">
-              <button type="button" class="btn btn-glass" onclick="app.closeAdminModal()">Cancel</button>
-              <button type="button" class="btn btn-gold" style="padding: 0.7rem 1.8rem;" onclick="app.submitOverrideTier(event, '${uid}')">Apply Override</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    `;
-  },
-
-  /* Add Promo Key Modal */
-  renderAddPromoModal() {
-    return `
-      <div class="sovereign-modal-backdrop" onclick="if(event.target === this) app.closeAdminModal()">
-        <div class="sovereign-modal-box" style="max-width: 520px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.8rem;">
-            <h3 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.2rem;">
-              Mint New Promo Code / Vault Key
-            </h3>
-            <button class="icon-btn" onclick="app.closeAdminModal()" style="font-size: 1.2rem; color: var(--gold-light);">✕</button>
-          </div>
-
-          <form onsubmit="app.submitAddPromoCode(event)">
-            <div style="margin-bottom: 1rem;">
-              <label class="sovereign-field-label">Promo Code Key</label>
-              <input type="text" id="new-promo-code" class="sovereign-form-input" style="text-transform: uppercase;" placeholder="e.g. MAYFAIR20" required />
-            </div>
-
-            <div class="sovereign-form-grid" style="margin-bottom: 1rem;">
-              <div>
-                <label class="sovereign-field-label">Discount Type</label>
-                <select id="new-promo-type" class="sovereign-select" style="width: 100%;">
-                  <option value="percent">Percentage (%)</option>
-                  <option value="flat">Flat Concession (₹)</option>
-                </select>
-              </div>
-              <div>
-                <label class="sovereign-field-label">Discount Value</label>
-                <input type="number" id="new-promo-value" class="sovereign-form-input" placeholder="e.g. 15 or 500" required />
-              </div>
-            </div>
-
-            <div style="margin-bottom: 1.5rem;">
-              <label class="sovereign-field-label">Minimum Order Requirement (₹)</label>
-              <input type="number" id="new-promo-minorder" class="sovereign-form-input" placeholder="e.g. 1999" value="0" min="0" />
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">
-              <button type="button" class="btn btn-glass" onclick="app.closeAdminModal()">Cancel</button>
-              <button type="submit" class="btn btn-gold" style="padding: 0.7rem 1.8rem;">Mint & Activate Key</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    `;
-  },
-
-  /* ==========================================================================
-     COLLECTOR DOSSIER MODAL: COMPLETE COORDINATES, PHONE & CONSIGNMENT LEDGER
-     ========================================================================== */
-  renderPatronDossierModal(patron) {
-    const prof = patron.profile || {};
-    const loyalty = patron.loyalty || {};
-    const name = prof.name || patron.name || 'Collector';
-    const email = prof.email || patron.email || 'N/A';
-    const rawPhone = prof.phone || patron.phone || '';
-    const cleanPhone = (rawPhone || '').replace(/[^0-9]/g, '');
-    const p10 = patron.phoneCanonical || (cleanPhone.length >= 10 ? cleanPhone.slice(-10) : '');
-    const displayPhone = p10 && p10.length === 10 ? `+91 ${p10}` : (rawPhone || 'Not Provided');
-    const initial = name.charAt(0).toUpperCase();
-    const isAdmin = patron.role === 'admin' || patron.isAdmin === true || prof.role === 'admin' || prof.isAdmin === true;
-    let spendable = Number(loyalty.spendable_mythos || 0);
-    const bottles = Number(loyalty.full_bottles_purchased || patron.fullFlaconsOrdered || 0);
-    let legacy = Number(loyalty.legacy_mythos || spendable || 0);
-    const orders = Array.isArray(patron.orders) ? patron.orders : [];
-    // Self-heal initiate if 0 points and 0 orders
-    if (spendable === 0 && legacy === 0 && orders.length === 0) {
-      spendable = 200;
-      legacy = 200;
-    }
-    const lifetimeSpend = Number(patron.lifetimeSpend || 0);
-    const address = patron.fullAddress || prof.fullAddress || patron.address || prof.address || '';
-    const city = patron.city || prof.city || '';
-    const state = patron.state || prof.state || '';
-    const pincode = patron.pincode || prof.pincode || '';
-    const addressCopyText = [name, displayPhone, address, city, state, pincode].filter(Boolean).join('\n');
-    const dossierOrderIds = encodeURIComponent(JSON.stringify((orders || []).map(o => o.orderId || o.id).filter(Boolean)));
-
-    const tiers = (typeof store !== 'undefined' && store.LOYALTY_TIERS) || (typeof window !== 'undefined' && window.LOYALTY_TIERS) || [];
-    let tierObj = null;
-    if (loyalty.manual_tier_override) {
-      tierObj = tiers.find(t => t.level === Number(loyalty.manual_tier_override));
-    }
-    if (!tierObj) {
-      for (let i = tiers.length - 1; i >= 0; i--) {
-        const t = tiers[i];
-        if (legacy >= t.minLegacy && bottles >= t.minBottles) {
-          tierObj = t;
-          break;
-        }
-      }
-    }
-    if (!tierObj && tiers.length > 0) tierObj = tiers[0];
-    const currentTierName = (tierObj ? `Level ${tierObj.level}: ${tierObj.name}` : null) || prof.tier || 'Level 1: The Observer';
-    const currentTierLevel = tierObj ? tierObj.level : 1;
-
-    return `
-      <div class="sovereign-modal-backdrop" onclick="if(event.target === this) app.closeAdminModal()">
-        <div class="sovereign-modal-box" style="max-width: 820px; max-height: 90vh; overflow-y: auto;">
-          <!-- Header -->
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.8rem;">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-              <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(212, 175, 55, 0.15); border: 2px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.4rem; color: var(--gold-light);">
-                ${initial}
-              </div>
-              <div>
-                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                  <h3 class="font-title gold-shimmer-text" style="margin: 0; font-size: 1.35rem;">${name}</h3>
-                  <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-light);">${currentTierName}</span>
-                  ${isAdmin ? '<span class="sovereign-pill" style="background: rgba(212, 175, 55, 0.2); border: 1px solid var(--gold-primary); color: var(--gold-light); font-size: 0.7rem;">👑 Admin</span>' : ''}
-                  ${patron.isGuestOrder ? '<span class="glass-pill" style="font-size: 0.68rem; color: #6EE7B7;">Consignment Customer</span>' : ''}
-                </div>
-                <div style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace; margin-top: 0.2rem; display: flex; align-items: center; gap: 6px;">
-                  <span>Collector UID: ${patron.uid || 'N/A'}</span>
-                  ${patron.uid ? `<button type="button" class="btn btn-glass" style="font-size: 0.65rem; padding: 1px 5px;" onclick="navigator.clipboard.writeText('${safeId(patron.uid)}'); app.showToast('Copied UID');">📋 Copy</button>` : ''}
-                </div>
-              </div>
-            </div>
-            <button class="icon-btn" onclick="app.closeAdminModal()" style="font-size: 1.3rem; color: var(--gold-light);">✕</button>
-          </div>
-
-          <!-- Quick Action Contact Bar -->
-          <div style="display: flex; gap: 0.6rem; margin-bottom: 1.5rem; flex-wrap: wrap; background: rgba(0, 0, 0, 0.35); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.15); align-items: center;">
-            ${cleanPhone ? `
-              <a href="https://wa.me/91${cleanPhone}?text=${encodeURIComponent(`Hello ${name}, greetings from Sanctuary of Mytholis!`)}" target="_blank" class="btn btn-glass" style="background: rgba(37, 211, 102, 0.15); border-color: rgba(37, 211, 102, 0.5); color: #25D366; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
-                <span>💬</span> Chat on WhatsApp (${displayPhone})
-              </a>
-              <a href="tel:+91${cleanPhone}" class="btn btn-glass" style="font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
-                <span>📞</span> Direct Call
-              </a>
-            ` : `
-              <span style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px;">⚠️ No phone number registered</span>
-            `}
-            ${email && email !== 'N/A' ? `
-              <a href="mailto:${email}" class="btn btn-glass" style="font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
-                <span>✉️</span> Email Collector
-              </a>
-            ` : ''}
-            <button type="button" class="btn btn-glass" style="font-size: 0.78rem; margin-left: auto;" onclick="navigator.clipboard.writeText('${safeId(addressCopyText)}'); app.showToast('Copied full shipping label coordinates!');">
-              📋 Copy Delivery Label Data
-            </button>
-            <button type="button" class="btn" style="background: #EF4444; color: white; font-weight: 700; font-size: 0.78rem; padding: 0.45rem 1rem; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;" onclick="app.closeAdminModal(); app.handleAdminDeleteUser('${safeId(patron.uid)}', '${safeId(name)}', '${safeId(email)}', '${safeId(cleanPhone)}', '${safeId(dossierOrderIds)}')" title="Permanently delete user and order records from database">
-              <span>🗑️</span> Purge User & Data
-            </button>
-          </div>
-
-          <!-- 2-Column Info Grid -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.2rem; margin-bottom: 1.5rem;">
-            <!-- Delivery & Address Coordinates -->
-            <div class="sovereign-subpanel">
-              <div class="sovereign-subpanel-title" style="color: var(--gold-light); display: flex; justify-content: space-between; align-items: center;">
-                <span>📍 Shipping & Delivery Coordinates</span>
-                <span class="glass-pill" style="font-size: 0.65rem;">Primary Destination</span>
-              </div>
-              <div style="margin-bottom: 0.8rem;">
-                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.2rem;">Full Address:</div>
-                <div style="font-size: 0.88rem; line-height: 1.5; color: var(--text-main); background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); word-break: break-word;">
-                  ${address || '<span style="color: var(--text-muted); font-style: italic;">No shipping address recorded yet.</span>'}
-                </div>
-              </div>
-              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; font-size: 0.78rem;">
-                <div>
-                  <div style="color: var(--text-muted); font-size: 0.7rem;">City</div>
-                  <strong style="color: var(--gold-light);">${city || 'N/A'}</strong>
-                </div>
-                <div>
-                  <div style="color: var(--text-muted); font-size: 0.7rem;">State</div>
-                  <strong style="color: var(--gold-light);">${state || 'N/A'}</strong>
-                </div>
-                <div>
-                  <div style="color: var(--text-muted); font-size: 0.7rem;">Pincode</div>
-                  <strong style="color: var(--gold-light);">${pincode || 'N/A'}</strong>
-                </div>
-              </div>
-            </div>
-
-            <!-- Economy, Flacons & Tier Standing -->
-            <div class="sovereign-subpanel">
-              <div class="sovereign-subpanel-title" style="color: var(--gold-light); display: flex; justify-content: space-between; align-items: center;">
-                <span>🪙 Collector Economy & Circle of Legends</span>
-                <span class="glass-pill" style="font-size: 0.65rem;">VIP Privileges</span>
-              </div>
-              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; margin-bottom: 0.8rem;">
-                <div style="background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px;">
-                  <div style="font-size: 0.7rem; color: var(--text-muted);">Lifetime Spend (LTV)</div>
-                  <div class="gold-shimmer-text" style="font-size: 1.15rem; font-weight: 700;">₹${lifetimeSpend.toLocaleString('en-IN')}</div>
-                </div>
-                <div style="background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px;">
-                  <div style="font-size: 0.7rem; color: var(--text-muted);">Total Consignments</div>
-                  <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);">${orders.length} Orders</div>
-                </div>
-                <div style="background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px;">
-                  <div style="font-size: 0.7rem; color: var(--text-muted);">Spendable Mythos</div>
-                  <div style="font-size: 1.15rem; font-weight: 700; color: var(--gold-light);">${spendable.toLocaleString()} M</div>
-                </div>
-                <div style="background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px;">
-                  <div style="font-size: 0.7rem; color: var(--text-muted);">Full Flacons (≥50ml)</div>
-                  <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);">${bottles} Flacons</div>
-                </div>
-              </div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">
-                Referral Code: <strong style="color: var(--gold-light);">${prof.referralCode || patron.referralCode || 'None generated'}</strong>
-              </div>
-            </div>
-
-            <!-- Points Ledger: auditable history of every Mythos movement -->
-            <div class="sovereign-subpanel" style="margin-top: 1rem;">
-              <div class="sovereign-subpanel-title" style="color: var(--gold-light); display: flex; justify-content: space-between; align-items: center;">
-                <span>Points Ledger</span>
-                <span class="glass-pill" style="font-size: 0.62rem;">Audit trail</span>
-              </div>
-              <div id="patron-ledger-slot" style="font-size: 0.76rem; color: var(--text-muted);">Loading points history...</div>
-            </div>
-          </div>
-
-          <!-- Consignments / Orders History Ledger -->
-          <div class="sovereign-subpanel" style="margin-bottom: 1.5rem;">
-            <div class="sovereign-subpanel-title" style="color: var(--gold-light); display: flex; justify-content: space-between; align-items: center;">
-              <span>📦 Consignment Ledger & Order History (${orders.length})</span>
-            </div>
-            ${orders.length === 0 ? `
-              <div style="text-align: center; color: var(--text-muted); padding: 1.5rem; font-size: 0.85rem;">
-                No orders placed by this collector yet.
-              </div>
-            ` : `
-              <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                ${orders.map(ord => {
-                  const ordId = ord.orderId || ord.id || 'MYTH-0000';
-                  const ordStatus = ord.status || 'Pending';
-                  const ordPay = (ord.paymentMethod || 'Prepaid').toUpperCase();
-                  const ordAmount = Number(ord.finalPayable || ord.total || ord.subtotal || 0);
-                  const ordDate = ord.timestamp?.toMillis ? new Date(ord.timestamp.toMillis()).toLocaleString('en-IN') : (ord.date || ord.createdAt ? new Date(ord.date || ord.createdAt).toLocaleString('en-IN') : 'Recent');
-                  const items = Array.isArray(ord.items) ? ord.items : [];
-                  const courier = ord.courierName || '';
-                  const awb = ord.trackingNumber || '';
-                  const idOrd = safeId(ordId);
-
-                  return `
-                    <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(212, 175, 55, 0.15); border-radius: 8px; padding: 0.8rem;">
-                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; flex-wrap: wrap; gap: 0.5rem;">
-                        <div style="display: flex; align-items: center; gap: 0.6rem;">
-                          <strong style="color: var(--gold-light); font-size: 0.95rem;">Order #${esc(ordId)}</strong>
-                          <span class="sovereign-pill status-${idOrd.toLowerCase()}">${esc(ordStatus)}</span>
-                          <span class="sovereign-pill payment-${esc(String(ordPay).toLowerCase())}">${esc(ordPay)}</span>
-                        </div>
-                        <div style="font-size: 0.78rem; color: var(--text-muted);">
-                          ${esc(ordDate)}
-                        </div>
-                      </div>
-                      <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.4rem;">
-                        Items: ${items.map(it => `<span style="color: var(--text-main); font-weight: 600;">${esc(it.name || it.id)} (${esc(it.size || 50)}ml &times; ${esc(it.quantity || 1)})</span>`).join(', ') || 'No items listed'}
-                      </div>
-                      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.4rem; font-size: 0.8rem;">
-                        <div>
-                          ${courier || awb ? `<span style="color: var(--gold-primary);">🚚 ${esc(courier)} AWB: ${esc(awb)}</span>` : '<span style="color: var(--text-muted);">Dispatch Pending</span>'}
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 0.8rem;">
-                          <strong class="gold-shimmer-text" style="font-size: 0.95rem;">₹${ordAmount.toLocaleString('en-IN')}</strong>
-                          <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;" onclick="app.closeAdminModal(); app.printShippingLabelForOrder('${idOrd}')">
-                            🏷️ Shipping Label
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  `;
-                }).join('')}
-              </div>
-            `}
-          </div>
-
-          <!-- Footer Actions -->
-          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(212, 175, 55, 0.2); padding-top: 0.8rem;">
-            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-              <button type="button" class="btn btn-glass" style="font-size: 0.75rem;" onclick="app.closeAdminModal(); app.openAdjustMythosModal('${safeId(patron.uid)}', '${safeId(name)}', ${spendable})">
-                &plusmn; Adjust Mythos
-              </button>
-              <button type="button" class="btn btn-glass" style="font-size: 0.75rem;" onclick="app.closeAdminModal(); app.openOverrideTierModal('${safeId(patron.uid)}', '${safeId(name)}', ${bottles}, ${currentTierLevel})">
-                Override Tier
-              </button>
-              <button type="button" class="btn btn-glass" style="font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.closeAdminModal(); app.handleAdminDeleteUser('${safeId(patron.uid)}', '${safeId(name)}', '${safeId(email)}', '${safeId(cleanPhone)}', '${safeId(dossierOrderIds)}')" title="Permanently delete user and order records from database">
-                🗑️ Purge User & Data
-              </button>
-            </div>
-            <button type="button" class="btn btn-gold" style="font-size: 0.78rem; padding: 0.6rem 1.4rem;" onclick="app.closeAdminModal()">Close Dossier</button>
-          </div>
-        </div>
-      </div>
-    `;
-  },
-
-  /* ==========================================================================
-     DIRECT 4x6 THERMAL SHIPPING LABEL STUDIO MODAL
-     ========================================================================== */
-  renderShippingLabelModal(targetOrder = null, config = {}) {
-    return this.renderLabelRebranderModal(targetOrder, config);
-  },
-
-  renderLabelRebranderModal(targetOrder = null, config = {}) {
-    const orderId = targetOrder ? (targetOrder.orderId || targetOrder.id || '') : '';
-    const patronName = targetOrder ? (targetOrder.userName || targetOrder.name || targetOrder.customer?.name || '') : '';
-    const courier = targetOrder ? (targetOrder.courierName || '') : '';
-    const awb = targetOrder ? (targetOrder.trackingNumber || targetOrder.awbCode || '') : '';
-    const existingLabelUrl = targetOrder ? (targetOrder.labelUrl || '') : '';
-
-    const savedConfig = config || (typeof store !== 'undefined' && store.globalSettings && store.globalSettings.labelConfig) || {};
-    const defaultPreset = savedConfig.preset || 'thermal-4x6-bottom';
-    const maskX = savedConfig.maskX !== undefined ? savedConfig.maskX : 14;
-    const maskY = savedConfig.maskY !== undefined ? savedConfig.maskY : 18;
-    const maskWidth = savedConfig.maskWidth !== undefined ? savedConfig.maskWidth : 260;
-    const maskHeight = savedConfig.maskHeight !== undefined ? savedConfig.maskHeight : 82;
-    const fontSize = savedConfig.fontSize !== undefined ? savedConfig.fontSize : 10;
-    const showLogo = savedConfig.showLogo !== false;
-    const hasTopMask = savedConfig.hasTopHeaderMask === true;
-
-    return `
-      <div class="sovereign-modal-backdrop" onclick="if(event.target === this) app.closeAdminModal()">
-        <div class="sovereign-modal-box" style="max-width: 980px; width: 95%;">
-          <!-- Header -->
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.8rem; flex-wrap: wrap; gap: 0.8rem;">
-            <div>
-              <div style="display: flex; align-items: center; gap: 0.6rem;">
-                <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-primary); letter-spacing: 0.1em;">AUTHENTIC DISPATCH</span>
-                <span class="glass-pill" style="font-size: 0.7rem; color: #10B981; border-color: #10B981;">Direct 4x6 Thermal Ready</span>
-              </div>
-              <h3 class="font-title" style="color: var(--gold-light); margin: 0.3rem 0 0; font-size: 1.3rem;">
-                Mytholis 4x6 Thermal Shipping Label Studio
-              </h3>
-            </div>
-            <button class="icon-btn" onclick="app.closeAdminModal()" style="font-size: 1.3rem; color: var(--gold-light);">✕</button>
-          </div>
-
-          ${targetOrder ? `
-            <!-- Attached Order Context Bar -->
-            <div style="background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 0.8rem 1rem; margin-bottom: 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.6rem;">
-              <div>
-                <strong style="color: var(--gold-primary); font-size: 0.95rem;">Order #${safeId(orderId)}</strong>
-                <span style="color: var(--text-muted); font-size: 0.85rem; margin-left: 0.5rem;">Collector: <strong style="color: var(--text-main);">${patronName}</strong></span>
-              </div>
-              <div style="font-size: 0.8rem; color: var(--text-muted);">
-                Courier: <strong style="color: var(--gold-light);">${courier || 'BlueDart Express'}</strong> &bull; AWB: <strong style="color: var(--gold-light); font-family: monospace;">${awb || 'Pending'}</strong>
-              </div>
-            </div>
-          ` : ''}
-
-          <!-- Two-Column Studio Layout -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
-            
-            <!-- Column 1: Native Generator & Controls -->
-            <div style="display: flex; flex-direction: column; gap: 1.2rem;">
-              
-              ${targetOrder ? `
-                <!-- Native Thermal Label Configuration -->
-                <div class="calibration-card">
-                  <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold-light); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                    1. Consignment Dispatch Parameters
-                  </div>
-                  <div style="display: flex; flex-direction: column; gap: 0.7rem;">
-                    <div>
-                      <label class="sovereign-field-label">Assigned Courier</label>
-                      <input type="text" id="label-courier-input" class="sovereign-form-input" value="${courier || 'BlueDart Express'}" onchange="app.refreshOrderShippingLabel()" />
-                    </div>
-                    <div>
-                      <label class="sovereign-field-label">AWB / Courier Tracking #</label>
-                      <input type="text" id="label-awb-input" class="sovereign-form-input" value="${awb}" placeholder="e.g. 84920194821" onchange="app.refreshOrderShippingLabel()" />
-                    </div>
-                    <div style="margin-top: 0.3rem;">
-                      <button type="button" class="btn btn-gold" style="width: 100%; font-size: 0.8rem; font-weight: 700;" onclick="app.refreshOrderShippingLabel()">
-                        ⚡ Update & Regenerate Label
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ` : ''}
-
-              <!-- External PDF Fallback (Collapsible) -->
-              <details class="calibration-card" ${targetOrder ? '' : 'open'}>
-                <summary style="font-size: 0.85rem; font-weight: 700; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer;">
-                  External PDF Slip Import (Optional)
-                </summary>
-
-                <!-- Drag & Drop Zone -->
-                <div class="label-dropzone" id="label-dropzone" style="margin-top: 0.8rem;" onclick="document.getElementById('rebrander-file-input').click()">
-                  <input type="file" id="rebrander-file-input" accept="application/pdf" style="display: none;" onchange="app.handleLabelFileUpload(event)" />
-                  <div style="font-size: 1.8rem; margin-bottom: 0.4rem;">📄</div>
-                  <div style="color: var(--gold-light); font-weight: 600; font-size: 0.9rem; margin-bottom: 0.2rem;" id="dropzone-label-text">
-                    Drop 4x6 Shipping Label PDF Here
-                  </div>
-                  <div style="color: var(--text-muted); font-size: 0.75rem;">
-                    or click to browse from device
-                  </div>
-                </div>
-
-                <!-- Alternative: Direct URL -->
-                <div style="margin-top: 0.8rem;">
-                  <div style="display: flex; gap: 0.4rem;">
-                    <input type="text" id="rebrander-url-input" class="sovereign-form-input" placeholder="Or paste label PDF URL..." value="${existingLabelUrl}" style="font-size: 0.8rem; flex: 1;" />
-                    <button type="button" class="btn btn-glass" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;" onclick="app.loadLabelFromUrl()">
-                      Fetch
-                    </button>
-                  </div>
-                </div>
-
-                <div style="margin-top: 0.6rem; text-align: right;">
-                  <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.3rem 0.6rem; color: var(--gold-primary);" onclick="app.loadSampleThermalLabel()">
-                    ⚡ Test With Sample 4x6 Courier Label
-                  </button>
-                </div>
-              </details>
-
-              <!-- Alignment Presets & Geometry Slider Controls -->
-              <div class="calibration-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
-                  <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.05em;">
-                    2. Courier Alignment & Mask Presets
-                  </div>
-                  <button type="button" class="btn btn-glass" style="font-size: 0.68rem; padding: 0.2rem 0.5rem;" onclick="app.saveLabelCalibrationAsDefault()">
-                    💾 Save as Default
-                  </button>
-                </div>
-
-                <!-- Preset Selector -->
-                <div style="margin-bottom: 1rem;">
-                  <label class="sovereign-field-label">Template Preset</label>
-                  <select id="rebrander-preset-select" class="sovereign-select" style="width: 100%;" onchange="app.applyLabelPreset(this.value)">
-                    <option value="thermal-4x6-bottom" ${defaultPreset === 'thermal-4x6-bottom' ? 'selected' : ''}>Standard 4x6 Thermal Label (Bottom Mask)</option>
-                    <option value="thermal-4x6-top-bottom" ${defaultPreset === 'thermal-4x6-top-bottom' ? 'selected' : ''}>4x6 Thermal Label (Top Brand + Bottom Mask)</option>
-                    <option value="a4-top-left" ${defaultPreset === 'a4-top-left' ? 'selected' : ''}>A4 Sheet Courier Label (Top-Left Quadrant)</option>
-                    <option value="custom" ${defaultPreset === 'custom' ? 'selected' : ''}>Custom Manual Coordinates</option>
-                  </select>
-                </div>
-
-                <!-- Numeric / Slider Controls for White-Out Mask -->
-                <div class="calibration-slider-row">
-                  <label>Mask X Offset (pt):</label>
-                  <input type="range" id="slider-mask-x" min="0" max="100" value="${maskX}" oninput="app.updateMaskSliderVal('x', this.value)" />
-                  <span class="calibration-val-badge" id="val-mask-x">${maskX}</span>
-                </div>
-
-                <div class="calibration-slider-row">
-                  <label>Mask Y Position (pt):</label>
-                  <input type="range" id="slider-mask-y" min="0" max="200" value="${maskY}" oninput="app.updateMaskSliderVal('y', this.value)" />
-                  <span class="calibration-val-badge" id="val-mask-y">${maskY}</span>
-                </div>
-
-                <div class="calibration-slider-row">
-                  <label>Mask Width (pt):</label>
-                  <input type="range" id="slider-mask-w" min="150" max="320" value="${maskWidth}" oninput="app.updateMaskSliderVal('w', this.value)" />
-                  <span class="calibration-val-badge" id="val-mask-w">${maskWidth}</span>
-                </div>
-
-                <div class="calibration-slider-row">
-                  <label>Mask Height (pt):</label>
-                  <input type="range" id="slider-mask-h" min="40" max="140" value="${maskHeight}" oninput="app.updateMaskSliderVal('h', this.value)" />
-                  <span class="calibration-val-badge" id="val-mask-h">${maskHeight}</span>
-                </div>
-
-                <div class="calibration-slider-row">
-                  <label>Brand Font Size (pt):</label>
-                  <input type="range" id="slider-mask-font" min="8" max="14" value="${fontSize}" oninput="app.updateMaskSliderVal('font', this.value)" />
-                  <span class="calibration-val-badge" id="val-mask-font">${fontSize}</span>
-                </div>
-
-                <!-- Toggles -->
-                <div style="display: flex; gap: 1.5rem; margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid rgba(212, 175, 55, 0.15);">
-                  <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--gold-light); cursor: pointer;">
-                    <input type="checkbox" id="rebrander-show-logo" ${showLogo ? 'checked' : ''} onchange="app.triggerRebrandPreview()" style="accent-color: var(--gold-primary);" />
-                    Embed Mytholis Crest Logo
-                  </label>
-                  <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--gold-light); cursor: pointer;">
-                    <input type="checkbox" id="rebrander-top-mask" ${hasTopMask ? 'checked' : ''} onchange="app.triggerRebrandPreview()" style="accent-color: var(--gold-primary);" />
-                    Mask Top Banner
-                  </label>
-                </div>
-              </div>
-
-              <!-- Brand Identity Stamp Customization -->
-              <div class="calibration-card">
-                <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold-light); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                  3. Thermal Typography Stamp
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 0.6rem;">
-                  <div>
-                    <label class="sovereign-field-label">Header Title</label>
-                    <input type="text" id="rebrander-title" class="sovereign-form-input" value="MYTHOLIS LUXURY PARFUMS" oninput="app.triggerRebrandPreview()" />
-                  </div>
-                  <div>
-                    <label class="sovereign-field-label">Subtitle</label>
-                    <input type="text" id="rebrander-subtitle" class="sovereign-form-input" value="Extrait de Parfum | Luxury Olfactory Sanctuary" oninput="app.triggerRebrandPreview()" />
-                  </div>
-                  <div>
-                    <label class="sovereign-field-label">Return & Concierge Coordinates</label>
-                    <input type="text" id="rebrander-return" class="sovereign-form-input" value="Sanctuary of Mytholis • www.mytholis.com • concierge@mytholis.com" oninput="app.triggerRebrandPreview()" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Column 2: Live PDF Rebranding Preview & Print Desk -->
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-              <div class="calibration-card" style="height: 100%; display: flex; flex-direction: column;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
-                  <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.05em;">
-                    Interactive Thermal Print Preview
-                  </div>
-                  <span id="rebrander-status-pill" class="glass-pill" style="font-size: 0.68rem; color: var(--gold-primary);">
-                    Ready to Rebrand
-                  </span>
-                </div>
-
-                <!-- PDF Preview Frame / Viewer -->
-                <div style="flex: 1; min-height: 440px; position: relative; border-radius: 8px; overflow: hidden; background: #1a1a1a;">
-                  <iframe id="rebrander-preview-frame" class="rebrander-preview-frame" style="width: 100%; height: 100%; min-height: 440px; border: 0;"></iframe>
-                  <div id="rebrander-preview-placeholder" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(4, 28, 20, 0.95); padding: 2rem; text-align: center;">
-                    <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">🏷️</div>
-                    <h4 class="font-title" style="color: var(--gold-light); margin: 0 0 0.4rem;">No PDF Loaded</h4>
-                    <p style="font-size: 0.82rem; color: var(--text-muted); max-width: 320px; margin-bottom: 1.2rem;">
-                      Upload a courier PDF label or click the test button on the left to calibrate the white-out mask.
-                    </p>
-                    <button type="button" class="btn btn-gold" style="font-size: 0.8rem; padding: 0.6rem 1.4rem;" onclick="app.loadSampleThermalLabel()">
-                      Generate Sample 4x6 Label
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Action Controls Below Preview -->
-                <div style="margin-top: 1rem; display: flex; gap: 0.6rem; flex-wrap: wrap;">
-                  <button type="button" class="btn btn-gold" style="flex: 1.5; padding: 0.75rem 1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.4rem;" onclick="app.printRebrandedLabel()">
-                    🖨️ Direct Thermal Print
-                  </button>
-                  <button type="button" class="btn btn-glass" style="flex: 1.2; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem;" onclick="app.downloadRebrandedLabel('${safeId(orderId)}')">
-                    ⬇️ Download PDF
-                  </button>
-                  ${targetOrder ? `
-                    <button type="button" class="btn btn-glass" style="flex: 1; padding: 0.75rem 1rem; color: #10B981; border-color: #10B981;" onclick="app.saveRebrandedLabelToOrder('${safeId(orderId)}')">
-                      ✓ Save to Order
-                    </button>
-                  ` : ''}
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Footer -->
-          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(212, 175, 55, 0.2); padding-top: 0.8rem;">
-            <span style="font-size: 0.75rem; color: var(--text-muted);">
-              🛡️ Method 3 Compliance: Legal KYC entity is preserved in courier manifests; shipping labels are branded exclusively for the collector.
-            </span>
-            <button type="button" class="btn btn-glass" onclick="app.closeAdminModal()">Close Studio</button>
-          </div>
-        </div>
-      </div>
-    `;
-  }
+ const buckets = [
+ { label: 'Last 24 hours', min: 0, max: 24 },
+ { label: '1-3 days', min: 24, max: 72 },
+ { label: '3-7 days', min: 72, max: 168 },
+ { label: 'Older than 7 days', min: 168, max: Infinity }
+ ];
+ const aged = abandonedCheckouts
+ .map((o) => ({ o, hours: (nowMs - draftStartedMs(o)) / 3600000 }))
+ .sort((a, b) => a.hours - b.hours);
+
+ return buckets.map((bucket) => {
+ const rows = aged.filter((x) => x.hours >= bucket.min && x.hours < bucket.max);
+ if (!rows.length) return '';
+ return `
+ <tr>
+ <td colspan="7" style="background:rgba(212,175,55,0.07); color:var(--gold-light); font-size:0.68rem; letter-spacing:0.10em; text-transform:uppercase; padding:0.5rem 0.6rem; border-bottom:1px solid rgba(212,175,55,0.2);">
+ ${bucket.label} &middot; ${rows.length} checkout(s)
+ </td>
+ </tr>
+ ${rows.map(({ o }) => {
+ const id = o.orderId || o.id || '';
+ const sid = safeId(id);
+ const cust = o.customer || {};
+ const name = o.customerName || cust.name || 'Guest';
+ const phone = String(o.customerPhone || cust.phone || '').replace(/[^0-9]/g, '');
+ const email = o.userEmail || cust.email || '';
+ const items = Array.isArray(o.items) ? o.items : [];
+ const value = Number(o.verifiedTotal || o.total || 0);
+ const started = draftStartedMs(o) ? new Date(draftStartedMs(o)).toLocaleString('en-IN') : 'unknown';
+ const status = String(o.recoveryStatus || '').toUpperCase();
+ const statusPill = status === 'RECOVERED' ? '#10B981' : status === 'CONTACTED' ? '#FCD34D' : status === 'LOST' ? '#FCA5A5' : '#9AA39D';
+ const statusLabel = status === 'RECOVERED' ? 'Recovered' : status === 'CONTACTED' ? 'Contacted' : status === 'LOST' ? 'Lost' : 'Not contacted';
+ const recoveryCode = o.recoveryCode || '';
+ return `
+ <tr>
+ <td><strong style="color:var(--gold-light);">${esc(name)}</strong><br><span style="font-size:0.7rem; color:var(--text-muted);">#${esc(id)}</span></td>
+ <td style="font-size:0.78rem;">
+ ${phone ? `<a href="https://wa.me/${esc(phone.length === 10 ? '91' + phone : phone)}" target="_blank" rel="noopener" style="color:#25D366;">WhatsApp</a> · ${esc(phone)}` : '<span style="color:var(--text-muted);">no phone</span>'}<br>
+ <span style="color:var(--text-muted); font-size:0.72rem;">${esc(email || 'no email')}</span>
+ </td>
+ <td style="font-size:0.76rem; color:var(--text-muted);">${items.length ? esc(items.map(i => `${i.name || i.id} (${i.size || 50}ml)`).join(', ')).slice(0, 90) : '&mdash;'}</td>
+ <td style="color:var(--gold-primary); font-weight:600;">₹${value.toLocaleString('en-IN')}</td>
+ <td style="font-size:0.72rem; color:var(--text-muted);">${esc(started)}</td>
+ <td>
+ <span class="glass-pill" style="font-size:0.66rem; color:${statusPill}; border-color:${statusPill};">${statusLabel}</span>
+ ${o.recoveryNote ? `<div style="font-size:0.68rem; color:var(--text-muted); margin-top:4px; max-width:220px;">${esc(o.recoveryNote)}</div>` : ''}
+ ${recoveryCode ? `<div style="font-size:0.66rem; margin-top:4px; color:var(--gold-light); font-family:monospace;">${esc(recoveryCode)}</div>` : ''}
+ </td>
+ <td>
+ <div style="display:flex; gap:4px; flex-wrap:wrap;">
+ <button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px;" onclick="app.markCheckoutRecovery('${sid}', 'CONTACTED')">Contacted</button>
+ <button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px; color:#6EE7B7; border-color:#10B981;" onclick="app.markCheckoutRecovery('${sid}', 'RECOVERED')">Recovered</button>
+ <button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px; color:#FCA5A5; border-color:rgba(239,68,68,0.4);" onclick="app.markCheckoutRecovery('${sid}', 'LOST')">Lost</button>
+ <button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px;" onclick="app.addRecoveryNote('${sid}')">Note</button>
+ ${recoveryCode
+ ? `<button class="btn btn-glass" style="font-size:0.62rem; padding:2px 6px; color:var(--gold-light);" onclick="navigator.clipboard.writeText('${safeId(recoveryCode)}'); app.showToast('Recovery code copied');">Copy code</button>`
+ : `<button class="btn btn-gold" style="font-size:0.62rem; padding:2px 6px;" onclick="app.issueRecoveryCode('${sid}')">Issue Rs500 code</button>`}
+ </div>
+ </td>
+ </tr>`;
+ }).join('')}
+ `;
+ }).join('');
+ })()}
+ </tbody>
+ </table>
+ </div>
+ `}
+ </div>
+ ` : ''}
+
+ <!-- ====================================================================
+ MODULE C: FRAGRANCE VAULT & PRODUCT MANAGER
+ ==================================================================== -->
+ ${activeTab === 'vault' ? `
+ <div class="sovereign-tab-content">
+ <div class="liquid-glass-card" style="padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+ <div>
+ <h3 class="font-title" style="color: var(--gold-light); margin: 0 0 0.3rem;">Fragrance Vault Inventory</h3>
+ <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Adjust bottle pricing, stock counts, batch codes, and formula notes in real-time.</p>
+ </div>
+ <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+ <button class="btn btn-glass" onclick="app.seedCatalogToFirestore()">
+ ↻ Sync Local Catalog to Firestore
+ </button>
+ <button class="btn btn-gold" onclick="app.openProductEditorModal()">
+ + Inscribe New Fragrance Extrait
+ </button>
+ </div>
+ </div>
+
+ <!-- Products Table -->
+ <div class="liquid-glass-card" style="padding: 0; overflow-x: auto;">
+ <table class="sovereign-table">
+ <thead>
+ <tr>
+ <th>Flacon</th>
+ <th>Name & Concentration</th>
+ <th>Category</th>
+ <th style="min-width: 310px;">Variant Pricing & SKUs (100ml • 50ml)</th>
+ <th>Status</th>
+ <th>Batch / Maceration</th>
+ <th>Actions</th>
+ </tr>
+ </thead>
+ <tbody>
+ ${productsList.map(prod => {
+ const catalogMatch = (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []).find(c => c.id === prod.id || c.slug === prod.id || c.sku === prod.sku);
+ const cleanName = (prod.name || catalogMatch?.name || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+ const isCoffret = prod.id === 'mytholis-discovery-set' || prod.id === 'sixth-sense' || (prod.collection && prod.collection.toLowerCase().includes('sixth sense')) || (cleanName.toLowerCase().includes('sixth sense'));
+ const officialSku = prod.sku || catalogMatch?.sku || CANONICAL_SKU_MAP[prod.id] || (isCoffret ? 'MYTH-SET-6S-48' : 'MYTH-EDP-100');
+
+ // Resolve 100ml (default), 50ml, and 48ml variants
+ const v100 = prod.variants?.['100ml'] || catalogMatch?.variants?.['100ml'] || (Array.isArray(prod.sizes) ? prod.sizes.find(s => s.ml === 100) : null) || {
+ sku: prod.sku || `MYTH-EDP-${prod.id.slice(0, 2).toUpperCase()}-100`,
+ salePrice: Number(prod.pricing?.salePrice ?? prod.salePrice ?? prod.price ?? 5999),
+ mrp: Number(prod.pricing?.mrp ?? prod.compareAtPrice ?? prod.mrp ?? 7499),
+ stock: prod.inventory?.stock ?? prod.stock ?? 50
+ };
+ const v50 = prod.variants?.['50ml'] || catalogMatch?.variants?.['50ml'] || (Array.isArray(prod.sizes) ? prod.sizes.find(s => s.ml === 50) : null) || {
+ sku: `MYTH-EDP-${prod.id.slice(0, 2).toUpperCase()}-50`,
+ salePrice: Math.round(Number(v100.salePrice || 5999) * 0.58),
+ mrp: Math.round(Number(v100.mrp || 7499) * 0.58),
+ stock: 50
+ };
+ const v48 = prod.variants?.['48ml'] || catalogMatch?.variants?.['48ml'] || (Array.isArray(prod.sizes) ? prod.sizes.find(s => s.ml === 48) : null) || {
+ sku: 'MYTH-SET-6S-48',
+ salePrice: Number(prod.pricing?.salePrice ?? prod.salePrice ?? prod.price ?? 3999),
+ mrp: Number(prod.pricing?.mrp ?? prod.compareAtPrice ?? prod.mrp ?? 4999),
+ stock: prod.inventory?.stock ?? prod.stock ?? 50
+ };
+
+ const media = prod.media || catalogMatch?.media || CANONICAL_MEDIA_MAP[prod.id] || {};
+ const bottleImg = media.bottleImage || prod.image || (isCoffret ? 'assets/product/sixthsense.webp' : (CANONICAL_MEDIA_MAP[prod.id]?.bottleImage || 'assets/product/1kingscar.webp'));
+
+ return `
+ <tr>
+ <td>
+ <img src="${bottleImg}" class="sovereign-table-img" alt="${cleanName.replace(/"/g, '&quot;')}" onerror="this.src='${isCoffret ? 'assets/product/sixthsense.webp' : 'assets/product/1kingscar.webp'}'" />
+ </td>
+ <td>
+ <strong style="color: var(--gold-light); font-size: 0.95rem;">${isCoffret ? 'Sixth Sense' : cleanName}</strong>
+ <div style="font-size: 0.72rem; color: var(--gold-primary); margin-top: 0.15rem;">
+ ${isCoffret ? 'Extrait de Parfum (6 × 8ml Deluxe Vials • 40% Concentration)' : (prod.concentration || 'Extrait de Parfum (40% Concentration)')}
+ </div>
+ <span class="glass-pill" style="font-size: 0.68rem; margin-top: 0.3rem; display: inline-block; color: var(--gold-light); border-color: rgba(212, 175, 55, 0.4); background: rgba(212, 175, 55, 0.08);">
+ ${isCoffret ? '6 × 8ml Coffret (48ml)' : '100ml • 50ml'}
+ </span>
+ </td>
+ <td>
+ <span class="glass-pill" style="font-size: 0.7rem; color: var(--text-muted);">${prod.category || prod.collection || prod.subtitle || 'Signature'}</span>
+ </td>
+ <td>
+ ${isCoffret ? `
+ <div style="background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 6px; padding: 0.45rem 0.75rem; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;">
+ <div style="display: flex; align-items: center; gap: 0.4rem;">
+ <span class="glass-pill" style="font-size: 0.68rem; font-weight: 700; color: #FFF1C5; background: rgba(212, 175, 55, 0.25); border-color: var(--gold-primary);">6 × 8ML</span>
+ <span style="font-family: monospace; font-size: 0.75rem; color: var(--gold-light); font-weight: 600;">${v48.sku}</span>
+ </div>
+ <div style="display: flex; align-items: center; gap: 0.5rem;">
+ <strong style="color: var(--gold-light); font-size: 0.85rem;">₹${Number(v48.salePrice).toLocaleString('en-IN')}</strong>
+ <span style="font-size: 0.7rem; color: var(--text-muted); text-decoration: line-through;">MRP ₹${Number(v48.mrp).toLocaleString('en-IN')}</span>
+ <span class="glass-pill" style="font-size: 0.65rem; color: ${Number(v48.stock) <= 5 ? '#EF4444' : 'var(--gold-primary)'};">Stock: ${v48.stock}</span>
+ </div>
+ </div>
+ ` : `
+ <div style="display: flex; flex-direction: column; gap: 0.35rem; min-width: 290px;">
+ <!-- Row 1: 100ML -->
+ <div style="background: rgba(212, 175, 55, 0.08); border: 1px solid rgba(212, 175, 55, 0.35); border-radius: 6px; padding: 0.35rem 0.6rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+ <div style="display: flex; align-items: center; gap: 0.4rem;">
+ <span class="glass-pill" style="font-size: 0.68rem; font-weight: 700; color: #FFF1C5; background: rgba(212, 175, 55, 0.18); border-color: rgba(212, 175, 55, 0.4);">100ML</span>
+ <span style="font-family: monospace; font-size: 0.72rem; color: var(--gold-light); font-weight: 600;">${v100.sku}</span>
+ </div>
+ <div style="display: flex; align-items: center; gap: 0.4rem;">
+ <strong style="color: var(--gold-light); font-size: 0.82rem;">₹${Number(v100.salePrice).toLocaleString('en-IN')}</strong>
+ <span style="font-size: 0.68rem; color: var(--text-muted); text-decoration: line-through;">MRP ₹${Number(v100.mrp).toLocaleString('en-IN')}</span>
+ <span class="glass-pill" style="font-size: 0.65rem; color: ${Number(v100.stock) <= 5 ? '#EF4444' : 'var(--gold-primary)'};">Stock: ${v100.stock}</span>
+ </div>
+ </div>
+ <!-- Row 2: 50ML -->
+ <div style="background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(212, 175, 55, 0.22); border-radius: 6px; padding: 0.35rem 0.6rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+ <div style="display: flex; align-items: center; gap: 0.4rem;">
+ <span class="glass-pill" style="font-size: 0.68rem; font-weight: 600; color: var(--text-muted); border-color: rgba(212, 175, 55, 0.25);">50ML</span>
+ <span style="font-family: monospace; font-size: 0.72rem; color: var(--text-muted);">${v50.sku}</span>
+ </div>
+ <div style="display: flex; align-items: center; gap: 0.4rem;">
+ <strong style="color: var(--gold-light); font-size: 0.82rem;">₹${Number(v50.salePrice).toLocaleString('en-IN')}</strong>
+ <span style="font-size: 0.68rem; color: var(--text-muted); text-decoration: line-through;">MRP ₹${Number(v50.mrp).toLocaleString('en-IN')}</span>
+ <span class="glass-pill" style="font-size: 0.65rem; color: ${Number(v50.stock) <= 5 ? '#EF4444' : 'var(--gold-primary)'};">Stock: ${v50.stock}</span>
+ </div>
+ </div>
+ </div>
+ `}
+ </td>
+ <td>
+ <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.6rem; border-color: ${prod.inStock !== false ? '#10B981' : '#EF4444'}; color: ${prod.inStock !== false ? '#6EE7B7' : '#FCA5A5'};" onclick="app.updateProductInline('${safeId(prod.id)}', 'inStock', ${prod.inStock === false ? 'true' : 'false'})">
+ ${prod.inStock !== false ? 'In Stock' : 'Hidden'}
+ </button>
+ </td>
+ <td>
+ <div style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace;">${prod.batchCode || 'MYTH-2026-X'}</div>
+ <div style="font-size: 0.7rem; color: var(--gold-primary);">${prod.macerationDate || 'Jan 2026'}</div>
+ </td>
+ <td>
+ <div style="display: flex; gap: 0.4rem;">
+ <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.6rem;" onclick="app.openProductEditorModal('${safeId(prod.id)}')">
+ Edit
+ </button>
+ <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.6rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.deleteAdminProduct('${safeId(prod.id)}')">
+ Delete
+ </button>
+ </div>
+ </td>
+ </tr>
+ `;
+ }).join('')}
+ </tbody>
+ </table>
+ </div>
+ </div>
+ ` : ''}
+
+ <!-- ====================================================================
+ MODULE D: POSTS, EDITORIAL & LORE MANAGER
+ ==================================================================== -->
+ ${activeTab === 'editorial' ? `
+ <div class="sovereign-tab-content">
+ <div class="liquid-glass-card" style="padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+ <div>
+ <h3 class="font-title" style="color: var(--gold-light); margin: 0 0 0.3rem;">Sanctuary Chronicles & Scent Lore</h3>
+ <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Inscribe olfactory stories, launch announcements, behind-the-alchemy lore, and press pieces.</p>
+ </div>
+ <button class="btn btn-gold" onclick="app.openPostEditorModal()">
+ + Inscribe New Lore / Post
+ </button>
+ </div>
+
+ <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+ ${postsList.length === 0 ? `
+ <div class="liquid-glass-card" style="grid-column: 1 / -1; padding: 3rem; text-align: center; color: var(--text-muted);">
+ <div style="font-size: 2rem; margin-bottom: 0.5rem;"></div>
+ <h3 class="font-title" style="color: var(--gold-light);">No Lore Inscribed Yet</h3>
+ <p style="font-size: 0.85rem;">Click the button above to publish your first olfactory chronicle or launch post!</p>
+ </div>
+ ` : postsList.map(post => `
+ <div class="liquid-glass-card" style="display: flex; flex-direction: column; overflow: hidden; padding: 0;">
+ ${post.coverImage ? `
+ <div style="height: 180px; overflow: hidden; position: relative;">
+ <img src="${safeHref(post.coverImage)}" style="width: 100%; height: 100%; object-fit: cover;" alt="${esc(post.title)}" />
+ <span class="glass-pill" style="position: absolute; top: 12px; left: 12px; font-size: 0.65rem; color: var(--gold-light); background: rgba(0, 0, 0, 0.7);">
+ ${esc(post.category || 'Olfactory Lore')}
+ </span>
+ </div>
+ ` : ''}
+ <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+ <div>
+ <h4 class="font-title" style="font-size: 1.2rem; color: var(--gold-light); margin: 0 0 0.4rem;">${esc(post.title)}</h4>
+ <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0 0 1rem;">
+ ${esc(post.subtitle || (post.body ? post.body.slice(0, 100) + '...' : ''))}
+ </p>
+ </div>
+ <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 1rem;">
+ <span class="sovereign-pill" style="background: ${post.isPublished ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; border: 1px solid ${post.isPublished ? '#10B981' : '#F59E0B'}; color: ${post.isPublished ? '#6EE7B7' : '#FCD34D'};">
+ ${post.isPublished ? 'Published Live' : 'Draft'}
+ </span>
+ <div style="display: flex; gap: 0.5rem;">
+ <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.65rem;" onclick="app.openPostEditorModal('${safeId(post.id)}')">
+ Edit
+ </button>
+ <button class="btn btn-glass" style="font-size: 0.72rem; padding: 0.35rem 0.65rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.deleteAdminPost('${safeId(post.id)}')">
+ Delete
+ </button>
+ </div>
+ </div>
+ </div>
+ </div>
+ `).join('')}
+ </div>
+ </div>
+ ` : ''}
+
+ <!-- ====================================================================
+ MODULE E: COLLECTORS, MYTHOS COINS & TIER LEVELS
+ ==================================================================== -->
+ ${activeTab === 'patrons' || activeTab === 'collectors' ? `
+ <div class="sovereign-tab-content">
+ <!-- Collector Intelligence KPI Strip -->
+ <div class="sovereign-kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 1.5rem;">
+ <div class="sovereign-kpi-card">
+ <div class="sovereign-kpi-header">
+ <span class="sovereign-kpi-title">Total Collectors & Customers</span>
+ <span class="sovereign-kpi-icon"></span>
+ </div>
+ <div class="sovereign-kpi-value gold-shimmer-text">${usersList.length}</div>
+ <div class="sovereign-kpi-hint">Registered Profiles + Order Collectors</div>
+ </div>
+ <div class="sovereign-kpi-card">
+ <div class="sovereign-kpi-header">
+ <span class="sovereign-kpi-title">Verified Contact Phones</span>
+ <span class="sovereign-kpi-icon"></span>
+ </div>
+ <div class="sovereign-kpi-value" style="color: #25D366;">${usersList.filter(u => Boolean(u.phone || u.profile?.phone)).length}</div>
+ <div class="sovereign-kpi-hint">Direct WhatsApp Reachable</div>
+ </div>
+ <div class="sovereign-kpi-card">
+ <div class="sovereign-kpi-header">
+ <span class="sovereign-kpi-title">Delivery Coordinates Saved</span>
+ <span class="sovereign-kpi-icon"></span>
+ </div>
+ <div class="sovereign-kpi-value" style="color: var(--gold-light);">${usersList.filter(u => Boolean(u.fullAddress || u.address || u.profile?.address)).length}</div>
+ <div class="sovereign-kpi-hint">Full Shipping Address on File</div>
+ </div>
+ <div class="sovereign-kpi-card">
+ <div class="sovereign-kpi-header">
+ <span class="sovereign-kpi-title">Collector Lifetime Spend (LTV)</span>
+ <span class="sovereign-kpi-icon"></span>
+ </div>
+ <div class="sovereign-kpi-value gold-shimmer-text">₹${Math.round(usersList.reduce((s, u) => s + Number(u.lifetimeSpend || 0), 0)).toLocaleString('en-IN')}</div>
+ <div class="sovereign-kpi-hint">Total Gross Collector Commerce</div>
+ </div>
+ </div>
+
+ <!-- Filter & Search Bar -->
+ <div class="sovereign-filter-bar" style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+ <input type="text" id="admin-patron-search" class="sovereign-search-input" style="flex: 2; min-width: 260px;" placeholder="Search collectors by Name, Email, Phone / WhatsApp, Address, City, State, or UID..." oninput="app.filterAdminPatrons()" />
+ <select id="admin-patron-filter-type" class="sovereign-select" onchange="app.filterAdminPatrons()" style="flex: 1; min-width: 170px;">
+ <option value="ALL">Filter: All Collectors (${usersList.length})</option>
+ <option value="HAS_PHONE">Has Phone / WhatsApp</option>
+ <option value="HAS_ADDRESS">Has Delivery Address</option>
+ <option value="HAS_ORDERS">Has Placed Orders</option>
+ <option value="ADMINS">Admins Only</option>
+ </select>
+ <button class="btn btn-gold" onclick="app.handleBatchDeduplicateUsers()" title="Permanently merge duplicate collector accounts sharing the same phone or email">
+ ⚡ Auto-Deduplicate Registry
+ </button>
+ <button class="btn btn-glass" onclick="app.refreshAdminDashboard()">
+ ↻ Synchronize Collectors
+ </button>
+ </div>
+
+ <!-- Collectors Table -->
+ <div class="liquid-glass-card" style="padding: 0; overflow-x: auto;">
+ <table class="sovereign-table">
+ <thead>
+ <tr>
+ <th style="min-width: 180px;">Collector & Identity</th>
+ <th style="min-width: 190px;">Contact & WhatsApp</th>
+ <th style="min-width: 250px;">Shipping & Delivery Address</th>
+ <th style="min-width: 130px;">Orders & LTV</th>
+ <th style="min-width: 130px;">Standing & Tier</th>
+ <th style="min-width: 120px;">Mythos Balance</th>
+ <th style="min-width: 200px;">Actions</th>
+ </tr>
+ </thead>
+ <tbody id="admin-patrons-table-body">
+ ${usersList.length === 0 ? `
+ <tr>
+ <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+ No collector profiles registered in Firestore yet.
+ </td>
+ </tr>
+ ` : usersList.map(u => {
+ const prof = u.profile || {};
+ const loyalty = u.loyalty || {};
+ const name = prof.name || u.name || 'Collector';
+ const email = prof.email || u.email || 'N/A';
+ const rawPhone = prof.phone || u.phone || '';
+ const cleanPhone = (rawPhone || '').replace(/[^0-9]/g, '');
+ const p10 = u.phoneCanonical || (cleanPhone.length >= 10 ? cleanPhone.slice(-10) : '');
+ const displayPhone = p10 && p10.length === 10 ? `+91 ${p10}` : (rawPhone || '');
+ const initial = name.charAt(0).toUpperCase();
+ const isAdmin = u.role === 'admin' || u.isAdmin === true || prof.role === 'admin' || prof.isAdmin === true;
+ let spendable = Number(loyalty.spendable_mythos || 0);
+ const bottles = Number(loyalty.full_bottles_purchased || u.fullFlaconsOrdered || 0);
+ let legacy = Number(loyalty.legacy_mythos || spendable || 0);
+ const ordersCount = Number(u.ordersCount !== undefined ? u.ordersCount : (Array.isArray(u.orders) ? u.orders.length : 0));
+ // Self-heal initiate if 0 points and 0 orders
+ if (spendable === 0 && legacy === 0 && ordersCount === 0) {
+ spendable = 200;
+ legacy = 200;
+ }
+ const lifetimeSpend = Number(u.lifetimeSpend || 0);
+ const lastOrder = u.lastOrder || (Array.isArray(u.orders) && u.orders[0]) || null;
+ const lastOrderId = lastOrder ? (lastOrder.orderId || lastOrder.id || '') : '';
+
+ const rawAddr = u.fullAddress || prof.fullAddress || u.address || prof.address || '';
+ const city = u.city || prof.city || '';
+ const state = u.state || prof.state || '';
+ const pincode = u.pincode || prof.pincode || '';
+ const hasAddr = Boolean(rawAddr || city || state || pincode);
+ const cityStatePin = [city, state, pincode ? `(${pincode})` : ''].filter(Boolean).join(', ');
+ const copyAddrText = [name, displayPhone, rawAddr, city, state, pincode].filter(Boolean).join(', ').replace(/'/g, "\\'");
+
+ // Dynamically resolve tier from manual_tier_override or milestones
+ const tiers = (typeof store !== 'undefined' && store.LOYALTY_TIERS) || (typeof window !== 'undefined' && window.LOYALTY_TIERS) || [];
+ let tierObj = null;
+ if (loyalty.manual_tier_override) {
+ tierObj = tiers.find(t => t.level === Number(loyalty.manual_tier_override));
+ }
+ if (!tierObj) {
+ for (let i = tiers.length - 1; i >= 0; i--) {
+ const t = tiers[i];
+ if (legacy >= t.minLegacy && bottles >= t.minBottles) {
+ tierObj = t;
+ break;
+ }
+ }
+ }
+ if (!tierObj && tiers.length > 0) tierObj = tiers[0];
+ const currentTierName = (tierObj ? `Level ${tierObj.level}: ${tierObj.name}` : null) || prof.tier || 'Level 1: The Observer';
+ const currentTierLevel = tierObj ? tierObj.level : 1;
+ const patronOrderIds = encodeURIComponent(JSON.stringify((u.orders || []).map(o => o.orderId || o.id).filter(Boolean)));
+
+ return `
+ <tr class="admin-patron-row" 
+ data-name="${name.toLowerCase()}" 
+ data-email="${email.toLowerCase()}" 
+ data-phone="${cleanPhone}" 
+ data-address="${rawAddr.toLowerCase()}" 
+ data-city="${city.toLowerCase()}" 
+ data-state="${state.toLowerCase()}" 
+ data-pincode="${pincode}" 
+ data-uid="${u.uid || ''}"
+ data-hasphone="${Boolean(cleanPhone)}"
+ data-hasaddress="${hasAddr}"
+ data-hasorders="${ordersCount > 0}"
+ data-isadmin="${isAdmin}">
+ <td>
+ <div style="display: flex; align-items: center; gap: 0.75rem;">
+ <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(212, 175, 55, 0.15); border: 1px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--gold-light); font-size: 0.95rem;">
+ ${initial}
+ </div>
+ <div>
+ <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+ <strong style="color: var(--gold-light); font-size: 0.92rem;">${name}</strong>
+ ${isAdmin ? '<span class="sovereign-pill" style="font-size: 0.65rem; padding: 1px 5px; background: rgba(212, 175, 55, 0.2); border: 1px solid var(--gold-primary); color: var(--gold-light);"> Admin</span>' : ''}
+ ${u.isGuestOrder ? '<span class="glass-pill" style="font-size: 0.65rem; color: #6EE7B7; padding: 1px 5px;">Consignment</span>' : ''}
+ </div>
+ <div style="font-size: 0.7rem; color: var(--text-muted); font-family: monospace; display: flex; align-items: center; gap: 4px; margin-top: 2px;">
+ <span>UID: ${u.uid ? u.uid.slice(0, 10) + '...' : 'Guest'}</span>
+ ${u.uid ? `<button type="button" class="btn btn-glass" style="font-size: 0.6rem; padding: 0 4px; line-height: 1.2;" onclick="navigator.clipboard.writeText('${safeId(u.uid)}'); app.showToast('Copied UID');" title="Copy UID"></button>` : ''}
+ </div>
+ </div>
+ </div>
+ </td>
+ <td>
+ <div style="margin-bottom: 0.2rem;">
+ ${displayPhone ? `
+ <strong style="color: var(--text-main); font-size: 0.85rem; letter-spacing: 0.02em;">${displayPhone}</strong>
+ <div style="display: flex; gap: 0.4rem; margin-top: 0.3rem; flex-wrap: wrap;">
+ <a href="https://wa.me/91${cleanPhone}?text=${encodeURIComponent(`Hello ${name}, greetings from Sanctuary of Mytholis!`)}" target="_blank" class="sovereign-pill" style="background: rgba(37, 211, 102, 0.15); border: 1px solid rgba(37, 211, 102, 0.4); color: #25D366; text-decoration: none; display: inline-flex; align-items: center; gap: 3px; font-size: 0.72rem; padding: 2px 7px;">
+ <span></span> WhatsApp
+ </a>
+ <a href="tel:+91${cleanPhone}" class="sovereign-pill" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 3px; font-size: 0.72rem; padding: 2px 6px;">
+ <span></span> Call
+ </a>
+ </div>
+ ` : `
+ <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">No Phone Provided</span>
+ `}
+ </div>
+ <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+ ${email && email !== 'N/A' ? `<a href="mailto:${email}" style="color: var(--text-muted); text-decoration: none;">${email}</a>` : 'No Email'}
+ </div>
+ </td>
+ <td>
+ ${hasAddr ? `
+ <div style="font-size: 0.8rem; line-height: 1.4; color: var(--text-main); max-width: 280px; word-break: break-word;">
+ ${rawAddr}
+ </div>
+ ${cityStatePin ? `
+ <div style="font-size: 0.73rem; color: var(--gold-light); margin-top: 0.25rem; display: flex; align-items: center; gap: 4px;">
+ <span></span> ${cityStatePin}
+ </div>
+ ` : ''}
+ <button type="button" class="btn btn-glass" style="font-size: 0.65rem; padding: 1px 6px; margin-top: 0.35rem; display: inline-flex; align-items: center; gap: 3px;" onclick="navigator.clipboard.writeText('${safeId(copyAddrText)}'); app.showToast('Copied full shipping address');">
+ Copy Address
+ </button>
+ ` : `
+ <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">No shipping address on file</span>
+ `}
+ </td>
+ <td>
+ <div style="font-weight: 700; color: var(--gold-light); font-size: 0.92rem;">
+ ₹${lifetimeSpend.toLocaleString('en-IN')}
+ </div>
+ <div style="font-size: 0.75rem; color: var(--text-main); margin-top: 2px;">
+ ${ordersCount} ${ordersCount === 1 ? 'order' : 'orders'}
+ </div>
+ ${lastOrderId ? `
+ <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">
+ Last: #${lastOrderId}
+ </div>
+ ` : ''}
+ </td>
+ <td>
+ <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-light);">${currentTierName}</span>
+ <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem;">
+ <strong style="color: var(--text-main);">${bottles}</strong> flacons
+ </div>
+ </td>
+ <td>
+ <strong class="gold-shimmer-text" style="font-size: 0.95rem;">${spendable.toLocaleString()} M</strong>
+ <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">${loyalty.legacy_mythos || spendable} Legacy M</div>
+ </td>
+ <td>
+ <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+ <button class="btn btn-gold" style="font-size: 0.7rem; padding: 0.25rem 0.55rem;" onclick="app.openPatronDossier('${safeId(u.uid)}')" title="View Full Collector Coordinates & Consignment Ledger">
+ Dossier
+ </button>
+ <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem;" onclick="app.openAdjustMythosModal('${safeId(u.uid)}', '${safeId(name)}', ${spendable})">
+ &plusmn; Adjust M
+ </button>
+ <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem;" onclick="app.openOverrideTierModal('${safeId(u.uid)}', '${safeId(name)}', ${bottles}, ${currentTierLevel})">
+ Tier
+ </button>
+ ${!u.isGuestOrder ? `
+ <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem; border-color: ${isAdmin ? 'rgba(239, 68, 68, 0.4)' : 'rgba(212, 175, 55, 0.4)'};" onclick="app.togglePatronAdmin('${safeId(u.uid)}', ${!isAdmin})">
+ ${isAdmin ? 'Demote' : 'Admin'}
+ </button>
+ ` : ''}
+ <button class="btn btn-glass" style="font-size: 0.7rem; padding: 0.25rem 0.55rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.handleAdminDeleteUser('${safeId(u.uid)}', '${safeId(name)}', '${safeId(email)}', '${safeId(cleanPhone)}', '${safeId(patronOrderIds)}')" title="Permanently delete user and order records from database">
+ Delete
+ </button>
+ </div>
+ </td>
+ </tr>
+ `;
+ }).join('')}
+ </tbody>
+ </table>
+ </div>
+ </div>
+ ` : ''}
+
+ <!-- ====================================================================
+ MODULE F: ECONOMY, LEVELS & CHECKOUT SETTINGS
+ ==================================================================== -->
+ ${activeTab === 'economy' ? `
+ <div class="sovereign-tab-content">
+ <div class="liquid-glass-card" style="padding: 1.5rem; margin-bottom: 2rem;">
+ <h3 class="font-title" style="color: var(--gold-light); margin: 0 0 0.3rem;">Sanctuary Economy & Checkout Settings</h3>
+ <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Configure loyalty cashback rates, coin redemptions, Cash on Delivery boundaries, and discount promo keys.</p>
+ </div>
+
+ <form onsubmit="app.saveGlobalSettings(event)">
+ <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+ <!-- Mythos Coin Economy -->
+ <div class="liquid-glass-card" style="padding: 1.5rem;">
+ <h4 class="font-title" style="color: var(--gold-light); margin-bottom: 1.2rem; font-size: 1.1rem; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 0.6rem;">
+ Mythos Coin Economy
+ </h4>
+ <div style="display: flex; flex-direction: column; gap: 1rem;">
+ <div>
+ <label class="sovereign-field-label">Cashback Earn Rate (% Return on Paid Orders)</label>
+ <input type="number" id="setting-mythos-earn" class="sovereign-form-input" value="${globalSettings.mythosEarnPct !== undefined ? globalSettings.mythosEarnPct : 3}" min="1" max="25" required />
+ <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Default 3% base return for Level 1 collectors.</div>
+ </div>
+
+ <div>
+ <label class="sovereign-field-label">Coin Redemption Ratio (₹ Concession per 1 Mythos)</label>
+ <input type="number" id="setting-redemption-ratio" class="sovereign-form-input" value="${globalSettings.redemptionRatio !== undefined ? globalSettings.redemptionRatio : 1}" min="0.1" step="0.1" required />
+ <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">1 Mythos = ₹1 concession credit.</div>
+ </div>
+
+ <div>
+ <label class="sovereign-field-label">Max Cart Redemption Allowance (%)</label>
+ <input type="number" id="setting-max-redemption-pct" class="sovereign-form-input" value="${globalSettings.maxMythosRedemptionPct !== undefined ? globalSettings.maxMythosRedemptionPct : 30}" min="1" max="100" required />
+ <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Max percentage of cart subtotal payable via Mythos coins (Default: 30%).</div>
+ </div>
+
+ <div>
+ <label class="sovereign-field-label">New Collector Registration Bonus (M Coins)</label>
+ <input type="number" id="setting-signup-bonus" class="sovereign-form-input" value="${globalSettings.signupBonusMythos !== undefined ? globalSettings.signupBonusMythos : 200}" min="0" required />
+ </div>
+ </div>
+ </div>
+
+ <!-- COD & Shipping Rules -->
+ <div class="liquid-glass-card" style="padding: 1.5rem;">
+ <h4 class="font-title" style="color: var(--gold-light); margin-bottom: 1.2rem; font-size: 1.1rem; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 0.6rem;">
+ COD & Shipping Governance
+ </h4>
+ <div style="display: flex; flex-direction: column; gap: 1rem;">
+ <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.8rem; background: rgba(0, 0, 0, 0.4); border-radius: 8px;">
+ <div>
+ <strong style="color: var(--gold-light); font-size: 0.88rem;">Enable Cash on Delivery (COD)</strong>
+ <div style="font-size: 0.72rem; color: var(--text-muted);">Allow collectors to pay upon flacon delivery.</div>
+ </div>
+ <input type="checkbox" id="setting-cod-enabled" style="width: 20px; height: 20px; accent-color: var(--gold-primary);" ${globalSettings.codEnabled !== false ? 'checked' : ''} />
+ </div>
+
+ <div>
+ <label class="sovereign-field-label">COD Convenience Fee (₹)</label>
+ <input type="number" id="setting-cod-fee" class="sovereign-form-input" value="${globalSettings.codFee || 0}" min="0" />
+ </div>
+
+ <div>
+ <label class="sovereign-field-label">Max Order Value Allowed for COD (₹)</label>
+ <input type="number" id="setting-max-cod-amount" class="sovereign-form-input" value="${globalSettings.maxCodAmount || 15000}" min="1000" />
+ <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Orders above this limit mandate prepaid clearance.</div>
+ </div>
+
+ <div>
+ <label class="sovereign-field-label">Complimentary Shipping Threshold (₹)</label>
+ <input type="number" id="setting-free-ship-threshold" class="sovereign-form-input" value="${globalSettings.freeShippingThreshold || 3000}" min="0" />
+ </div>
+
+ <div>
+ <label class="sovereign-field-label">Standard Shipping Fee (₹)</label>
+ <input type="number" id="setting-standard-ship-fee" class="sovereign-form-input" value="${globalSettings.standardShippingFee !== undefined ? globalSettings.standardShippingFee : 150}" min="0" />
+ </div>
+ </div>
+ </div>
+
+ <!-- Razorpay Standard & UPI Payment Gateway Configuration -->
+ ${(() => {
+ const activeKey = (globalSettings.razorpayKeyId || '').trim() || (typeof import.meta !== 'undefined' && import.meta.env?.VITE_RAZORPAY_KEY_ID) || '';
+ return `
+ <div class="liquid-glass-card" style="padding: 1.5rem; grid-column: 1 / -1;">
+ <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem;">
+ <h4 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+ <span></span> Razorpay Instant &amp; UPI Payment Gateway
+ </h4>
+ <div>
+ ${activeKey ? `
+ <span class="glass-pill" style="font-size: 0.72rem; color: #10B981; border-color: #10B981; background: rgba(16, 185, 129, 0.1);">
+ ● Razorpay Active (${activeKey.startsWith('rzp_live') ? 'Production Live' : 'Test Mode'})
+ </span>
+ ` : `
+ <span class="glass-pill" style="font-size: 0.72rem; color: #F59E0B; border-color: #F59E0B; background: rgba(245, 158, 11, 0.1);">
+ ⚠ Razorpay Key Pending
+ </span>
+ `}
+ </div>
+ </div>
+
+ <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem;">
+ <div>
+ <label class="sovereign-field-label">Razorpay Key ID (Client-Facing)</label>
+ <input type="text" id="setting-razorpay-key-id" class="sovereign-form-input" style="font-family: monospace;" placeholder="rzp_test_... or rzp_live_..." value="${activeKey}" />
+ <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
+ Public Key ID from Razorpay Dashboard &gt; Settings &gt; API Keys.
+ </div>
+ </div>
+
+ <div>
+ <label class="sovereign-field-label">Razorpay Key Secret (Server-Only)</label>
+ <div style="padding: 0.65rem 0.85rem; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 8px; font-size: 0.8rem; color: var(--gold-light); font-family: monospace;">
+ Protected: RAZORPAY_KEY_SECRET in server environment
+ </div>
+ <div style="font-size: 0.72rem; color: #10B981; margin-top: 0.35rem;">
+ Key Secret is strictly isolated in server runtime environment (never stored in client Firestore).
+ </div>
+ </div>
+ </div>
+
+ <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: rgba(212, 175, 55, 0.05); border: 1px dashed rgba(212, 175, 55, 0.2); border-radius: 6px; font-size: 0.75rem; color: var(--text-muted); line-height: 1.5;">
+ <strong>Razorpay Standard Checkout:</strong> Provides a 256-bit SSL encrypted popup supporting UPI (GPay, PhonePe, Paytm, QR scan), Credit &amp; Debit Cards, NetBanking across all Indian banks, and Wallets.
+ </div>
+ </div>
+ `;
+ })()}
+
+ <!-- Marketing, Ad Tracking & Concierge Communications -->
+ <div class="liquid-glass-card" style="padding: 1.5rem; grid-column: 1 / -1; margin-top: 1rem;">
+ <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 0.6rem;">
+ <h4 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+ <span></span> Ad Attribution, Pixel &amp; Concierge Contacts
+ </h4>
+ <span class="glass-pill" style="font-size: 0.72rem; color: var(--gold-light);">Dynamic Global Configuration</span>
+ </div>
+
+ <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem;">
+ <div>
+ <label class="sovereign-field-label">Meta Pixel ID (Facebook / Instagram Ads)</label>
+ <input type="text" id="setting-meta-pixel-id" class="sovereign-form-input" style="font-family: monospace;" placeholder="e.g. 123456789012345" value="${globalSettings.metaPixelId || ''}" />
+ <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
+ Automatically fires PageView, AddToCart, InitiateCheckout &amp; Purchase events.
+ </div>
+ </div>
+
+ <div>
+ <label class="sovereign-field-label">Concierge WhatsApp Number</label>
+ <input type="text" id="setting-support-phone" class="sovereign-form-input" style="font-family: monospace;" placeholder="+91 777000 9170" value="${globalSettings.supportPhone || '+91 777000 9170'}" />
+ <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
+ Updates all WhatsApp Concierge direct links across the storefront and orders.
+ </div>
+ </div>
+
+ <div>
+ <label class="sovereign-field-label">Concierge Support Email</label>
+ <input type="email" id="setting-support-email" class="sovereign-form-input" placeholder="concierge@mytholis.com" value="${globalSettings.supportEmail || 'concierge@mytholis.com'}" />
+ <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
+ Displayed in customer policy, metrology, and dispatch communications.
+ </div>
+ </div>
+
+ <div>
+ <label class="sovereign-field-label">Additional Sovereign Admin Emails</label>
+ <input type="text" id="setting-admin-emails" class="sovereign-form-input" placeholder="founder@mytholis.com, partner@mytholis.com" value="${Array.isArray(globalSettings.adminEmails) ? globalSettings.adminEmails.join(', ') : (globalSettings.adminEmails || '')}" />
+ <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
+ Comma-separated list of emails authorized to access Sovereign Command.
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Promo Codes & Vault Keys Manager -->
+ <div class="liquid-glass-card" style="padding: 1.5rem; margin-bottom: 2rem;">
+ <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 0.8rem;">
+ <div>
+ <h4 class="font-title" style="color: var(--gold-light); margin: 0 0 0.2rem; font-size: 1.1rem;">
+ Promo Codes & Vault Keys
+ </h4>
+ <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">Active discount voucher keys accepted across checkout.</p>
+ </div>
+ <button type="button" class="btn btn-gold" style="font-size: 0.75rem; padding: 0.4rem 0.9rem;" onclick="app.openAddPromoModal()">
+ + Add Promo Key
+ </button>
+ </div>
+
+ <div class="sovereign-table-wrap">
+ <table class="sovereign-table">
+ <thead>
+ <tr>
+ <th>Code</th>
+ <th>Type</th>
+ <th>Discount Value</th>
+ <th>Min. Order</th>
+ <th>Status</th>
+ <th>Action</th>
+ </tr>
+ </thead>
+ <tbody>
+ ${Array.isArray(globalSettings.promoCodes) && globalSettings.promoCodes.length > 0 ? globalSettings.promoCodes.map((pc, idx) => `
+ <tr>
+ <td><strong style="color: var(--gold-primary); font-family: monospace; font-size: 0.95rem;">${esc(pc.code)}</strong></td>
+ <td><span class="glass-pill" style="font-size: 0.7rem;">${pc.discountType === 'percent' ? 'Percentage %' : 'Flat ₹'}</span></td>
+ <td><strong style="color: var(--gold-light);">${pc.discountType === 'percent' ? `${esc(pc.value)}%` : `₹${esc(pc.value)}`}</strong></td>
+ <td>₹${esc(pc.minOrder || 0)}</td>
+ <td>
+ <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.6rem; border-color: ${pc.active !== false ? '#10B981' : '#EF4444'}; color: ${pc.active !== false ? '#6EE7B7' : '#FCA5A5'};" onclick="app.togglePromoCode('${safeId(pc.code)}')">
+ ${pc.active !== false ? 'Active' : 'Paused'}
+ </button>
+ </td>
+ <td>
+ <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.6rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.deletePromoCode('${safeId(pc.code)}')">
+ Delete
+ </button>
+ </td>
+ </tr>
+ `).join('') : `
+ <tr>
+ <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+ No custom promo keys configured. Click "+ Add Promo Key" above!
+ </td>
+ </tr>
+ `}
+ </tbody>
+ </table>
+ </div>
+ </div>
+
+ <div style="text-align: right;">
+ <button type="submit" class="btn btn-gold" style="padding: 0.9rem 2.5rem; font-size: 0.95rem;">
+ Save Global Economy Configuration
+ </button>
+ </div>
+ </form>
+ </div>
+ ` : ''}
+
+ <!-- Active Admin Modals Container -->
+ <div id="sovereign-modal-container"></div>
+ </div>
+ `;
+ },
+
+ /* Product Modal (Create / Edit) */
+ renderProductModal(prod = null) {
+ const isEdit = Boolean(prod && (prod.id || prod.slug || prod.sku));
+ const cleanId = prod ? String(prod.slug || prod.id || '').trim().toLowerCase() : '';
+ const catalogMatch = cleanId 
+ ? (typeof MYTHOLIS_CATALOG !== 'undefined' ? MYTHOLIS_CATALOG : []).find(c => 
+ String(c.id).toLowerCase() === cleanId || 
+ String(c.slug).toLowerCase() === cleanId || 
+ (prod.sku && String(c.sku).toUpperCase() === String(prod.sku).toUpperCase())
+ ) 
+ : null;
+
+ const canonicalMedia = (cleanId && CANONICAL_MEDIA_MAP[cleanId]) || 
+ (catalogMatch?.id && CANONICAL_MEDIA_MAP[catalogMatch.id]) || 
+ null;
+ const canonicalSku = (cleanId && CANONICAL_SKU_MAP[cleanId]) || 
+ (catalogMatch?.id && CANONICAL_SKU_MAP[catalogMatch.id]) || 
+ '';
+
+ const isCoffret = cleanId === 'mytholis-discovery-set' || 
+ cleanId === 'sixth-sense' || 
+ (prod && (prod.collection?.toLowerCase().includes('sixth sense') || 
+ prod.name?.toLowerCase().includes('sixth sense') || 
+ cleanId.includes('coffret') || 
+ cleanId.includes('discovery')));
+
+ const cleanName = (prod?.name || catalogMatch?.name || (isCoffret ? 'Sixth Sense' : (isEdit ? cleanId : '')))
+ .replace(/<[^>]*>/g, '')
+ .replace(/Extrait\s*de\s*Parfum/gi, '')
+ .trim();
+
+ const officialSku = prod?.sku || canonicalSku || catalogMatch?.sku || '';
+ const tagline = prod?.tagline || prod?.subtitle || catalogMatch?.tagline || catalogMatch?.subtitle || '';
+ const category = prod?.category || prod?.collection || catalogMatch?.category || catalogMatch?.collection || (isCoffret ? 'Discovery Wardrobe · Unisex' : 'Woody · Men');
+
+ // Resolve 100ml (default), 50ml, and 48ml variants
+ const v100Data = prod?.variants?.['100ml'] || 
+ catalogMatch?.variants?.['100ml'] || 
+ (Array.isArray(prod?.sizes) ? prod.sizes.find(s => s.ml === 100) : null) || 
+ (Array.isArray(catalogMatch?.sizes) ? catalogMatch.sizes.find(s => s.ml === 100) : null);
+
+ const v50Data = prod?.variants?.['50ml'] || 
+ catalogMatch?.variants?.['50ml'] || 
+ (Array.isArray(prod?.sizes) ? prod.sizes.find(s => s.ml === 50) : null) || 
+ (Array.isArray(catalogMatch?.sizes) ? catalogMatch.sizes.find(s => s.ml === 50) : null);
+
+ const v48Data = prod?.variants?.['48ml'] || 
+ catalogMatch?.variants?.['48ml'] || 
+ (Array.isArray(prod?.sizes) ? prod.sizes.find(s => s.ml === 48) : null) || 
+ (Array.isArray(catalogMatch?.sizes) ? catalogMatch.sizes.find(s => s.ml === 48) : null);
+
+ const shortCode = cleanId === 'king-scar' ? 'KS' :
+ cleanId === 'petralux' ? 'PX' :
+ cleanId === 'oud-rion' ? 'OR' :
+ cleanId === 'spark' ? 'SP' :
+ cleanId === 'wood-sera' ? 'WS' :
+ cleanId === 'ash' ? 'AS' : 'FL';
+
+ const sku100 = v100Data?.sku || prod?.sku || `MYTH-EDP-${shortCode}-100`;
+ const price100 = Number(v100Data?.salePrice ?? v100Data?.price ?? prod?.pricing?.salePrice ?? prod?.price ?? (catalogMatch?.pricing?.salePrice ?? catalogMatch?.price ?? 5999));
+ const mrp100 = Number(v100Data?.mrp ?? prod?.pricing?.mrp ?? prod?.compareAtPrice ?? (catalogMatch?.pricing?.mrp ?? catalogMatch?.compareAtPrice ?? 7499));
+ const stock100 = Number(v100Data?.stock ?? prod?.inventory?.stock ?? prod?.stock ?? 50);
+
+ const sku50 = v50Data?.sku || `MYTH-EDP-${shortCode}-50`;
+ const price50 = Number(v50Data?.salePrice ?? v50Data?.price ?? (catalogMatch?.variants?.['50ml']?.salePrice ?? Math.round(price100 * 0.58)));
+ const mrp50 = Number(v50Data?.mrp ?? (catalogMatch?.variants?.['50ml']?.mrp ?? Math.round(mrp100 * 0.58)));
+ const stock50 = Number(v50Data?.stock ?? 50);
+
+ const sku48 = v48Data?.sku || prod?.sku || 'MYTH-SET-6S-48';
+ const price48 = Number(v48Data?.salePrice ?? v48Data?.price ?? prod?.pricing?.salePrice ?? prod?.price ?? 3999);
+ const mrp48 = Number(v48Data?.mrp ?? prod?.pricing?.mrp ?? prod?.compareAtPrice ?? 4999);
+ const stock48 = Number(v48Data?.stock ?? prod?.inventory?.stock ?? prod?.stock ?? 50);
+
+ const concentration = prod?.concentration || catalogMatch?.concentration || (isCoffret ? 'Extrait de Parfum (6 × 8ml Deluxe Vials • 40% Concentration)' : 'Extrait de Parfum (40% Concentration)');
+ const batchCode = prod?.batchCode || catalogMatch?.batchCode || 'MYTH-2026-X01';
+ const macerationDate = prod?.macerationDate || catalogMatch?.macerationDate || 'March 2026';
+
+ // Primary Assets
+ const bottleImage = prod?.media?.bottleImage || 
+ prod?.bottleImage || 
+ prod?.image || 
+ canonicalMedia?.bottleImage || 
+ catalogMatch?.media?.bottleImage || 
+ (isEdit ? '' : 'assets/product/1kingscar.webp');
+
+ const cardImage = prod?.media?.cardImage || 
+ prod?.cardImage || 
+ canonicalMedia?.cardImage || 
+ catalogMatch?.media?.cardImage || 
+ (isEdit ? '' : 'assets/product/1kingscarbox.webp');
+
+ const backgroundImage = prod?.media?.backgroundImage || 
+ prod?.backgroundImage || 
+ canonicalMedia?.backgroundImage || 
+ catalogMatch?.media?.backgroundImage || 
+ (isEdit ? '' : 'assets/hero/kingscarbg.webp');
+
+ // Storefront Multi-Photo Carousel Gallery (up to 10 photos)
+ const rawGallery = prod?.media?.gallery || 
+ prod?.gallery || 
+ canonicalMedia?.gallery || 
+ catalogMatch?.media?.gallery || 
+ [];
+ const galleryList = (Array.isArray(rawGallery) && rawGallery.length > 0)
+ ? rawGallery.filter(Boolean).slice(0, 10)
+ : (isEdit 
+ ? [bottleImage, cardImage].filter(Boolean) 
+ : ['assets/product/1kingscar.webp']);
+
+ // Olfactory Notes & Pyramids
+ const topNotes = Array.isArray(prod?.olfactory?.top) 
+ ? prod.olfactory.top.join(', ')
+ : (Array.isArray(prod?.notes?.top) 
+ ? prod.notes.top.join(', ')
+ : (prod?.notesTop || catalogMatch?.notesTop || (Array.isArray(catalogMatch?.olfactory?.top) ? catalogMatch.olfactory.top.join(', ') : '') || (isEdit ? '' : 'Bergamot, Pink Pepper')));
+
+ const heartNotes = Array.isArray(prod?.olfactory?.heart) 
+ ? prod.olfactory.heart.join(', ')
+ : (Array.isArray(prod?.notes?.heart) 
+ ? prod.notes.heart.join(', ')
+ : (prod?.notesHeart || catalogMatch?.notesHeart || (Array.isArray(catalogMatch?.olfactory?.heart) ? catalogMatch.olfactory.heart.join(', ') : '') || (isEdit ? '' : 'Lavender, Rose')));
+
+ const baseNotes = Array.isArray(prod?.olfactory?.base) 
+ ? prod.olfactory.base.join(', ')
+ : (Array.isArray(prod?.notes?.base) 
+ ? prod.notes.base.join(', ')
+ : (prod?.notesBase || catalogMatch?.notesBase || (Array.isArray(catalogMatch?.olfactory?.base) ? catalogMatch.olfactory.base.join(', ') : '') || (isEdit ? '' : 'Vetiver, Amber, Musk')));
+
+ const accords = Array.isArray(prod?.olfactory?.accords) 
+ ? prod.olfactory.accords.join(', ')
+ : (Array.isArray(prod?.accords) 
+ ? prod.accords.join(', ')
+ : (prod?.accords || catalogMatch?.accords || (Array.isArray(catalogMatch?.olfactory?.accords) ? catalogMatch.olfactory.accords.join(', ') : '') || (isEdit ? '' : 'Aromatic, Spicy, Woody')));
+
+ const description = prod?.description || catalogMatch?.description || '';
+
+ return `
+ <div class="sovereign-modal-backdrop" onclick="if(event.target === this) app.closeAdminModal()">
+ <div class="sovereign-modal-box">
+ <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.8rem;">
+ <h3 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.3rem;">
+ ${isEdit ? `EDIT FRAGRANCE EXTRAIT — ${cleanName.toUpperCase()}` : 'INSCRIBE NEW FRAGRANCE EXTRAIT'}
+ </h3>
+ <button type="button" class="icon-btn" onclick="app.closeAdminModal()" style="font-size: 1.2rem; color: var(--gold-light);">✕</button>
+ </div>
+
+ <form onsubmit="app.saveAdminProduct(event, '${isEdit ? cleanId : ''}')">
+ <div class="sovereign-form-grid">
+ <div>
+ <label class="sovereign-field-label">Flacon Slug / ID</label>
+ <input type="text" id="prod-id" class="sovereign-form-input" value="${safeId(cleanId)}" ${isEdit ? 'readonly style="opacity: 0.7; cursor: not-allowed; background: rgba(255,255,255,0.05);"' : 'required'} placeholder="e.g. oud-rion" />
+ </div>
+ <div>
+ <label class="sovereign-field-label">Extrait Name</label>
+ <input type="text" id="prod-name" class="sovereign-form-input" value="${cleanName}" required placeholder="e.g. Oud Rion Extrait de Parfum" />
+ </div>
+ <div>
+ <label class="sovereign-field-label">Tagline / Subtitle</label>
+ <input type="text" id="prod-tagline" class="sovereign-form-input" value="${tagline}" placeholder="A commanding presence..." />
+ </div>
+ <div>
+ <label class="sovereign-field-label">Collection / Category</label>
+ <input type="text" id="prod-collection" class="sovereign-form-input" value="${category}" placeholder="e.g. Woody · Men" />
+ </div>
+ <div>
+ <label class="sovereign-field-label">Concentration</label>
+ <input type="text" id="prod-concentration" class="sovereign-form-input" value="${concentration}" placeholder="Extrait de Parfum (40% Concentration)" />
+ </div>
+ <div>
+ <label class="sovereign-field-label">Batch Code</label>
+ <input type="text" id="prod-batch" class="sovereign-form-input" value="${batchCode}" placeholder="MYTH-2026-X01" />
+ </div>
+ <div>
+ <label class="sovereign-field-label">Maceration Date</label>
+ <input type="text" id="prod-maceration" class="sovereign-form-input" value="${macerationDate}" placeholder="March 2026" />
+ </div>
+ <div>
+ <label class="sovereign-field-label">Primary Bottle Image URL</label>
+ <input type="text" id="prod-bottle-image" class="sovereign-form-input" value="${bottleImage}" oninput="document.getElementById('prod-image').value = this.value; if(window.app) app.adminUpdateMediaThumb('prod-bottle-preview', this.value);" required placeholder="assets/product/..." />
+ <input type="hidden" id="prod-image" value="${bottleImage}" />
+ </div>
+ <div>
+ <label class="sovereign-field-label">Packaging / Box Image URL</label>
+ <input type="text" id="prod-card-image" class="sovereign-form-input" value="${cardImage}" oninput="if(window.app) app.adminUpdateMediaThumb('prod-card-preview', this.value);" placeholder="assets/product/...box.webp" />
+ </div>
+ <div>
+ <label class="sovereign-field-label">Atmosphere / Background URL</label>
+ <input type="text" id="prod-bg-image" class="sovereign-form-input" value="${backgroundImage}" oninput="if(window.app) app.adminUpdateMediaThumb('prod-bg-preview', this.value);" placeholder="assets/hero/...bg.webp" />
+ </div>
+ </div>
+
+ <!-- FLACON EDITIONS & VOLUME PRICING (100ML • 50ML) -->
+ ${isCoffret ? `
+ <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.45); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.35);">
+ <div style="font-size: 0.78rem; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 0.8rem;">
+ ✦ Sixth Sense Discovery Coffret Edition (6 × 8ml = 48ml)
+ </div>
+ <div class="sovereign-form-grid" style="margin-bottom: 0;">
+ <div>
+ <label class="sovereign-field-label">Official SKU Code</label>
+ <input type="text" id="prod-sku-48" class="sovereign-form-input" value="${sku48}" placeholder="MYTH-SET-6S-48" required />
+ </div>
+ <div>
+ <label class="sovereign-field-label">Sale Price (₹)</label>
+ <input type="number" id="prod-price-48" class="sovereign-form-input" value="${price48}" min="0" required />
+ </div>
+ <div>
+ <label class="sovereign-field-label">Compare At / MRP (₹)</label>
+ <input type="number" id="prod-mrp-48" class="sovereign-form-input" value="${mrp48}" min="0" required />
+ </div>
+ <div>
+ <label class="sovereign-field-label">Stock Quantity</label>
+ <input type="number" id="prod-stock-48" class="sovereign-form-input" value="${stock48}" min="0" required />
+ </div>
+ </div>
+ </div>
+ ` : `
+ <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.45); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.35);">
+ <div style="font-size: 0.78rem; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 0.8rem; display: flex; align-items: center; justify-content: space-between;">
+ <span>✦ Flacon Editions & Volume Pricing (100ml • 50ml)</span>
+ <span class="glass-pill" style="font-size: 0.68rem; color: var(--gold-light); border-color: var(--gold-primary);">Authoritative Vault Variants</span>
+ </div>
+ <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+ <!-- Left Column: 100ml Grand Flacon -->
+ <div style="background: rgba(212, 175, 55, 0.08); padding: 1rem; border-radius: 6px; border: 1px solid rgba(212, 175, 55, 0.4);">
+ <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+ <strong style="color: var(--gold-light); font-size: 0.85rem;">100ml Grand Flacon</strong>
+ <span class="glass-pill" style="font-size: 0.65rem; background: rgba(212, 175, 55, 0.18); color: #FFF1C5; border-color: rgba(212, 175, 55, 0.4);">100ML</span>
+ </div>
+ <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+ <div>
+ <label class="sovereign-field-label">100ml SKU Code</label>
+ <input type="text" id="prod-sku-100" class="sovereign-form-input" value="${sku100}" placeholder="e.g. MYTH-EDP-KS-100" required />
+ </div>
+ <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+ <div>
+ <label class="sovereign-field-label">Sale Price (₹)</label>
+ <input type="number" id="prod-price-100" class="sovereign-form-input" value="${price100}" min="0" required />
+ </div>
+ <div>
+ <label class="sovereign-field-label">MRP (₹)</label>
+ <input type="number" id="prod-mrp-100" class="sovereign-form-input" value="${mrp100}" min="0" required />
+ </div>
+ </div>
+ <div>
+ <label class="sovereign-field-label">100ml Stock Quantity</label>
+ <input type="number" id="prod-stock-100" class="sovereign-form-input" value="${stock100}" min="0" required />
+ </div>
+ </div>
+ </div>
+
+ <!-- Right Column: 50ml Signature Flacon -->
+ <div style="background: rgba(0, 0, 0, 0.35); padding: 1rem; border-radius: 6px; border: 1px solid rgba(212, 175, 55, 0.25);">
+ <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+ <strong style="color: var(--gold-light); font-size: 0.85rem;">50ml Signature Flacon</strong>
+ <span class="glass-pill" style="font-size: 0.65rem; color: var(--text-muted);">SECONDARY</span>
+ </div>
+ <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+ <div>
+ <label class="sovereign-field-label">50ml SKU Code</label>
+ <input type="text" id="prod-sku-50" class="sovereign-form-input" value="${sku50}" placeholder="e.g. MYTH-EDP-KS-50" required />
+ </div>
+ <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+ <div>
+ <label class="sovereign-field-label">Sale Price (₹)</label>
+ <input type="number" id="prod-price-50" class="sovereign-form-input" value="${price50}" min="0" required />
+ </div>
+ <div>
+ <label class="sovereign-field-label">MRP (₹)</label>
+ <input type="number" id="prod-mrp-50" class="sovereign-form-input" value="${mrp50}" min="0" required />
+ </div>
+ </div>
+ <div>
+ <label class="sovereign-field-label">50ml Stock Quantity</label>
+ <input type="number" id="prod-stock-50" class="sovereign-form-input" value="${stock50}" min="0" required />
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ `}
+
+ <!-- Product Media Pipeline & 10-Photo Gallery Manager -->
+ <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.45); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);">
+ <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
+ <div style="font-size: 0.78rem; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">
+ Product Media Pipeline (Up to 10 Gallery Photos)
+ </div>
+ <div style="display: flex; gap: 0.5rem; align-items: center;">
+ <button type="button" class="btn btn-glass" style="padding: 0.35rem 0.8rem; font-size: 0.72rem; color: var(--gold-light);" onclick="app.adminAutoMapMedia('${safeId(cleanId)}')" title="Auto-Map Canonical Local Assets for this SKU">
+ ⚡ Auto-Map SKU Assets
+ </button>
+ <span class="glass-pill" id="admin-gallery-badge" style="font-size: 0.68rem; color: var(--gold-light);">${galleryList.length}/10 Photos</span>
+ </div>
+ </div>
+
+ <!-- Live Preview Row for Primary Assets -->
+ <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.2rem; background: rgba(212, 175, 55, 0.05); padding: 0.8rem; border-radius: 6px; border: 1px dashed rgba(212, 175, 55, 0.25); flex-wrap: wrap;">
+ <div style="display: flex; align-items: center; gap: 0.5rem;">
+ <img id="prod-bottle-preview" src="${bottleImage || 'assets/product/1kingscar.webp'}" style="width: 44px; height: 44px; object-fit: contain; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.4); background: #041812;" onerror="this.src='assets/product/1kingscar.webp'" />
+ <div>
+ <div style="font-size: 0.72rem; color: var(--gold-light); font-weight: 600;">Bottle</div>
+ <div style="font-size: 0.65rem; color: var(--text-muted);">Transparent Flacon</div>
+ </div>
+ </div>
+ <div style="display: flex; align-items: center; gap: 0.5rem;">
+ <img id="prod-card-preview" src="${cardImage || 'assets/product/1kingscarbox.webp'}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.4); background: #041812;" onerror="this.src='assets/product/1kingscarbox.webp'" />
+ <div>
+ <div style="font-size: 0.72rem; color: var(--gold-light); font-weight: 600;">Box / Packaging</div>
+ <div style="font-size: 0.65rem; color: var(--text-muted);">Sovereign Coffret</div>
+ </div>
+ </div>
+ <div style="display: flex; align-items: center; gap: 0.5rem;">
+ <img id="prod-bg-preview" src="${backgroundImage || 'assets/hero/kingscarbg.webp'}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.4); background: #041812;" onerror="this.src='assets/hero/kingscarbg.webp'" />
+ <div>
+ <div style="font-size: 0.72rem; color: var(--gold-light); font-weight: 600;">Atmosphere</div>
+ <div style="font-size: 0.65rem; color: var(--text-muted);">Hero Environment</div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Ordered Storefront Gallery List (Up to 10 Photos) -->
+ <div style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
+ <span>Storefront Multi-Photo Carousel Order</span>
+ <button type="button" class="btn btn-gold" id="admin-add-photo-btn" style="padding: 0.25rem 0.7rem; font-size: 0.7rem;" onclick="app.adminAddGallerySlot()" ${galleryList.length >= 10 ? 'disabled' : ''}>
+ + Add Photo Slot (<span id="admin-add-slot-count">${galleryList.length}</span>/10)
+ </button>
+ </div>
+
+ <div id="admin-gallery-slots" style="display: flex; flex-direction: column; gap: 0.6rem;">
+ ${galleryList.map((imgUrl, idx) => `
+ <div class="admin-gallery-row" data-idx="${idx}" style="display: flex; align-items: center; gap: 0.6rem; background: rgba(0, 0, 0, 0.35); padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid rgba(212, 175, 55, 0.2);">
+ <span class="admin-slot-num" style="font-size: 0.75rem; color: var(--gold-light); font-weight: 700; width: 22px;">#${idx + 1}</span>
+ <img class="admin-slot-preview" src="${imgUrl}" style="width: 38px; height: 38px; object-fit: contain; border-radius: 4px; background: #041812; border: 1px solid rgba(212, 175, 55, 0.3);" onerror="this.src='assets/product/1kingscar.webp'" />
+ <input type="text" class="sovereign-form-input admin-gallery-input" style="flex: 1; padding: 0.4rem 0.7rem; font-size: 0.8rem;" value="${imgUrl}" oninput="if(window.app) app.adminPreviewGalleryRow(this)" placeholder="assets/product/..." required />
+ <button type="button" class="btn btn-glass" style="padding: 0.3rem 0.6rem; font-size: 0.7rem;" onclick="app.adminMoveGallerySlot(${idx}, -1)" title="Move Up" ${idx === 0 ? 'disabled' : ''}>↑</button>
+ <button type="button" class="btn btn-glass" style="padding: 0.3rem 0.6rem; font-size: 0.7rem;" onclick="app.adminMoveGallerySlot(${idx}, 1)" title="Move Down" ${idx === galleryList.length - 1 ? 'disabled' : ''}>↓</button>
+ <button type="button" class="btn btn-glass" style="padding: 0.3rem 0.6rem; font-size: 0.7rem; color: #FCA5A5; border-color: rgba(239, 68, 68, 0.4);" onclick="app.adminRemoveGallerySlot(${idx})" title="Remove Photo" ${galleryList.length <= 1 ? 'disabled' : ''}>✕</button>
+ </div>
+ `).join('')}
+ </div>
+ </div>
+
+ <!-- Notes & Accords -->
+ <div style="margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.4); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.2);">
+ <div style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; font-weight: 600;">Olfactory Pyramids & Accords</div>
+ <div class="sovereign-form-grid" style="margin-bottom: 0;">
+ <div>
+ <label class="sovereign-field-label">Top Notes (comma-separated)</label>
+ <input type="text" id="prod-notes-top" class="sovereign-form-input" value="${topNotes}" placeholder="Bergamot, Pink Pepper" />
+ </div>
+ <div>
+ <label class="sovereign-field-label">Heart Notes (comma-separated)</label>
+ <input type="text" id="prod-notes-heart" class="sovereign-form-input" value="${heartNotes}" placeholder="Lavender, Rose" />
+ </div>
+ <div>
+ <label class="sovereign-field-label">Base Notes (comma-separated)</label>
+ <input type="text" id="prod-notes-base" class="sovereign-form-input" value="${baseNotes}" placeholder="Vetiver, Amber, Musk" />
+ </div>
+ <div>
+ <label class="sovereign-field-label">Accords (comma-separated)</label>
+ <input type="text" id="prod-accords" class="sovereign-form-input" value="${accords}" placeholder="Aromatic, Spicy, Woody" />
+ </div>
+ </div>
+ </div>
+
+ <div style="margin-bottom: 1.5rem;">
+ <label class="sovereign-field-label">Poetic Lore / Description</label>
+ <textarea id="prod-description" class="sovereign-form-textarea" placeholder="Detailed description of the fragrance...">${description}</textarea>
+ </div>
+
+ <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">
+ <button type="button" class="btn btn-glass" onclick="app.closeAdminModal()">Cancel</button>
+ <button type="submit" class="btn btn-gold" style="padding: 0.7rem 2rem;">Save Extrait to Vault</button>
+ </div>
+ </form>
+ </div>
+ </div>
+ `;
+ },
+
+ /* Post/Lore Modal (Create / Edit) */
+ renderPostModal(post = null) {
+ const isEdit = Boolean(post && post.id);
+ const p = post || {
+ id: '',
+ title: '',
+ subtitle: '',
+ category: 'Olfactory Lore',
+ coverImage: 'assets/hero/kingscarbg.webp',
+ body: '',
+ linkedProductId: '',
+ isPublished: true
+ };
+
+ return `
+ <div class="sovereign-modal-backdrop" onclick="if(event.target === this) app.closeAdminModal()">
+ <div class="sovereign-modal-box">
+ <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.8rem;">
+ <h3 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.3rem;">
+ ${isEdit ? 'Edit Lore Entry' : 'Inscribe New Chronicle & Lore'}
+ </h3>
+ <button class="icon-btn" onclick="app.closeAdminModal()" style="font-size: 1.2rem; color: var(--gold-light);">✕</button>
+ </div>
+
+ <form onsubmit="app.saveAdminPost(event, '${isEdit ? p.id : ''}')">
+ <div class="sovereign-form-grid">
+ <div style="grid-column: 1 / -1;">
+ <label class="sovereign-field-label">Post Title</label>
+ <input type="text" id="post-title" class="sovereign-form-input" value="${p.title}" required placeholder="The Alchemy of King Scar..." />
+ </div>
+ <div style="grid-column: 1 / -1;">
+ <label class="sovereign-field-label">Subtitle / Excerpt</label>
+ <input type="text" id="post-subtitle" class="sovereign-form-input" value="${p.subtitle || ''}" placeholder="A reflection on maceration in Mayfair..." />
+ </div>
+ <div>
+ <label class="sovereign-field-label">Category</label>
+ <select id="post-category" class="sovereign-select" style="width: 100%;">
+ <option value="Olfactory Lore" ${p.category === 'Olfactory Lore' ? 'selected' : ''}>Olfactory Lore</option>
+ <option value="New Drop" ${p.category === 'New Drop' ? 'selected' : ''}>New Drop</option>
+ <option value="Behind the Alchemy" ${p.category === 'Behind the Alchemy' ? 'selected' : ''}>Behind the Alchemy</option>
+ <option value="Press & Society" ${p.category === 'Press & Society' ? 'selected' : ''}>Press & Society</option>
+ </select>
+ </div>
+ <div>
+ <label class="sovereign-field-label">Linked Extrait Flacon (Optional)</label>
+ <select id="post-linked-product" class="sovereign-select" style="width: 100%;">
+ <option value="">None</option>
+ <option value="king-scar" ${p.linkedProductId === 'king-scar' ? 'selected' : ''}>King Scar</option>
+ <option value="petralux" ${p.linkedProductId === 'petralux' ? 'selected' : ''}>Petralux</option>
+ <option value="oud-rion" ${p.linkedProductId === 'oud-rion' ? 'selected' : ''}>Oud Rion</option>
+ <option value="spark" ${p.linkedProductId === 'spark' ? 'selected' : ''}>Spark</option>
+ <option value="wood-sera" ${p.linkedProductId === 'wood-sera' ? 'selected' : ''}>Wood Sera</option>
+ <option value="ash" ${p.linkedProductId === 'ash' ? 'selected' : ''}>Ash</option>
+ </select>
+ </div>
+ <div style="grid-column: 1 / -1;">
+ <label class="sovereign-field-label">Cover Artwork / Image URL</label>
+ <input type="text" id="post-cover" class="sovereign-form-input" value="${p.coverImage || ''}" placeholder="assets/hero/kingscarbg.webp" />
+ </div>
+ </div>
+
+ <div style="margin-bottom: 1.5rem;">
+ <label class="sovereign-field-label">Chronicle Body Content</label>
+ <textarea id="post-body" class="sovereign-form-textarea" style="min-height: 180px;" required placeholder="Write the story, formula notes, or announcement here...">${p.body || ''}</textarea>
+ </div>
+
+ <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; background: rgba(0, 0, 0, 0.4); padding: 0.8rem 1rem; border-radius: 8px;">
+ <div>
+ <strong style="color: var(--gold-light); font-size: 0.85rem;">Publish Live to Storefront</strong>
+ <div style="font-size: 0.72rem; color: var(--text-muted);">When active, collectors will discover this entry in Sanctuary Lore.</div>
+ </div>
+ <input type="checkbox" id="post-published" style="width: 20px; height: 20px; accent-color: var(--gold-primary);" ${p.isPublished !== false ? 'checked' : ''} />
+ </div>
+
+ <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">
+ <button type="button" class="btn btn-glass" onclick="app.closeAdminModal()">Cancel</button>
+ <button type="submit" class="btn btn-gold" style="padding: 0.7rem 2rem;">Inscribe Lore Entry</button>
+ </div>
+ </form>
+ </div>
+ </div>
+ `;
+ },
+
+ /* Adjust Mythos Modal */
+ renderAdjustMythosModal(uid, patronName, currentBalance) {
+ return `
+ <div class="sovereign-modal-backdrop" onclick="if(event.target === this) app.closeAdminModal()">
+ <div class="sovereign-modal-box" style="max-width: 520px;">
+ <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.8rem;">
+ <h3 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.2rem;">
+ Adjust Mythos Coins: ${patronName}
+ </h3>
+ <button class="icon-btn" onclick="app.closeAdminModal()" style="font-size: 1.2rem; color: var(--gold-light);">✕</button>
+ </div>
+
+ <div style="background: rgba(212, 175, 55, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1.2rem; border: 1px solid rgba(212, 175, 55, 0.25);">
+ <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Current Balance</div>
+ <div class="gold-shimmer-text" style="font-size: 1.8rem; font-family: var(--font-serif-title);">${currentBalance.toLocaleString()} M</div>
+ <div style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace;">Collector UID: ${uid}</div>
+ </div>
+
+ <form onsubmit="app.submitAdjustMythos(event, '${uid}')">
+ <input type="hidden" id="adjust-mythos-uid" value="${uid}" />
+ <div style="margin-bottom: 1rem;">
+ <label class="sovereign-field-label">Coin Adjustment (+ to Grant, - to Deduct)</label>
+ <input type="number" id="adjust-mythos-delta" class="sovereign-form-input" placeholder="e.g. +500 or -200" required />
+ </div>
+
+ <div style="margin-bottom: 1.5rem;">
+ <label class="sovereign-field-label">Audit Reason / Justification</label>
+ <input type="text" id="adjust-mythos-reason" class="sovereign-form-input" placeholder="e.g. VIP Concierge Courtesy, Sixth Sense credit" required />
+ </div>
+
+ <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">
+ <button type="button" class="btn btn-glass" onclick="app.closeAdminModal()">Cancel</button>
+ <button type="submit" class="btn btn-gold" style="padding: 0.7rem 1.8rem;">Confirm Adjustment</button>
+ </div>
+ </form>
+ </div>
+ </div>
+ `;
+ },
+
+ /* Override Tier Modal */
+ renderOverrideTierModal(uid, patronName, currentBottles = 0, currentLevel = 1) {
+ const tierLevel = Number(currentLevel) || 1;
+ return `
+ <div class="sovereign-modal-backdrop" onclick="if(event.target === this) app.closeAdminModal()">
+ <div class="sovereign-modal-box" style="max-width: 520px;">
+ <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.8rem;">
+ <h3 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.2rem;">
+ Override Standing: ${patronName}
+ </h3>
+ <button class="icon-btn" onclick="app.closeAdminModal()" style="font-size: 1.2rem; color: var(--gold-light);">✕</button>
+ </div>
+
+ <form onsubmit="app.submitOverrideTier(event, '${uid}')">
+ <input type="hidden" id="override-tier-uid" value="${uid}" />
+ <div style="margin-bottom: 1rem;">
+ <label class="sovereign-field-label">Full Flacons Owned Count</label>
+ <input type="number" id="override-bottles-input" class="sovereign-form-input" value="${currentBottles}" min="0" required />
+ </div>
+
+ <div style="margin-bottom: 1.5rem;">
+ <label class="sovereign-field-label">Promote to Circle of Legends Standing Tier</label>
+ <select id="override-tier-select" class="sovereign-select" style="width: 100%;">
+ <option value="1" ${tierLevel === 1 ? 'selected' : ''}>Level 1: The Observer (Initiate)</option>
+ <option value="2" ${tierLevel === 2 ? 'selected' : ''}>Level 2: The Curator (1+ Bottles, 2x Return)</option>
+ <option value="3" ${tierLevel === 3 ? 'selected' : ''}>Level 3: The Collector (3+ Bottles, 3x Return)</option>
+ <option value="4" ${tierLevel === 4 ? 'selected' : ''}>Level 4: The Archivist (6+ Bottles, 4x Return)</option>
+ <option value="5" ${tierLevel === 5 ? 'selected' : ''}>Level 5: The Sovereign (12+ Bottles, 5x Return)</option>
+ </select>
+ </div>
+
+ <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">
+ <button type="button" class="btn btn-glass" onclick="app.closeAdminModal()">Cancel</button>
+ <button type="button" class="btn btn-gold" style="padding: 0.7rem 1.8rem;" onclick="app.submitOverrideTier(event, '${uid}')">Apply Override</button>
+ </div>
+ </form>
+ </div>
+ </div>
+ `;
+ },
+
+ /* Add Promo Key Modal */
+ renderAddPromoModal() {
+ return `
+ <div class="sovereign-modal-backdrop" onclick="if(event.target === this) app.closeAdminModal()">
+ <div class="sovereign-modal-box" style="max-width: 520px;">
+ <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.8rem;">
+ <h3 class="font-title" style="color: var(--gold-light); margin: 0; font-size: 1.2rem;">
+ Mint New Promo Code / Vault Key
+ </h3>
+ <button class="icon-btn" onclick="app.closeAdminModal()" style="font-size: 1.2rem; color: var(--gold-light);">✕</button>
+ </div>
+
+ <form onsubmit="app.submitAddPromoCode(event)">
+ <div style="margin-bottom: 1rem;">
+ <label class="sovereign-field-label">Promo Code Key</label>
+ <input type="text" id="new-promo-code" class="sovereign-form-input" style="text-transform: uppercase;" placeholder="e.g. MAYFAIR20" required />
+ </div>
+
+ <div class="sovereign-form-grid" style="margin-bottom: 1rem;">
+ <div>
+ <label class="sovereign-field-label">Discount Type</label>
+ <select id="new-promo-type" class="sovereign-select" style="width: 100%;">
+ <option value="percent">Percentage (%)</option>
+ <option value="flat">Flat Concession (₹)</option>
+ </select>
+ </div>
+ <div>
+ <label class="sovereign-field-label">Discount Value</label>
+ <input type="number" id="new-promo-value" class="sovereign-form-input" placeholder="e.g. 15 or 500" required />
+ </div>
+ </div>
+
+ <div style="margin-bottom: 1.5rem;">
+ <label class="sovereign-field-label">Minimum Order Requirement (₹)</label>
+ <input type="number" id="new-promo-minorder" class="sovereign-form-input" placeholder="e.g. 1999" value="0" min="0" />
+ </div>
+
+ <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">
+ <button type="button" class="btn btn-glass" onclick="app.closeAdminModal()">Cancel</button>
+ <button type="submit" class="btn btn-gold" style="padding: 0.7rem 1.8rem;">Mint & Activate Key</button>
+ </div>
+ </form>
+ </div>
+ </div>
+ `;
+ },
+
+ /* ==========================================================================
+ COLLECTOR DOSSIER MODAL: COMPLETE COORDINATES, PHONE & CONSIGNMENT LEDGER
+ ========================================================================== */
+ renderPatronDossierModal(patron) {
+ const prof = patron.profile || {};
+ const loyalty = patron.loyalty || {};
+ const name = prof.name || patron.name || 'Collector';
+ const email = prof.email || patron.email || 'N/A';
+ const rawPhone = prof.phone || patron.phone || '';
+ const cleanPhone = (rawPhone || '').replace(/[^0-9]/g, '');
+ const p10 = patron.phoneCanonical || (cleanPhone.length >= 10 ? cleanPhone.slice(-10) : '');
+ const displayPhone = p10 && p10.length === 10 ? `+91 ${p10}` : (rawPhone || 'Not Provided');
+ const initial = name.charAt(0).toUpperCase();
+ const isAdmin = patron.role === 'admin' || patron.isAdmin === true || prof.role === 'admin' || prof.isAdmin === true;
+ let spendable = Number(loyalty.spendable_mythos || 0);
+ const bottles = Number(loyalty.full_bottles_purchased || patron.fullFlaconsOrdered || 0);
+ let legacy = Number(loyalty.legacy_mythos || spendable || 0);
+ const orders = Array.isArray(patron.orders) ? patron.orders : [];
+ // Self-heal initiate if 0 points and 0 orders
+ if (spendable === 0 && legacy === 0 && orders.length === 0) {
+ spendable = 200;
+ legacy = 200;
+ }
+ const lifetimeSpend = Number(patron.lifetimeSpend || 0);
+ const address = patron.fullAddress || prof.fullAddress || patron.address || prof.address || '';
+ const city = patron.city || prof.city || '';
+ const state = patron.state || prof.state || '';
+ const pincode = patron.pincode || prof.pincode || '';
+ const addressCopyText = [name, displayPhone, address, city, state, pincode].filter(Boolean).join('\n');
+ const dossierOrderIds = encodeURIComponent(JSON.stringify((orders || []).map(o => o.orderId || o.id).filter(Boolean)));
+
+ const tiers = (typeof store !== 'undefined' && store.LOYALTY_TIERS) || (typeof window !== 'undefined' && window.LOYALTY_TIERS) || [];
+ let tierObj = null;
+ if (loyalty.manual_tier_override) {
+ tierObj = tiers.find(t => t.level === Number(loyalty.manual_tier_override));
+ }
+ if (!tierObj) {
+ for (let i = tiers.length - 1; i >= 0; i--) {
+ const t = tiers[i];
+ if (legacy >= t.minLegacy && bottles >= t.minBottles) {
+ tierObj = t;
+ break;
+ }
+ }
+ }
+ if (!tierObj && tiers.length > 0) tierObj = tiers[0];
+ const currentTierName = (tierObj ? `Level ${tierObj.level}: ${tierObj.name}` : null) || prof.tier || 'Level 1: The Observer';
+ const currentTierLevel = tierObj ? tierObj.level : 1;
+
+ return `
+ <div class="sovereign-modal-backdrop" onclick="if(event.target === this) app.closeAdminModal()">
+ <div class="sovereign-modal-box" style="max-width: 820px; max-height: 90vh; overflow-y: auto;">
+ <!-- Header -->
+ <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.8rem;">
+ <div style="display: flex; align-items: center; gap: 1rem;">
+ <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(212, 175, 55, 0.15); border: 2px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.4rem; color: var(--gold-light);">
+ ${initial}
+ </div>
+ <div>
+ <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+ <h3 class="font-title gold-shimmer-text" style="margin: 0; font-size: 1.35rem;">${name}</h3>
+ <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-light);">${currentTierName}</span>
+ ${isAdmin ? '<span class="sovereign-pill" style="background: rgba(212, 175, 55, 0.2); border: 1px solid var(--gold-primary); color: var(--gold-light); font-size: 0.7rem;"> Admin</span>' : ''}
+ ${patron.isGuestOrder ? '<span class="glass-pill" style="font-size: 0.68rem; color: #6EE7B7;">Consignment Customer</span>' : ''}
+ </div>
+ <div style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace; margin-top: 0.2rem; display: flex; align-items: center; gap: 6px;">
+ <span>Collector UID: ${patron.uid || 'N/A'}</span>
+ ${patron.uid ? `<button type="button" class="btn btn-glass" style="font-size: 0.65rem; padding: 1px 5px;" onclick="navigator.clipboard.writeText('${safeId(patron.uid)}'); app.showToast('Copied UID');"> Copy</button>` : ''}
+ </div>
+ </div>
+ </div>
+ <button class="icon-btn" onclick="app.closeAdminModal()" style="font-size: 1.3rem; color: var(--gold-light);">✕</button>
+ </div>
+
+ <!-- Quick Action Contact Bar -->
+ <div style="display: flex; gap: 0.6rem; margin-bottom: 1.5rem; flex-wrap: wrap; background: rgba(0, 0, 0, 0.35); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.15); align-items: center;">
+ ${cleanPhone ? `
+ <a href="https://wa.me/91${cleanPhone}?text=${encodeURIComponent(`Hello ${name}, greetings from Sanctuary of Mytholis!`)}" target="_blank" class="btn btn-glass" style="background: rgba(37, 211, 102, 0.15); border-color: rgba(37, 211, 102, 0.5); color: #25D366; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+ <span></span> Chat on WhatsApp (${displayPhone})
+ </a>
+ <a href="tel:+91${cleanPhone}" class="btn btn-glass" style="font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+ <span></span> Direct Call
+ </a>
+ ` : `
+ <span style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px;">⚠ No phone number registered</span>
+ `}
+ ${email && email !== 'N/A' ? `
+ <a href="mailto:${email}" class="btn btn-glass" style="font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+ <span>✉</span> Email Collector
+ </a>
+ ` : ''}
+ <button type="button" class="btn btn-glass" style="font-size: 0.78rem; margin-left: auto;" onclick="navigator.clipboard.writeText('${safeId(addressCopyText)}'); app.showToast('Copied full shipping label coordinates!');">
+ Copy Delivery Label Data
+ </button>
+ <button type="button" class="btn" style="background: #EF4444; color: white; font-weight: 700; font-size: 0.78rem; padding: 0.45rem 1rem; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;" onclick="app.closeAdminModal(); app.handleAdminDeleteUser('${safeId(patron.uid)}', '${safeId(name)}', '${safeId(email)}', '${safeId(cleanPhone)}', '${safeId(dossierOrderIds)}')" title="Permanently delete user and order records from database">
+ <span></span> Purge User & Data
+ </button>
+ </div>
+
+ <!-- 2-Column Info Grid -->
+ <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.2rem; margin-bottom: 1.5rem;">
+ <!-- Delivery & Address Coordinates -->
+ <div class="sovereign-subpanel">
+ <div class="sovereign-subpanel-title" style="color: var(--gold-light); display: flex; justify-content: space-between; align-items: center;">
+ <span> Shipping & Delivery Coordinates</span>
+ <span class="glass-pill" style="font-size: 0.65rem;">Primary Destination</span>
+ </div>
+ <div style="margin-bottom: 0.8rem;">
+ <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.2rem;">Full Address:</div>
+ <div style="font-size: 0.88rem; line-height: 1.5; color: var(--text-main); background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); word-break: break-word;">
+ ${address || '<span style="color: var(--text-muted); font-style: italic;">No shipping address recorded yet.</span>'}
+ </div>
+ </div>
+ <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; font-size: 0.78rem;">
+ <div>
+ <div style="color: var(--text-muted); font-size: 0.7rem;">City</div>
+ <strong style="color: var(--gold-light);">${city || 'N/A'}</strong>
+ </div>
+ <div>
+ <div style="color: var(--text-muted); font-size: 0.7rem;">State</div>
+ <strong style="color: var(--gold-light);">${state || 'N/A'}</strong>
+ </div>
+ <div>
+ <div style="color: var(--text-muted); font-size: 0.7rem;">Pincode</div>
+ <strong style="color: var(--gold-light);">${pincode || 'N/A'}</strong>
+ </div>
+ </div>
+ </div>
+
+ <!-- Economy, Flacons & Tier Standing -->
+ <div class="sovereign-subpanel">
+ <div class="sovereign-subpanel-title" style="color: var(--gold-light); display: flex; justify-content: space-between; align-items: center;">
+ <span> Collector Economy & Circle of Legends</span>
+ <span class="glass-pill" style="font-size: 0.65rem;">VIP Privileges</span>
+ </div>
+ <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; margin-bottom: 0.8rem;">
+ <div style="background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px;">
+ <div style="font-size: 0.7rem; color: var(--text-muted);">Lifetime Spend (LTV)</div>
+ <div class="gold-shimmer-text" style="font-size: 1.15rem; font-weight: 700;">₹${lifetimeSpend.toLocaleString('en-IN')}</div>
+ </div>
+ <div style="background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px;">
+ <div style="font-size: 0.7rem; color: var(--text-muted);">Total Consignments</div>
+ <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);">${orders.length} Orders</div>
+ </div>
+ <div style="background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px;">
+ <div style="font-size: 0.7rem; color: var(--text-muted);">Spendable Mythos</div>
+ <div style="font-size: 1.15rem; font-weight: 700; color: var(--gold-light);">${spendable.toLocaleString()} M</div>
+ </div>
+ <div style="background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px;">
+ <div style="font-size: 0.7rem; color: var(--text-muted);">Full Flacons (≥50ml)</div>
+ <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);">${bottles} Flacons</div>
+ </div>
+ </div>
+ <div style="font-size: 0.75rem; color: var(--text-muted);">
+ Referral Code: <strong style="color: var(--gold-light);">${prof.referralCode || patron.referralCode || 'None generated'}</strong>
+ </div>
+ </div>
+
+ <!-- Points Ledger: auditable history of every Mythos movement -->
+ <div class="sovereign-subpanel" style="margin-top: 1rem;">
+ <div class="sovereign-subpanel-title" style="color: var(--gold-light); display: flex; justify-content: space-between; align-items: center;">
+ <span>Points Ledger</span>
+ <span class="glass-pill" style="font-size: 0.62rem;">Audit trail</span>
+ </div>
+ <div id="patron-ledger-slot" style="font-size: 0.76rem; color: var(--text-muted);">Loading points history...</div>
+ </div>
+ </div>
+
+ <!-- Consignments / Orders History Ledger -->
+ <div class="sovereign-subpanel" style="margin-bottom: 1.5rem;">
+ <div class="sovereign-subpanel-title" style="color: var(--gold-light); display: flex; justify-content: space-between; align-items: center;">
+ <span> Consignment Ledger & Order History (${orders.length})</span>
+ </div>
+ ${orders.length === 0 ? `
+ <div style="text-align: center; color: var(--text-muted); padding: 1.5rem; font-size: 0.85rem;">
+ No orders placed by this collector yet.
+ </div>
+ ` : `
+ <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+ ${orders.map(ord => {
+ const ordId = ord.orderId || ord.id || 'MYTH-0000';
+ const ordStatus = ord.status || 'Pending';
+ const ordPay = (ord.paymentMethod || 'Prepaid').toUpperCase();
+ const ordAmount = Number(ord.finalPayable || ord.total || ord.subtotal || 0);
+ const ordDate = ord.timestamp?.toMillis ? new Date(ord.timestamp.toMillis()).toLocaleString('en-IN') : (ord.date || ord.createdAt ? new Date(ord.date || ord.createdAt).toLocaleString('en-IN') : 'Recent');
+ const items = Array.isArray(ord.items) ? ord.items : [];
+ const courier = ord.courierName || '';
+ const awb = ord.trackingNumber || '';
+ const idOrd = safeId(ordId);
+
+ return `
+ <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(212, 175, 55, 0.15); border-radius: 8px; padding: 0.8rem;">
+ <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; flex-wrap: wrap; gap: 0.5rem;">
+ <div style="display: flex; align-items: center; gap: 0.6rem;">
+ <strong style="color: var(--gold-light); font-size: 0.95rem;">Order #${esc(ordId)}</strong>
+ <span class="sovereign-pill status-${idOrd.toLowerCase()}">${esc(ordStatus)}</span>
+ <span class="sovereign-pill payment-${esc(String(ordPay).toLowerCase())}">${esc(ordPay)}</span>
+ </div>
+ <div style="font-size: 0.78rem; color: var(--text-muted);">
+ ${esc(ordDate)}
+ </div>
+ </div>
+ <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.4rem;">
+ Items: ${items.map(it => `<span style="color: var(--text-main); font-weight: 600;">${esc(it.name || it.id)} (${esc(it.size || 50)}ml &times; ${esc(it.quantity || 1)})</span>`).join(', ') || 'No items listed'}
+ </div>
+ <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.4rem; font-size: 0.8rem;">
+ <div>
+ ${courier || awb ? `<span style="color: var(--gold-primary);"> ${esc(courier)} AWB: ${esc(awb)}</span>` : '<span style="color: var(--text-muted);">Dispatch Pending</span>'}
+ </div>
+ <div style="display: flex; align-items: center; gap: 0.8rem;">
+ <strong class="gold-shimmer-text" style="font-size: 0.95rem;">₹${ordAmount.toLocaleString('en-IN')}</strong>
+ <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;" onclick="app.closeAdminModal(); app.printShippingLabelForOrder('${idOrd}')">
+ Shipping Label
+ </button>
+ </div>
+ </div>
+ </div>
+ `;
+ }).join('')}
+ </div>
+ `}
+ </div>
+
+ <!-- Footer Actions -->
+ <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(212, 175, 55, 0.2); padding-top: 0.8rem;">
+ <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+ <button type="button" class="btn btn-glass" style="font-size: 0.75rem;" onclick="app.closeAdminModal(); app.openAdjustMythosModal('${safeId(patron.uid)}', '${safeId(name)}', ${spendable})">
+ &plusmn; Adjust Mythos
+ </button>
+ <button type="button" class="btn btn-glass" style="font-size: 0.75rem;" onclick="app.closeAdminModal(); app.openOverrideTierModal('${safeId(patron.uid)}', '${safeId(name)}', ${bottles}, ${currentTierLevel})">
+ Override Tier
+ </button>
+ <button type="button" class="btn btn-glass" style="font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.4); color: #FCA5A5;" onclick="app.closeAdminModal(); app.handleAdminDeleteUser('${safeId(patron.uid)}', '${safeId(name)}', '${safeId(email)}', '${safeId(cleanPhone)}', '${safeId(dossierOrderIds)}')" title="Permanently delete user and order records from database">
+ Purge User & Data
+ </button>
+ </div>
+ <button type="button" class="btn btn-gold" style="font-size: 0.78rem; padding: 0.6rem 1.4rem;" onclick="app.closeAdminModal()">Close Dossier</button>
+ </div>
+ </div>
+ </div>
+ `;
+ },
+
+ /* ==========================================================================
+ DIRECT 4x6 THERMAL SHIPPING LABEL STUDIO MODAL
+ ========================================================================== */
+ renderShippingLabelModal(targetOrder = null, config = {}) {
+ return this.renderLabelRebranderModal(targetOrder, config);
+ },
+
+ renderLabelRebranderModal(targetOrder = null, config = {}) {
+ const orderId = targetOrder ? (targetOrder.orderId || targetOrder.id || '') : '';
+ const patronName = targetOrder ? (targetOrder.userName || targetOrder.name || targetOrder.customer?.name || '') : '';
+ const courier = targetOrder ? (targetOrder.courierName || '') : '';
+ const awb = targetOrder ? (targetOrder.trackingNumber || targetOrder.awbCode || '') : '';
+ const existingLabelUrl = targetOrder ? (targetOrder.labelUrl || '') : '';
+
+ const savedConfig = config || (typeof store !== 'undefined' && store.globalSettings && store.globalSettings.labelConfig) || {};
+ const defaultPreset = savedConfig.preset || 'thermal-4x6-bottom';
+ const maskX = savedConfig.maskX !== undefined ? savedConfig.maskX : 14;
+ const maskY = savedConfig.maskY !== undefined ? savedConfig.maskY : 18;
+ const maskWidth = savedConfig.maskWidth !== undefined ? savedConfig.maskWidth : 260;
+ const maskHeight = savedConfig.maskHeight !== undefined ? savedConfig.maskHeight : 82;
+ const fontSize = savedConfig.fontSize !== undefined ? savedConfig.fontSize : 10;
+ const showLogo = savedConfig.showLogo !== false;
+ const hasTopMask = savedConfig.hasTopHeaderMask === true;
+
+ return `
+ <div class="sovereign-modal-backdrop" onclick="if(event.target === this) app.closeAdminModal()">
+ <div class="sovereign-modal-box" style="max-width: 980px; width: 95%;">
+ <!-- Header -->
+ <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.8rem; flex-wrap: wrap; gap: 0.8rem;">
+ <div>
+ <div style="display: flex; align-items: center; gap: 0.6rem;">
+ <span class="glass-pill" style="font-size: 0.7rem; color: var(--gold-primary); letter-spacing: 0.1em;">AUTHENTIC DISPATCH</span>
+ <span class="glass-pill" style="font-size: 0.7rem; color: #10B981; border-color: #10B981;">Direct 4x6 Thermal Ready</span>
+ </div>
+ <h3 class="font-title" style="color: var(--gold-light); margin: 0.3rem 0 0; font-size: 1.3rem;">
+ Mytholis 4x6 Thermal Shipping Label Studio
+ </h3>
+ </div>
+ <button class="icon-btn" onclick="app.closeAdminModal()" style="font-size: 1.3rem; color: var(--gold-light);">✕</button>
+ </div>
+
+ ${targetOrder ? `
+ <!-- Attached Order Context Bar -->
+ <div style="background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 0.8rem 1rem; margin-bottom: 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.6rem;">
+ <div>
+ <strong style="color: var(--gold-primary); font-size: 0.95rem;">Order #${safeId(orderId)}</strong>
+ <span style="color: var(--text-muted); font-size: 0.85rem; margin-left: 0.5rem;">Collector: <strong style="color: var(--text-main);">${patronName}</strong></span>
+ </div>
+ <div style="font-size: 0.8rem; color: var(--text-muted);">
+ Courier: <strong style="color: var(--gold-light);">${courier || 'BlueDart Express'}</strong> &bull; AWB: <strong style="color: var(--gold-light); font-family: monospace;">${awb || 'Pending'}</strong>
+ </div>
+ </div>
+ ` : ''}
+
+ <!-- Two-Column Studio Layout -->
+ <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+ 
+ <!-- Column 1: Native Generator & Controls -->
+ <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+ 
+ ${targetOrder ? `
+ <!-- Native Thermal Label Configuration -->
+ <div class="calibration-card">
+ <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold-light); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">
+ 1. Consignment Dispatch Parameters
+ </div>
+ <div style="display: flex; flex-direction: column; gap: 0.7rem;">
+ <div>
+ <label class="sovereign-field-label">Assigned Courier</label>
+ <input type="text" id="label-courier-input" class="sovereign-form-input" value="${courier || 'BlueDart Express'}" onchange="app.refreshOrderShippingLabel()" />
+ </div>
+ <div>
+ <label class="sovereign-field-label">AWB / Courier Tracking #</label>
+ <input type="text" id="label-awb-input" class="sovereign-form-input" value="${awb}" placeholder="e.g. 84920194821" onchange="app.refreshOrderShippingLabel()" />
+ </div>
+ <div style="margin-top: 0.3rem;">
+ <button type="button" class="btn btn-gold" style="width: 100%; font-size: 0.8rem; font-weight: 700;" onclick="app.refreshOrderShippingLabel()">
+ ⚡ Update & Regenerate Label
+ </button>
+ </div>
+ </div>
+ </div>
+ ` : ''}
+
+ <!-- External PDF Fallback (Collapsible) -->
+ <details class="calibration-card" ${targetOrder ? '' : 'open'}>
+ <summary style="font-size: 0.85rem; font-weight: 700; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer;">
+ External PDF Slip Import (Optional)
+ </summary>
+
+ <!-- Drag & Drop Zone -->
+ <div class="label-dropzone" id="label-dropzone" style="margin-top: 0.8rem;" onclick="document.getElementById('rebrander-file-input').click()">
+ <input type="file" id="rebrander-file-input" accept="application/pdf" style="display: none;" onchange="app.handleLabelFileUpload(event)" />
+ <div style="font-size: 1.8rem; margin-bottom: 0.4rem;"></div>
+ <div style="color: var(--gold-light); font-weight: 600; font-size: 0.9rem; margin-bottom: 0.2rem;" id="dropzone-label-text">
+ Drop 4x6 Shipping Label PDF Here
+ </div>
+ <div style="color: var(--text-muted); font-size: 0.75rem;">
+ or click to browse from device
+ </div>
+ </div>
+
+ <!-- Alternative: Direct URL -->
+ <div style="margin-top: 0.8rem;">
+ <div style="display: flex; gap: 0.4rem;">
+ <input type="text" id="rebrander-url-input" class="sovereign-form-input" placeholder="Or paste label PDF URL..." value="${existingLabelUrl}" style="font-size: 0.8rem; flex: 1;" />
+ <button type="button" class="btn btn-glass" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;" onclick="app.loadLabelFromUrl()">
+ Fetch
+ </button>
+ </div>
+ </div>
+
+ <div style="margin-top: 0.6rem; text-align: right;">
+ <button type="button" class="btn btn-glass" style="font-size: 0.7rem; padding: 0.3rem 0.6rem; color: var(--gold-primary);" onclick="app.loadSampleThermalLabel()">
+ ⚡ Test With Sample 4x6 Courier Label
+ </button>
+ </div>
+ </details>
+
+ <!-- Alignment Presets & Geometry Slider Controls -->
+ <div class="calibration-card">
+ <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+ <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.05em;">
+ 2. Courier Alignment & Mask Presets
+ </div>
+ <button type="button" class="btn btn-glass" style="font-size: 0.68rem; padding: 0.2rem 0.5rem;" onclick="app.saveLabelCalibrationAsDefault()">
+ Save as Default
+ </button>
+ </div>
+
+ <!-- Preset Selector -->
+ <div style="margin-bottom: 1rem;">
+ <label class="sovereign-field-label">Template Preset</label>
+ <select id="rebrander-preset-select" class="sovereign-select" style="width: 100%;" onchange="app.applyLabelPreset(this.value)">
+ <option value="thermal-4x6-bottom" ${defaultPreset === 'thermal-4x6-bottom' ? 'selected' : ''}>Standard 4x6 Thermal Label (Bottom Mask)</option>
+ <option value="thermal-4x6-top-bottom" ${defaultPreset === 'thermal-4x6-top-bottom' ? 'selected' : ''}>4x6 Thermal Label (Top Brand + Bottom Mask)</option>
+ <option value="a4-top-left" ${defaultPreset === 'a4-top-left' ? 'selected' : ''}>A4 Sheet Courier Label (Top-Left Quadrant)</option>
+ <option value="custom" ${defaultPreset === 'custom' ? 'selected' : ''}>Custom Manual Coordinates</option>
+ </select>
+ </div>
+
+ <!-- Numeric / Slider Controls for White-Out Mask -->
+ <div class="calibration-slider-row">
+ <label>Mask X Offset (pt):</label>
+ <input type="range" id="slider-mask-x" min="0" max="100" value="${maskX}" oninput="app.updateMaskSliderVal('x', this.value)" />
+ <span class="calibration-val-badge" id="val-mask-x">${maskX}</span>
+ </div>
+
+ <div class="calibration-slider-row">
+ <label>Mask Y Position (pt):</label>
+ <input type="range" id="slider-mask-y" min="0" max="200" value="${maskY}" oninput="app.updateMaskSliderVal('y', this.value)" />
+ <span class="calibration-val-badge" id="val-mask-y">${maskY}</span>
+ </div>
+
+ <div class="calibration-slider-row">
+ <label>Mask Width (pt):</label>
+ <input type="range" id="slider-mask-w" min="150" max="320" value="${maskWidth}" oninput="app.updateMaskSliderVal('w', this.value)" />
+ <span class="calibration-val-badge" id="val-mask-w">${maskWidth}</span>
+ </div>
+
+ <div class="calibration-slider-row">
+ <label>Mask Height (pt):</label>
+ <input type="range" id="slider-mask-h" min="40" max="140" value="${maskHeight}" oninput="app.updateMaskSliderVal('h', this.value)" />
+ <span class="calibration-val-badge" id="val-mask-h">${maskHeight}</span>
+ </div>
+
+ <div class="calibration-slider-row">
+ <label>Brand Font Size (pt):</label>
+ <input type="range" id="slider-mask-font" min="8" max="14" value="${fontSize}" oninput="app.updateMaskSliderVal('font', this.value)" />
+ <span class="calibration-val-badge" id="val-mask-font">${fontSize}</span>
+ </div>
+
+ <!-- Toggles -->
+ <div style="display: flex; gap: 1.5rem; margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid rgba(212, 175, 55, 0.15);">
+ <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--gold-light); cursor: pointer;">
+ <input type="checkbox" id="rebrander-show-logo" ${showLogo ? 'checked' : ''} onchange="app.triggerRebrandPreview()" style="accent-color: var(--gold-primary);" />
+ Embed Mytholis Crest Logo
+ </label>
+ <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--gold-light); cursor: pointer;">
+ <input type="checkbox" id="rebrander-top-mask" ${hasTopMask ? 'checked' : ''} onchange="app.triggerRebrandPreview()" style="accent-color: var(--gold-primary);" />
+ Mask Top Banner
+ </label>
+ </div>
+ </div>
+
+ <!-- Brand Identity Stamp Customization -->
+ <div class="calibration-card">
+ <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold-light); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">
+ 3. Thermal Typography Stamp
+ </div>
+ <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+ <div>
+ <label class="sovereign-field-label">Header Title</label>
+ <input type="text" id="rebrander-title" class="sovereign-form-input" value="MYTHOLIS LUXURY PARFUMS" oninput="app.triggerRebrandPreview()" />
+ </div>
+ <div>
+ <label class="sovereign-field-label">Subtitle</label>
+ <input type="text" id="rebrander-subtitle" class="sovereign-form-input" value="Extrait de Parfum | Luxury Olfactory Sanctuary" oninput="app.triggerRebrandPreview()" />
+ </div>
+ <div>
+ <label class="sovereign-field-label">Return & Concierge Coordinates</label>
+ <input type="text" id="rebrander-return" class="sovereign-form-input" value="Sanctuary of Mytholis • www.mytholis.com • concierge@mytholis.com" oninput="app.triggerRebrandPreview()" />
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Column 2: Live PDF Rebranding Preview & Print Desk -->
+ <div style="display: flex; flex-direction: column; gap: 1rem;">
+ <div class="calibration-card" style="height: 100%; display: flex; flex-direction: column;">
+ <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+ <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.05em;">
+ Interactive Thermal Print Preview
+ </div>
+ <span id="rebrander-status-pill" class="glass-pill" style="font-size: 0.68rem; color: var(--gold-primary);">
+ Ready to Rebrand
+ </span>
+ </div>
+
+ <!-- PDF Preview Frame / Viewer -->
+ <div style="flex: 1; min-height: 440px; position: relative; border-radius: 8px; overflow: hidden; background: #1a1a1a;">
+ <iframe id="rebrander-preview-frame" class="rebrander-preview-frame" style="width: 100%; height: 100%; min-height: 440px; border: 0;"></iframe>
+ <div id="rebrander-preview-placeholder" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(4, 28, 20, 0.95); padding: 2rem; text-align: center;">
+ <div style="font-size: 2.5rem; margin-bottom: 0.8rem;"></div>
+ <h4 class="font-title" style="color: var(--gold-light); margin: 0 0 0.4rem;">No PDF Loaded</h4>
+ <p style="font-size: 0.82rem; color: var(--text-muted); max-width: 320px; margin-bottom: 1.2rem;">
+ Upload a courier PDF label or click the test button on the left to calibrate the white-out mask.
+ </p>
+ <button type="button" class="btn btn-gold" style="font-size: 0.8rem; padding: 0.6rem 1.4rem;" onclick="app.loadSampleThermalLabel()">
+ Generate Sample 4x6 Label
+ </button>
+ </div>
+ </div>
+
+ <!-- Action Controls Below Preview -->
+ <div style="margin-top: 1rem; display: flex; gap: 0.6rem; flex-wrap: wrap;">
+ <button type="button" class="btn btn-gold" style="flex: 1.5; padding: 0.75rem 1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.4rem;" onclick="app.printRebrandedLabel()">
+ Direct Thermal Print
+ </button>
+ <button type="button" class="btn btn-glass" style="flex: 1.2; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem;" onclick="app.downloadRebrandedLabel('${safeId(orderId)}')">
+ ⬇ Download PDF
+ </button>
+ ${targetOrder ? `
+ <button type="button" class="btn btn-glass" style="flex: 1; padding: 0.75rem 1rem; color: #10B981; border-color: #10B981;" onclick="app.saveRebrandedLabelToOrder('${safeId(orderId)}')">
+ ✓ Save to Order
+ </button>
+ ` : ''}
+ </div>
+ </div>
+ </div>
+
+ </div>
+
+ <!-- Footer -->
+ <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(212, 175, 55, 0.2); padding-top: 0.8rem;">
+ <span style="font-size: 0.75rem; color: var(--text-muted);">
+ Method 3 Compliance: Legal KYC entity is preserved in courier manifests; shipping labels are branded exclusively for the collector.
+ </span>
+ <button type="button" class="btn btn-glass" onclick="app.closeAdminModal()">Close Studio</button>
+ </div>
+ </div>
+ </div>
+ `;
+ }
 };
 
 if (typeof window !== 'undefined') {
-  window.AdminComponents = AdminComponents;
+ window.AdminComponents = AdminComponents;
 }
