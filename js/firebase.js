@@ -93,12 +93,24 @@ const firebaseApp = initializeApp(firebaseConfig);
 /* Analytics is optional: unsupported browsers (or blocked cookies) resolve to
    null, and js/analytics.js becomes a no-op. Never let it break boot. */
 export let analytics = null;
-isSupported()
-  .then((ok) => {
-    if (!ok) return;
-    try { analytics = getAnalytics(firebaseApp); } catch (_) {}
-  })
-  .catch(() => {});
+
+/* gtag pulls ~165 KB and runs heavy work. Defer it until the page is idle so
+   it never competes with first paint or the first tap. */
+const bootAnalytics = () => {
+  isSupported()
+    .then((ok) => {
+      if (!ok) return;
+      try { analytics = getAnalytics(firebaseApp); } catch (_) {}
+    })
+    .catch(() => {});
+};
+if (typeof window !== 'undefined') {
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(bootAnalytics, { timeout: 4000 });
+  } else {
+    window.addEventListener('load', () => setTimeout(bootAnalytics, 1200), { once: true });
+  }
+}
 const auth = getAuth(firebaseApp);
 let db;
 try {
