@@ -1,3 +1,0 @@
-chore: drop stray commit-message file
-
-_m.txt was committed by accident in 6766089.

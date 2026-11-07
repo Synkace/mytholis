@@ -36,3 +36,8 @@ android/app/build/
 *serviceAccount*.json
 backups/
 visual-audit/
+
+# scratch files used for commit messages / diagnostics
+_*.txt
+_*.mjs
+_*.py
