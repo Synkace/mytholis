@@ -1,0 +1,14 @@
+perf: self-host fonts, quiet the redundant re-render, add Firebase preconnects
+
+- Self-host Cinzel / Cormorant Garamond / Montserrat as 17 woff2 subsets
+  under public/assets/fonts (408 KB total; only latin subsets are fetched).
+  Removes two third-party origins and the fallback-to-Cinzel swap flash.
+- Preload the Cinzel 700 latin subset so the hero headline settles once.
+- Skip store.setProducts() when the Firestore payload matches what is
+  already rendered - this was the visible content "pop" just after paint.
+- Preconnect to firestore.googleapis.com and identitytoolkit.googleapis.com;
+  the first settings/products/auth call was paying DNS+TLS cold.
+- Drop 12 console.log calls from the shipped bundle.
+
+Measured (throttled Android, Slow 4G): FCP 1.51-1.72s across three runs,
+0 requests to fonts.googleapis.com or fonts.gstatic.com.

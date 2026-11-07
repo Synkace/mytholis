@@ -3850,19 +3850,15 @@ class MytholisApp {
       return;
     }
     if (store.loyalty && store.loyalty.signup_bonus_popup_seen === true) {
-      console.log('[Mytholis Bonus] Welcome popup already marked seen on loyalty profile. Suppressing.');
       return;
     }
     if (activeUid && localStorage.getItem('mytholis_welcome_seen_' + activeUid) === 'true') {
-      console.log('[Mytholis Bonus] Welcome popup already seen for UID:', activeUid);
       return;
     }
     if (email && !email.endsWith('@phone.mytholis.com') && localStorage.getItem('mytholis_welcome_seen_' + email) === 'true') {
-      console.log('[Mytholis Bonus] Welcome popup already seen for email:', email);
       return;
     }
     if (phone && localStorage.getItem('mytholis_welcome_seen_' + phone) === 'true') {
-      console.log('[Mytholis Bonus] Welcome popup already seen for phone:', phone);
       return;
     }
 
@@ -4823,7 +4819,6 @@ class MytholisApp {
 
       window.fbq('init', cleanId);
       window.fbq('track', 'PageView');
-      console.log('[Mytholis Analytics] Meta Pixel initialized dynamically:', cleanId);
     }
   }
 
@@ -6559,7 +6554,6 @@ class MytholisApp {
     this.backendDiagnostics.running = false;
     this.renderAdminDiagnosticsBar();
     this.showToast('Backend health diagnostics complete.');
-    console.log('[Mytholis Backend Diagnostics Matrix]', this.backendDiagnostics);
     return this.backendDiagnostics;
   }
 

@@ -157,7 +157,6 @@ export class FirebaseService {
     onAuthStateChanged(auth, async (user) => {
       this.currentUser = user;
       if (user) {
-        console.log("[Mytholis Firebase] Client authenticated:", user.email || user.phoneNumber || user.uid);
         await this.syncUserDataOnLogin(user);
         /* localStorage is only a cache. Reconcile it with the server on every
            sign-in so a stale ledger can never be presented as real money. */
@@ -172,7 +171,6 @@ export class FirebaseService {
           }
         }
       } else {
-        console.log("[Mytholis Firebase] Client signed out.");
         if (this.store) {
           this.store.firebaseUser = null;
           this.store.user.isAdmin = false;
@@ -447,8 +445,6 @@ export class FirebaseService {
       }
 
       const methods = await fetchSignInMethodsForEmail(auth, email);
-      console.log(`[Mytholis Sanctum Gate] Existing methods for ${email}:`, methods);
-
       if (methods.includes('google.com')) {
         if (this.app) this.app.showToast('Signing in with Google to link your accounts...');
         googleProvider.setCustomParameters({ prompt: 'select_account', login_hint: email });
@@ -671,7 +667,6 @@ export class FirebaseService {
         try { data = JSON.parse(text); } catch (_) {}
         if (data && data.success && data.user) {
           if (data.merged) {
-            console.log('[Mytholis Reconcile] Account successfully merged duplicate records:', data.mergedUids);
           }
           if (this.store) {
             if (data.masterUid) {
@@ -774,7 +769,6 @@ export class FirebaseService {
             let data = null;
             try { data = JSON.parse(text); } catch (_) {}
             if (data && data.success) {
-              console.log('[Mytholis Firebase] Backend successfully purged collector:', uidToDelete);
             }
           }
         } catch (fetchErr) {
@@ -827,7 +821,6 @@ export class FirebaseService {
         for (const ordId of ordersToDelete) {
           await deleteDoc(doc(db, "orders", ordId)).catch(() => {});
         }
-        console.log(`[Mytholis Firebase] Client purged ${ordersToDelete.size} associated consignment orders for ${uidToDelete}`);
       } catch (ordDelErr) {
         console.warn('[Mytholis Firebase] Orders client purge note:', ordDelErr.message);
       }
@@ -2285,7 +2278,15 @@ export class FirebaseService {
         list.push(item);
       });
       if (list.length && this.store) {
-        this.store.setProducts(list);
+        /* setProducts() notifies every subscriber and repaints the view. On a
+           cold load the Firestore payload is usually identical to the bundled
+           catalog, so that repaint showed up as content "popping" a second
+           after first paint. Compare a cheap projection and stay quiet. */
+        const projection = (arr) => JSON.stringify((arr || []).map((x) => [x.id, x.price, x.salePrice, x.stock, x.name]));
+        const current = (typeof this.store.getProducts === 'function') ? this.store.getProducts() : [];
+        if (projection(current) !== projection(list)) {
+          this.store.setProducts(list);
+        }
       }
       return list;
     } catch (err) {

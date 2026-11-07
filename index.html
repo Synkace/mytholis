@@ -29,13 +29,17 @@
   <meta name="twitter:image" content="https://mytholis.com/assets/product/sixthsense.webp">
 
   <!-- Performance Resource Hints -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Firebase backends: first settings/products/auth call pays DNS+TLS
+       otherwise, roughly 150ms on a cold mobile connection. -->
+    <!-- Fonts are self-hosted: no third-party origin, no swap flash. -->
+  <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/f2.woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/fonts/fonts.css">
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://checkout.razorpay.com" crossorigin>
   <link rel="preconnect" href="https://api.razorpay.com" crossorigin>
   <link rel="dns-prefetch" href="https://checkout.razorpay.com">
   <link rel="dns-prefetch" href="https://api.razorpay.com">
-  <link rel="preload" href="https://checkout.razorpay.com/v1/checkout.js" as="script">
   <!-- Single LCP preload: the centred hero flacon. Everything else loads in document order. -->
   <link rel="preload" as="image" href="/assets/hero/oudrioncard.webp" type="image/webp" fetchpriority="high">
   <!-- Only assets painted on first load. Everything else is lazy-loaded by the
@@ -47,11 +51,6 @@
   
   
   <!-- Google Fonts: Cinzel, Cormorant Garamond, Montserrat -->
-  <!-- Fonts loaded non-blocking: preload as style, flip to stylesheet on load -->
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap">
-  </noscript>
 
   <!-- CSS Stylesheets -->
   <link rel="stylesheet" href="css/main.css">
@@ -393,10 +392,10 @@
   <div id="recaptcha-container" style="display: none;"></div>
 
   <!-- Razorpay Standard 256-Bit SSL Checkout SDK -->
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
   <!-- Bundled & Optimized Application Engine (Includes GSAP & Animations) -->
   <script type="module" src="/js/main.js"></script>
 </body>
 </html>
+
 
