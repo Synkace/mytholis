@@ -7477,3 +7477,37 @@ body.admin-view-active .view-section,
   .sovereign-nav-bar::-webkit-scrollbar { height: 4px; }
   .sovereign-nav-bar::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.35); border-radius: 4px; }
 }
+
+
+/* Footer social handles */
+.footer-social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 1.15rem;
+}
+.footer-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--gold-light, #d4af37);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
+}
+.footer-social-link:hover {
+  border-color: rgba(212, 175, 55, 0.85);
+  background: rgba(212, 175, 55, 0.12);
+  transform: translateY(-1px);
+  color: var(--gold-light, #d4af37);
+}
+.footer-social-link svg { flex: none; }
+@media (max-width: 480px) {
+  .footer-social-link span { font-size: 0.66rem; }
+}
