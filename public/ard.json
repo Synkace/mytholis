@@ -1,0 +1,84 @@
+{
+  "name": "Mytholis",
+  "alternateName": "Mytholis Haute Parfumerie",
+  "url": "https://mytholis.com/",
+  "description": "Haute parfumerie house selling six signature Extrait de Parfum creations at 40% concentration, hand-formulated in Mayfair, London and bottled in Ahmedabad, India.",
+  "version": "1.0",
+  "updated": "2026-11-07",
+  "inLanguage": "en-IN",
+  "type": "Organization",
+  "contact": {
+    "email": "mytholisluxuryfragrances@gmail.com",
+    "telephone": "+91-7770009170",
+    "url": "https://mytholis.com/#contact"
+  },
+  "address": {
+    "streetAddress": "Vasant Vihar 2, Nava Naroda",
+    "addressLocality": "Ahmedabad",
+    "addressRegion": "Gujarat",
+    "postalCode": "382330",
+    "addressCountry": "IN"
+  },
+  "resources": [
+    {
+      "name": "Homepage",
+      "url": "https://mytholis.com/",
+      "type": "text/html",
+      "description": "The six extraits, brand story and storefront entry"
+    },
+    {
+      "name": "Collections",
+      "url": "https://mytholis.com/#collections",
+      "type": "text/html",
+      "description": "Full catalogue of extraits, sizes and prices"
+    },
+    {
+      "name": "Circle of Legends",
+      "url": "https://mytholis.com/#circle-of-legends",
+      "type": "text/html",
+      "description": "Loyalty programme, tiers and Mythos rewards"
+    },
+    {
+      "name": "Scent Quiz",
+      "url": "https://mytholis.com/#find-scent",
+      "type": "text/html",
+      "description": "Quiz that recommends an extrait"
+    },
+    {
+      "name": "Shipping & Delivery",
+      "url": "https://mytholis.com/shipping",
+      "type": "text/html",
+      "description": "Delivery coverage, timelines and partial cash-on-delivery terms"
+    },
+    {
+      "name": "Refund & Cancellation",
+      "url": "https://mytholis.com/refund",
+      "type": "text/html",
+      "description": "Returns, replacements and cancellations"
+    },
+    {
+      "name": "Privacy Policy",
+      "url": "https://mytholis.com/privacy",
+      "type": "text/html",
+      "description": "Data handling and collector rights"
+    },
+    {
+      "name": "Terms of Service",
+      "url": "https://mytholis.com/terms",
+      "type": "text/html",
+      "description": "Purchase terms and site usage"
+    },
+    {
+      "name": "Sitemap",
+      "url": "https://mytholis.com/sitemap.xml",
+      "type": "application/xml",
+      "description": "Machine-readable index of public pages"
+    },
+    {
+      "name": "LLM Summary",
+      "url": "https://mytholis.com/llms.txt",
+      "type": "text/plain",
+      "description": "Markdown summary of the site for language models"
+    }
+  ]
+}

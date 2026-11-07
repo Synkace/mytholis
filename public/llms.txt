@@ -1,0 +1,34 @@
+# Mytholis
+
+> Mytholis is a haute parfumerie house selling six signature Extrait de Parfum creations at 40% concentration, hand-formulated in Mayfair, London and bottled in Ahmedabad, India. The site is a direct-to-consumer storefront for collectors in India and the UK.
+
+## Core Resources
+
+- [Homepage](https://mytholis.com/): The six extraits, brand story and entry to the storefront
+- [Collections](https://mytholis.com/#collections): Full catalogue of available extraits and sizes
+- [Circle of Legends](https://mytholis.com/#circle-of-legends): Loyalty programme, tiers and Mythos rewards
+- [Scent Quiz](https://mytholis.com/#find-scent): Short quiz that matches a visitor to an extrait
+- [Heritage & Craft](https://mytholis.com/#know-us): Formulation, maceration and the house's origins
+
+## Products
+
+- [King Scar](https://mytholis.com/product/king-scar): Aromatic spicy extrait, 50ml and 100ml
+- [Petralux](https://mytholis.com/product/petralux): Fresh floral extrait, 50ml and 100ml
+- [Oud Rion](https://mytholis.com/product/oud-rion): Woody oud extrait, 50ml and 100ml
+- [Spark](https://mytholis.com/product/spark): Aromatic citrus extrait, 50ml and 100ml
+- [Wood Sera](https://mytholis.com/product/wood-sera): Woody aromatic extrait, 50ml and 100ml
+- [Ash](https://mytholis.com/product/ash): Woody smoky extrait, 50ml and 100ml
+- [Sixth Sense Discovery Set](https://mytholis.com/product/mytholis-discovery-set): Six 8ml travel flacons, one of each extrait
+
+## Policies
+
+- [Shipping & Delivery](https://mytholis.com/shipping): Delivery timelines, coverage and partial cash-on-delivery terms
+- [Refund & Cancellation](https://mytholis.com/refund): Returns, replacements and cancellation policy
+- [Privacy Policy](https://mytholis.com/privacy): Data handling and collector rights
+- [Terms of Service](https://mytholis.com/terms): Purchase terms and site usage
+- [Data Deletion](https://mytholis.com/data-deletion): How to request deletion of an account and its data
+
+## Optional
+
+- [Sitemap](https://mytholis.com/sitemap.xml): Machine-readable index of public pages
+- [Contact](https://mytholis.com/#contact): Concierge contact details

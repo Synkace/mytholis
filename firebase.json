@@ -38,6 +38,19 @@
         ]
       },
       {
+        "source": "/{llms.txt,ard.json,.well-known/ard.json}",
+        "headers": [
+          { "key": "Access-Control-Allow-Origin", "value": "*" },
+          { "key": "Cache-Control", "value": "public, max-age=3600" }
+        ]
+      },
+      {
+        "source": "/.well-known/ard.json",
+        "headers": [
+          { "key": "Content-Type", "value": "application/json; charset=utf-8" }
+        ]
+      },
+      {
         "source": "**",
         "headers": [
           {
@@ -106,6 +119,14 @@
           "functionId": "api",
           "region": "us-central1"
         }
+      },
+      {
+        "source": "/.well-known/ard.json",
+        "destination": "/ard.json"
+      },
+      {
+        "source": "/llms.txt",
+        "destination": "/llms.txt"
       },
       {
         "source": "**",
